@@ -59,7 +59,7 @@ async function selectSession(id) {
   } catch (e) { toast(e.message); }
 }
 
-const actionLabels = { list_files: 'Looking through files', read_file: 'Reading a file', write_file: 'Writing a file', update_todo: 'Updating the checklist', run_command: 'Running a command' };
+const actionLabels = { list_files: 'Looking through files', read_file: 'Reading a file', write_file: 'Writing a file', edit_file: 'Editing a file', update_todo: 'Updating the checklist', run_command: 'Running a command' };
 function feedItem(item) {
   const element = node('div', 'feed-item ' + item.kind + (item.kind === 'result' && !item.ok ? ' failed' : ''));
   if (item.kind === 'action' || item.kind === 'result') {

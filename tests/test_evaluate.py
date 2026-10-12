@@ -7,13 +7,60 @@ from unittest.mock import patch
 from pathlib import Path
 
 import evaluate
-from autoproteus.config import DEFAULTS
+from autoproteus.agent import Agent
+from autoproteus.config import DEFAULTS, Settings
+from autoproteus.providers import tool_definitions
 from evaluate import check, harness_changes, harness_files
 
 
+def temporary_directory():
+    root = Path(__file__).resolve().parents[1] / '.data/test-tmp'
+    root.mkdir(parents=True, exist_ok=True)
+    directory = tempfile.TemporaryDirectory(dir=root)
+    if not Path(directory.name).resolve().is_relative_to(root.resolve()):
+        raise RuntimeError('Unexpected temporary directory')
+    return directory
+
+
 class EvaluationTests(unittest.TestCase):
+    def test_self_improvement_disables_commands_without_saving_preference(self):
+        task = (Path(evaluate.__file__).parent / 'evaluations/harness-feature.json').read_bytes()
+        captured = {}
+        class CommandClient:
+            calls = 0
+            def complete(self, messages, cancel):
+                self.calls += 1
+                decision = {'action': {'tool': 'run_command', 'arguments': {'command': 'echo should-not-run'}}} if self.calls == 1 else {'status': 'completed'}
+                return {'content': json.dumps(decision)}
+        class EvaluationAgent(Agent):
+            def __init__(self, root, store, settings):
+                captured['tools'] = [tool['function']['name'] for tool in tool_definitions(settings.values['terminal'])]
+                captured['store'] = store
+                super().__init__(root, store, settings, lambda _: CommandClient())
+        with temporary_directory() as directory:
+            root = Path(directory)
+            (root / 'evaluations').mkdir()
+            (root / 'evaluations/tasks.json').write_text('[]', encoding='utf-8')
+            (root / 'evaluations/harness-feature.json').write_bytes(task)
+            settings = Settings(root / '.data')
+            settings.update({'provider': 'ollama', 'model': 'offline-test', 'configured': True, 'terminal': True})
+            saved = settings.path.read_bytes()
+            with patch.object(evaluate, '__file__', str(root / 'evaluate.py')), patch.object(evaluate, 'Agent', EvaluationAgent), \
+                 patch('sys.argv', ['evaluate.py', '--live', '--self-improve']), patch('sys.stdout', new_callable=io.StringIO), \
+                 patch('autoproteus.tools.subprocess.Popen') as process:
+                self.assertEqual(evaluate.main(), 1)
+                process.assert_not_called()
+            self.assertNotIn('run_command', captured['tools'])
+            self.assertEqual(settings.path.read_bytes(), saved)
+            self.assertTrue(Settings(root / '.data').values['terminal'])
+            session = next(iter(captured['store'].sessions.values()))
+            journal = [json.loads(line) for line in (captured['store'].directory(session['id']) / 'events.jsonl').read_text().splitlines()]
+            result = next(event['data'] for event in journal if event['type'] == 'action_result')
+            self.assertFalse(result['ok'])
+            self.assertIn('Terminal access is disabled', result['result']['error'])
+
     def test_harness_changes_include_entry_point_and_web_features(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with temporary_directory() as directory:
             workspace = Path(directory)
             harness = workspace / 'harness'
             (harness / 'web').mkdir(parents=True)
@@ -37,7 +84,7 @@ class EvaluationTests(unittest.TestCase):
                     path.write_text(content, encoding='utf-8')
                 session.update(status='completed', steps=1)
             def close(self): pass
-        with tempfile.TemporaryDirectory() as directory:
+        with temporary_directory() as directory:
             root = Path(directory)
             (root / 'evaluations').mkdir()
             (root / 'evaluations/tasks.json').write_text('[]', encoding='utf-8')
@@ -54,7 +101,7 @@ class EvaluationTests(unittest.TestCase):
             self.assertIsNone(result['passed'])
 
     def test_harness_changes_use_content_and_include_added_and_deleted_source(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with temporary_directory() as directory:
             workspace = Path(directory)
             harness = workspace / 'harness'
             (harness / 'autoproteus').mkdir(parents=True)
@@ -72,7 +119,7 @@ class EvaluationTests(unittest.TestCase):
                              ['autoproteus/feature.py', 'tests/test_feature.py'])
 
     def test_independent_checks_and_fingerprints_reject_paths_outside_workspace(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with temporary_directory() as directory:
             root = Path(directory)
             workspace = root / 'workspace'
             (workspace / 'autoproteus').mkdir(parents=True)

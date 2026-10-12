@@ -8,6 +8,8 @@ import time
 from pathlib import Path
 
 LIMIT = 12000
+READ_DEFAULT = 1000
+WRITE_LIMIT = 100000
 
 
 class Cancelled(Exception):
@@ -45,21 +47,58 @@ class Workspace:
                               for p in entries[:200]], "truncated": len(entries) > 200}
         if tool == "read_file":
             path = self.path(args["path"])
-            offset = max(0, int(args.get("offset", 0)))
-            with path.open("r", encoding="utf-8", errors="replace") as stream:
-                # Bound reads even for unexpectedly large files.
-                stream.seek(min(offset, 10000000))
-                content = stream.read(LIMIT + 1)
-            return {"path": args["path"], "content": clipped(content), "offset": offset}
+            offset, length = args.get("offset", 0), args.get("length", READ_DEFAULT)
+            if type(offset) is not int or offset < 0:
+                raise ValueError("offset must be a nonnegative UTF-8 byte position; use next_offset to continue")
+            if type(length) is not int or not 1 <= length <= LIMIT:
+                raise ValueError(f"length must be between 1 and {LIMIT} characters")
+            try:
+                # No newline translation: byte positions match the returned text.
+                with path.open("r", encoding="utf-8", newline="") as stream:
+                    stream.seek(offset)
+                    content = stream.read(length)
+                    eof = not stream.read(1)
+            except UnicodeDecodeError:
+                raise ValueError("Read a valid UTF-8 file at a character boundary; use next_offset to continue") from None
+            return {"path": args["path"], "content": content, "offset": offset,
+                    "next_offset": offset + len(content.encode("utf-8")), "eof": eof}
         if tool == "write_file":
             target = args["path"]
             path = self.path(target)
             content = args["content"]
-            if not isinstance(content, str) or len(content) > 100000:
+            if not isinstance(content, str) or len(content) > WRITE_LIMIT:
                 raise ValueError("Write a text string of at most 100,000 characters")
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(content, encoding="utf-8")
+            if self.cancel.is_set():
+                raise Cancelled()
+            path.write_bytes(content.encode("utf-8"))
             return {"path": str(path.relative_to(self.root)), "bytes": len(content.encode("utf-8")), "written": True}
+        if tool == "edit_file":
+            path = self.path(args["path"])
+            old, new = args["old_text"], args["new_text"]
+            if not isinstance(old, str) or not old or not isinstance(new, str):
+                raise ValueError("Supply a nonempty old_text and a text new_text")
+            if max(len(old), len(new)) > WRITE_LIMIT:
+                raise ValueError("Edit text must be at most 100,000 characters")
+            with path.open("rb") as stream:
+                raw = stream.read(WRITE_LIMIT * 4 + 1)
+            if len(raw) > WRITE_LIMIT * 4:
+                raise ValueError("Edit files of at most 100,000 UTF-8 characters")
+            content = raw.decode("utf-8")
+            if len(content) > WRITE_LIMIT:
+                raise ValueError("Edit files of at most 100,000 UTF-8 characters")
+            start = content.find(old)
+            if start < 0:
+                raise ValueError("old_text was not found; read the current file before editing")
+            if content.find(old, start + 1) >= 0:
+                raise ValueError("old_text is ambiguous; include more surrounding text to match exactly once")
+            updated = content[:start] + new + content[start + len(old):]
+            if len(updated) > WRITE_LIMIT:
+                raise ValueError("The edited file would exceed 100,000 characters")
+            if self.cancel.is_set():
+                raise Cancelled()
+            path.write_bytes(updated.encode("utf-8"))
+            return {"path": str(path.relative_to(self.root)), "bytes": len(updated.encode("utf-8")), "replacements": 1}
         if tool == "run_command":
             if not self.terminal:
                 raise ValueError("Terminal access is disabled. Use file tools or ask the user to enable it in Settings.")

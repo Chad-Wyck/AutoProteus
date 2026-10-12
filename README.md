@@ -24,6 +24,10 @@ Adapters normalize native tool calls into the same small internal action protoco
 
 Native replies must use `finish` to report completion or request input. Prose-only replies enter the bounded format repair loop. Checklists are optional: the model writes `todo.txt` using `write_file` when requested or helpful, and the UI displays it.
 
+`read_file` returns bounded UTF-8 text with `next_offset` and `eof`. Offsets are **byte positions**; the optional `length` is **characters** (default 1,000, maximum 12,000). Continue using `next_offset`, rather than calculating line numbers or guessing positions. If a read is shortened to fit model context, its continuation position still matches the visible content. Full results stay in the journal.
+
+For small changes, `edit_file` replaces one exact `old_text` with `new_text`. Missing, empty, or ambiguous matches are rejected without changing the file; include surrounding text to select one occurrence. Surrounding bytes and line endings are preserved. `write_file` writes the supplied content as UTF-8 without changing line endings. Writes and edits are limited to 100,000 characters and use the same workspace checks.
+
 The starter is [Qwen3 4B Instruct](https://ollama.com/library/qwen3:4b-instruct). The lighter 1.7B option uses less memory but can be less reliable. Tool batches run in order; after a failed action, remaining dependent calls are skipped so the model can replan. Completion requested alongside tools is deferred until the model receives their results.
 
 File tools are constrained to the session workspace. **Terminal access is off initially.** Enable it in Settings when a task needs commands. Commands run as your account using PowerShell on Windows or `sh` elsewhere. This is **not an OS sandbox**; shell commands can access paths and resources beyond the workspace. Docker is not required.
@@ -63,6 +67,8 @@ The current seed has no claim of improved model performance. Compare models and 
 Use `python evaluate.py --live --model MODEL_NAME` to compare another installed model on the same service without changing your saved connection. `--task exact-file` selects a single evaluation.
 
 Use `python evaluate.py --live --self-improve --timeout 3600` for the separate harness feature task. The model chooses and implements a small feature in its source copy, adds a test, and explains its use. The criteria in `evaluations/harness-feature.json` require independent functional checks and the trusted seed regression suite against the copy. The evaluator checks artifacts and changed runtime/test files without executing model-authored code. A ready submission reports `REVIEW`, `passed: null`, and exit code 2 until those independent checks are recorded; unsuccessful submissions exit 1. No changes activate automatically.
+
+The self-improvement evaluation always disables terminal access for that run, even if it is enabled in Settings. Your saved preference stays unchanged. This evaluation restriction does not provide an OS sandbox for other runs or for separately launched modified code.
 
 ## Runtime references
 

@@ -73,6 +73,8 @@ def main():
         tasks = json.loads((root / 'evaluations' / 'tasks.json').read_text(encoding='utf-8'))
         if args.self_improve:
             tasks = [json.loads((root / 'evaluations' / 'harness-feature.json').read_text(encoding='utf-8'))]
+            # An evaluation policy, not a prompt or a saved user preference.
+            settings.values = {**settings.values, 'terminal': False}
         if args.task:
             tasks = [task for task in tasks if task['name'] == args.task]
             if not tasks:

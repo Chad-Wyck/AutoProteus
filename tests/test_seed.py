@@ -10,6 +10,7 @@ import urllib.request
 import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from unittest.mock import patch
 
 from autoproteus.agent import Agent, parse_action
 from autoproteus.config import Settings, protect
@@ -43,8 +44,10 @@ class WorkspaceTests(unittest.TestCase):
         with temporary_directory() as directory:
             workspace = Workspace(Path(directory))
             for path in ('../outside.txt', str(Path(directory).parent / 'outside.txt')):
-                with self.assertRaises(ValueError):
-                    workspace.execute('write_file', {'path': path, 'content': 'bad'})
+                for tool, arguments in [('write_file', {'content': 'bad'}), ('read_file', {}),
+                                        ('edit_file', {'old_text': 'old', 'new_text': 'new'})]:
+                    with self.subTest(tool=tool, path=path), self.assertRaises(ValueError):
+                        workspace.execute(tool, {'path': path, **arguments})
 
     def test_terminal_requires_explicit_enablement(self):
         with temporary_directory() as directory:
@@ -57,6 +60,67 @@ class WorkspaceTests(unittest.TestCase):
             workspace = Workspace(Path(directory))
             workspace.execute('write_file', {'path': 'todo.txt', 'content': '[x] Verified\n'})
             self.assertEqual(workspace.execute('read_file', {'path': 'todo.txt'})['content'], '[x] Verified\n')
+
+    def test_read_continuation_preserves_unicode_and_line_endings(self):
+        with temporary_directory() as directory:
+            workspace = Workspace(Path(directory))
+            content = '\ufeffHello é🙂\r\n世界\n'
+            workspace.execute('write_file', {'path': 'text.txt', 'content': content})
+            self.assertEqual((Path(directory) / 'text.txt').read_bytes(), content.encode('utf-8'))
+            offset, chunks = 0, []
+            for _ in range(len(content)):
+                result = workspace.execute('read_file', {'path': 'text.txt', 'offset': offset, 'length': 2})
+                self.assertLessEqual(len(result['content']), 2)
+                self.assertEqual(result['next_offset'], offset + len(result['content'].encode('utf-8')))
+                chunks.append(result['content'])
+                offset = result['next_offset']
+                if result['eof']:
+                    break
+            self.assertTrue(result['eof'])
+            self.assertEqual(''.join(chunks), content)
+            self.assertEqual(offset, len(content.encode('utf-8')))
+            self.assertEqual(workspace.execute('read_file', {'path': 'text.txt', 'offset': offset})['content'], '')
+
+    def test_read_rejects_invalid_ranges_and_split_utf8_characters(self):
+        with temporary_directory() as directory:
+            workspace = Workspace(Path(directory))
+            (Path(directory) / 'text.txt').write_bytes('é'.encode('utf-8') + b'x' * 13000)
+            self.assertEqual(len(workspace.execute('read_file', {'path': 'text.txt'})['content']), 1000)
+            for arguments in ({'offset': -1}, {'offset': True}, {'offset': 1}, {'offset': 0.5},
+                              {'length': 0}, {'length': 12001}, {'length': '10'}):
+                with self.subTest(arguments=arguments), self.assertRaises(ValueError):
+                    workspace.execute('read_file', {'path': 'text.txt', **arguments})
+
+    def test_precise_edit_preserves_surrounding_bytes(self):
+        with temporary_directory() as directory:
+            workspace = Workspace(Path(directory))
+            path = Path(directory) / 'source.py'
+            before = '\ufeff# café 🙂\r\nvalue = 1\r\n# end\n'.encode('utf-8')
+            path.write_bytes(before)
+            result = workspace.execute('edit_file', {'path': 'source.py', 'old_text': 'value = 1', 'new_text': 'value = 2'})
+            self.assertEqual(path.read_bytes(), before.replace(b'value = 1', b'value = 2'))
+            self.assertEqual(result['replacements'], 1)
+            self.assertEqual(result['bytes'], len(path.read_bytes()))
+
+    def test_precise_edit_rejects_missing_ambiguous_and_oversized_changes(self):
+        with temporary_directory() as directory:
+            workspace = Workspace(Path(directory))
+            path = Path(directory) / 'text.txt'
+            for content, old, new in [('hello hello', 'hello', 'new'), ('aaa', 'aa', 'new'),
+                                      ('unchanged', 'missing', 'new'), ('unchanged', '', 'new'),
+                                      ('x', 'x', 'y' * 100001), ('target' + 'x' * 99994, 'target', 'longer target')]:
+                before = content.encode('utf-8'); path.write_bytes(before)
+                with self.subTest(old=old[:20]), self.assertRaises(ValueError):
+                    workspace.execute('edit_file', {'path': 'text.txt', 'old_text': old, 'new_text': new})
+                self.assertEqual(path.read_bytes(), before)
+
+    def test_stop_before_edit_write_preserves_original_file(self):
+        with temporary_directory() as directory:
+            workspace = Workspace(Path(directory))
+            path = Path(directory) / 'text.txt'; path.write_bytes(b'original')
+            with patch.object(workspace.cancel, 'is_set', side_effect=[False, True]), self.assertRaises(Cancelled):
+                workspace.execute('edit_file', {'path': 'text.txt', 'old_text': 'original', 'new_text': 'changed'})
+            self.assertEqual(path.read_bytes(), b'original')
 
     def test_cancellation_prevents_file_write(self):
         with temporary_directory() as directory:
@@ -268,6 +332,55 @@ class AgentTests(unittest.TestCase):
         messages = agent.messages(session, config)
         self.assertEqual(wire_messages(messages, False)[-1]['role'], 'user')
         self.assertTrue(json.loads(messages[-1]['content'].split('\n', 1)[1])['result']['context_shortened'])
+        agent.close()
+
+    def test_native_edit_is_verified_and_journaled(self):
+        class EditClient:
+            calls = 0
+            def complete(client, messages, cancel):
+                client.calls += 1
+                if client.calls == 1:
+                    name, arguments = 'edit_file', {'path': 'sample.py', 'old_text': 'value = 1', 'new_text': 'value = 2'}
+                elif client.calls == 2:
+                    name, arguments = 'read_file', {'path': 'sample.py'}
+                else:
+                    result = json.loads(messages[-1]['content'].split('\n', 1)[1])['result']
+                    self.assertEqual(result['content'], 'value = 2\r\n')
+                    self.assertTrue(result['eof'])
+                    name, arguments = 'finish', {'message': 'Verified the edit.', 'status': 'completed'}
+                return model_response('', [{'function': {'name': name, 'arguments': arguments}}], True)
+        client = EditClient()
+        self.settings.update({'provider': 'ollama', 'model': 'offline-test'})
+        agent = Agent(ROOT, self.store, self.settings, lambda _: client)
+        session = self.store.create('Change value to 2 and verify it.', 'ollama', 'offline-test')
+        path = Path(session['workspace']) / 'sample.py'; path.write_bytes(b'value = 1\r\n')
+        agent.start(session)
+        self.assertEqual(wait_session(self.store, session), 'completed')
+        self.assertEqual(path.read_bytes(), b'value = 2\r\n')
+        journal = [json.loads(line) for line in (self.store.directory(session['id']) / 'events.jsonl').read_text().splitlines()]
+        actions = [event['data']['action']['tool'] for event in journal if event['type'] == 'action_result']
+        self.assertEqual(actions, ['edit_file', 'read_file'])
+        agent.close()
+
+    def test_shortened_read_context_preserves_usable_continuation(self):
+        agent = Agent(ROOT, self.store, self.settings)
+        session = self.store.create('Read a large file', 'demo', 'scripted-demo')
+        workspace = Workspace(Path(session['workspace']))
+        text = 'é🙂\r\n' * 3000
+        workspace.execute('write_file', {'path': 'large.txt', 'content': text})
+        result = workspace.execute('read_file', {'path': 'large.txt', 'length': 12000})
+        session['messages'] = [
+            {'role': 'assistant', 'content': json.dumps({'action': {'tool': 'read_file', 'arguments': {'path': 'large.txt'}}})},
+            {'role': 'user', 'content': 'ACTION RESULT\n' + json.dumps({'tool': 'read_file', 'ok': True, 'result': result})}]
+        config = {**self.settings.values, 'provider': 'ollama', 'context_tokens': 2048, 'response_tokens': 512}
+        shortened = json.loads(agent.messages(session, config)[-1]['content'].split('\n', 1)[1])['result']
+        self.assertTrue(shortened['context_shortened'])
+        self.assertFalse(shortened['eof'])
+        self.assertEqual(shortened['next_offset'], len(shortened['content'].encode('utf-8')))
+        following = workspace.execute('read_file', {'path': 'large.txt', 'offset': shortened['next_offset'], 'length': 10})
+        combined = shortened['content'] + following['content']
+        self.assertEqual(combined, text[:len(combined)])
+        self.assertEqual(json.loads(session['messages'][-1]['content'].split('\n', 1)[1])['result'], result)
         agent.close()
 
 
