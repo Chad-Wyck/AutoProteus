@@ -19,7 +19,7 @@ class CPU(ctypes.Structure):
 
 
 class Job:
-    def __init__(self):
+    def __init__(self, vm_limits=True):
         self.dll = ctypes.WinDLL('kernel32', use_last_error=True)
         self.dll.CreateJobObjectW.argtypes = [ctypes.c_void_p, w.LPCWSTR]
         self.dll.CreateJobObjectW.restype = w.HANDLE
@@ -32,12 +32,15 @@ class Job:
         try:
             limit = Extended()
             # Kill on close, no child processes, bounded host commit for guest RAM + overhead.
-            limit.basic.flags = 0x2000 | 0x8 | 0x200
-            limit.basic.processes = 1
-            limit.job_memory = 3 * 1024**3
+            limit.basic.flags = 0x2000
+            if vm_limits:
+                limit.basic.flags |= 0x8 | 0x200
+                limit.basic.processes = 1
+                limit.job_memory = 3 * 1024**3
             self._check(self.dll.SetInformationJobObject(self.handle, 9, ctypes.byref(limit), ctypes.sizeof(limit)))
-            cpu = CPU(1 | 4, 2500)  # hard cap: 25% of host CPU time
-            self._check(self.dll.SetInformationJobObject(self.handle, 15, ctypes.byref(cpu), ctypes.sizeof(cpu)))
+            if vm_limits:
+                cpu = CPU(1 | 4, 2500)  # hard cap: 25% of host CPU time
+                self._check(self.dll.SetInformationJobObject(self.handle, 15, ctypes.byref(cpu), ctypes.sizeof(cpu)))
         except Exception:
             self.close()
             raise

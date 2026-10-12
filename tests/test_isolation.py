@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 from controller.appliance import Appliance
 from controller.config import Settings
 from controller.errors import Cancelled, IsolationError
-from controller.isolation import Artifacts, Broker, IsolatedAgent, relative_name, seed_files, vm_command
+from controller.isolation import Artifacts, Broker, IsolatedAgent, VMLease, relative_name, seed_files, vm_command
 from controller.storage import Store, atomic_json
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -150,6 +150,34 @@ class BoundaryTests(unittest.TestCase):
         atomic_json(self.store.directory(self.session['id']) / 'session.json', value)
         restored = Store(self.store.root).get(self.session['id'])
         self.assertEqual(Path(restored['workspace']), expected)
+
+    @unittest.skipUnless(os.name == 'nt', 'Windows cross-process VM lease')
+    def test_vm_lease_is_exclusive_cancellable_and_released_on_close(self):
+        import time
+        first, second = VMLease(self.root), VMLease(self.root)
+        cancel = threading.Event()
+        first.acquire(cancel, time.monotonic() + 3)
+        acquired = threading.Event()
+        stopped = threading.Event()
+        def wait():
+            try:
+                second.acquire(cancel, time.monotonic() + 3)
+                acquired.set()
+            except Cancelled:
+                stopped.set()
+            finally:
+                second.close()
+        worker = threading.Thread(target=wait)
+        try:
+            worker.start()
+            self.assertFalse(acquired.wait(.2))
+            cancel.set(); worker.join(timeout=2)
+            self.assertTrue(stopped.is_set())
+        finally:
+            first.close(); second.close()
+        fresh = VMLease(self.root)
+        fresh.acquire(threading.Event(), time.monotonic() + 2)
+        fresh.close()
 
 
 if __name__ == '__main__':

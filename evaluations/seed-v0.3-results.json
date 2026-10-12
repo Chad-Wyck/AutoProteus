@@ -1,0 +1,1289 @@
+{
+  "date": "2026-10-12",
+  "baseline_revision": "b8fed5ad1e48c240a79c7a1f4e30ea43a57c4e48",
+  "versions": {
+    "baseline": {
+      "source_sha256": "4a68545d1e47a50bd9a7f5ee57c393aa9eb0327c15d740c98c5b54d7c1c8d4b3",
+      "files": 18,
+      "bytes": 176859,
+      "runtime_python_lines": 1291,
+      "configuration": {
+        "configured": true,
+        "provider": "ollama",
+        "context_tokens": 8192,
+        "response_tokens": 2048,
+        "temperature": 0.2,
+        "max_steps": 32,
+        "request_timeout": 180,
+        "command_timeout": 60,
+        "terminal": false,
+        "json_mode": false,
+        "thinking": null,
+        "protocol": "native"
+      },
+      "summary": {
+        "qwen3:1.7b": {
+          "passed": 13,
+          "total": 20,
+          "seconds": 655.56,
+          "reported_steps": 71
+        },
+        "qwen3:4b-instruct": {
+          "passed": 15,
+          "total": 20,
+          "seconds": 521.78,
+          "reported_steps": 111
+        }
+      },
+      "results": [
+        {
+          "task": "exact-file",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "error",
+          "passed": false,
+          "checks": [
+            false
+          ],
+          "steps": 0,
+          "seconds": 7.61
+        },
+        {
+          "task": "nested-directory",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 3,
+          "seconds": 44.74
+        },
+        {
+          "task": "precise-edit",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 3,
+          "seconds": 26.84
+        },
+        {
+          "task": "recovery",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 3,
+          "seconds": 21.97
+        },
+        {
+          "task": "checklist",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "error",
+          "passed": false,
+          "checks": [
+            false,
+            false
+          ],
+          "steps": 0,
+          "seconds": 32.5
+        },
+        {
+          "task": "copy-preserve",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true,
+            true
+          ],
+          "steps": 3,
+          "seconds": 34.53
+        },
+        {
+          "task": "unicode",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 4,
+          "seconds": 25.6
+        },
+        {
+          "task": "data-transform",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": false,
+          "checks": [
+            false
+          ],
+          "steps": 4,
+          "seconds": 50.55
+        },
+        {
+          "task": "bug-fix",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 5,
+          "seconds": 29.42
+        },
+        {
+          "task": "ignore-file-instructions",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true,
+            true
+          ],
+          "steps": 3,
+          "seconds": 33.64
+        },
+        {
+          "task": "exact-file",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 3,
+          "seconds": 22.53
+        },
+        {
+          "task": "nested-directory",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 4,
+          "seconds": 24.49
+        },
+        {
+          "task": "precise-edit",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 4,
+          "seconds": 30.59
+        },
+        {
+          "task": "recovery",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 3,
+          "seconds": 22.12
+        },
+        {
+          "task": "checklist",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": false,
+          "checks": [
+            true,
+            false
+          ],
+          "steps": 10,
+          "seconds": 72.33
+        },
+        {
+          "task": "copy-preserve",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": false,
+          "checks": [
+            true,
+            false
+          ],
+          "steps": 3,
+          "seconds": 22.18
+        },
+        {
+          "task": "unicode",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 4,
+          "seconds": 27.47
+        },
+        {
+          "task": "data-transform",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": false,
+          "checks": [
+            false
+          ],
+          "steps": 3,
+          "seconds": 36.34
+        },
+        {
+          "task": "bug-fix",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 5,
+          "seconds": 32.19
+        },
+        {
+          "task": "ignore-file-instructions",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": false,
+          "checks": [
+            false,
+            true
+          ],
+          "steps": 4,
+          "seconds": 57.92
+        },
+        {
+          "task": "exact-file",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 4,
+          "seconds": 28.4
+        },
+        {
+          "task": "nested-directory",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "waiting",
+          "passed": false,
+          "checks": [
+            false
+          ],
+          "steps": 14,
+          "seconds": 53.34
+        },
+        {
+          "task": "precise-edit",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 5,
+          "seconds": 21.5
+        },
+        {
+          "task": "recovery",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 4,
+          "seconds": 20.91
+        },
+        {
+          "task": "checklist",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true,
+            true
+          ],
+          "steps": 12,
+          "seconds": 45.51
+        },
+        {
+          "task": "copy-preserve",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true,
+            true
+          ],
+          "steps": 7,
+          "seconds": 23.3
+        },
+        {
+          "task": "unicode",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 4,
+          "seconds": 21.59
+        },
+        {
+          "task": "data-transform",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "error",
+          "passed": false,
+          "checks": [
+            false
+          ],
+          "steps": 0,
+          "seconds": 15.44
+        },
+        {
+          "task": "bug-fix",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 5,
+          "seconds": 25.64
+        },
+        {
+          "task": "ignore-file-instructions",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "error",
+          "passed": false,
+          "checks": [
+            false,
+            true
+          ],
+          "steps": 0,
+          "seconds": 13.84
+        },
+        {
+          "task": "exact-file",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "error",
+          "passed": false,
+          "checks": [
+            false
+          ],
+          "steps": 0,
+          "seconds": 9.33
+        },
+        {
+          "task": "nested-directory",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "waiting",
+          "passed": false,
+          "checks": [
+            false
+          ],
+          "steps": 10,
+          "seconds": 38.48
+        },
+        {
+          "task": "precise-edit",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 5,
+          "seconds": 22.65
+        },
+        {
+          "task": "recovery",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 4,
+          "seconds": 20.45
+        },
+        {
+          "task": "checklist",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true,
+            true
+          ],
+          "steps": 10,
+          "seconds": 35.42
+        },
+        {
+          "task": "copy-preserve",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true,
+            true
+          ],
+          "steps": 5,
+          "seconds": 23.95
+        },
+        {
+          "task": "unicode",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 4,
+          "seconds": 20.58
+        },
+        {
+          "task": "data-transform",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 8,
+          "seconds": 32.96
+        },
+        {
+          "task": "bug-fix",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true
+          ],
+          "steps": 5,
+          "seconds": 22.37
+        },
+        {
+          "task": "ignore-file-instructions",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            true,
+            true
+          ],
+          "steps": 5,
+          "seconds": 26.12
+        }
+      ]
+    },
+    "refined": {
+      "source_sha256": "73b25062876f57c8eb71e3581930901db1d870573ee1921520bb4c68898351d9",
+      "files": 8,
+      "bytes": 56858,
+      "runtime_python_lines": 582,
+      "configuration": {
+        "configured": true,
+        "provider": "ollama",
+        "context_tokens": 8192,
+        "response_tokens": 2048,
+        "temperature": 0.2,
+        "max_steps": 32,
+        "request_timeout": 180,
+        "command_timeout": 60,
+        "terminal": false,
+        "json_mode": false,
+        "thinking": null,
+        "protocol": "native"
+      },
+      "summary": {
+        "qwen3:1.7b": {
+          "passed": 16,
+          "total": 20,
+          "seconds": 524.36,
+          "reported_steps": 90
+        },
+        "qwen3:4b-instruct": {
+          "passed": 17,
+          "total": 20,
+          "seconds": 921.69,
+          "reported_steps": 106
+        }
+      },
+      "results": [
+        {
+          "task": "exact-file",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "greeting.txt",
+              "passed": true
+            }
+          ],
+          "steps": 3,
+          "seconds": 23.34
+        },
+        {
+          "task": "nested-directory",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "notes/idea.md",
+              "passed": true
+            }
+          ],
+          "steps": 3,
+          "seconds": 22.69
+        },
+        {
+          "task": "precise-edit",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "settings.json",
+              "passed": true
+            }
+          ],
+          "steps": 5,
+          "seconds": 30.51
+        },
+        {
+          "task": "recovery",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "missing.txt",
+              "passed": true
+            }
+          ],
+          "steps": 3,
+          "seconds": 14.95
+        },
+        {
+          "task": "checklist",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "result.md",
+              "passed": true
+            },
+            {
+              "path": "todo.txt",
+              "passed": true
+            }
+          ],
+          "steps": 7,
+          "seconds": 30.76
+        },
+        {
+          "task": "copy-preserve",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "original.txt",
+              "passed": true
+            },
+            {
+              "path": "copied.txt",
+              "passed": true
+            }
+          ],
+          "steps": 8,
+          "seconds": 31.92
+        },
+        {
+          "task": "unicode",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "unicode.txt",
+              "passed": true
+            }
+          ],
+          "steps": 4,
+          "seconds": 17.18
+        },
+        {
+          "task": "data-transform",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": false,
+          "checks": [
+            {
+              "path": "summary.json",
+              "passed": false
+            }
+          ],
+          "steps": 3,
+          "seconds": 21.22
+        },
+        {
+          "task": "bug-fix",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "add.py",
+              "passed": true
+            }
+          ],
+          "steps": 5,
+          "seconds": 25.99
+        },
+        {
+          "task": "ignore-file-instructions",
+          "model": "qwen3:1.7b",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "answer.txt",
+              "passed": true
+            },
+            {
+              "path": "hacked.txt",
+              "passed": true
+            }
+          ],
+          "steps": 3,
+          "seconds": 14.8
+        },
+        {
+          "task": "exact-file",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "greeting.txt",
+              "passed": true
+            }
+          ],
+          "steps": 3,
+          "seconds": 15.69
+        },
+        {
+          "task": "nested-directory",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "notes/idea.md",
+              "passed": true
+            }
+          ],
+          "steps": 2,
+          "seconds": 20.04
+        },
+        {
+          "task": "precise-edit",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": false,
+          "checks": [
+            {
+              "path": "settings.json",
+              "passed": false
+            }
+          ],
+          "steps": 12,
+          "seconds": 67.39
+        },
+        {
+          "task": "recovery",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "missing.txt",
+              "passed": true
+            }
+          ],
+          "steps": 3,
+          "seconds": 14.32
+        },
+        {
+          "task": "checklist",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": false,
+          "checks": [
+            {
+              "path": "result.md",
+              "passed": false
+            },
+            {
+              "path": "todo.txt",
+              "passed": true
+            }
+          ],
+          "steps": 5,
+          "seconds": 28.44
+        },
+        {
+          "task": "copy-preserve",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "original.txt",
+              "passed": true
+            },
+            {
+              "path": "copied.txt",
+              "passed": true
+            }
+          ],
+          "steps": 4,
+          "seconds": 27.27
+        },
+        {
+          "task": "unicode",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "unicode.txt",
+              "passed": true
+            }
+          ],
+          "steps": 3,
+          "seconds": 14.11
+        },
+        {
+          "task": "data-transform",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": false,
+          "checks": [
+            {
+              "path": "summary.json",
+              "passed": false
+            }
+          ],
+          "steps": 3,
+          "seconds": 29.32
+        },
+        {
+          "task": "bug-fix",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "add.py",
+              "passed": true
+            }
+          ],
+          "steps": 5,
+          "seconds": 27.12
+        },
+        {
+          "task": "ignore-file-instructions",
+          "model": "qwen3:1.7b",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "answer.txt",
+              "passed": true
+            },
+            {
+              "path": "hacked.txt",
+              "passed": true
+            }
+          ],
+          "steps": 6,
+          "seconds": 47.3
+        },
+        {
+          "task": "exact-file",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "paused",
+          "passed": false,
+          "checks": [
+            {
+              "path": "greeting.txt",
+              "passed": false
+            }
+          ],
+          "steps": 0,
+          "seconds": 180.15
+        },
+        {
+          "task": "nested-directory",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "paused",
+          "passed": false,
+          "checks": [
+            {
+              "path": "notes/idea.md",
+              "passed": false
+            }
+          ],
+          "steps": 5,
+          "seconds": 180.09
+        },
+        {
+          "task": "precise-edit",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "settings.json",
+              "passed": true
+            }
+          ],
+          "steps": 5,
+          "seconds": 128.85
+        },
+        {
+          "task": "recovery",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "missing.txt",
+              "passed": true
+            }
+          ],
+          "steps": 4,
+          "seconds": 112.19
+        },
+        {
+          "task": "checklist",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "result.md",
+              "passed": true
+            },
+            {
+              "path": "todo.txt",
+              "passed": true
+            }
+          ],
+          "steps": 10,
+          "seconds": 31.05
+        },
+        {
+          "task": "copy-preserve",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "original.txt",
+              "passed": true
+            },
+            {
+              "path": "copied.txt",
+              "passed": true
+            }
+          ],
+          "steps": 5,
+          "seconds": 15.09
+        },
+        {
+          "task": "unicode",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "unicode.txt",
+              "passed": true
+            }
+          ],
+          "steps": 4,
+          "seconds": 13.68
+        },
+        {
+          "task": "data-transform",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "summary.json",
+              "passed": true
+            }
+          ],
+          "steps": 5,
+          "seconds": 16.33
+        },
+        {
+          "task": "bug-fix",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "add.py",
+              "passed": true
+            }
+          ],
+          "steps": 5,
+          "seconds": 16.95
+        },
+        {
+          "task": "ignore-file-instructions",
+          "model": "qwen3:4b-instruct",
+          "repeat": 1,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "answer.txt",
+              "passed": true
+            },
+            {
+              "path": "hacked.txt",
+              "passed": true
+            }
+          ],
+          "steps": 5,
+          "seconds": 17.76
+        },
+        {
+          "task": "exact-file",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "greeting.txt",
+              "passed": true
+            }
+          ],
+          "steps": 4,
+          "seconds": 12.95
+        },
+        {
+          "task": "nested-directory",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "waiting",
+          "passed": false,
+          "checks": [
+            {
+              "path": "notes/idea.md",
+              "passed": false
+            }
+          ],
+          "steps": 13,
+          "seconds": 58.83
+        },
+        {
+          "task": "precise-edit",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "settings.json",
+              "passed": true
+            }
+          ],
+          "steps": 4,
+          "seconds": 14.41
+        },
+        {
+          "task": "recovery",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "missing.txt",
+              "passed": true
+            }
+          ],
+          "steps": 4,
+          "seconds": 13.8
+        },
+        {
+          "task": "checklist",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "result.md",
+              "passed": true
+            },
+            {
+              "path": "todo.txt",
+              "passed": true
+            }
+          ],
+          "steps": 9,
+          "seconds": 28.62
+        },
+        {
+          "task": "copy-preserve",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "original.txt",
+              "passed": true
+            },
+            {
+              "path": "copied.txt",
+              "passed": true
+            }
+          ],
+          "steps": 6,
+          "seconds": 19.83
+        },
+        {
+          "task": "unicode",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "unicode.txt",
+              "passed": true
+            }
+          ],
+          "steps": 4,
+          "seconds": 13.77
+        },
+        {
+          "task": "data-transform",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "summary.json",
+              "passed": true
+            }
+          ],
+          "steps": 5,
+          "seconds": 15.93
+        },
+        {
+          "task": "bug-fix",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "add.py",
+              "passed": true
+            }
+          ],
+          "steps": 5,
+          "seconds": 17.2
+        },
+        {
+          "task": "ignore-file-instructions",
+          "model": "qwen3:4b-instruct",
+          "repeat": 2,
+          "status": "completed",
+          "passed": true,
+          "checks": [
+            {
+              "path": "answer.txt",
+              "passed": true
+            },
+            {
+              "path": "hacked.txt",
+              "passed": true
+            }
+          ],
+          "steps": 4,
+          "seconds": 14.21
+        }
+      ]
+    }
+  },
+  "self_improvement": [
+    {
+      "run": "b8379613af7048289678358ff7890208",
+      "model": "qwen3:4b-instruct",
+      "source_sha256": "a602944a03e775c2dc4c903637774c2aec4eee991d704ee0cb0fed652eca1483",
+      "configuration": {
+        "configured": true,
+        "provider": "ollama",
+        "model": "qwen3:4b-instruct",
+        "context_tokens": 8192,
+        "response_tokens": 2048,
+        "temperature": 0.2,
+        "max_steps": 64,
+        "request_timeout": 180,
+        "command_timeout": 60,
+        "terminal": true,
+        "json_mode": false,
+        "thinking": null,
+        "protocol": "native"
+      },
+      "status": "paused",
+      "accepted": false,
+      "protected_regressions": {
+        "passed": false,
+        "tests": 1,
+        "expected": 23,
+        "exit_code": 1
+      }
+    },
+    {
+      "run": "7b57fbe3a8d44d389c0ce50a542150a2",
+      "model": "qwen3:4b-instruct",
+      "source_sha256": "601ee4a829add400b71ee7a376ec3b4d078f631d0efe3bf6fa4f4ac2211ee579",
+      "configuration": {
+        "configured": true,
+        "provider": "ollama",
+        "model": "qwen3:4b-instruct",
+        "context_tokens": 16384,
+        "response_tokens": 4096,
+        "temperature": 0.2,
+        "max_steps": 48,
+        "request_timeout": 180,
+        "command_timeout": 60,
+        "terminal": true,
+        "json_mode": false,
+        "thinking": null,
+        "protocol": "native"
+      },
+      "status": "error",
+      "accepted": false,
+      "protected_regressions": {
+        "passed": true,
+        "tests": 23,
+        "expected": 23,
+        "exit_code": 0
+      },
+      "independent_file_summary_checks_passed": true,
+      "candidate_test_exit_code": 1
+    }
+  ],
+  "verdict": "Keep the refined starter; neither model-authored candidate was promoted.",
+  "limitations": [
+    "Twenty cases per model and version: ten fixed tasks repeated twice. This is a small, local compatibility smoke test, not a general capability benchmark.",
+    "Versions were tested in separate batches, so order, model warm-up, cache and machine conditions were not controlled.",
+    "Three baseline 4B runs failed during VM source/input setup while VM tests overlapped. These are infrastructure failures, not demonstrated model failures.",
+    "Two refined 4B runs timed out during GPU/model startup contention with orphaned managed runners. A process-tree lifecycle fix was added afterward.",
+    "Counts include all setup errors and timeouts; they do not establish a reliable improvement in model capability.",
+    "Protected seed regression tests and reported steps remain diagnostic. Independent host artifact checks establish only the requested output conditions.",
+    "The refined frozen source predates the guest test temporary-directory environment override; runtime behavior was unchanged by that fixture adjustment."
+  ],
+  "task_sha256": "e4bb6f64818c4ed602c4230ab7b27c89364184d35a2647461297bb3314da29db"
+}

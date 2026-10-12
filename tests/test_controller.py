@@ -15,8 +15,7 @@ from controller.errors import IsolationError
 from controller.isolation import Artifacts
 from controller.server import Application, make_server
 from test_seed import temporary_directory
-import test_seed
-import controller.providers as providers
+from test_providers import FakeModelServer
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -44,17 +43,6 @@ class StartupTests(unittest.TestCase):
             self.assertNotIn(b'fake-key-for-testing', stored)
             self.assertEqual(Settings(Path(directory)).key(), 'fake-key-for-testing')
             self.assertNotIn('fake-key-for-testing', json.dumps(settings.public()))
-
-
-class HostProviderTests(test_seed.ProviderTests):
-    """Replay the wire-format suite against the separately protected adapters."""
-    def setUp(self):
-        self.adapter = patch.multiple(test_seed, ModelClient=providers.ModelClient,
-                                      ProviderError=providers.ProviderError)
-        self.adapter.start()
-
-    def tearDown(self):
-        self.adapter.stop()
 
 
 class HostApiTests(unittest.TestCase):
@@ -97,6 +85,20 @@ class HostApiTests(unittest.TestCase):
             self.assertEqual(self.app.store.public(), [])
             vm.assert_not_called()
 
+    def test_checks_block_task_creation_and_candidate_reset(self):
+        from unittest.mock import Mock
+        self.app.evaluations.thread = Mock()
+        self.app.evaluations.thread.is_alive.return_value = True
+        with self.assertRaises(urllib.error.HTTPError):
+            self.request('/api/start', {'task':'must not create a session'})
+        self.assertEqual(self.app.store.public(), [])
+        session = self.app.store.create('trial', 'demo', 'test')
+        session['candidate_from'] = 'f' * 32
+        with self.assertRaises(urllib.error.HTTPError):
+            self.request('/api/reset', {'id':session['id']})
+        self.assertEqual(session['candidate_from'], 'f' * 32)
+        self.app.evaluations.thread = None
+
     def test_edited_ui_is_previewed_and_downloaded_as_data_only(self):
         session = self.app.store.create('data', 'demo', 'scripted-demo')
         a = Artifacts(self.app.store, session)
@@ -113,6 +115,25 @@ class HostApiTests(unittest.TestCase):
             self.assertEqual(archive.read('harness/web/index.html'), evil)
         with self.request('/') as response:
             self.assertNotIn(evil, response.read())
+
+    def test_failed_connection_keeps_working_settings_and_key(self):
+        self.app.settings.update({'provider':'demo', 'model':'scripted-demo', 'configured':True})
+        previous = self.app.settings.public()
+        with self.assertRaises(urllib.error.HTTPError):
+            self.request('/api/connect', {'provider':'hosted', 'base_url':'https://bad.example', 'model':'', 'api_key':'do-not-save'})
+        self.assertEqual(self.app.settings.public(), previous)
+        self.assertFalse((self.app.data / 'credential.bin').exists())
+    def test_hosted_connection_probes_json_and_keeps_native_preference(self):
+        provider = FakeModelServer(hosted=True)
+        try:
+            with self.request('/api/connect', {'provider': 'hosted', 'base_url': provider.url,
+                                               'model': 'fake-model', 'protocol': 'native', 'json_mode': True}) as response:
+                self.assertTrue(json.load(response)['configured'])
+            self.assertEqual(self.app.settings.values['protocol'], 'native')
+            self.assertNotIn('tools', provider.payloads[0])
+            self.assertNotIn('response_format', provider.payloads[0])
+        finally:
+            provider.close()
 
 
 if __name__ == '__main__':

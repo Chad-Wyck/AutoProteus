@@ -27,6 +27,35 @@ MAX_JOURNAL = 64 * 1024 * 1024
 MAX_SECONDS = 3600
 
 
+class VMLease:
+    """Serialize app, evaluator and test VMs across host processes."""
+    def __init__(self, directory):
+        self.path = safe_path(directory, 'active-vm.lock')
+        self.stream = None
+
+    def acquire(self, cancel, deadline):
+        import msvcrt
+        self.stream = self.path.open('a+b')
+        if not self.path.stat().st_size:
+            self.stream.write(b'0'); self.stream.flush()
+        while True:
+            if cancel.is_set():
+                raise Cancelled()
+            if time.monotonic() > deadline:
+                raise IsolationError('Timed out waiting for the isolated environment')
+            try:
+                self.stream.seek(0)
+                msvcrt.locking(self.stream.fileno(), msvcrt.LK_NBLCK, 1)
+                return
+            except OSError:
+                cancel.wait(.1)
+
+    def close(self):
+        if self.stream:
+            self.stream.close()
+            self.stream = None
+
+
 def relative_name(name):
     if not isinstance(name, str) or not name or len(name) > 400:
         raise IsolationError('Invalid export path')
@@ -79,11 +108,11 @@ def packed_files(root, prefix=''):
 
 def seed_files(root):
     result = []
-    for name in ('autoproteus', 'web', 'evaluations'):
+    for name in ('autoproteus',):
         result.extend(packed_files(Path(root) / name, name + '/'))
-    for name in ('seed.py', 'README.md', 'tests/test_seed.py'):
+    for name in ('seed.py', 'SEED.md', 'tests/test_seed.py'):
         data = (Path(root) / name).read_bytes()
-        result.append({'path': name, 'data': base64.b64encode(data).decode()})
+        result.append({'path': 'README.md' if name == 'SEED.md' else name, 'data': base64.b64encode(data).decode()})
     return result
 
 
@@ -365,7 +394,7 @@ class IsolatedAgent:
         self.workers, self.vms = {}, {}
         self.lock = threading.RLock()
 
-    def start(self, session, message=None, candidate=None):
+    def start(self, session, message=None, candidate=None, verification=False):
         with self.lock:
             if any(thread.is_alive() for _, thread in self.workers.values()):
                 raise IsolationError('Stop the current task before starting another isolated run')
@@ -384,9 +413,14 @@ class IsolatedAgent:
                 atomic_json(self.store.directory(session['id']) / 'candidate.json', source)
             elif session.get('candidate_from'):
                 source = json.loads((self.store.directory(session['id']) / 'candidate.json').read_text(encoding='utf-8'))
+            if verification:
+                source = [item for item in source if not item['path'].startswith('__verify__/')]
+                source.append({'path': '__verify__/test_seed.py', 'data': base64.b64encode(
+                    (self.root / 'tests/test_seed.py').read_bytes()).decode()})
             guest_config = {key: value for key, value in config.items() if key not in ('base_url', 'api_key')}
             boot = {'op': 'boot', 'seed': source, 'files': inputs, 'session': dict(session),
                     'config': guest_config, 'message': message}
+            boot['verification'] = bool(verification)
             # Do not send host directories, credentials, or quarantine metadata.
             boot['session'].pop('artifacts', None)
             boot['session']['workspace'] = '/work/task'
@@ -402,16 +436,19 @@ class IsolatedAgent:
 
     def _run(self, session, boot, client, config, cancel):
         vm, broker = None, Broker(self.store, session, client, config, cancel)
+        lease = None
         # Host deadline covers boot, inference, commands and all guest code.
         deadline = time.monotonic() + MAX_SECONDS
         try:
+            lease = VMLease(self.appliance.directory)
+            lease.acquire(cancel, deadline)
             vm = VM(self.appliance)
             with self.lock:
                 self.vms[session['id']] = vm
                 if cancel.is_set():
                     raise Cancelled()
             ready = vm.next(cancel, min(deadline, time.monotonic() + 90))
-            if ready != {'op': 'ready', 'protocol': 1}:
+            if ready != {'op': 'ready', 'protocol': 2}:
                 raise IsolationError('Guest handshake failed')
             # A blocked guest reader cannot stall the external watchdog or Stop.
             threading.Thread(target=lambda: self._watchdog(vm, cancel, deadline), daemon=True).start()
@@ -420,9 +457,11 @@ class IsolatedAgent:
                 raise IsolationError('Guest did not accept the boot request')
             for area, files in (('seed', boot['seed']), ('workspace', boot['files'])):
                 for item in files:
-                    vm.send({'op': 'input', 'area': area, **item})
-                    if vm.next(cancel, deadline) != {'op': 'input_saved'}:
-                        raise IsolationError('Guest input transfer failed')
+                    checksum = hashlib.sha256(base64.b64decode(item['data'], validate=True)).hexdigest()
+                    vm.send({'op': 'input', 'area': area, **item, 'sha256': checksum})
+                    reply = vm.next(cancel, deadline)
+                    if reply != {'op': 'input_saved'}:
+                        raise IsolationError('Guest input transfer failed: ' + str(reply)[:1500])
             vm.send({'op': 'inputs_done'})
             while not broker.finished:
                 frame = vm.next(cancel, deadline)
@@ -440,12 +479,17 @@ class IsolatedAgent:
                 session.update(status='error', activity='The isolated run stopped')
                 self.store.feed(session, 'notice', str(error)[:3000])
         finally:
-            if vm:
-                vm.close()
+            try:
+                if vm:
+                    vm.close()
+            finally:
+                if lease:
+                    lease.close()
             with self.lock:
                 self.vms.pop(session['id'], None)
             broker.artifacts.pending = {}
             broker.artifacts.cleanup()
+            session['model_requests'] = broker.requests
             self.store.save(session)
 
     def _watchdog(self, vm, cancel, deadline):

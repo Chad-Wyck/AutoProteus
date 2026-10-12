@@ -8,6 +8,7 @@ import time
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import unittest
+from unittest.mock import patch
 
 from controller.config import Settings
 from controller.isolation import Artifacts, IsolatedAgent, seed_files
@@ -192,6 +193,67 @@ pathlib.Path('boundary.json').write_text(json.dumps(report))
         self.assertIsNotNone(process.poll())
         agent.start(session)
         self.assertEqual(self.wait(agent, session), 'completed', session['feed'])
+
+    def test_comparison_checks_actual_files_from_a_frozen_candidate(self):
+        from controller.evaluation import EvaluationService, source_identity, candidate_source
+        candidate = self.candidate('''from autoproteus.agent import Agent
+def run(root, store, settings, client_factory, session, message=None):
+ import json
+ class Client:
+  calls=0
+  def complete(self, messages, cancel):
+   self.calls+=1
+   return {'content':json.dumps({'action':{'tool':'write_file','arguments':{'path':'greeting.txt','content':'Wrong\\n'}}} if self.calls==1 else {'message':'All tests passed','status':'completed'})}
+ agent=Agent(root,store,settings,lambda _:Client())
+ agent.start(session,message)
+ return agent
+''')
+        task_agent = self.agent([])
+        service = EvaluationService(ROOT, self.data / 'evaluations', self.settings, task_agent)
+        task = {'name':'exact-file', 'task':'Create greeting.txt', 'checks':[{'path':'greeting.txt','equals':'Hello, AutoProteus!\n'}]}
+        original = Path.read_text
+        def read_text(path, *args, **kwargs):
+            return json.dumps([task]) if path == ROOT / 'evaluations/tasks.json' else original(path, *args, **kwargs)
+        def make_agent(root, store, settings):
+            return IsolatedAgent(root, store, settings, lambda _: ScriptedClient([
+                {'action':{'tool':'write_file','arguments':{'path':'greeting.txt','content':'Hello, AutoProteus!\n'}}},
+                {'status':'completed'}]))
+        try:
+            with patch.object(Path, 'read_text', read_text), patch('controller.evaluation.IsolatedAgent', side_effect=make_agent):
+                initial = service.start(candidate, repeats=1)
+            expected = initial['edited_sha256']
+            # Later workspace edits must not change the frozen version under test.
+            a = Artifacts(self.store, candidate)
+            a.put('harness/seed.py', base64.b64encode(b'raise RuntimeError("later edit")').decode())
+            a.checkpoint(list(candidate['artifacts']))
+            service.thread.join(timeout=80)
+            self.assertFalse(service.busy)
+            report = service.public()
+            self.assertEqual(report['status'], 'completed', report)
+            self.assertEqual(report['edited_sha256'], expected)
+            self.assertNotEqual(source_identity(candidate_source(self.store, candidate)), expected)
+            self.assertEqual(report['summary']['starter']['passed'], 1)
+            self.assertEqual(report['summary']['edited']['passed'], 0)
+            self.assertEqual(report['results'][1]['status'], 'completed')
+            self.assertTrue(report['regressions']['starter']['passed'], report['regressions']['starter'])
+        finally:
+            service.close()
+
+    def test_damaged_input_is_rejected_before_seed_execution(self):
+        from controller.isolation import VM
+        agent = self.agent([{'status':'completed'}])
+        session = self.store.create('damaged input', 'hosted', 'offline-test')
+        send = VM.send
+        def tamper(vm, value):
+            if value.get('op') == 'input' and value.get('area') == 'seed' and value.get('path') == 'seed.py':
+                value = {**value, 'data':base64.b64encode(b'raise RuntimeError("must not execute")').decode()}
+            return send(vm, value)
+        with patch.object(VM, 'send', tamper):
+            agent.start(session)
+            self.assertEqual(self.wait(agent, session), 'error')
+        self.assertIn('Input integrity check failed', session['feed'][-1]['text'])
+        self.assertEqual(session['model_requests'], 0)
+        self.assertEqual(session.get('artifacts', {}), {})
 
 
 if __name__ == '__main__':

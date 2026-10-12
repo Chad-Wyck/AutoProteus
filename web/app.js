@@ -38,6 +38,10 @@ function renderApp() {
   text('composer-model', config.configured ? (current.provider === 'demo' ? 'Demo · scripted tour' : current.model + (current.provider === 'ollama' ? ' · local' : ' · hosted')) : 'Choose a model to begin');
   renderSetupProgress(app.setup);
   renderIsolation(app.isolation);
+  if (app.evaluation?.id && state.checkSession === app.evaluation.session &&
+      (app.evaluation.busy || state.checkReport?.id === app.evaluation.id)) renderEvaluation(app.evaluation);
+  visible('evaluation-status', !!app.evaluation?.id);
+  if (app.evaluation?.id) text('evaluation-status', app.evaluation.busy ? `Checking seed · ${app.evaluation.results.length}/${app.evaluation.total}` : 'Seed check results');
 }
 
 function home() {
@@ -183,6 +187,81 @@ $('prepare-isolation').onclick = async () => {
   try { renderIsolation(await api('/api/isolation/setup', {})); }
   catch (e) { error('isolation-error', e.message); }
 };
+
+function renderEvaluation(report) {
+  state.checkReport = report;
+  text('check-message', report?.message || 'Compare this source copy with the starter using the connected model.');
+  visible('stop-checks', report?.status === 'running');
+  $('run-checks').disabled = report?.status === 'running' || state.app.evaluation?.busy || busy();
+  $('check-repeats').disabled = report?.status === 'running';
+  const summary = $('check-summary'); summary.replaceChildren();
+  for (const version of ['starter', 'edited']) {
+    const result = report?.summary?.[version];
+    const regression = report?.regressions?.[version];
+    if (!result && !regression) continue;
+    const card = node('div', 'check-score');
+    card.append(node('strong', '', version === 'starter' ? 'Starter seed' : 'Edited seed'),
+      node('span', '', result ? `${result.passed}/${result.total} verified tasks` : 'Task comparison not run'));
+    if (result) card.append(node('small', '', `${result.seconds}s · ${result.steps} reported steps · ${result.format_repairs} format repairs`));
+    if (regression) {
+      card.append(node('small', regression.passed ? 'check-pass' : 'check-fail', `Guest regressions: ${regression.passed ? 'passed' : 'failed'} · ${regression.tests} test${regression.tests === 1 ? '' : 's'}`));
+      const details = node('details'); details.append(node('summary', '', 'Guest test output'), node('pre', '', regression.output || ''));
+      card.append(details);
+    }
+    summary.append(card);
+  }
+  text('check-model', report ? `${report.model} · ${report.results.length}/${report.total} runs` : 'Uses your connected model.');
+  const body = $('check-rows'); body.replaceChildren();
+  const rows = new Map();
+  for (const result of report?.results || []) {
+    const key = result.repeat + '/' + result.task;
+    if (!rows.has(key)) rows.set(key, {task:result.task, repeat:result.repeat});
+    rows.get(key)[result.version] = result;
+  }
+  for (const row of rows.values()) {
+    const element = node('tr');
+    element.append(node('th', '', row.task + ' · ' + row.repeat));
+    for (const version of ['starter', 'edited']) {
+      const result = row[version], cell = node('td');
+      cell.textContent = !result ? 'Pending' : result.passed ? 'Passed' : 'Failed';
+      if (result) {
+        cell.className = result.passed ? 'check-pass' : 'check-fail';
+        cell.title = `${result.seconds}s · ${result.steps} reported steps\n` + (result.detail || result.checks.filter(c => !c.passed).map(c => 'Failed: ' + c.path).join('\n'));
+        if (!result.passed) cell.append(node('small', 'check-detail', result.detail || result.checks.filter(c => !c.passed).map(c => 'Missing or incorrect: ' + c.path).join(', ')));
+      }
+      element.append(cell);
+    }
+    body.append(element);
+  }
+  const changes = $('check-changes'); changes.replaceChildren();
+  if (report && !report.changes.length) changes.append(node('p', 'muted', 'This source copy matches the starter.'));
+  for (const change of report?.changes || []) {
+    const details = node('details');
+    details.append(node('summary', '', `${change.kind}: ${change.path}`),
+      node('pre', '', change.diff || `${change.before_bytes} → ${change.after_bytes} bytes`));
+    changes.append(details);
+  }
+}
+async function openChecks() {
+  state.checkSession = state.id;
+  error('check-error', '');
+  let report = state.app.evaluation?.session === state.id ? state.app.evaluation : null;
+  if (!report && state.session?.evaluation_check) {
+    try { report = await api('/api/seed-check?id=' + encodeURIComponent(state.session.evaluation_check)); }
+    catch (e) { error('check-error', e.message); }
+  }
+  $('check-repeats').value = String(report?.repeats || 2);
+  renderEvaluation(report); $('check-dialog').showModal();
+}
+$('check-seed').onclick = openChecks;
+$('evaluation-status').onclick = () => { state.checkSession = state.app.evaluation.session; $('check-repeats').value = String(state.app.evaluation.repeats); renderEvaluation(state.app.evaluation); $('check-dialog').showModal(); };
+$('close-checks').onclick = () => $('check-dialog').close();
+$('run-checks').onclick = async () => {
+  error('check-error', ''); $('run-checks').disabled = true;
+  try { renderEvaluation(await api('/api/seed-check', {id:state.checkSession, repeats:Number($('check-repeats').value)})); }
+  catch (e) { error('check-error', e.message); $('run-checks').disabled = false; }
+};
+$('stop-checks').onclick = async () => { try { await api('/api/seed-check/stop', {}); await poll(); } catch (e) { error('check-error', e.message); } };
 
 function providerTab(provider) {
   state.provider = provider; const local = provider === 'ollama';

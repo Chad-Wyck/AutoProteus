@@ -14,7 +14,7 @@ The guest boots into an in-memory appliance. The seed runs as UID/GID 1000 witho
 
 ## Broker
 
-The transport is bounded, newline-framed JSON, not a network server, host shell, filesystem server, or URL proxy. After the boot/input exchange it accepts only:
+The transport is bounded, newline-framed JSON, not a network server, host shell, filesystem server, or URL proxy. Protocol 2 verifies SHA-256 for every source/input file before writing it in the guest. A host file lease serializes VM runs across app, evaluator and test processes; process exit releases the lease. After the boot/input exchange it accepts only:
 
 - `infer`: bounded history and optional guest tool schemas using the host-selected model/provider/settings. Schemas describe guest tools to the model; they never create host capabilities. Guest URL, headers, credentials, commands and environment overrides are rejected. Provider exceptions become generic guest-facing errors to avoid reflecting secrets.
 - `file` / `checkpoint`: bounded bytes and validated relative names. The host rejects traversal, absolute paths, Windows device names, alternate data streams, control characters and links. Bytes are stored under host-computed SHA-256 blob filenames. Manifests bind files to one session. No guest archive is extracted on the host; uncommitted exports are discarded on termination.
@@ -22,6 +22,10 @@ The transport is bounded, newline-framed JSON, not a network server, host shell,
 - `done` / `failure`: completion signals; the host decides termination and final status.
 
 Unknown operations and extra capability fields end the run. Parser, transport and integrity failures fail closed. Only trusted host assets are served as UI. File previews are text and downloads use attachment headers. The evaluator can materialize exported bytes for content checks but never imports or executes them.
+
+Candidate comparisons freeze both versions, model settings and trusted task definitions before execution. New tasks/recovery cannot overlap an active app comparison. Comparisons run candidate code only through the same VM broker; the host checks quarantined artifact bytes against its own definitions. Reports and source diffs are inert data. Model-authored tests, guest journals and reported step counts are not trusted acceptance criteria. A successful comparison does not auto-promote a candidate or prove a new feature. Self-improvement runs may enable guest commands without changing the host isolation boundary or saved preferences.
+
+Before model tasks, the fixed guest bootstrap runs the host's unchanged seed tests from a root-owned directory against the selected modules. Its unprivileged child has no broker descriptor and cannot open the broker device. The protected parent collects the real process exit status and bounded test output. Candidate tests are excluded from this regression suite. Candidate modules still control their behavior and can manipulate test output, so a pass is diagnostic evidence rather than a security proof. Failure rejects the comparison before inference.
 
 ## Limits and recovery
 

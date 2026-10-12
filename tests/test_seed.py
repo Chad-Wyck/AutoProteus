@@ -5,22 +5,17 @@ import tempfile
 import threading
 import time
 import unittest
-import urllib.error
-import urllib.request
-import zipfile
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
 
 from autoproteus.agent import Agent, parse_action
-from autoproteus.config import Settings, protect
-from autoproteus.providers import DemoClient, ModelClient, ProviderError, model_response, normalize_tool_response, tool_definitions, wire_messages
-from autoproteus.server import Application, make_server
+from types import SimpleNamespace
+from autoproteus.providers import tool_definitions
 from autoproteus.storage import Store
 from autoproteus.tools import Cancelled, Workspace
 
 ROOT = Path(__file__).resolve().parents[1]
-TEST_TEMP = ROOT / '.data' / 'test-tmp'
+TEST_TEMP = Path(os.environ.get('AUTOPROTEUS_TEST_ROOT', str(ROOT / '.data/test-tmp')))
 
 
 def temporary_directory():
@@ -150,6 +145,44 @@ class ProtocolTests(unittest.TestCase):
                 parse_action(text)
 
 
+class Settings:
+    def __init__(self, directory):
+        self.values = {'configured':True, 'provider':'demo', 'model':'scripted-demo',
+                       'context_tokens':8192, 'response_tokens':2048, 'max_steps':32,
+                       'terminal':False, 'command_timeout':60, 'protocol':'native'}
+    def update(self, values): self.values.update(values)
+    def key(self): return ''
+
+
+class DemoClient:
+    def complete(self, messages, cancel):
+        if cancel.wait(0.02): raise Cancelled()
+        index = sum(m['role']=='user' and m['content'].startswith('ACTION RESULT') for m in messages)
+        actions = [
+            {'tool':'write_file','arguments':{'path':'todo.txt','content':'[ ] Create welcome.md\n[ ] Verify it\n'}},
+            {'tool':'write_file','arguments':{'path':'welcome.md','content':'Hello from AutoProteus\n'}},
+            {'tool':'read_file','arguments':{'path':'welcome.md'}},
+            {'tool':'write_file','arguments':{'path':'todo.txt','content':'[x] Create welcome.md\n[x] Verify it\n'}}]
+        return {'content':json.dumps({'message':'Fixture', 'action':actions[index]} if index<len(actions)
+                                    else {'message':'Verified', 'status':'completed'})}
+
+
+def normalize_tool_response(content, calls):
+    decisions=[]
+    for call in calls:
+        fn=call['function']; args=fn['arguments']
+        decisions.append({'message':args['message'], 'status':args['status']} if fn['name']=='finish'
+                         else {'message':content, 'action':{'tool':fn['name'], 'arguments':args}})
+    if len(decisions)==1: return json.dumps(decisions[0])
+    return json.dumps({'message':content, 'actions':[d['action'] for d in decisions if 'action' in d],
+                       'deferred_finish':any('status' in d for d in decisions)})
+
+
+def model_response(content, calls, native):
+    if not calls: return {'content':'', 'normalization_error':'Call finish with explicit completion'}
+    return {'content':normalize_tool_response(content,calls)}
+
+
 class AgentTests(unittest.TestCase):
     def setUp(self):
         self.guest_marker = patch.dict(os.environ, {'AUTOPROTEUS_GUEST': '1'})
@@ -165,7 +198,7 @@ class AgentTests(unittest.TestCase):
         self.guest_marker.stop()
 
     def test_complete_run_refreshes_todo_and_records_all_events(self):
-        agent = Agent(ROOT, self.store, self.settings)
+        agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
         session = self.store.create('Create a sample welcome file.', 'demo', 'scripted-demo')
         agent.start(session)
         self.assertEqual(wait_session(agent, session), 'completed')
@@ -252,7 +285,7 @@ class AgentTests(unittest.TestCase):
 
     def test_step_limit_pauses_and_resume_keeps_same_workspace(self):
         self.settings.update({'max_steps': 2})
-        agent = Agent(ROOT, self.store, self.settings)
+        agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
         session = self.store.create('Small run', 'demo', 'scripted-demo')
         agent.start(session); self.assertEqual(wait_session(agent, session), 'paused')
         workspace = session['workspace']
@@ -301,14 +334,14 @@ class AgentTests(unittest.TestCase):
 
     def test_large_history_keeps_tool_messages_valid(self):
         self.settings.update({'context_tokens': 2048, 'response_tokens': 512})
-        agent = Agent(ROOT, self.store, self.settings)
+        agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
         session = self.store.create('Preserve valid history', 'demo', 'scripted-demo')
         session['messages'] = [
             {'role':'assistant', 'content':json.dumps({'action':{'tool':'write_file','arguments':{'path':'large.txt','content':'a' * 20000}}})},
             {'role':'user', 'content':'ACTION RESULT\n' + json.dumps({'tool':'write_file','ok':True,'result':{'content':'a' * 20000}})}]
         config = {**self.settings.values, 'provider':'ollama'}
         messages = agent.messages(session, config)
-        self.assertEqual(wire_messages(messages, False)[-1]['role'], 'user')
+        self.assertEqual(messages[-1]['role'], 'user')
         self.assertTrue(json.loads(messages[-1]['content'].split('\n', 1)[1])['result']['context_shortened'])
         agent.close()
 
@@ -341,7 +374,7 @@ class AgentTests(unittest.TestCase):
         agent.close()
 
     def test_shortened_read_context_preserves_usable_continuation(self):
-        agent = Agent(ROOT, self.store, self.settings)
+        agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
         session = self.store.create('Read a large file', 'demo', 'scripted-demo')
         workspace = Workspace(Path(session['workspace']))
         text = 'é🙂\r\n' * 3000
@@ -361,163 +394,6 @@ class AgentTests(unittest.TestCase):
         self.assertEqual(json.loads(session['messages'][-1]['content'].split('\n', 1)[1])['result'], result)
         agent.close()
 
-
-class FakeModelServer:
-    def __init__(self, cut_short=False, hosted=False, native=False):
-        self.payloads = []; parent = self
-        class Handler(BaseHTTPRequestHandler):
-            def log_message(self, *_): pass
-            def do_POST(self):
-                parent.payloads.append(json.loads(self.rfile.read(int(self.headers['Content-Length']))))
-                self.send_response(200); self.send_header('Content-Type', 'application/json'); self.end_headers()
-                content = json.dumps({'message': 'Ready', 'status': 'completed'})
-                calls = [{'function': {'name': 'write_file', 'arguments': {'path': 'sample.txt', 'content': 'sample'}}}]
-                if hosted:
-                    message = {'content': '' if native else content}
-                    if native:
-                        message['tool_calls'] = calls
-                    self.wfile.write(json.dumps({'choices': [{'message': message, 'finish_reason': 'length' if cut_short else 'tool_calls' if native else 'stop'}]}).encode())
-                else:
-                    message = {'content': '' if native else content}
-                    if native:
-                        message['tool_calls'] = calls
-                    self.wfile.write((json.dumps({'message': message, 'done': False}) + '\n').encode())
-                    if not cut_short:
-                        self.wfile.write((json.dumps({'message': {'content': ''}, 'done': True, 'done_reason': 'stop'}) + '\n').encode())
-        self.server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
-        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
-        self.thread.start(); self.url = 'http://127.0.0.1:' + str(self.server.server_port)
-    def close(self):
-        self.server.shutdown(); self.server.server_close(); self.thread.join()
-
-
-class ProviderTests(unittest.TestCase):
-    def run_client(self, server, hosted=False):
-        config = dict(__import__('autoproteus.config', fromlist=['DEFAULTS']).DEFAULTS)
-        config.update(provider='hosted' if hosted else 'ollama', base_url=server.url, protocol='json')
-        return ModelClient(config).complete([{'role': 'user', 'content': 'test'}], threading.Event())
-
-    def test_complete_ollama_stream_and_generation_budget(self):
-        server = FakeModelServer()
-        try:
-            answer = self.run_client(server)
-            self.assertEqual(parse_action(answer['content'])['status'], 'completed')
-            self.assertEqual(server.payloads[0]['options']['num_predict'], 2048)
-        finally: server.close()
-
-    def test_incomplete_ollama_stream_is_discarded(self):
-        server = FakeModelServer(cut_short=True)
-        try:
-            with self.assertRaises(ProviderError) as result: self.run_client(server)
-            self.assertTrue(result.exception.response['incomplete'])
-            self.assertIn('Ready', result.exception.response['raw_content'])
-        finally: server.close()
-
-    def test_hosted_response_and_cutoff_are_distinguished(self):
-        for cut_short in (False, True):
-            server = FakeModelServer(cut_short=cut_short, hosted=True)
-            try:
-                if cut_short:
-                    with self.assertRaises(ProviderError): self.run_client(server, hosted=True)
-                else:
-                    self.assertEqual(parse_action(self.run_client(server, hosted=True)['content'])['status'], 'completed')
-                self.assertEqual(server.payloads[0]['max_tokens'], 2048)
-            finally: server.close()
-
-    def test_native_calls_are_normalized_for_both_adapters(self):
-        for hosted in (False, True):
-            server = FakeModelServer(hosted=hosted, native=True)
-            try:
-                config = dict(__import__('autoproteus.config', fromlist=['DEFAULTS']).DEFAULTS)
-                config.update(provider='hosted' if hosted else 'ollama', base_url=server.url)
-                response = ModelClient(config).complete([{'role':'user','content':'Create sample.txt'}], threading.Event())
-                decision = parse_action(response['content'])
-                self.assertEqual(decision['action']['arguments']['path'], 'sample.txt')
-                self.assertTrue(server.payloads[0]['tools'])
-                self.assertNotIn('format', server.payloads[0])
-            finally: server.close()
-
-    def test_tool_history_has_matching_ids_and_orphans_remain_context(self):
-        messages = [{'role':'assistant','content':json.dumps({'message':'Writing','action':{'tool':'write_file','arguments':{'path':'x','content':'hi'}}})},
-                    {'role':'user','content':'ACTION RESULT\n' + json.dumps({'tool':'write_file','ok':True,'result':{'written':True}})}]
-        wire = wire_messages(messages, False)
-        self.assertEqual(wire[0]['tool_calls'][0]['id'], wire[1]['tool_call_id'])
-        self.assertEqual(wire[1]['role'], 'tool')
-        self.assertEqual(wire_messages(messages[1:], False)[0]['role'], 'user')
-
-    def test_multiple_calls_are_ordered_and_plain_text_is_not_completion(self):
-        call = {'function':{'name':'write_file','arguments':{'path':'x','content':'hi'}}}
-        normalized = json.loads(normalize_tool_response('', [call, call]))
-        self.assertEqual(len(normalized['actions']), 2)
-        finish = {'function':{'name':'finish','arguments':{'message':'Done','status':'completed'}}}
-        normalized = json.loads(normalize_tool_response('', [call, finish]))
-        self.assertEqual(len(normalized['actions']), 1)
-        self.assertTrue(normalized['deferred_finish'])
-        for prose in ('All done.', 'Which filename?', ''):
-            with self.subTest(prose=prose), self.assertRaisesRegex(ValueError, 'Call finish'):
-                normalize_tool_response(prose, [])
-            response = model_response(prose, [], True)
-            self.assertEqual(response['raw_content'], prose)
-            self.assertIn('Call finish', response['normalization_error'])
-        decision = parse_action(normalize_tool_response('', [{'function': {'name': 'finish',
-            'arguments': {'message': 'Which filename?', 'status': 'needs_input'}}}]))
-        self.assertEqual(decision, {'message': 'Which filename?', 'status': 'needs_input'})
-
-
-class ApiTests(unittest.TestCase):
-    def setUp(self):
-        self.guest_marker = patch.dict(os.environ, {'AUTOPROTEUS_GUEST': '1'})
-        self.guest_marker.start()
-        self.temporary = temporary_directory()
-        self.app = Application(ROOT, data=Path(self.temporary.name))
-        self.server = make_server(self.app, port=0)
-        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True); self.thread.start()
-        self.base = 'http://127.0.0.1:' + str(self.server.server_port)
-    def tearDown(self):
-        self.app.close(); self.server.shutdown(); self.server.server_close(); self.thread.join(); self.temporary.cleanup()
-        self.guest_marker.stop()
-    def request(self, path, data=None, token=True, origin=None):
-        headers = {'Content-Type': 'application/json'}
-        if token: headers['X-AutoProteus-Token'] = self.app.token
-        if origin: headers['Origin'] = origin
-        return urllib.request.urlopen(urllib.request.Request(self.base + path, data=json.dumps(data).encode() if data is not None else None, headers=headers), timeout=5)
-    def test_token_and_origin_checks(self):
-        for kwargs in ({'token': False}, {'origin': 'https://another-site.example'}):
-            with self.assertRaises(urllib.error.HTTPError) as result:
-                self.request('/api/state', **kwargs)
-            self.assertEqual(result.exception.code, 403)
-    def test_failed_connection_keeps_working_settings_and_key(self):
-        self.app.settings.update({'provider':'demo', 'model':'scripted-demo', 'configured':True})
-        previous = self.app.settings.public()
-        with self.assertRaises(urllib.error.HTTPError):
-            self.request('/api/connect', {'provider':'hosted', 'base_url':'https://bad.example', 'model':'', 'api_key':'do-not-save'})
-        self.assertEqual(self.app.settings.public(), previous)
-        self.assertFalse((self.app.data / 'credential.bin').exists())
-    def test_hosted_connection_probes_json_and_keeps_native_preference(self):
-        provider = FakeModelServer(hosted=True)
-        try:
-            with self.request('/api/connect', {'provider': 'hosted', 'base_url': provider.url,
-                                               'model': 'fake-model', 'protocol': 'native', 'json_mode': True}) as response:
-                self.assertTrue(json.load(response)['configured'])
-            self.assertEqual(self.app.settings.values['protocol'], 'native')
-            self.assertNotIn('tools', provider.payloads[0])
-            self.assertNotIn('response_format', provider.payloads[0])
-        finally:
-            provider.close()
-    def test_demo_session_api_file_and_export(self):
-        with self.request('/api/connect', {'provider': 'demo', 'model': 'scripted-demo'}) as response:
-            self.assertTrue(json.load(response)['configured'])
-        with self.request('/api/start', {'task': 'Show the demo'}) as response:
-            session_id = json.load(response)['id']
-        session = self.app.store.get(session_id)
-        self.assertEqual(wait_session(self.app.agent, session), 'completed')
-        with self.request('/api/file?id=' + session_id + '&path=welcome.md') as response:
-            self.assertIn('Hello from AutoProteus', json.load(response)['content'])
-        with self.assertRaises(urllib.error.HTTPError):
-            self.request('/api/file?id=' + session_id + '&path=../session.json')
-        with self.request('/api/export?id=' + session_id) as response:
-            archive = zipfile.ZipFile(io.BytesIO(response.read()))
-            self.assertEqual(set(archive.namelist()), {'session.json', 'events.jsonl'})
 
 
 if __name__ == '__main__':

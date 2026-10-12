@@ -1,136 +1,161 @@
-import io
+import base64
 import json
-import tempfile
+from pathlib import Path
+import threading
 import unittest
 from types import SimpleNamespace
-from unittest.mock import patch
-from pathlib import Path
+from unittest.mock import Mock, patch
 
-import evaluate
-from autoproteus.agent import Agent
-from autoproteus.config import DEFAULTS, Settings
-from autoproteus.providers import tool_definitions
+from controller.config import Settings
+from controller.errors import Cancelled
+from controller.evaluation import EvaluationService, artifact_check, freeze_source, source_changes, source_identity
+from controller.isolation import Artifacts, IsolatedAgent, seed_files
+from controller.storage import Store
+from test_seed import temporary_directory
 from evaluate import check, harness_changes, harness_files
 
+ROOT = Path(__file__).resolve().parents[1]
 
-def temporary_directory():
-    root = Path(__file__).resolve().parents[1] / '.data/test-tmp'
-    root.mkdir(parents=True, exist_ok=True)
-    directory = tempfile.TemporaryDirectory(dir=root)
-    if not Path(directory.name).resolve().is_relative_to(root.resolve()):
-        raise RuntimeError('Unexpected temporary directory')
-    return directory
+
+def source(path, data):
+    return {'path': path, 'data': base64.b64encode(data).decode()}
 
 
 class EvaluationTests(unittest.TestCase):
-    def test_self_improvement_disables_commands_without_saving_preference(self):
-        task = (Path(evaluate.__file__).parent / 'evaluations/harness-feature.json').read_bytes()
-        captured = {}
-        class CommandClient:
-            calls = 0
-            def complete(self, messages, cancel):
-                self.calls += 1
-                decision = {'action': {'tool': 'run_command', 'arguments': {'command': 'echo should-not-run'}}} if self.calls == 1 else {'status': 'completed'}
-                return {'content': json.dumps(decision)}
-        class EvaluationAgent(Agent):
-            def __init__(self, root, store, settings):
-                captured['tools'] = [tool['function']['name'] for tool in tool_definitions(settings.values['terminal'])]
-                captured['store'] = store
-                super().__init__(root, store, settings, lambda _: CommandClient())
+    def test_exact_checks_preserve_bytes_and_do_not_accept_claimed_completion(self):
         with temporary_directory() as directory:
-            root = Path(directory)
-            (root / 'evaluations').mkdir()
-            (root / 'evaluations/tasks.json').write_text('[]', encoding='utf-8')
-            (root / 'evaluations/harness-feature.json').write_bytes(task)
-            settings = Settings(root / '.data')
-            settings.update({'provider': 'ollama', 'model': 'offline-test', 'configured': True, 'terminal': True})
+            store = Store(Path(directory) / 'sessions')
+            session = store.create('task', 'demo', 'test')
+            artifacts = Artifacts(store, session)
+            artifacts.put('result.txt', base64.b64encode(b'expected\r\n').decode())
+            artifacts.checkpoint(['result.txt'])
+            session['status'] = 'completed'
+            self.assertFalse(artifact_check(artifacts, {'path':'result.txt', 'equals':'expected\n'}))
+            self.assertFalse(artifact_check(artifacts, {'path':'missing.txt'}))
+            self.assertTrue(artifact_check(artifacts, {'path':'missing.txt', 'absent':True}))
+            with self.assertRaises(ValueError):
+                artifact_check(artifacts, {'path':'../../controller/server.py'})
+
+    def test_source_identity_and_diff_detect_additions_deletions_and_byte_changes(self):
+        old = [source('seed.py', b'a=1\r\n'), source('removed.py', b'old')]
+        new = [source('seed.py', b'a=1\n'), source('added.py', b'new')]
+        self.assertEqual(source_identity(old), source_identity(list(reversed(old))))
+        self.assertNotEqual(source_identity(old), source_identity(new))
+        self.assertEqual([(c['path'], c['kind']) for c in source_changes(old, new)],
+                         [('added.py','added'), ('removed.py','deleted'), ('seed.py','changed')])
+
+    def test_source_is_frozen_without_importing_candidate_code(self):
+        with temporary_directory() as directory:
+            store = Store(Path(directory) / 'sessions')
+            frozen = freeze_source(store, [source('seed.py', b'raise RuntimeError("never import")')], 'snapshot')
+            self.assertEqual(Artifacts(store, frozen).read('harness/seed.py'), b'raise RuntimeError("never import")')
+            self.assertFalse((Path(frozen['workspace']) / 'harness/seed.py').exists())
+
+    def test_comparison_uses_frozen_sources_and_settings_and_requires_independent_review(self):
+        with temporary_directory() as directory:
+            directory = Path(directory)
+            settings = Settings(directory)
+            settings.update({'provider':'hosted', 'model':'offline-test', 'configured':True})
             saved = settings.path.read_bytes()
-            with patch.object(evaluate, '__file__', str(root / 'evaluate.py')), patch.object(evaluate, 'Agent', EvaluationAgent), \
-                 patch('sys.argv', ['evaluate.py', '--live', '--self-improve']), patch('sys.stdout', new_callable=io.StringIO), \
-                 patch('autoproteus.tools.subprocess.Popen') as process:
-                self.assertEqual(evaluate.main(), 1)
-                process.assert_not_called()
-            self.assertNotIn('run_command', captured['tools'])
+            store = Store(directory / 'sessions')
+            candidate = freeze_source(store, seed_files(ROOT), 'candidate')
+            task_agent = IsolatedAgent(ROOT, store, settings)
+            service = EvaluationService(ROOT, directory / 'evaluations', settings, task_agent)
+            visited = []
+            def run(agent, eval_store, config, task, frozen, **kwargs):
+                visited.append((config['model'], Artifacts(eval_store, frozen).read('harness/seed.py')))
+                return {'task':task['name'], 'session':'f'*32, 'status':'completed', 'passed':True,
+                        'checks':[], 'steps':1, 'seconds':1, 'format_repairs':0, 'action_errors':0, 'detail':''}
+            with patch.object(task_agent.appliance, 'verify'), patch('controller.evaluation.run_task', side_effect=run), \
+                    patch('controller.evaluation.run_regressions', return_value={'passed':True, 'tests':23}):
+                report = service.start(candidate, repeats=2)
+                settings.values['model'] = 'different-model'
+                service.thread.join(timeout=10)
+            final = service.load(report['id'])
+            self.assertEqual(final['status'], 'completed')
+            self.assertEqual(len(visited), 40)
+            self.assertTrue(all(model == 'offline-test' for model, _ in visited))
+            self.assertEqual(final['starter_sha256'], final['edited_sha256'])
+            self.assertEqual(final['summary']['edited']['passed'], 20)
+            self.assertIn('independent review', final['scope'])
             self.assertEqual(settings.path.read_bytes(), saved)
-            self.assertTrue(Settings(root / '.data').values['terminal'])
-            session = next(iter(captured['store'].sessions.values()))
-            journal = [json.loads(line) for line in (captured['store'].directory(session['id']) / 'events.jsonl').read_text().splitlines()]
-            result = next(event['data'] for event in journal if event['type'] == 'action_result')
-            self.assertFalse(result['ok'])
-            self.assertIn('Terminal access is disabled', result['result']['error'])
+            self.assertNotIn('base_url', final['configuration'])
+            for bad in ('../settings', 'A'*32, 'x'*32):
+                with self.assertRaises(ValueError): service.load(bad)
 
-    def test_harness_changes_include_entry_point_and_web_features(self):
+    def test_regression_failure_rejects_candidate_without_model_tasks(self):
         with temporary_directory() as directory:
-            workspace = Path(directory)
-            harness = workspace / 'harness'
-            (harness / 'web').mkdir(parents=True)
-            (harness / 'app.py').write_text('old = True\n', encoding='utf-8')
-            baseline = harness_files(harness)
-            (harness / 'app.py').write_text('new = True\n', encoding='utf-8')
-            (harness / 'web' / 'feature.js').write_text('const feature = true;\n', encoding='utf-8')
-            self.assertEqual(harness_changes(workspace, baseline), ['app.py', 'web/feature.js'])
+            directory = Path(directory)
+            settings = Settings(directory)
+            settings.values.update(provider='hosted', model='offline', configured=True)
+            store = Store(directory / 'sessions')
+            candidate = freeze_source(store, seed_files(ROOT), 'candidate')
+            task_agent = IsolatedAgent(ROOT, store, settings)
+            service = EvaluationService(ROOT, directory / 'evaluations', settings, task_agent)
+            with patch.object(task_agent.appliance, 'verify'), \
+                    patch('controller.evaluation.run_regressions', side_effect=[
+                        {'passed':True, 'tests':23}, {'passed':False, 'tests':0}]), \
+                    patch('controller.evaluation.run_task') as task:
+                report = service.start(candidate, repeats=1)
+                service.thread.join(timeout=10)
+                task.assert_not_called()
+            final = service.load(report['id'])
+            self.assertEqual(final['status'], 'rejected')
+            self.assertEqual(final['results'], [])
+            self.assertFalse(final['regressions']['edited']['passed'])
 
-    def test_artifact_ready_submission_requires_review_instead_of_functional_pass(self):
-        task = (Path(evaluate.__file__).parent / 'evaluations' / 'harness-feature.json').read_text(encoding='utf-8')
-        class SubmissionAgent:
-            def __init__(self, *args): pass
-            def start(self, session):
-                workspace = Path(session['workspace'])
-                for name, content in [('harness/autoproteus/feature.py', 'candidate = True\n'),
-                                      ('harness/tests/test_feature.py', 'pass\n'),
-                                      ('feature.md', 'A candidate needing independent verification.\n')]:
-                    path = workspace / name
-                    path.parent.mkdir(parents=True, exist_ok=True)
-                    path.write_text(content, encoding='utf-8')
-                session.update(status='completed', steps=1)
-            def close(self): pass
+    def test_cancellation_saves_incomplete_report_and_ends_evaluation(self):
         with temporary_directory() as directory:
-            root = Path(directory)
-            (root / 'evaluations').mkdir()
-            (root / 'evaluations/tasks.json').write_text('[]', encoding='utf-8')
-            (root / 'evaluations/harness-feature.json').write_text(task, encoding='utf-8')
-            settings = SimpleNamespace(values={**DEFAULTS, 'provider': 'ollama', 'model': 'test', 'configured': True})
-            with patch.object(evaluate, '__file__', str(root / 'evaluate.py')), \
-                 patch.object(evaluate, 'Settings', return_value=settings), \
-                 patch.object(evaluate, 'Agent', SubmissionAgent), \
-                 patch('sys.argv', ['evaluate.py', '--live', '--self-improve']), patch('sys.stdout', new_callable=io.StringIO):
-                self.assertEqual(evaluate.main(), 2)
-            result = json.loads(next((root / '.data/evaluations').glob('report-*.json')).read_text())['results'][0]
-            self.assertTrue(result['artifact_passed'])
-            self.assertTrue(result['review_required'])
-            self.assertIsNone(result['passed'])
+            settings = Settings(Path(directory))
+            settings.values.update(provider='hosted', model='offline', configured=True)
+            store = Store(Path(directory) / 'sessions')
+            candidate = freeze_source(store, seed_files(ROOT), 'candidate')
+            task_agent = IsolatedAgent(ROOT, store, settings)
+            service = EvaluationService(ROOT, Path(directory) / 'evaluations', settings, task_agent)
+            entered = threading.Event()
+            def run(*args, cancel, **kwargs):
+                entered.set(); cancel.wait(timeout=5); raise Cancelled()
+            with patch.object(task_agent.appliance, 'verify'), patch('controller.evaluation.run_task', side_effect=run), \
+                    patch('controller.evaluation.run_regressions', return_value={'passed':True, 'tests':23}):
+                service.start(candidate, repeats=1)
+                self.assertTrue(entered.wait(timeout=2))
+                service.stop(); service.thread.join(timeout=5)
+            self.assertFalse(service.busy)
+            self.assertEqual(service.public()['status'], 'cancelled')
+            self.assertEqual(service.public()['results'], [])
 
-    def test_harness_changes_use_content_and_include_added_and_deleted_source(self):
+    def test_task_and_demo_conflicts_prevent_comparison(self):
+        with temporary_directory() as directory:
+            settings = Settings(Path(directory))
+            store = Store(Path(directory) / 'sessions')
+            task_agent = IsolatedAgent(ROOT, store, settings)
+            service = EvaluationService(ROOT, Path(directory) / 'evaluations', settings, task_agent)
+            with self.assertRaisesRegex(ValueError, 'real model'):
+                service.start(store.create('task', 'demo', 'test'))
+            worker = Mock(); worker.is_alive.return_value = True
+            task_agent.workers['active'] = threading.Event(), worker
+            with self.assertRaisesRegex(ValueError, 'current task'):
+                service.start(store.create('task', 'demo', 'test'))
+
+    def test_fingerprints_detect_added_and_deleted_guest_source(self):
         with temporary_directory() as directory:
             workspace = Path(directory)
             harness = workspace / 'harness'
             (harness / 'autoproteus').mkdir(parents=True)
-            (harness / 'tests').mkdir()
-            source = harness / 'autoproteus' / 'feature.py'
-            source.write_text('old = True\n', encoding='utf-8')
+            path = harness / 'autoproteus/feature.py'
+            path.write_bytes(b'old = True\n')
             baseline = harness_files(harness)
-            self.assertEqual(harness_changes(workspace, baseline), [])
-            source.write_text('new = True\n', encoding='utf-8')
-            (harness / 'tests' / 'test_feature.py').write_text('pass\n', encoding='utf-8')
-            self.assertEqual(harness_changes(workspace, baseline),
-                             ['autoproteus/feature.py', 'tests/test_feature.py'])
-            source.unlink()
-            self.assertEqual(harness_changes(workspace, baseline),
-                             ['autoproteus/feature.py', 'tests/test_feature.py'])
+            path.unlink()
+            (harness / 'seed.py').write_bytes(b'new = True\n')
+            self.assertEqual(harness_changes(workspace, baseline), ['autoproteus/feature.py','seed.py'])
+            self.assertFalse(check(workspace, {'path':'../outside.py'}))
 
-    def test_independent_checks_and_fingerprints_reject_paths_outside_workspace(self):
-        with temporary_directory() as directory:
-            root = Path(directory)
-            workspace = root / 'workspace'
-            (workspace / 'autoproteus').mkdir(parents=True)
-            outside = root / 'outside.py'
-            outside.write_text('secret = True\n', encoding='utf-8')
-            self.assertFalse(check(workspace, {'path': '../outside.py'}))
-            try:
-                (workspace / 'autoproteus' / 'escape.py').symlink_to(outside)
-            except OSError:
-                self.skipTest('Symlink creation unavailable')
-            self.assertEqual(harness_files(workspace), {})
+    def test_host_interfaces_and_transport_are_absent_from_the_editable_seed(self):
+        names = {item['path'] for item in seed_files(ROOT)}
+        for excluded in ('autoproteus/server.py', 'autoproteus/runtime.py', 'autoproteus/config.py', 'web/app.js', 'evaluations/tasks.json'):
+            self.assertNotIn(excluded, names)
+        self.assertIn('README.md', names)
+        self.assertIn('tests/test_seed.py', names)
 
 
 if __name__ == '__main__':

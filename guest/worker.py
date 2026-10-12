@@ -55,12 +55,59 @@ def unpack(files, root):
         path = (root / item['path']).resolve()
         if not path.is_relative_to(root) or path == root:
             raise ValueError('Invalid input path')
+        data = base64.b64decode(item['data'], validate=True)
+        if hashlib.sha256(data).hexdigest() != item.get('sha256'):
+            raise ValueError('Input integrity check failed: ' + item['path'])
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(base64.b64decode(item['data'], validate=True))
+        path.write_bytes(data)
+
+
+def run_verification(boot, source, workspace):
+    # The protected parent keeps the broker fd. Tests run in another process as
+    # UID 1000 against root-owned starter tests and the candidate's modules.
+    import re
+    import signal
+    import subprocess
+    import tempfile
+    os.chmod('/dev/vport0p1', 0o600)
+    env = {'PATH': '/usr/sbin:/usr/bin:/sbin:/bin', 'PYTHONPATH': str(source),
+           'AUTOPROTEUS_GUEST': '1', 'AUTOPROTEUS_TEST_ROOT': str(workspace / 'test-tmp')}
+    with tempfile.TemporaryFile(dir='/run') as output:
+        process = subprocess.Popen(['/usr/bin/python3', '-m', 'unittest', 'discover',
+                                    '-s', str(source / '__verify__'), '-v'],
+            cwd=workspace, env=env, stdin=subprocess.DEVNULL, stdout=output,
+            stderr=subprocess.STDOUT, user=1000, group=1000, extra_groups=[],
+            close_fds=True, start_new_session=True)
+        deadline = time.monotonic() + 60
+        limited = False
+        while process.poll() is None:
+            if time.monotonic() > deadline or os.fstat(output.fileno()).st_size > 256000:
+                limited = True
+                os.killpg(process.pid, signal.SIGKILL)
+                break
+            time.sleep(.05)
+        process.wait(timeout=5)
+        output.seek(0)
+        log = output.read(32000).decode('utf-8', errors='replace')
+    count = re.search(r'Ran (\d+) tests?', log)
+    expected = len(re.findall(r'^    def test_', (source / '__verify__/test_seed.py').read_text(), re.M))
+    result = {'passed': process.returncode == 0 and not limited and bool(count)
+                       and int(count[1]) == expected and bool(re.search(r'^OK', log, re.M)),
+              'tests': int(count[1]) if count else 0, 'expected': expected,
+              'exit_code': process.returncode, 'limited': limited, 'output': log}
+    call({'op':'file', 'path':'regression-result.json',
+          'data':base64.b64encode(json.dumps(result).encode()).decode()})
+    call({'op':'checkpoint', 'paths':['regression-result.json']})
+    session = boot['session']
+    session.update(status='completed', activity='Guest regression checks finished', runs=1)
+    call({'op':'state', 'session':session})
+    call({'op':'done'})
+    while True:
+        time.sleep(1)
 
 
 def main():
-    send({'op': 'ready', 'protocol': 1})
+    send({'op': 'ready', 'protocol': 2})
     boot = receive()
     if boot.get('op') != 'boot':
         raise ValueError('Expected boot message')
@@ -85,6 +132,8 @@ def main():
     resource.setrlimit(resource.RLIMIT_NPROC, (128, 128))
     resource.setrlimit(resource.RLIMIT_NOFILE, (256, 256))
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+    if boot.get('verification'):
+        run_verification(boot, source, workspace)
     os.setgroups([])
     os.setgid(1000)
     os.setuid(1000)

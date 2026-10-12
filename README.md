@@ -18,6 +18,8 @@ Isolation downloads are about 290 MB. Preparing a local model requires several a
 
 Native tool calls and a JSON text fallback share a small action protocol. Incomplete replies never execute actions. Native replies must explicitly call `finish`; plain prose enters a bounded repair loop. Tool compatibility does not guarantee task competence.
 
+The managed local engine keeps one model loaded at a time to reduce GPU memory contention. Closing AutoProteus also ends that engine's runner processes; an existing engine you connected separately remains independently managed. See [Ollama's concurrency settings](https://docs.ollama.com/faq).
+
 ## Work and recovery
 
 Every run starts a fresh VM and restores its saved checkpoint as copied bytes. Host drives are never mounted. The VM has no network card, clipboard integration, shared filesystem, display, USB passthrough, or host command channel.
@@ -30,7 +32,11 @@ Exports are limited to 2 MiB per file, 500 files, and 32 MiB per checkpoint. The
 
 ## Growing the seed
 
-Each workspace has `harness/`, a copy of the editable source, including `seed.py`, the agent, tools, and guest tests. The model edits that copy without overwriting the protected starter or controller.
+Each workspace has `harness/`, a small copy of the editable source: `seed.py`, the agent, tools, session storage, tool descriptions, guest documentation, and tests. Model adapters, download/setup code, browser assets and evaluation definitions remain outside this copy. The model edits its seed without overwriting the protected starter or controller.
+
+**Check edited seed** compares the starter with that frozen source copy using the connected real model. The same ten tasks run in fresh VMs, twice by default; order alternates between repeats. The host checks saved file bytes independently and records source fingerprints, configuration, runtime identity, changes, successes, failures, time and reported steps. A comparison can take several minutes and hosted requests may incur charges. **Stop checks** saves incomplete results. Checks use a separate store and never activate a candidate. A new feature still requires independent functional review beyond these existing tasks. Saved comparisons can be reopened from the source panel after restarting the app.
+
+Before any model task, a protected guest driver runs the unchanged starter tests against each version. The candidate cannot edit those test files or the driver. A failed regression stops the comparison and shows its output. These checks help catch breakage; they do not prove a hostile candidate honest or make its new tests authoritative.
 
 **Try edited seed in a new VM** freezes that version and opens a separate session under the same policy. **Resume with starter seed** ends the candidate VM and resumes with the protected starter, keeping saved task files. Candidates cannot supply VM arguments, enable host mounts, obtain keys, choose host commands or URLs, or change export locations. The controller never imports a candidate.
 
@@ -46,7 +52,10 @@ The browser interface and `controller/` are maintained by the human developer. G
 | `controller/` | Host UI/API, credentials, inference, VM policy, broker |
 | `guest/worker.py` | Guest bootstrap and communication adapter |
 | `seed.py`, `autoproteus/` | Editable guest entry point, agent and tools |
-| `web/` | Trusted host interface; the guest receives a separate source copy |
+| `web/` | Trusted host interface, outside the editable seed |
+| `SEED.md` | Copied into the guest as `harness/README.md` |
+| `controller/evaluation.py`, `evaluations/` | Protected artifact checks and evaluation definitions |
+| `.data/evaluations/checks/` | Frozen comparisons, diffs, reports and isolated evaluation sessions |
 | `.data/sessions/<id>/` | Session state, journal, quarantined artifact blobs |
 | `.data/models/` | Managed local model cache |
 | `.runtime/isolation/` | VM engine, kernel, and guest appliance |
@@ -59,11 +68,13 @@ Existing sessions and model downloads are preserved. Legacy files can be preview
 
 `python -m unittest discover -s tests -v` runs regression and broker tests. Set `AUTOPROTEUS_VM_TESTS=1` on a prepared Windows host to include real VM checks for host file visibility, networking, guest privilege, forged exports, Stop, restoration, and recovery. Guest tests copied into `harness/tests/` run inside the VM; controller tests stay on the host.
 
-`python evaluate.py` checks the scripted demo inside the VM. `--live` uses the configured model with independent artifact checks; `--model MODEL_NAME` selects another model without changing preferences, and `--task exact-file` selects one task. Hosted evaluations may incur charges.
+`python evaluate.py` checks the scripted demo inside the VM. `--live` uses the configured model with independent artifact checks; `--model MODEL_NAME` selects another model without changing preferences, including a cached local model while the app is in demo mode. `--task exact-file` selects one task, `--repeat 2` repeats tasks, and `--candidate SESSION_ID` compares a saved editable copy with the starter. Hosted evaluations may incur charges. VM execution is serialized across the app, evaluator and tests. Input bytes are integrity-checked before guest source is loaded.
 
-`python evaluate.py --live --self-improve --timeout 3600` runs the separate harness feature task with terminal tools disabled, without changing saved preferences. A ready submission reports `REVIEW`, `passed: null`, and exit code 2 until independent functional checks are recorded. The evaluator reads exported bytes and never executes candidates on the host. This isolation change makes no model-performance claim.
+`python evaluate.py --live --model qwen3:4b-instruct --self-improve --max-steps 64 --timeout 900` runs a small feature trial with Linux commands enabled inside the VM, without changing saved preferences. The model can run its guest tests. A ready submission reports `REVIEW`, `passed: null`, and exit code 2 until independent functional checks are recorded. Candidate code never executes on the host. Reports, source snapshots and diffs are saved under `.data/evaluations/runs/`. Guest tests and journals are diagnostics; host artifact checks determine task success. Comparisons establish performance on the checked tasks, not general capability or security of a candidate.
 
 See [SECURITY.md](SECURITY.md) for the threat model and limits. Virtualization provides an operating-system boundary, but cannot guarantee immunity to hypervisor or host OS vulnerabilities.
+
+The [v0.3 findings](evaluations/seed-v0.3-findings.md) record the seed reduction, local-model measurements, and rejected self-improvement attempts, including limitations of the comparison.
 
 ## Runtime sources
 

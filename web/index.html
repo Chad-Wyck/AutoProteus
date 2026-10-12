@@ -9,13 +9,13 @@
 <body>
 <div class="app">
   <aside class="sidebar">
-    <a class="brand" href="/" aria-label="AutoProteus home"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M10 27V12a7 7 0 0 1 14 0v12a3 3 0 0 1-6 0V12a1 1 0 0 0-2 0v15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><circle cx="28" cy="8" r="3" fill="currentColor"/></svg><span>AutoProteus<small>SEED / 0.2</small></span></a>
+    <a class="brand" href="/" aria-label="AutoProteus home"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M10 27V12a7 7 0 0 1 14 0v12a3 3 0 0 1-6 0V12a1 1 0 0 0-2 0v15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><circle cx="28" cy="8" r="3" fill="currentColor"/></svg><span>AutoProteus<small>SEED / 0.3</small></span></a>
     <button class="new-task" id="new-task"><span>＋</span> New task <kbd>Ctrl N</kbd></button>
     <div class="sidebar-label">YOUR SESSIONS <span id="session-count">0</span></div>
     <nav id="sessions" aria-label="Saved sessions"><p class="sidebar-empty">Your work will appear here.<br>Every session is saved.</p></nav>
     <div class="sidebar-bottom">
       <button class="connection" id="connection"><span class="connection-dot"></span><span><strong id="connection-title">Choose a model</strong><small id="connection-sub">Get ready to start</small></span><span class="chevron">›</span></button>
-      <button class="settings-button" id="isolation-status">Set up isolation</button><button class="settings-button" id="settings-button"><span>⚙</span> Settings <span class="version">v0.2</span></button>
+      <button class="settings-button hidden" id="evaluation-status">Seed check results</button><button class="settings-button" id="isolation-status">Set up isolation</button><button class="settings-button" id="settings-button"><span>⚙</span> Settings <span class="version">v0.3</span></button>
     </div>
   </aside>
   <main class="main">
@@ -37,7 +37,7 @@
       <aside class="inspector">
         <div class="inspector-title">TASK DETAILS <span>↗</span></div>
         <div id="inspector-empty"><div class="empty-illustration">✓</div><h3>A little structure.<br>A clear outcome.</h3><p>Your checklist and files will appear here as AutoProteus works.</p><div class="feature"><span>01</span><div><strong>A visible plan</strong><p>See what is done and what is next.</p></div></div><div class="feature"><span>02</span><div><strong>Work you can inspect</strong><p>Open every file the agent creates.</p></div></div><div class="feature"><span>03</span><div><strong>A place to return</strong><p>Resume a saved session at any time.</p></div></div></div>
-        <div id="inspector-session" class="hidden"><div class="status-card"><span id="status-dot" class="status-dot"></span><strong id="status-label">Ready</strong><small id="step-count"></small></div><section class="detail-section"><div class="section-label">CHECKLIST</div><div id="todo" class="todo"><p class="muted">The agent hasn't made a checklist yet.</p></div></section><section class="detail-section"><div class="section-label">FILES <span id="file-count">0</span></div><div id="files" class="files"></div><button id="workspace-button" class="workspace-button">Download saved files <span>↓</span></button></section><details class="seed-details"><summary>Seed source</summary><p>The agent can edit its own source copy in <code>harness/</code>. Your running seed stays recoverable.</p><div id="source-files" class="files"></div><button id="try-seed" class="workspace-button">Try edited seed in a new VM →</button><button id="reset-seed" class="workspace-button">Resume with starter seed →</button></details><p class="verification-note">“Finished” reflects the model's report. Review the files to check the outcome.</p></div>
+        <div id="inspector-session" class="hidden"><div class="status-card"><span id="status-dot" class="status-dot"></span><strong id="status-label">Ready</strong><small id="step-count"></small></div><section class="detail-section"><div class="section-label">CHECKLIST</div><div id="todo" class="todo"><p class="muted">The agent hasn't made a checklist yet.</p></div></section><section class="detail-section"><div class="section-label">FILES <span id="file-count">0</span></div><div id="files" class="files"></div><button id="workspace-button" class="workspace-button">Download saved files <span>↓</span></button></section><details class="seed-details"><summary>Seed source</summary><p>The agent can edit its own source copy in <code>harness/</code>. Your running seed stays recoverable.</p><div id="source-files" class="files"></div><button id="check-seed" class="workspace-button">Check edited seed →</button><button id="try-seed" class="workspace-button">Try edited seed in a new VM →</button><button id="reset-seed" class="workspace-button">Resume with starter seed →</button></details><p class="verification-note">“Finished” reflects the model's report. Review the files to check the outcome.</p></div>
         <footer class="inspector-footer">Designed to evolve.<br><span>Built to stay understandable.</span></footer>
       </aside>
     </div>
@@ -59,5 +59,16 @@
   <p id="isolation-message" role="status">Checking your computer…</p><p id="isolation-error" class="form-error hidden" role="alert"></p>
   <div class="dialog-actions"><button id="prepare-isolation" class="primary">Prepare isolated environment</button></div>
   <p class="dialog-footnote">One-time download: about 290 MB. Windows Hypervisor Platform must be enabled. Subsequent tasks start in a few seconds.</p>
+</dialog>
+<dialog id="check-dialog" class="settings-dialog seed-check-dialog" aria-labelledby="check-title">
+  <div class="dialog-heading"><div><span class="eyebrow">MEASURE BEFORE GROWING</span><h2 id="check-title">Check edited seed.</h2></div><button id="close-checks" class="icon-button" aria-label="Close seed checks">×</button></div>
+  <p>First, both versions must pass the starter's unchanged tests. Then they run the same ten tasks in fresh VMs, with saved files checked independently. Your source and model settings are frozen for this comparison.</p>
+  <p>Checks can take several minutes. Hosted connections use your provider and may incur charges. You can stop at any time; partial results are saved.</p>
+  <label class="field">Repeats per task<select id="check-repeats"><option value="2">Two repeats · 40 runs</option><option value="1">One repeat · 20 runs</option><option value="3">Three repeats · 60 runs</option></select></label>
+  <p id="check-model" class="muted"></p><p id="check-message" role="status"></p><div id="check-summary" class="check-summary"></div>
+  <div class="check-table-wrap"><table class="check-table"><thead><tr><th>Task · repeat</th><th>Starter</th><th>Edited</th></tr></thead><tbody id="check-rows"></tbody></table></div>
+  <details><summary>Source changes</summary><div id="check-changes" class="check-changes"></div></details>
+  <p class="verification-note">These results cover the checked tasks. A new feature still needs independent functional review. Run checks again after further edits. A comparison never activates a candidate automatically.</p>
+  <p id="check-error" class="form-error hidden" role="alert"></p><div class="dialog-actions"><button id="stop-checks" class="quiet hidden">Stop checks</button><button id="run-checks" class="primary">Run comparison →</button></div>
 </dialog>
 </body></html>

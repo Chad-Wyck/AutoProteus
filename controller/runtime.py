@@ -19,8 +19,10 @@ class LocalRuntime:
     def __init__(self, root, settings):
         self.root, self.settings = Path(root), settings
         self.lock = threading.Lock()
+        self.lifecycle_lock = threading.Lock()
         self.state = {"busy": False, "phase": "idle", "message": "", "progress": None}
         self.process = None
+        self.job = None
         self.closed = threading.Event()
 
     def restore(self):
@@ -60,6 +62,8 @@ class LocalRuntime:
         threading.Thread(target=self._prepare, args=(model,), daemon=True).start()
 
     def ensure_service(self, allow_download=True):
+        if self.closed.is_set():
+            raise ValueError('The app is closing')
         base = self.settings.values["base_url"]
         try:
             self.models(base)
@@ -83,21 +87,38 @@ class LocalRuntime:
         except ProviderError:
             pass
         self.update(phase="starting", message="Starting your local model service…", progress=None)
-        environment = dict(os.environ, OLLAMA_HOST="127.0.0.1:11435", OLLAMA_MODELS=str(self.root / ".data" / "models"))
+        environment = dict(os.environ, OLLAMA_HOST="127.0.0.1:11435", OLLAMA_MODELS=str(self.root / ".data" / "models"),
+                           OLLAMA_MAX_LOADED_MODELS='1', OLLAMA_NUM_PARALLEL='1')
         log_path = self.root / ".data" / "ollama.log"
         log_path.parent.mkdir(parents=True, exist_ok=True)
-        with log_path.open("ab") as log:
+        with self.lifecycle_lock, log_path.open("ab") as log:
             if self.closed.is_set():
                 raise ValueError('The app is closing')
-            self.process = subprocess.Popen([binary, "serve"], env=environment, cwd=self.root,
-                                            stdout=log, stderr=log,
-                                            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+            if os.name == 'nt':
+                from .windows_job import Job
+                self.job = Job(vm_limits=False)
+            try:
+                self.process = subprocess.Popen([binary, "serve"], env=environment, cwd=self.root,
+                    stdout=log, stderr=log,
+                    creationflags=(subprocess.CREATE_NO_WINDOW | 0x4) if os.name == "nt" else 0,
+                    **({} if os.name == 'nt' else {'start_new_session': True}))
+                if self.job:
+                    self.job.attach_and_resume(self.process)
+            except Exception:
+                if self.job:
+                    self.job.close(); self.job = None
+                if self.process and self.process.poll() is None:
+                    self.process.kill(); self.process.wait(timeout=5)
+                raise
+            process = self.process
         for _ in range(80):
+            if self.closed.is_set():
+                raise ValueError('The app is closing')
             try:
                 self.models(base)
                 return base
             except ProviderError:
-                if self.process.poll() is not None:
+                if process.poll() is not None:
                     raise ValueError("The local model service could not start. See .data/ollama.log for details.")
                 time.sleep(0.5)
         raise ValueError("The local model service did not start in time. Try again or connect an existing service.")
@@ -164,5 +185,14 @@ class LocalRuntime:
 
     def close(self):
         self.closed.set()
-        if self.process and self.process.poll() is None:
-            self.process.terminate()
+        with self.lifecycle_lock:
+            if self.job:
+                self.job.close(); self.job = None
+            if self.process and self.process.poll() is None:
+                if os.name == 'nt':
+                    self.process.terminate()
+                else:
+                    import signal
+                    os.killpg(self.process.pid, signal.SIGTERM)
+            if self.process:
+                self.process.wait(timeout=5)

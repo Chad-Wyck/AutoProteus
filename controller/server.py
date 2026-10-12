@@ -19,6 +19,7 @@ from .config import Settings
 from .providers import ModelClient
 from .runtime import LocalRuntime
 from .storage import Store
+from .evaluation import EvaluationService
 
 
 class Application:
@@ -29,6 +30,7 @@ class Application:
         self.store = Store(self.data / "sessions")
         self.agent = IsolatedAgent(self.root, self.store, self.settings, client_factory)
         self.local = LocalRuntime(self.root, self.settings)
+        self.evaluations = EvaluationService(self.root, self.data / 'evaluations', self.settings, self.agent)
         self.token = secrets.token_urlsafe(32)
         self.identity = hashlib.sha256(str(self.root).encode()).hexdigest()[:20]
         self.server = None
@@ -36,7 +38,14 @@ class Application:
 
     def state(self):
         return {"version": __version__, "settings": self.settings.public(), "sessions": self.store.public(),
-                "setup": self.local.public(), "isolation": self.agent.appliance.public(), "root": str(self.root)}
+                "setup": self.local.public(), "isolation": self.agent.appliance.public(),
+                "evaluation": self.evaluations.public(), "root": str(self.root)}
+
+    def start_run(self, session, message=None, candidate=None):
+        with self.evaluations.gate:
+            if self.evaluations.busy:
+                raise ValueError('Stop the seed checks before starting another task')
+            self.agent.start(session, message, candidate=candidate)
 
     def files(self, session):
         if 'artifacts' in session:
@@ -55,6 +64,7 @@ class Application:
         return sorted(files, key=lambda item: (item["path"].startswith("harness/"), item["path"]))
 
     def close(self):
+        self.evaluations.close()
         self.agent.close()
         self.local.close()
 
@@ -108,6 +118,8 @@ def handler_for(app):
                     return self.send({"app": "AutoProteus", "identity": app.identity, "version": __version__, "isolation_required": True})
                 if path == "/api/state":
                     return self.send(app.state())
+                if path == '/api/seed-check':
+                    return self.send(app.evaluations.load(query.get('id', [''])[0]))
                 if path == "/api/local":
                     try:
                         models = app.local.models()
@@ -148,6 +160,16 @@ def handler_for(app):
                 self.send({"error": str(error)}, 400)
 
         def do_POST(self):
+            if self.path in ('/api/start', '/api/resume', '/api/reset', '/api/try-seed'):
+                with app.evaluations.gate:
+                    if app.evaluations.busy:
+                        if self.allowed(api=True):
+                            self.send({'error': 'Stop the seed checks before starting another task'}, 400)
+                        return
+                    return self.handle_post()
+            return self.handle_post()
+
+        def handle_post(self):
             if not self.allowed(api=True):
                 return
             try:
@@ -180,6 +202,12 @@ def handler_for(app):
                 if self.path == '/api/isolation/setup':
                     app.agent.appliance.prepare()
                     return self.send(app.agent.appliance.public())
+                if self.path == '/api/seed-check':
+                    session = app.store.get(data.get('id'))
+                    return self.send(app.evaluations.start(session, data.get('repeats', 2)))
+                if self.path == '/api/seed-check/stop':
+                    app.evaluations.stop()
+                    return self.send({'ok': True})
                 if self.path == "/api/start":
                     task = data.get("task", "").strip()
                     if not task or len(task) > 12000:
@@ -190,7 +218,7 @@ def handler_for(app):
                     if app.settings.values['provider'] == 'ollama' and app.local.public()['busy']:
                         raise ValueError('Your local model engine is starting. Give it a moment, then start the task.')
                     session = app.store.create(task, app.settings.values["provider"], app.settings.values["model"])
-                    app.agent.start(session)
+                    app.start_run(session)
                     return self.send({"id": session["id"]})
                 if self.path == '/api/try-seed':
                     candidate = app.store.get(data.get('id'))
@@ -199,7 +227,7 @@ def handler_for(app):
                         raise ValueError('Describe the test task in 12,000 characters or fewer')
                     session = app.store.create(task, app.settings.values['provider'], app.settings.values['model'])
                     session['candidate_from'] = candidate['id']
-                    app.agent.start(session, candidate=candidate)
+                    app.start_run(session, candidate=candidate)
                     return self.send({'id': session['id']})
                 if self.path in ("/api/resume", "/api/stop", "/api/reset", "/api/open-workspace"):
                     session = app.store.get(data.get("id"))
@@ -207,7 +235,7 @@ def handler_for(app):
                         message = data.get("message", "")
                         if not isinstance(message, str) or len(message) > 12000:
                             raise ValueError("Keep your reply under 12,000 characters")
-                        app.agent.start(session, message)
+                        app.start_run(session, message)
                     elif self.path == "/api/stop":
                         app.agent.stop(session["id"])
                     elif self.path == '/api/reset':
@@ -216,7 +244,7 @@ def handler_for(app):
                         if worker:
                             worker[1].join(timeout=5)
                         session.pop('candidate_from', None)
-                        app.agent.start(session)
+                        app.start_run(session)
                     else:
                         # Downloads are data only. Do not open generated programs on the host.
                         buffer = io.BytesIO()
