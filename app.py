@@ -9,8 +9,8 @@ import urllib.request
 import webbrowser
 from pathlib import Path
 
-from autoproteus.server import Application, make_server
-from autoproteus.storage import atomic_json
+from controller.server import Application, make_server
+from controller.storage import atomic_json
 
 
 def existing_instance(path, identity, no_browser):
@@ -20,6 +20,8 @@ def existing_instance(path, identity, no_browser):
             with urllib.request.urlopen(connection["url"] + "/health", timeout=1) as response:
                 health = json.load(response)
             if health.get("identity") == identity:
+                if not health.get('isolation_required'):
+                    raise RuntimeError('An earlier AutoProteus app is still open. Quit it through Settings, then reopen the launcher to use VM isolation.')
                 if not no_browser:
                     webbrowser.open(connection["url"])
                 return True

@@ -1,4 +1,4 @@
-﻿# AutoProteus keeps its optional runtime inside this project. No admin is needed.
+﻿# AutoProteus keeps its optional runtime inside this project. Windows Hypervisor Platform is required for tasks.
 param([switch]$NoBrowser)
 $ErrorActionPreference = 'Stop'
 $taskRoot = $PSScriptRoot

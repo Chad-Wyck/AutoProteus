@@ -1,75 +1,75 @@
 # AutoProteus Seed
 
-A small autonomous agent with a local browser interface. The seed connects a model to workspace tools, displays an optional checklist, and records complete interactions. Models can inspect and change a copy of the harness without overwriting the running seed.
+A small, model-agnostic agent that grows its own harness inside a disposable Linux VM. A separate host controller keeps model connections, credentials, the browser interface, safety policy, and recovery outside the editable seed.
 
 ## Start
 
-On **64-bit Windows**, double-click **Start AutoProteus.cmd**. The launcher opens the app in your browser and reuses an existing instance. If Python 3.10 or newer is unavailable, it downloads a portable Python runtime into `.runtime/`. No administrator access or pip packages are needed.
+On **64-bit Windows 11**, double-click **Start AutoProteus.cmd**. Choose a local model, hosted connection, or scripted demo. Before the first task, choose **Prepare isolated environment**. The app downloads pinned portable QEMU and Linux components into this project, then continues your task. Later runs reuse them.
 
-In the app, choose:
+**Windows Hypervisor Platform must be enabled.** This backend works on the tested Windows 11 Home PC using its existing hardware virtualization. If unavailable, the app explains how to enable it through Windows Features and restart. Enabling that Windows feature may require administrator access; portable setup does not install drivers or alter Windows features. There is no software-emulation or native-host execution fallback.
 
-- **Local model** (default): choose an installed Ollama model, or let AutoProteus download the official portable engine and a model. Initial downloads require an internet connection, several GB of free space, and time. Subsequent runs reuse the downloads. Model speed depends on your hardware.
-- **Hosted connection**: supply a compatible chat-completions service address, model ID, and optional key. The app tests a short model response when you connect. Requests go to that provider and may incur its usual charges.
-- **Interactive demo**: a scripted tour creates a welcome file, reads it back, and completes a checklist. It exercises real tools and persistence but does not use an AI model.
+Isolation downloads are about 290 MB. Preparing a local model requires several additional GB. The launcher can download official portable Python if Python 3.10+ is unavailable. No pip packages are required. `python app.py --no-browser` starts the protected controller directly. Other operating systems currently cannot execute agent tasks through this backend.
 
-Describe a task, inspect actions and generated files, and reply when the model needs more information. **Stop** saves the session. **Resume** tells the model to inspect current state before continuing. Use **Settings → Quit AutoProteus** to close the background app. Closing the browser alone leaves it running.
+## Models
 
-The local UI can also be started with `python app.py`. Use `python app.py --no-browser` for a console-managed instance. Windows is the supported one-click experience; on other systems, use an existing Python and Ollama installation.
+- **Local model** is the default. Prepare portable Ollama and Qwen3 4B Instruct, choose the lighter 1.7B model, or connect an existing engine. Ollama runs on the host to use your GPU. The VM receives responses through the broker and cannot access the engine directly.
+- **Hosted connection** accepts a compatible chat-completions service, model ID, and optional key. Keys are encrypted with Windows DPAPI. The host keeps provider addresses, credentials, and settings. Hosted requests send task data to the provider and may incur charges.
+- **Interactive demo** creates real files using a deterministic script inside the same VM boundary. It does not call an AI model.
 
-## Models and execution
+Native tool calls and a JSON text fallback share a small action protocol. Incomplete replies never execute actions. Native replies must explicitly call `finish`; plain prose enters a bounded repair loop. Tool compatibility does not guarantee task competence.
 
-The adapters support Ollama and services implementing a compatible `/chat/completions` API. Hosted service addresses should normally end in `/v1`. Hosted keys are encrypted using Windows DPAPI; on other platforms, keys entered in the UI last only until the app exits. `AUTOPROTEUS_API_KEY` is also supported. Keys are not included in journals or source snapshots.
+## Work and recovery
 
-Adapters normalize native tool calls into the same small internal action protocol. Hosted setup also offers a strict JSON text fallback for models without native tools. There are no heuristic Markdown command extractors. A response must be complete and parse successfully before any action can execute. Models that do not reliably produce actions may require configuration changes or a different adapter; compatibility is not a guarantee of task competence. Local models use their default thinking behavior unless you change it in Settings.
+Every run starts a fresh VM and restores its saved checkpoint as copied bytes. Host drives are never mounted. The VM has no network card, clipboard integration, shared filesystem, display, USB passthrough, or host command channel.
 
-Native replies must use `finish` to report completion or request input. Prose-only replies enter the bounded format repair loop. Checklists are optional: the model writes `todo.txt` using `write_file` when requested or helpful, and the UI displays it.
+**Terminal access** is initially off. When enabled, commands run as an unprivileged Linux user inside the VM. **Stop** terminates the VM from the host, including noncooperating candidate code. **Resume** starts another VM from the last committed checkpoint; later guest changes may be lost. Use **Settings → Quit AutoProteus** to close the background controller.
 
-`read_file` returns bounded UTF-8 text with `next_offset` and `eof`. Offsets are **byte positions**; the optional `length` is **characters** (default 1,000, maximum 12,000). Continue using `next_offset`, rather than calculating line numbers or guessing positions. If a read is shortened to fit model context, its continuation position still matches the visible content. Full results stay in the journal.
+Saved files enter a quarantine store as inert blobs. The interface previews text or downloads attachments. It never imports exported code or serves edited seed JavaScript as host UI. **Download saved files** produces an archive. Running a downloaded program yourself is outside the isolation boundary.
 
-For small changes, `edit_file` replaces one exact `old_text` with `new_text`. Missing, empty, or ambiguous matches are rejected without changing the file; include surrounding text to select one occurrence. Surrounding bytes and line endings are preserved. `write_file` writes the supplied content as UTF-8 without changing line endings. Writes and edits are limited to 100,000 characters and use the same workspace checks.
+Exports are limited to 2 MiB per file, 500 files, and 32 MiB per checkpoint. The VM receives 2 GiB RAM, two virtual CPUs, and a 512 MiB task filesystem in RAM. External process, CPU, memory, transfer, journal, model-request, and one-hour runtime limits apply. One task runs at a time. “Finished” reflects the model's report; review outputs or use independent checks.
 
-The starter is [Qwen3 4B Instruct](https://ollama.com/library/qwen3:4b-instruct). The lighter 1.7B option uses less memory but can be less reliable. Tool batches run in order; after a failed action, remaining dependent calls are skipped so the model can replan. Completion requested alongside tools is deferred until the model receives their results.
+## Growing the seed
 
-File tools are constrained to the session workspace. **Terminal access is off initially.** Enable it in Settings when a task needs commands. Commands run as your account using PowerShell on Windows or `sh` elsewhere. This is **not an OS sandbox**; shell commands can access paths and resources beyond the workspace. Docker is not required.
+Each workspace has `harness/`, a copy of the editable source, including `seed.py`, the agent, tools, and guest tests. The model edits that copy without overwriting the protected starter or controller.
 
-“Finished” means the model reported completion. Review artifacts or use independent checks to verify task success. Response/context limits are configurable; history budgeting is a conservative character estimate, not a model tokenizer. Original instructions and current todo state stay in the prompt, while full request/response events remain in the journal.
+**Try edited seed in a new VM** freezes that version and opens a separate session under the same policy. **Resume with starter seed** ends the candidate VM and resumes with the protected starter, keeping saved task files. Candidates cannot supply VM arguments, enable host mounts, obtain keys, choose host commands or URLs, or change export locations. The controller never imports a candidate.
 
-## Where things live
+The browser interface and `controller/` are maintained by the human developer. Generated interfaces remain guest artifacts. Additional host capabilities, such as email, will need separately implemented, explicitly authorized broker operations. The current broker exposes only inference, bounded session events/state, and artifacts.
+
+`read_file` offsets are UTF-8 bytes; length is characters (default 1,000, maximum 12,000). Continue using `next_offset` until `eof`. `edit_file` replaces exactly one matching fragment, preserving surrounding bytes and line endings. Writes and edits are limited to 100,000 characters. Optional checklists use `todo.txt`.
+
+## Files
 
 | Path | Purpose |
 | --- | --- |
-| `app.py` | Entry point and single-instance discovery |
-| `autoproteus/agent.py` | Seed prompt, action validation, execution loop |
-| `autoproteus/providers.py` | Model adapters and scripted demo |
-| `autoproteus/tools.py` | File tools and optional terminal |
-| `autoproteus/storage.py` | Atomic snapshots and append-only journal |
-| `autoproteus/runtime.py` | Optional portable Ollama setup |
-| `autoproteus/server.py` | Loopback UI and API |
-| `web/` | Interface; no frontend build step or CDN |
-| `.data/settings.json` | Preferences |
-| `.data/sessions/<id>/` | `session.json`, `events.jsonl`, and task workspace |
-| `.data/models/` | Model cache for the managed engine |
-| `.runtime/` | Optional portable Python and Ollama |
-| `old/` | Earlier experiments, left untouched |
+| `app.py`, `launch.ps1` | Protected host launcher |
+| `controller/` | Host UI/API, credentials, inference, VM policy, broker |
+| `guest/worker.py` | Guest bootstrap and communication adapter |
+| `seed.py`, `autoproteus/` | Editable guest entry point, agent and tools |
+| `web/` | Trusted host interface; the guest receives a separate source copy |
+| `.data/sessions/<id>/` | Session state, journal, quarantined artifact blobs |
+| `.data/models/` | Managed local model cache |
+| `.runtime/isolation/` | VM engine, kernel, and guest appliance |
+| `.runtime/` | Portable Python, Ollama, and download caches |
+| `old/` | Earlier experiments, untouched |
 
-The local server listens only on loopback. API requests require a per-launch token, and requests from unrelated website origins are rejected. All UI assets are local.
-
-Each task workspace contains `harness/`, a source snapshot with a recorded version and SHA-256. If asked to improve its own harness, the model edits that snapshot. Activating a modified harness is intentionally a separate development step: inspect it, run checks, then launch the copy from its own directory. Automatic promotion, model training, and state-dependent sampling are not part of this seed.
-
-**Save trace** exports the session snapshot and complete event journal as a ZIP. It may contain private task text, file contents, and model responses; share it intentionally. Generated files can be downloaded individually or opened in the workspace folder.
+Existing sessions and model downloads are preserved. Legacy files can be previewed; resuming copies their contents into a VM. Oversized legacy inputs must be reduced before migration. No session resumes natively.
 
 ## Verify
 
-Run `python -m unittest discover -s tests -v`. Tests cover action validation, workspace boundaries, cancellation, recovery, provider responses, journaling, and the local API. `python evaluate.py` runs the deterministic demo against filesystem checks; it is a plumbing check, not a model benchmark. `python evaluate.py --live` evaluates the configured real model on the tasks in `evaluations/tasks.json` with independent file checks, writing a report to `.data/evaluations/`. Hosted live evaluation sends requests to the selected provider.
+`python -m unittest discover -s tests -v` runs regression and broker tests. Set `AUTOPROTEUS_VM_TESTS=1` on a prepared Windows host to include real VM checks for host file visibility, networking, guest privilege, forged exports, Stop, restoration, and recovery. Guest tests copied into `harness/tests/` run inside the VM; controller tests stay on the host.
 
-The current seed has no claim of improved model performance. Compare models and future harness changes on repeatable tasks before promoting them.
+`python evaluate.py` checks the scripted demo inside the VM. `--live` uses the configured model with independent artifact checks; `--model MODEL_NAME` selects another model without changing preferences, and `--task exact-file` selects one task. Hosted evaluations may incur charges.
 
-Use `python evaluate.py --live --model MODEL_NAME` to compare another installed model on the same service without changing your saved connection. `--task exact-file` selects a single evaluation.
+`python evaluate.py --live --self-improve --timeout 3600` runs the separate harness feature task with terminal tools disabled, without changing saved preferences. A ready submission reports `REVIEW`, `passed: null`, and exit code 2 until independent functional checks are recorded. The evaluator reads exported bytes and never executes candidates on the host. This isolation change makes no model-performance claim.
 
-Use `python evaluate.py --live --self-improve --timeout 3600` for the separate harness feature task. The model chooses and implements a small feature in its source copy, adds a test, and explains its use. The criteria in `evaluations/harness-feature.json` require independent functional checks and the trusted seed regression suite against the copy. The evaluator checks artifacts and changed runtime/test files without executing model-authored code. A ready submission reports `REVIEW`, `passed: null`, and exit code 2 until those independent checks are recorded; unsuccessful submissions exit 1. No changes activate automatically.
+See [SECURITY.md](SECURITY.md) for the threat model and limits. Virtualization provides an operating-system boundary, but cannot guarantee immunity to hypervisor or host OS vulnerabilities.
 
-The self-improvement evaluation always disables terminal access for that run, even if it is enabled in Settings. Your saved preference stays unchanged. This evaluation restriction does not provide an OS sandbox for other runs or for separately launched modified code.
+## Runtime sources
 
-## Runtime references
+Downloads and SHA-256 hashes are pinned in `controller/runtime-lock.json`. Hashes are checked before extraction and installed components before execution. Pins identify the selected bytes; upstream suppliers and security updates still require review.
 
-Local setup uses the [official Ollama standalone Windows distribution](https://docs.ollama.com/windows), its [chat API](https://docs.ollama.com/api/chat), and [model pull API](https://docs.ollama.com/api/pull). The optional Python bootstrap uses the [official Python 3.13.12 embeddable distribution](https://www.python.org/downloads/release/python-31312/).
+- [QEMU downloads](https://www.qemu.org/download/#windows), [WHPX backend](https://www.qemu.org/docs/master/system/whpx.html), and [Windows build provider](https://qemu.weilnetz.de/w64/)
+- [Alpine Linux releases](https://alpinelinux.org/releases/)
+- [Ollama Windows distribution](https://docs.ollama.com/windows) and [chat API](https://docs.ollama.com/api/chat)
+- [Python portable distribution](https://www.python.org/downloads/release/python-31312/)

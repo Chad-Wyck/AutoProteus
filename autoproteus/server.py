@@ -24,6 +24,8 @@ from .tools import Workspace
 
 class Application:
     def __init__(self, root, data=None, client_factory=None):
+        if os.environ.get('AUTOPROTEUS_GUEST') != '1' and client_factory is None:
+            raise ValueError('This server is guest code. Use app.py for the protected host controller.')
         self.root = Path(root).resolve()
         self.data = Path(data or self.root / ".data")
         self.settings = Settings(self.data)

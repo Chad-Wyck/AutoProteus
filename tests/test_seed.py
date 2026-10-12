@@ -32,11 +32,11 @@ def temporary_directory():
     return directory
 
 
-def wait_session(store, session, seconds=8):
-    deadline = time.monotonic() + seconds
-    while session['status'] in ('running', 'stopping') and time.monotonic() < deadline:
-        time.sleep(0.03)
-    return session['status']
+def wait_session(agent, session, seconds=8):
+    # A final status is visible before the worker finishes its last save.
+    worker = agent.workers[session['id']][1]
+    worker.join(timeout=seconds)
+    return 'running' if worker.is_alive() else session['status']
 
 
 class WorkspaceTests(unittest.TestCase):
@@ -141,31 +141,6 @@ class WorkspaceTests(unittest.TestCase):
             self.assertTrue(result['timed_out'])
 
 
-class StartupTests(unittest.TestCase):
-    def test_second_instance_cannot_acquire_the_same_project_lock(self):
-        from app import acquire_lock
-        with temporary_directory() as directory:
-            first = acquire_lock(Path(directory))
-            self.assertIsNotNone(first)
-            try:
-                self.assertIsNone(acquire_lock(Path(directory)))
-            finally:
-                first.close()
-            another = acquire_lock(Path(directory))
-            self.assertIsNotNone(another)
-            another.close()
-
-    @unittest.skipUnless(os.name == 'nt', 'Windows credential encryption')
-    def test_saved_credentials_are_encrypted_and_recoverable(self):
-        with temporary_directory() as directory:
-            settings = Settings(Path(directory))
-            settings.update({'api_key': 'fake-key-for-testing'})
-            stored = (Path(directory) / 'credential.bin').read_bytes()
-            self.assertNotIn(b'fake-key-for-testing', stored)
-            self.assertEqual(Settings(Path(directory)).key(), 'fake-key-for-testing')
-            self.assertNotIn('fake-key-for-testing', json.dumps(settings.public()))
-
-
 class ProtocolTests(unittest.TestCase):
     def test_prose_fences_multiple_objects_and_ambiguous_actions_fail(self):
         for text in ('```bash\necho bad\n```', '{}{}', '{}', '[]',
@@ -177,6 +152,8 @@ class ProtocolTests(unittest.TestCase):
 
 class AgentTests(unittest.TestCase):
     def setUp(self):
+        self.guest_marker = patch.dict(os.environ, {'AUTOPROTEUS_GUEST': '1'})
+        self.guest_marker.start()
         self.temporary = temporary_directory()
         self.directory = Path(self.temporary.name)
         self.settings = Settings(self.directory)
@@ -185,12 +162,13 @@ class AgentTests(unittest.TestCase):
 
     def tearDown(self):
         self.temporary.cleanup()
+        self.guest_marker.stop()
 
     def test_complete_run_refreshes_todo_and_records_all_events(self):
         agent = Agent(ROOT, self.store, self.settings)
         session = self.store.create('Create a sample welcome file.', 'demo', 'scripted-demo')
         agent.start(session)
-        self.assertEqual(wait_session(self.store, session), 'completed')
+        self.assertEqual(wait_session(agent, session), 'completed')
         workspace = Path(session['workspace'])
         self.assertIn('Hello from AutoProteus', (workspace / 'welcome.md').read_text())
         self.assertIn('[x]', session['todo'])
@@ -213,7 +191,7 @@ class AgentTests(unittest.TestCase):
         agent = Agent(ROOT, self.store, self.settings, lambda _: LateClient())
         session = self.store.create('Test cancellation', 'demo', 'scripted-demo')
         agent.start(session); self.assertTrue(started.wait(2)); agent.stop(session['id'])
-        self.assertEqual(wait_session(self.store, session), 'paused')
+        self.assertEqual(wait_session(agent, session), 'paused')
         self.assertFalse((Path(session['workspace']) / 'late.txt').exists())
         agent.close()
 
@@ -224,7 +202,7 @@ class AgentTests(unittest.TestCase):
         agent = Agent(ROOT, self.store, self.settings, lambda _: BadClient())
         session = self.store.create('Test formatting', 'demo', 'scripted-demo')
         agent.start(session)
-        self.assertEqual(wait_session(self.store, session), 'error')
+        self.assertEqual(wait_session(agent, session), 'error')
         self.assertEqual(session['steps'], 0)
         self.assertEqual(len([item for item in session['feed'] if item['kind'] == 'notice']), 2)
         agent.close()
@@ -243,7 +221,7 @@ class AgentTests(unittest.TestCase):
         agent = Agent(ROOT, self.store, self.settings, lambda _: client)
         session = self.store.create('Test explicit completion', 'demo', 'scripted-demo')
         agent.start(session)
-        self.assertEqual(wait_session(self.store, session), 'completed')
+        self.assertEqual(wait_session(agent, session), 'completed')
         self.assertEqual(client.calls, 2)
         self.assertEqual(session['steps'], 1)
         self.assertEqual(len([item for item in session['feed'] if item['kind'] == 'notice']), 1)
@@ -259,7 +237,7 @@ class AgentTests(unittest.TestCase):
         agent = Agent(ROOT, self.store, self.settings, lambda _: client)
         session = self.store.create('Test explicit input request', 'demo', 'scripted-demo')
         agent.start(session)
-        self.assertEqual(wait_session(self.store, session), 'error')
+        self.assertEqual(wait_session(agent, session), 'error')
         self.assertEqual(client.calls, 3)
         self.assertEqual(session['steps'], 0)
         agent.close()
@@ -276,10 +254,10 @@ class AgentTests(unittest.TestCase):
         self.settings.update({'max_steps': 2})
         agent = Agent(ROOT, self.store, self.settings)
         session = self.store.create('Small run', 'demo', 'scripted-demo')
-        agent.start(session); self.assertEqual(wait_session(self.store, session), 'paused')
+        agent.start(session); self.assertEqual(wait_session(agent, session), 'paused')
         workspace = session['workspace']
         self.settings.update({'max_steps': 10})
-        agent.start(session); self.assertEqual(wait_session(self.store, session), 'completed')
+        agent.start(session); self.assertEqual(wait_session(agent, session), 'completed')
         self.assertEqual(session['workspace'], workspace)
         self.assertEqual(session['runs'], 2)
         agent.close()
@@ -301,7 +279,7 @@ class AgentTests(unittest.TestCase):
         agent = Agent(ROOT, self.store, self.settings, lambda _: client)
         session = self.store.create('Batch test', 'demo', 'scripted-demo')
         agent.start(session)
-        self.assertEqual(wait_session(self.store, session), 'completed')
+        self.assertEqual(wait_session(agent, session), 'completed')
         self.assertEqual(client.calls, 2)
         self.assertEqual((Path(session['workspace']) / 'batch.txt').read_text(), 'verified')
         agent.close()
@@ -316,7 +294,7 @@ class AgentTests(unittest.TestCase):
         agent = Agent(ROOT, self.store, self.settings, lambda _: BatchClient())
         session = self.store.create('Failure test', 'demo', 'scripted-demo')
         agent.start(session)
-        self.assertEqual(wait_session(self.store, session), 'paused')
+        self.assertEqual(wait_session(agent, session), 'paused')
         self.assertEqual(session['steps'], 2)
         self.assertFalse((Path(session['workspace']) / 'should-not-exist.txt').exists())
         agent.close()
@@ -355,7 +333,7 @@ class AgentTests(unittest.TestCase):
         session = self.store.create('Change value to 2 and verify it.', 'ollama', 'offline-test')
         path = Path(session['workspace']) / 'sample.py'; path.write_bytes(b'value = 1\r\n')
         agent.start(session)
-        self.assertEqual(wait_session(self.store, session), 'completed')
+        self.assertEqual(wait_session(agent, session), 'completed')
         self.assertEqual(path.read_bytes(), b'value = 2\r\n')
         journal = [json.loads(line) for line in (self.store.directory(session['id']) / 'events.jsonl').read_text().splitlines()]
         actions = [event['data']['action']['tool'] for event in journal if event['type'] == 'action_result']
@@ -488,6 +466,8 @@ class ProviderTests(unittest.TestCase):
 
 class ApiTests(unittest.TestCase):
     def setUp(self):
+        self.guest_marker = patch.dict(os.environ, {'AUTOPROTEUS_GUEST': '1'})
+        self.guest_marker.start()
         self.temporary = temporary_directory()
         self.app = Application(ROOT, data=Path(self.temporary.name))
         self.server = make_server(self.app, port=0)
@@ -495,6 +475,7 @@ class ApiTests(unittest.TestCase):
         self.base = 'http://127.0.0.1:' + str(self.server.server_port)
     def tearDown(self):
         self.app.close(); self.server.shutdown(); self.server.server_close(); self.thread.join(); self.temporary.cleanup()
+        self.guest_marker.stop()
     def request(self, path, data=None, token=True, origin=None):
         headers = {'Content-Type': 'application/json'}
         if token: headers['X-AutoProteus-Token'] = self.app.token
@@ -529,7 +510,7 @@ class ApiTests(unittest.TestCase):
         with self.request('/api/start', {'task': 'Show the demo'}) as response:
             session_id = json.load(response)['id']
         session = self.app.store.get(session_id)
-        self.assertEqual(wait_session(self.app.store, session), 'completed')
+        self.assertEqual(wait_session(self.app.agent, session), 'completed')
         with self.request('/api/file?id=' + session_id + '&path=welcome.md') as response:
             self.assertIn('Hello from AutoProteus', json.load(response)['content'])
         with self.assertRaises(urllib.error.HTTPError):

@@ -5,16 +5,16 @@ import json
 import time
 from pathlib import Path
 
-from autoproteus.agent import Agent
-from autoproteus.config import Settings
-from autoproteus.storage import Store, atomic_json
+from controller.isolation import IsolatedAgent as Agent
+from controller.config import Settings
+from controller.storage import Store, atomic_json
 
 
 def harness_files(root):
     """Fingerprint runtime and tests without importing or executing the copy."""
     paths = [path for folder in ('autoproteus', 'tests') for path in (root / folder).rglob('*.py')]
     paths.extend((root / 'web').rglob('*'))
-    paths.extend(root / name for name in ('app.py', 'evaluate.py', 'Start AutoProteus.cmd', 'launch.ps1'))
+    paths.extend(root / name for name in ('seed.py', 'app.py', 'evaluate.py', 'Start AutoProteus.cmd', 'launch.ps1'))
     return {path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
             for path in paths
             if path.is_file() and path.resolve().is_relative_to(root.resolve())}
@@ -91,6 +91,9 @@ def main():
             session = store.create(task['task'], settings.values['provider'], settings.values['model'])
             workspace = Path(session['workspace'])
             baseline = harness_files(root) if task.get('review_required') else None
+            if baseline is not None:
+                baseline = {name: digest for name, digest in baseline.items()
+                            if name.startswith(('autoproteus/', 'web/')) or name in ('seed.py', 'tests/test_seed.py')}
             for name, content in task.get('fixtures', {}).items():
                 (workspace / name).parent.mkdir(parents=True, exist_ok=True)
                 (workspace / name).write_text(content, encoding='utf-8')
@@ -100,6 +103,8 @@ def main():
             if session['status'] in ('running', 'stopping'):
                 agent.stop(session['id'])
                 agent.workers[session['id']][1].join(timeout=5)
+            if hasattr(agent, 'export_for_checks'):
+                agent.export_for_checks(session)
             checks = [check(workspace, rule) for rule in task['checks']]
             changes = harness_changes(workspace, baseline) if baseline is not None else []
             if baseline is not None:

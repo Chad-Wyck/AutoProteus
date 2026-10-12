@@ -37,6 +37,7 @@ function renderApp() {
   const current = busy() ? state.session : config;
   text('composer-model', config.configured ? (current.provider === 'demo' ? 'Demo · scripted tour' : current.model + (current.provider === 'ollama' ? ' · local' : ' · hosted')) : 'Choose a model to begin');
   renderSetupProgress(app.setup);
+  renderIsolation(app.isolation);
 }
 
 function home() {
@@ -62,6 +63,7 @@ async function selectSession(id) {
 const actionLabels = { list_files: 'Looking through files', read_file: 'Reading a file', write_file: 'Writing a file', edit_file: 'Editing a file', update_todo: 'Updating the checklist', run_command: 'Running a command' };
 function feedItem(item) {
   const element = node('div', 'feed-item ' + item.kind + (item.kind === 'result' && !item.ok ? ' failed' : ''));
+  element.dataset.feedId = item.id;
   if (item.kind === 'action' || item.kind === 'result') {
     const details = node('details');
     const label = item.kind === 'action' ? (actionLabels[item.text] || item.text) + (item.arguments?.path ? ' · ' + item.arguments.path : '') : item.text;
@@ -74,6 +76,10 @@ function renderSession() {
   const session = state.session;
   text('page-name', session.title);
   const feed = $('feed'), nearBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 130;
+  // Keep display memory bounded even when a candidate replaces its whole feed.
+  const currentIds = new Set(session.feed.map(item => item.id));
+  Array.from(feed.children).forEach(element => { if (!currentIds.has(element.dataset.feedId)) element.remove(); });
+  state.feedIds.forEach(id => { if (!currentIds.has(id)) state.feedIds.delete(id); });
   let added = false;
   session.feed.forEach(item => { if (!state.feedIds.has(item.id)) { feed.append(feedItem(item)); state.feedIds.add(item.id); added = true; } });
   if (added && (nearBottom || state.feedIds.size < 5)) feed.scrollTop = feed.scrollHeight;
@@ -118,6 +124,7 @@ async function refreshFiles() {
 
 async function startTask(task) {
   if (!state.app.settings.configured) { openSetup(); return; }
+  if (!state.app.isolation?.ready) { state.pendingTask = task; $('isolation-dialog').showModal(); return; }
   const response = await api('/api/start', { task });
   $('task').value = ''; state.app = await api('/api/state'); await selectSession(response.id);
 }
@@ -148,7 +155,34 @@ async function openFile(path) {
 $('close-file').onclick = () => $('file-dialog').close();
 $('download-file').onclick = async () => { try { const file = state.file; saveBlob(await api('/api/download?id=' + file.id + '&path=' + encodeURIComponent(file.path), undefined, true), file.path.split('/').pop()); } catch (e) { toast(e.message); } };
 $('trace-button').onclick = async () => { try { saveBlob(await api('/api/export?id=' + state.id, undefined, true), 'autoproteus-session-' + state.id.slice(0, 8) + '.zip'); } catch (e) { toast(e.message); } };
-$('workspace-button').onclick = async () => { try { await api('/api/open-workspace', { id: state.id }); } catch (e) { toast(e.message); } };
+$('workspace-button').onclick = async () => { try { saveBlob(await api('/api/open-workspace', { id: state.id }, true), 'autoproteus-files-' + state.id.slice(0, 8) + '.zip'); } catch (e) { toast(e.message); } };
+
+function renderIsolation(info) {
+  if (!info) return;
+  text('isolation-message', info.message);
+  error('isolation-error', info.error);
+  $('prepare-isolation').disabled = info.busy || !info.available;
+  text('prepare-isolation', info.busy ? 'Preparing…' : info.ready ? 'Prepare again' : 'Prepare isolated environment');
+  text('isolation-status', info.ready ? 'VM isolation ready' : info.busy ? 'Preparing isolation…' : 'Set up isolation');
+  if (info.ready && state.pendingTask && $('isolation-dialog').open) {
+    const task = state.pendingTask; state.pendingTask = null; $('isolation-dialog').close();
+    startTask(task).catch(e => toast(e.message));
+  }
+}
+$('close-isolation').onclick = () => $('isolation-dialog').close();
+$('isolation-status').onclick = () => $('isolation-dialog').showModal();
+$('try-seed').onclick = async () => {
+  try { const result = await api('/api/try-seed', {id: state.id}); state.app = await api('/api/state'); await selectSession(result.id); }
+  catch (e) { toast(e.message); }
+};
+$('reset-seed').onclick = async () => {
+  try { await api('/api/reset', {id: state.id}); await poll(); }
+  catch (e) { toast(e.message); }
+};
+$('prepare-isolation').onclick = async () => {
+  try { renderIsolation(await api('/api/isolation/setup', {})); }
+  catch (e) { error('isolation-error', e.message); }
+};
 
 function providerTab(provider) {
   state.provider = provider; const local = provider === 'ollama';

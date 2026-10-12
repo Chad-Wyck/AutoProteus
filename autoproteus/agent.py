@@ -30,7 +30,8 @@ write_file: {"path":"file.txt","content":"full text"} creates or replaces a text
 edit_file: {"path":"file.txt","old_text":"exact existing text","new_text":"replacement"} replaces exactly one match.
 Read first; missing or ambiguous matches are rejected. Include surrounding text to identify one match.
 {terminal}
-All file paths must stay inside this session's workspace. Shell commands, if enabled, run on the user's computer.
+File tools stay inside this session's workspace. Commands, if enabled, run inside the disposable Linux VM.
+The host computer, its files, and its controller are unavailable. There is no general network access.
 A copy of the seed source is in harness/. If asked to improve yourself, edit that copy.
 Changes to that copy do not change the running app. Explain your changes and how to check them.
 '''
@@ -97,7 +98,7 @@ class Agent:
             return
         target.mkdir()
         digest = hashlib.sha256()
-        for name in ("autoproteus", "web", "tests", "evaluations", "app.py", "evaluate.py", "Start AutoProteus.cmd", "launch.ps1", "README.md"):
+        for name in ("autoproteus", "web", "tests", "evaluations", "seed.py", "README.md"):
             path = self.root / name
             if path.is_dir():
                 shutil.copytree(path, target / name, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
@@ -111,6 +112,8 @@ class Agent:
         session["seed_sha256"] = digest.hexdigest()
 
     def start(self, session, message=None):
+        if __import__('os').environ.get('AUTOPROTEUS_GUEST') != '1' and self.client_factory is None:
+            raise ValueError('The seed must run inside the isolated VM. Start AutoProteus with app.py.')
         with self.lock:
             existing = self.workers.get(session["id"])
             if existing and existing[1].is_alive():
