@@ -13,7 +13,7 @@ from pathlib import Path
 
 from autoproteus.agent import Agent, parse_action
 from autoproteus.config import Settings, protect
-from autoproteus.providers import DemoClient, ModelClient, ProviderError, normalize_tool_response, wire_messages
+from autoproteus.providers import DemoClient, ModelClient, ProviderError, model_response, normalize_tool_response, tool_definitions, wire_messages
 from autoproteus.server import Application, make_server
 from autoproteus.storage import Store
 from autoproteus.tools import Cancelled, Workspace
@@ -50,6 +50,13 @@ class WorkspaceTests(unittest.TestCase):
         with temporary_directory() as directory:
             with self.assertRaises(ValueError):
                 Workspace(Path(directory)).execute('run_command', {'command': 'echo test'})
+
+    def test_checklist_uses_ordinary_file_tools(self):
+        self.assertNotIn('update_todo', [tool['function']['name'] for tool in tool_definitions()])
+        with temporary_directory() as directory:
+            workspace = Workspace(Path(directory))
+            workspace.execute('write_file', {'path': 'todo.txt', 'content': '[x] Verified\n'})
+            self.assertEqual(workspace.execute('read_file', {'path': 'todo.txt'})['content'], '[x] Verified\n')
 
     def test_cancellation_prevents_file_write(self):
         with temporary_directory() as directory:
@@ -156,6 +163,41 @@ class AgentTests(unittest.TestCase):
         self.assertEqual(wait_session(self.store, session), 'error')
         self.assertEqual(session['steps'], 0)
         self.assertEqual(len([item for item in session['feed'] if item['kind'] == 'notice']), 2)
+        agent.close()
+
+    def test_native_prose_is_repaired_before_explicit_finish(self):
+        class RepairClient:
+            calls = 0
+            def complete(client, messages, cancel):
+                client.calls += 1
+                if client.calls == 1:
+                    return model_response('All done.', [], True)
+                self.assertIn('Call finish', messages[-1]['content'])
+                return model_response('', [{'function': {'name': 'finish', 'arguments':
+                    {'message': 'Verified.', 'status': 'completed'}}}], True)
+        client = RepairClient()
+        agent = Agent(ROOT, self.store, self.settings, lambda _: client)
+        session = self.store.create('Test explicit completion', 'demo', 'scripted-demo')
+        agent.start(session)
+        self.assertEqual(wait_session(self.store, session), 'completed')
+        self.assertEqual(client.calls, 2)
+        self.assertEqual(session['steps'], 1)
+        self.assertEqual(len([item for item in session['feed'] if item['kind'] == 'notice']), 1)
+        agent.close()
+
+    def test_native_prose_does_not_infer_waiting_and_retries_are_bounded(self):
+        class ProseClient:
+            calls = 0
+            def complete(client, *args):
+                client.calls += 1
+                return model_response('Which filename should I use?', [], True)
+        client = ProseClient()
+        agent = Agent(ROOT, self.store, self.settings, lambda _: client)
+        session = self.store.create('Test explicit input request', 'demo', 'scripted-demo')
+        agent.start(session)
+        self.assertEqual(wait_session(self.store, session), 'error')
+        self.assertEqual(client.calls, 3)
+        self.assertEqual(session['steps'], 0)
         agent.close()
 
     def test_restart_marks_active_run_interrupted_and_keeps_pending_action(self):
@@ -320,8 +362,15 @@ class ProviderTests(unittest.TestCase):
         normalized = json.loads(normalize_tool_response('', [call, finish]))
         self.assertEqual(len(normalized['actions']), 1)
         self.assertTrue(normalized['deferred_finish'])
-        decision = parse_action(normalize_tool_response('All done.', []))
-        self.assertEqual(decision['status'], 'needs_input')
+        for prose in ('All done.', 'Which filename?', ''):
+            with self.subTest(prose=prose), self.assertRaisesRegex(ValueError, 'Call finish'):
+                normalize_tool_response(prose, [])
+            response = model_response(prose, [], True)
+            self.assertEqual(response['raw_content'], prose)
+            self.assertIn('Call finish', response['normalization_error'])
+        decision = parse_action(normalize_tool_response('', [{'function': {'name': 'finish',
+            'arguments': {'message': 'Which filename?', 'status': 'needs_input'}}}]))
+        self.assertEqual(decision, {'message': 'Which filename?', 'status': 'needs_input'})
 
 
 class ApiTests(unittest.TestCase):
@@ -350,6 +399,17 @@ class ApiTests(unittest.TestCase):
             self.request('/api/connect', {'provider':'hosted', 'base_url':'https://bad.example', 'model':'', 'api_key':'do-not-save'})
         self.assertEqual(self.app.settings.public(), previous)
         self.assertFalse((self.app.data / 'credential.bin').exists())
+    def test_hosted_connection_probes_json_and_keeps_native_preference(self):
+        provider = FakeModelServer(hosted=True)
+        try:
+            with self.request('/api/connect', {'provider': 'hosted', 'base_url': provider.url,
+                                               'model': 'fake-model', 'protocol': 'native', 'json_mode': True}) as response:
+                self.assertTrue(json.load(response)['configured'])
+            self.assertEqual(self.app.settings.values['protocol'], 'native')
+            self.assertNotIn('tools', provider.payloads[0])
+            self.assertNotIn('response_format', provider.payloads[0])
+        finally:
+            provider.close()
     def test_demo_session_api_file_and_export(self):
         with self.request('/api/connect', {'provider': 'demo', 'model': 'scripted-demo'}) as response:
             self.assertTrue(json.load(response)['configured'])

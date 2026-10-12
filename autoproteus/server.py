@@ -161,7 +161,7 @@ def handler_for(app):
                         if config["model"] not in names and config["model"] + ":latest" not in names:
                             raise ValueError("This model is not installed yet. Use Prepare local model to download it.")
                     elif config["provider"] == "hosted":
-                        test_config = {**config, "response_tokens": 256, "request_timeout": 30}
+                        test_config = {**config, "protocol": "json", "json_mode": False, "response_tokens": 256, "request_timeout": 30}
                         answer = ModelClient(test_config, data.get('api_key') or app.settings.key()).complete([
                             {"role": "system", "content": 'Return exactly {"message":"Ready","status":"completed"} as JSON.'},
                             {"role": "user", "content": "Test the connection."}], threading.Event())

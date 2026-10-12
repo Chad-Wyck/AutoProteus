@@ -51,8 +51,8 @@ class Workspace:
                 stream.seek(min(offset, 10000000))
                 content = stream.read(LIMIT + 1)
             return {"path": args["path"], "content": clipped(content), "offset": offset}
-        if tool in ("write_file", "update_todo"):
-            target = "todo.txt" if tool == "update_todo" else args["path"]
+        if tool == "write_file":
+            target = args["path"]
             path = self.path(target)
             content = args["content"]
             if not isinstance(content, str) or len(content) > 100000:

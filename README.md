@@ -1,6 +1,6 @@
 # AutoProteus Seed
 
-A small autonomous agent with a local browser interface. The seed connects a model to workspace tools, keeps a visible checklist, and records complete interactions. Models can inspect and change a copy of the harness without overwriting the running seed.
+A small autonomous agent with a local browser interface. The seed connects a model to workspace tools, displays an optional checklist, and records complete interactions. Models can inspect and change a copy of the harness without overwriting the running seed.
 
 ## Start
 
@@ -21,6 +21,8 @@ The local UI can also be started with `python app.py`. Use `python app.py --no-b
 The adapters support Ollama and services implementing a compatible `/chat/completions` API. Hosted service addresses should normally end in `/v1`. Hosted keys are encrypted using Windows DPAPI; on other platforms, keys entered in the UI last only until the app exits. `AUTOPROTEUS_API_KEY` is also supported. Keys are not included in journals or source snapshots.
 
 Adapters normalize native tool calls into the same small internal action protocol. Hosted setup also offers a strict JSON text fallback for models without native tools. There are no heuristic Markdown command extractors. A response must be complete and parse successfully before any action can execute. Models that do not reliably produce actions may require configuration changes or a different adapter; compatibility is not a guarantee of task competence. Local models use their default thinking behavior unless you change it in Settings.
+
+Native replies must use `finish` to report completion or request input. Prose-only replies enter the bounded format repair loop. Checklists are optional: the model writes `todo.txt` using `write_file` when requested or helpful, and the UI displays it.
 
 The starter is [Qwen3 4B Instruct](https://ollama.com/library/qwen3:4b-instruct). The lighter 1.7B option uses less memory but can be less reliable. Tool batches run in order; after a failed action, remaining dependent calls are skipped so the model can replan. Completion requested alongside tools is deferred until the model receives their results.
 
@@ -59,6 +61,8 @@ Run `python -m unittest discover -s tests -v`. Tests cover action validation, wo
 The current seed has no claim of improved model performance. Compare models and future harness changes on repeatable tasks before promoting them.
 
 Use `python evaluate.py --live --model MODEL_NAME` to compare another installed model on the same service without changing your saved connection. `--task exact-file` selects a single evaluation.
+
+Use `python evaluate.py --live --self-improve --timeout 3600` for the separate harness feature task. The model chooses and implements a small feature in its source copy, adds a test, and explains its use. The criteria in `evaluations/harness-feature.json` require independent functional checks and the trusted seed regression suite against the copy. The evaluator checks artifacts and changed runtime/test files without executing model-authored code. A ready submission reports `REVIEW`, `passed: null`, and exit code 2 until those independent checks are recorded; unsuccessful submissions exit 1. No changes activate automatically.
 
 ## Runtime references
 

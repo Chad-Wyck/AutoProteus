@@ -26,7 +26,6 @@ def tool_definitions(terminal=False):
         definition("list_files", "List a directory in the task workspace.", {"path": string}, []),
         definition("read_file", "Read a UTF-8 text file to inspect or verify it.", {"path": string, "offset": {"type": "integer"}}, ["path"]),
         definition("write_file", "Create or replace a text file. Supply its complete content.", {"path": string, "content": string}, ["path", "content"]),
-        definition("update_todo", "Replace todo.txt with a checklist using [ ] and [x].", {"content": string}, ["content"]),
         definition("finish", "Report verified completion, or ask the user for required information.",
                    {"message": string, "status": {"type": "string", "enum": ["completed", "needs_input"]}}, ["message", "status"]),
     ]
@@ -68,8 +67,7 @@ def wire_messages(messages, ollama):
 
 def normalize_tool_response(content, calls):
     if not calls:
-        # Plain replies stop for the user's input; they are not completion claims.
-        return json.dumps({'message': content or 'The model returned no action. Add a clarification or try another model.', 'status': 'needs_input'})
+        raise ValueError('A native response needs a tool call. Call finish with message and status="completed" after verification, or status="needs_input" to ask the user a required question.')
     if len(calls) > 32:
         raise ValueError('Too many tool calls in one response')
     decisions = []
@@ -222,10 +220,10 @@ class DemoClient:
                 raise Cancelled()
         results = sum(message["role"] == "user" and message["content"].startswith("ACTION RESULT") for message in messages)
         steps = [
-            {"message": "I'll create a short plan for this sample run.", "action": {"tool": "update_todo", "arguments": {"content": "[ ] Create welcome.md\n[ ] Read the file to verify it\n"}}},
+            {"message": "I'll create a short plan for this sample run.", "action": {"tool": "write_file", "arguments": {"path": "todo.txt", "content": "[ ] Create welcome.md\n[ ] Read the file to verify it\n"}}},
             {"message": "I'm writing a welcome note in this session's workspace.", "action": {"tool": "write_file", "arguments": {"path": "welcome.md", "content": "# Hello from AutoProteus\n\nThis file was created by the interactive demo.\n\nThe demo uses real workspace tools and session logging, but no AI model.\n"}}},
             {"message": "I'll read the file back before marking the task complete.", "action": {"tool": "read_file", "arguments": {"path": "welcome.md"}}},
-            {"message": "The file is present. I'm updating the checklist.", "action": {"tool": "update_todo", "arguments": {"content": "[x] Create welcome.md\n[x] Read the file to verify it\n"}}},
+            {"message": "The file is present. I'm updating the checklist.", "action": {"tool": "write_file", "arguments": {"path": "todo.txt", "content": "[x] Create welcome.md\n[x] Read the file to verify it\n"}}},
             {"message": "Your sample run is complete. Open welcome.md in Files, or connect a model to start your own task.", "status": "completed"},
         ]
         return {"content": json.dumps(steps[min(results, len(steps)-1)]), "usage": {}, "demo": True}
