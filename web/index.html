@@ -1,25 +1,26 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="app-token" content="__APP_TOKEN__"><meta name="color-scheme" content="light">
+  <meta name="app-token" content="__APP_TOKEN__"><meta name="color-scheme" content="dark">
+  <script src="/theme.js"></script>
   <title>AutoProteus</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
-    <a class="brand" href="/" aria-label="AutoProteus home"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M10 27V12a7 7 0 0 1 14 0v12a3 3 0 0 1-6 0V12a1 1 0 0 0-2 0v15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><circle cx="28" cy="8" r="3" fill="currentColor"/></svg><span>AutoProteus<small>SEED / 0.4</small></span></a>
+    <a class="brand" href="/" aria-label="AutoProteus home"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M10 27V12a7 7 0 0 1 14 0v12a3 3 0 0 1-6 0V12a1 1 0 0 0-2 0v15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><circle cx="28" cy="8" r="3" fill="currentColor"/></svg><span>AutoProteus<small>SEED / 0.5</small></span></a>
     <button class="new-task" id="new-task"><span>＋</span> New task <kbd>Ctrl N</kbd></button>
     <div class="sidebar-label">YOUR SESSIONS <span id="session-count">0</span></div>
     <nav id="sessions" aria-label="Saved sessions"><p class="sidebar-empty">Your work will appear here.<br>Every session is saved.</p></nav>
     <div class="sidebar-bottom">
       <button class="connection" id="connection"><span class="connection-dot"></span><span><strong id="connection-title">Choose a model</strong><small id="connection-sub">Get ready to start</small></span><span class="chevron">›</span></button>
-      <button class="settings-button hidden" id="evaluation-status">Seed check results</button><button class="settings-button" id="isolation-status">Set up isolation</button><button class="settings-button" id="settings-button"><span>⚙</span> Settings <span class="version">v0.4</span></button>
+      <button class="settings-button hidden" id="evaluation-status">Seed check results</button><button class="settings-button" id="isolation-status">Set up isolation</button><button class="settings-button" id="settings-button"><span>⚙</span> Settings <span class="version">v0.5</span></button>
     </div>
   </aside>
   <main class="main">
-    <header class="topbar"><div><span class="breadcrumb">Workspace</span><span class="slash">/</span><span id="page-name">New task</span></div><div class="topbar-actions"><span class="privacy"><span></span> On your computer</span><button id="details-toggle" class="quiet details-toggle" aria-expanded="false">Task details</button><button id="trace-button" class="quiet hidden">↓ Save trace</button></div></header>
+    <header class="topbar"><div><span class="breadcrumb">Workspace</span><span class="slash">/</span><span id="page-name">New task</span></div><div class="topbar-actions"><button id="theme-toggle" class="quiet theme-toggle" type="button" aria-label="Switch to light mode" title="Switch to light mode"><span class="theme-icon" aria-hidden="true">☀</span><span class="theme-label">Light mode</span></button><span class="privacy"><span></span> On your computer</span><button id="details-toggle" class="quiet details-toggle" aria-expanded="false">Task details</button><button id="trace-button" class="quiet hidden">↓ Save trace</button></div></header>
     <div id="execution-warning" class="execution-warning hidden" role="alert"></div>
     <div class="work-area">
       <section class="conversation" aria-label="Task conversation">

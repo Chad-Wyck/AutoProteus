@@ -1,0 +1,116 @@
+{
+  "date": "2026-10-13",
+  "purpose": "Rerun the updated starter and evaluate two Qwen3.5 9B agent fine-tunes on the GTX 1080 Ti.",
+  "models": [
+    {
+      "slug": "qwen35-9b",
+      "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+      "weight_sha256": "d784ce9eda1a5a7b51e8f705a9e6310844bf4f173654d115823c775fdea56d43",
+      "weight_bytes": 6169341984,
+      "huggingface": {
+        "repo": "bartowski/Qwen_Qwen3.5-9B-GGUF",
+        "revision": "182be2fd6c7bc44887d88a91cb03ff009cc9f549",
+        "file": "Qwen_Qwen3.5-9B-Q4_K_M.gguf",
+        "lfs": {
+          "sha256": "d784ce9eda1a5a7b51e8f705a9e6310844bf4f173654d115823c775fdea56d43",
+          "size": 6169341984,
+          "pointerSize": 135
+        },
+        "size": 6169341984
+      }
+    },
+    {
+      "slug": "wrench-9b",
+      "model": "hf.co/ClankLabs/Wrench-9B-Q4_K_M-GGUF:latest",
+      "weight_sha256": "e21435c7150794cccddf2ab0737fb5509eba681e7c9a89b1dc9e51948c4f78b7",
+      "weight_bytes": 5629108640,
+      "huggingface": {
+        "repo": "ClankLabs/Wrench-9B-Q4_K_M-GGUF",
+        "revision": "6d4f489d2a1ebb0f41f6cc8779a07df5917e5ddc",
+        "file": "Wrench-9B-Q4_K_M-GGUF .gguf",
+        "lfs": {
+          "sha256": "e21435c7150794cccddf2ab0737fb5509eba681e7c9a89b1dc9e51948c4f78b7",
+          "size": 5629108640,
+          "pointerSize": 135
+        },
+        "size": 5629108640
+      }
+    },
+    {
+      "slug": "harmonic-hermes-9b",
+      "model": "hf.co/DJLougen/Harmonic-Hermes-9B-GGUF:Q4_K_M",
+      "weight_sha256": "426ae37f1df94f2fcb0b05ad79f7aee34d52fcd773fbb2f6b1084c7f8aa204b0",
+      "weight_bytes": 5629108800,
+      "huggingface": {
+        "repo": "DJLougen/Harmonic-Hermes-9B-GGUF",
+        "revision": "7fe40c09af6886392d6ebd46a41a85ebbd08ec81",
+        "file": "Qwen3.5-9B-Harmonic.Q4_K_M.gguf",
+        "lfs": {
+          "sha256": "426ae37f1df94f2fcb0b05ad79f7aee34d52fcd773fbb2f6b1084c7f8aa204b0",
+          "size": 5629108800,
+          "pointerSize": 135
+        },
+        "size": 5629108800
+      }
+    }
+  ],
+  "selection": [
+    {
+      "repo": "ClankLabs/Wrench-9B-Q4_K_M-GGUF",
+      "revision": "6d4f489d2a1ebb0f41f6cc8779a07df5917e5ddc",
+      "card_url": "https://huggingface.co/ClankLabs/Wrench-9B-Q4_K_M-GGUF/blob/6d4f489d2a1ebb0f41f6cc8779a07df5917e5ddc/README.md",
+      "declared_context_tokens": 8192
+    },
+    {
+      "repo": "DJLougen/Harmonic-Hermes-9B-GGUF",
+      "revision": "7fe40c09af6886392d6ebd46a41a85ebbd08ec81",
+      "card_url": "https://huggingface.co/DJLougen/Harmonic-Hermes-9B-GGUF/blob/7fe40c09af6886392d6ebd46a41a85ebbd08ec81/README.md",
+      "declared_context_tokens": 8192
+    }
+  ],
+  "selection_reason": {
+    "wrench-9b": "Card describes LoRA training for tool use, error recovery and instruction following; publisher evaluations are not independently verified.",
+    "harmonic-hermes-9b": "Card describes reasoning and multi-turn agent-trace training with verification; publisher reports ongoing benchmark evaluation."
+  },
+  "batches": [
+    {
+      "name": "baseline16k",
+      "models": [
+        "qwen35-9b"
+      ],
+      "context_tokens": 16384,
+      "response_tokens": 4096
+    },
+    {
+      "name": "comparison8k",
+      "models": [
+        "qwen35-9b",
+        "wrench-9b",
+        "harmonic-hermes-9b"
+      ],
+      "context_tokens": 8192,
+      "response_tokens": 2048
+    }
+  ],
+  "common": {
+    "temperature": 0.6,
+    "sampling_seed": null,
+    "ordinary_tasks": 10,
+    "upgrade_tasks": [
+      "file_summary",
+      "append_text"
+    ],
+    "attempts_per_task_and_configuration": 1,
+    "upgrade_actions": 48,
+    "ordinary_actions": 32,
+    "upgrade_timeout_seconds": 900,
+    "ordinary_timeout_seconds": 180,
+    "candidate_execution": "isolated Linux VM",
+    "candidate_promotion": false
+  },
+  "limits": [
+    "16k baseline and 8k comparison are different settings; compare fine-tunes with the 8k base model.",
+    "Common sampling settings do not reproduce every publisher recommendation.",
+    "Only GGUF weights and metadata are downloaded; no publisher training or inference scripts execute."
+  ]
+}

@@ -6,6 +6,67 @@
 .details-toggle{display:none}.work-area{position:relative}@media(max-width:850px){.details-toggle{display:block}.inspector.open{display:flex;position:absolute;right:0;top:0;bottom:0;width:270px;z-index:4;box-shadow:-12px 0 30px #27293415}.topbar-actions{gap:12px}}@media(max-width:600px){.topbar-actions{gap:8px}#page-name{max-width:80px}.breadcrumb,.slash{display:none}.topbar-actions .quiet{font-size:10px}}
 
 .seed-check-dialog { width: min(850px, calc(100vw - 32px)); max-width: 850px; }
+
+/* Theme preference lives in the browser, outside the editable seed. */
+button { color: inherit; }
+.topbar>div:first-child { display: flex; align-items: center; min-width: 0; overflow: hidden; }
+.topbar-actions { flex-shrink: 0; }
+#page-name { min-width: 0; }
+.theme-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 6px; min-height: 32px; border-radius: 6px; white-space: nowrap; }
+.theme-toggle:hover { background: var(--accent-light); }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #181a20; --paper: #20232b; --ink: #eeeaf4; --muted: #ada8ba;
+  --line: #3a3d49; --accent: #c4a8f0; --accent-light: #30273e;
+  --sidebar: #15171d; --green: #acd4b4; --red: #efaaa8;
+}
+:root[data-theme="dark"] :is(.breadcrumb, .slash, .privacy, .eyebrow, .welcome>p,
+  .suggestions small, .suggestions button>span, .composer-bottom>span, .composer-note,
+  .inspector-title, .inspector-title span, .feature>span, .feature p, #inspector-empty>p,
+  .inspector-footer, .inspector-footer span, .status-card small, .section-label, .todo-item,
+  .muted, .file-item, .file-item>span, .seed-details, .seed-details p, .verification-note,
+  .feed-item.notice, .feed-item.action pre, .feed-item.result pre, .activity, #elapsed,
+  .session-banner, .dialog-heading p, .provider-tabs button, .provider-tabs span,
+  .local-intro p, .model-option p, .model-option small, .field, .field small,
+  .engine-status, .advanced, .advanced p, .download-note, .dialog-footnote,
+  .checkbox-field, .checkbox-field small, .setup-progress strong, .setup-progress span:last-child,
+  .settings-connection small, .toggle-field small, .brand small, .sidebar-label,
+  .sidebar-empty, .connection small, .version) { color: var(--muted); }
+:root[data-theme="dark"] :is(.quiet, .icon-button, .provider-tabs button.active, .local-icon,
+  .model-option span, .workspace-button, .empty-illustration, .feed-item.action details) { color: var(--accent); }
+:root[data-theme="dark"] .quiet:hover { color: var(--ink); }
+:root[data-theme="dark"] :is(.composer, .empty-illustration, .status-card, .todo-check,
+  .workspace-button, .feed-item.user, .feed-item.assistant::before, .feed-item.action details,
+  dialog, .model-option span, .field input, .field select, .setup-progress, .settings-connection) { border-color: var(--line); }
+:root[data-theme="dark"] :is(.empty-illustration, .status-card, .feed-item.action details,
+  .download-note, .setup-progress) { background: #282b35; }
+:root[data-theme="dark"] :is(.feed-item.user, .feed-item.assistant::before, .local-icon,
+  .model-option.selected) { background: var(--accent-light); }
+:root[data-theme="dark"] :is(.suggestions button:hover, .file-item:hover) { background: #30333f; }
+:root[data-theme="dark"] :is(.suggestions button:hover, .model-option.selected, .composer:focus-within) { border-color: var(--accent); }
+:root[data-theme="dark"] .composer:focus-within { box-shadow: 0 0 0 3px #c4a8f012; }
+:root[data-theme="dark"] :is(.composer textarea::placeholder, .field input::placeholder) { color: #9994a7; }
+:root[data-theme="dark"] :is(.field input, .field select) { background: var(--bg); color: var(--ink); }
+:root[data-theme="dark"] :is(.send, .primary) { color: #261c36; }
+:root[data-theme="dark"] :is(.send:hover, .primary:hover) { background: #d3bbf5; }
+:root[data-theme="dark"] :is(.stop, .feed-item.error, .form-error) { background: #38282b; color: var(--red); border-color: #694247; }
+:root[data-theme="dark"] :is(.feed-item.result.failed, .check-fail) { color: var(--red); }
+:root[data-theme="dark"] :is(.todo-item.done, .feed-item.result, .engine-status.available, .check-pass) { color: var(--green); }
+:root[data-theme="dark"] .todo-item.done .todo-check { background: #26382d; border-color: #52765d; color: var(--green); }
+:root[data-theme="dark"] .file-dialog pre { color: var(--ink); }
+:root[data-theme="dark"] dialog { box-shadow: 0 28px 100px #0007; }
+:root[data-theme="dark"] dialog::backdrop { background: #08090dc7; }
+:root[data-theme="dark"] .spinner { border-color: var(--line); border-top-color: var(--accent); }
+:root[data-theme="dark"] .progress-track { background: var(--line); }
+:root[data-theme="dark"] #progress-bar { background: var(--accent); }
+:root[data-theme="dark"] .hero-mark circle:first-of-type { fill: var(--accent-light); }
+:root[data-theme="dark"] .hero-mark ellipse { stroke: #755c97; }
+@media (max-width: 600px) {
+  .theme-toggle { min-width: 44px; min-height: 44px; }
+  .theme-toggle .theme-icon { font-size: 14px; }
+  .theme-toggle .theme-label { display: none; }
+}
 .execution-warning { background: #fff3df; color: #704510; border: 1px solid #d7b478; border-radius: 8px; padding: 12px 16px; margin: 12px 20px; font-size: 13px; line-height: 1.6; flex-shrink: 0; }
 #check-execution { margin: 12px 0; }
 #execution-label { color: #8a623a; font-size: 11px; line-height: 1.5; }
@@ -19,6 +80,9 @@
 .check-table th, .check-table td { padding: 9px 10px; border-bottom: 1px solid var(--line); }
 .check-pass { color: #376c4d; }
 .check-fail { color: #9a3838; }
+
+:root[data-theme="dark"] .execution-warning { background: #352b1e; color: #f0cf9b; border-color: #725e3c; }
+:root[data-theme="dark"] #execution-label { color: #ddbd91; }
 .check-detail { display: block; max-width: 220px; margin-top: 5px; font-weight: normal; overflow-wrap: anywhere; }
 .check-changes pre { max-height: 240px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
 .check-score pre { max-height: 200px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; }

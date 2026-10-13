@@ -3,6 +3,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from controller.config import DEFAULTS
 from controller.providers import ModelClient, ProviderError, model_response, normalize_tool_response, wire_messages
 from autoproteus.agent import parse_action
+from autoproteus.providers import tool_definitions
 
 
 class FakeModelServer:
@@ -73,12 +74,20 @@ class HostProviderTests(unittest.TestCase):
             try:
                 config = dict(DEFAULTS)
                 config.update(provider='hosted' if hosted else 'ollama', base_url=server.url)
-                response = ModelClient(config).complete([{'role':'user','content':'Create sample.txt'}], threading.Event())
+                tools = tool_definitions()
+                response = ModelClient(config).complete([{'role':'user','content':'Create sample.txt'}], threading.Event(), tools=tools)
                 decision = parse_action(response['content'])
                 self.assertEqual(decision['action']['arguments']['path'], 'sample.txt')
-                self.assertTrue(server.payloads[0]['tools'])
+                self.assertEqual(server.payloads[0]['tools'], tools)
+                self.assertIn('read_section', [tool['function']['name'] for tool in server.payloads[0]['tools']])
                 self.assertNotIn('format', server.payloads[0])
             finally: server.close()
+
+    def test_native_inference_requires_explicit_seed_tool_definitions(self):
+        for provider in ('ollama', 'hosted'):
+            config = {**DEFAULTS, 'provider': provider}
+            with self.subTest(provider=provider), self.assertRaisesRegex(ProviderError, 'supplied by the seed'):
+                ModelClient(config).complete([{'role': 'user', 'content': 'test'}], threading.Event())
 
     def test_tool_history_has_matching_ids_and_orphans_remain_context(self):
         messages = [{'role':'assistant','content':json.dumps({'message':'Writing','action':{'tool':'write_file','arguments':{'path':'x','content':'hi'}}})},

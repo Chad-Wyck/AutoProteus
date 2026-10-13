@@ -8,6 +8,9 @@ VM isolation is the default. An explicitly acknowledged **Linux native mode** is
 
 On **64-bit Windows 11**, double-click **Start AutoProteus.cmd**. Choose a local model, hosted connection, or scripted demo. Before the first task, choose **Prepare isolated environment**. The app downloads pinned portable QEMU and Linux components into this project, then continues your task. Later runs reuse them.
 
+The interface starts in dark mode. Use **Light mode** in the top bar to switch;
+your browser remembers the choice across launches.
+
 **Windows Hypervisor Platform must be enabled.** This backend works on the tested Windows 11 Home PC using its existing hardware virtualization. If unavailable, the app explains how to enable it through Windows Features and restart. Enabling that Windows feature may require administrator access; portable setup does not install drivers or alter Windows features. There is no software-emulation or native-host execution fallback.
 
 ### Linux without AutoProteus VM protection
@@ -48,6 +51,8 @@ Saved files enter a quarantine store as inert blobs. The interface previews text
 
 Exports are limited to 2 MiB per file, 500 files, and 32 MiB per checkpoint. The VM receives 2 GiB RAM, two virtual CPUs, and a 512 MiB task filesystem in RAM. External process, CPU, memory, transfer, journal, model-request, and one-hour runtime limits apply. One task runs at a time. “Finished” reflects the model's report; review outputs or use independent checks.
 
+Conversation history stays bounded by a conservative character estimate of the selected context window. The original user request is retained when older history is trimmed, and the full journal remains on disk. Source files use LF line endings on Windows and Linux so exact source edits see consistent text.
+
 ## Growing the seed
 
 Each workspace has `harness/`, a small copy of the editable source: `seed.py`, the agent, tools, session storage, tool descriptions, guest documentation, and tests. Model adapters, download/setup code, browser assets and evaluation definitions remain outside this copy. The model edits its seed without overwriting the protected starter or controller.
@@ -60,7 +65,9 @@ Before any model task, a protected guest driver runs the unchanged starter tests
 
 The browser interface and `controller/` are maintained by the human developer. Generated interfaces remain guest artifacts. Additional host capabilities, such as email, will need separately implemented, explicitly authorized broker operations. The current broker exposes only inference, bounded session events/state, and artifacts.
 
-`read_file` offsets are UTF-8 bytes; length is characters (default 1,000, maximum 12,000). Continue using `next_offset` until `eof`. `edit_file` replaces exactly one matching fragment, preserving surrounding bytes and line endings. Writes and edits are limited to 100,000 characters. Optional checklists use `todo.txt`.
+`read_file(path)` returns the whole UTF-8 file up to 12,000 characters, and rejects larger files instead of truncating them. `read_section(path, start=0, length=1000)` reads a chosen section of up to 12,000 characters. Both `start` and `length` count characters; continue at `next_start` until `eof`. Unicode and original line endings are preserved. Whole-file results that cannot fit the model context are explicitly omitted with a section-reading hint. This replaces the older byte-offset `read_file` API; existing candidate copies retain their own implementation. `edit_file` replaces exactly one matching fragment, preserving surrounding bytes and line endings. Writes and edits are limited to 100,000 characters. Optional checklists use `todo.txt`.
+
+The seed's `TOOL_SPECS` table supplies both native and JSON descriptions. To add a tool, implement its dispatch, add one table entry and focused tests, then follow the short recipe in the copied `harness/README.md`. The host forwards descriptions as data and never imports the editable modules.
 
 ## Files
 

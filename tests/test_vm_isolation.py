@@ -114,13 +114,20 @@ pathlib.Path('boundary.json').write_text(json.dumps(report))
     def test_native_provider_gateway_keeps_credentials_outside_guest_and_saves_verified_output(self):
         requests = []
         secret = 'boundary-test-key-never-send-to-guest'
+        content = 'Protected native gateway café 🙂\r\n世界\n'
+        section_start = content.index('café')
+        actions = [
+            ('write_file', {'path': 'gateway.txt', 'content': content}),
+            ('read_file', {'path': 'gateway.txt'}),
+            ('read_section', {'path': 'gateway.txt', 'start': section_start, 'length': 4}),
+            ('finish', {'message': 'Verified', 'status': 'completed'}),
+        ]
         class Handler(BaseHTTPRequestHandler):
             def log_message(self, *args): pass
             def do_POST(self):
                 payload = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
                 requests.append((payload, self.headers.get('Authorization')))
-                name = 'write_file' if len(requests) == 1 else 'finish'
-                args = {'path': 'gateway.txt', 'content': 'Protected native gateway works\n'} if name == 'write_file' else {'message': 'Verified', 'status': 'completed'}
+                name, args = actions[min(len(requests) - 1, len(actions) - 1)]
                 body = json.dumps({'choices': [{'finish_reason': 'tool_calls', 'message': {'content': '', 'tool_calls': [
                     {'id': 'native-test', 'type': 'function', 'function': {'name': name, 'arguments': json.dumps(args)}}]}}]}).encode()
                 self.send_response(200); self.send_header('Content-Type', 'application/json')
@@ -135,10 +142,17 @@ pathlib.Path('boundary.json').write_text(json.dumps(report))
             session = self.store.create('Verify the native provider gateway', 'hosted', 'offline-boundary-test')
             agent.start(session)
             self.assertEqual(self.wait(agent, session), 'completed', session['feed'])
-            self.assertEqual(Artifacts(self.store, session).read('gateway.txt'), b'Protected native gateway works\n')
-            self.assertEqual(len(requests), 2)
+            self.assertEqual(Artifacts(self.store, session).read('gateway.txt'), content.encode('utf-8'))
+            self.assertEqual(len(requests), 4)
             self.assertTrue(all(auth == 'Bearer ' + secret for _, auth in requests))
-            self.assertTrue(requests[0][0]['tools'])
+            self.assertIn('read_section', [tool['function']['name'] for tool in requests[0][0]['tools']])
+            whole = json.loads(requests[2][0]['messages'][-1]['content'])['result']
+            section = json.loads(requests[3][0]['messages'][-1]['content'])['result']
+            self.assertEqual(whole['content'], content)
+            self.assertTrue(whole['eof'])
+            self.assertEqual(whole['next_start'], len(content))
+            self.assertEqual(section['content'], 'café')
+            self.assertEqual(section['next_start'], section_start + 4)
             trace = (self.store.directory(session['id']) / 'events.jsonl').read_text(encoding='utf-8')
             self.assertNotIn(secret, trace)
             self.assertNotIn(self.settings.values['base_url'], trace)

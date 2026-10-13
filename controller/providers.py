@@ -17,27 +17,6 @@ class ProviderError(Exception):
         self.response = response
 
 
-def tool_definitions(terminal=False):
-    def definition(name, description, properties, required):
-        return {"type": "function", "function": {"name": name, "description": description,
-                "parameters": {"type": "object", "properties": properties, "required": required}}}
-    string = {"type": "string"}
-    tools = [
-        definition("list_files", "List a directory in the task workspace.", {"path": string}, []),
-        definition("read_file", "Read UTF-8 text: offset is bytes, length is characters (default 1000, maximum 12000). Continue at next_offset; eof marks the end.",
-                   {"path": string, "offset": {"type": "integer", "minimum": 0},
-                    "length": {"type": "integer", "minimum": 1, "maximum": 12000}}, ["path"]),
-        definition("write_file", "Create or replace a text file. Supply its complete content.", {"path": string, "content": string}, ["path", "content"]),
-        definition("edit_file", "Replace old_text exactly once in a UTF-8 file, preserving surrounding text. Missing or ambiguous matches fail; read first.",
-                   {"path": string, "old_text": string, "new_text": string}, ["path", "old_text", "new_text"]),
-        definition("finish", "Report verified completion, or ask the user for required information.",
-                   {"message": string, "status": {"type": "string", "enum": ["completed", "needs_input"]}}, ["message", "status"]),
-    ]
-    if terminal:
-        tools.append(definition("run_command", "Run a native shell command from the task workspace.", {"command": string}, ["command"]))
-    return tools
-
-
 def wire_messages(messages, ollama):
     """Translate the neutral journal history to a provider's tool message format."""
     output, last_id = [], None
@@ -155,13 +134,15 @@ class ModelClient:
     def _complete(self, messages, cancel, progress, tools=None):
         config = self.config
         native = config.get('protocol', 'native') == 'native'
+        if native and tools is None:
+            raise ProviderError('Native inference requires tool definitions supplied by the seed')
         base = config["base_url"].rstrip("/")
         if config["provider"] == "ollama":
             payload = {"model": config["model"], "messages": wire_messages(messages, True) if native else messages, "stream": True,
                        "options": {"num_ctx": config["context_tokens"], "num_predict": config["response_tokens"],
                                    "temperature": config["temperature"]}, "keep_alive": "10m"}
             if native:
-                payload['tools'] = tool_definitions(config['terminal']) if tools is None else tools
+                payload['tools'] = tools
             else:
                 payload['format'] = 'json'
             if config.get("thinking") is not None:
@@ -211,7 +192,7 @@ class ModelClient:
         payload = {"model": config["model"], "messages": wire_messages(messages, False) if native else messages, "stream": False,
                    "max_tokens": config["response_tokens"], "temperature": config["temperature"]}
         if native:
-            payload['tools'] = tool_definitions(config['terminal']) if tools is None else tools
+            payload['tools'] = tools
         if config.get("json_mode"):
             payload["response_format"] = {"type": "json_object"}
         headers = {"Authorization": "Bearer " + self.key} if self.key else {}

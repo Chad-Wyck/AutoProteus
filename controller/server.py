@@ -157,7 +157,7 @@ def handler_for(app):
                 if path == "/":
                     page = (app.root / "web" / "index.html").read_text(encoding="utf-8").replace("__APP_TOKEN__", app.token)
                     return self.send(page.encode(), mime="text/html")
-                if path in ("/app.js", "/style.css", "/favicon.svg"):
+                if path in ("/app.js", "/theme.js", "/style.css", "/favicon.svg"):
                     target = app.root / "web" / path.lstrip("/")
                     return self.send(target.read_bytes(), mime=mimetypes.guess_type(str(target))[0] or "application/octet-stream")
                 self.send({"error": "Page not found"}, 404)

@@ -45,23 +45,38 @@ class Workspace:
             entries = sorted(path.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower()))
             return {"files": [{"name": p.name, "directory": p.is_dir(), "bytes": p.stat().st_size if p.is_file() else None}
                               for p in entries[:200]], "truncated": len(entries) > 200}
-        if tool == "read_file":
+        if tool in ("read_file", "read_section"):
             path = self.path(args["path"])
-            offset, length = args.get("offset", 0), args.get("length", READ_DEFAULT)
-            if type(offset) is not int or offset < 0:
-                raise ValueError("offset must be a nonnegative UTF-8 byte position; use next_offset to continue")
+            if tool == "read_file" and any(key in args for key in ("offset", "start", "length")):
+                raise ValueError("read_file reads the whole file; use read_section with character start and length")
+            start = args.get("start", 0) if tool == "read_section" else 0
+            length = args.get("length", READ_DEFAULT) if tool == "read_section" else LIMIT
+            if "offset" in args:
+                raise ValueError("Use read_section with a character start, not a byte offset")
+            if type(start) is not int or start < 0:
+                raise ValueError("start must be a nonnegative character position; use next_start to continue")
             if type(length) is not int or not 1 <= length <= LIMIT:
                 raise ValueError(f"length must be between 1 and {LIMIT} characters")
             try:
-                # No newline translation: byte positions match the returned text.
+                # Preserve CRLF and skip by characters without allocating the prefix.
                 with path.open("r", encoding="utf-8", newline="") as stream:
-                    stream.seek(offset)
-                    content = stream.read(length)
-                    eof = not stream.read(1)
+                    remaining = start
+                    while remaining:
+                        if self.cancel.is_set():
+                            raise Cancelled()
+                        skipped = stream.read(min(remaining, LIMIT))
+                        if not skipped:
+                            break
+                        remaining -= len(skipped)
+                    content = stream.read(length + 1)
             except UnicodeDecodeError:
-                raise ValueError("Read a valid UTF-8 file at a character boundary; use next_offset to continue") from None
-            return {"path": args["path"], "content": content, "offset": offset,
-                    "next_offset": offset + len(content.encode("utf-8")), "eof": eof}
+                raise ValueError("Read a valid UTF-8 text file") from None
+            eof = len(content) <= length
+            if tool == "read_file" and not eof:
+                raise ValueError(f"This file exceeds {LIMIT} characters; use read_section with start and length")
+            content = content[:length]
+            return {"path": args["path"], "content": content, "start": start,
+                    "next_start": start + len(content), "eof": eof}
         if tool == "write_file":
             target = args["path"]
             path = self.path(target)
