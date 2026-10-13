@@ -1,0 +1,21 @@
+{
+  "status": "accepted by benchmark; unpromoted review artifact",
+  "starter_commit": "75bdef07e7b1d33bb64510d4c6b57989fcccbf2f",
+  "starter_source_sha256": "807f3991a762282c33faffe609067c813680b1358a30b29bc394abf5c625c0cd",
+  "candidate_source_sha256": "954bd1afa8bdf653c1573a2fc149d5ebea5f6b061c48cd80465ff8d05eee0700",
+  "patch_sha256": "ab4abc5bdbb05b5fb6497b4148acb392e58d7d53a968a4c8ba6187d827be02d7",
+  "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+  "context_tokens": 32768,
+  "response_tokens": 4096,
+  "protocol": "native",
+  "human_runtime_repairs": false,
+  "verification": {
+    "protected_tests": 30,
+    "candidate_suite_tests": 42,
+    "independent_feature_checks": 16,
+    "fresh_worker_public_call": true
+  },
+  "review_observation": "The model implementation reads the whole file before checking the 100000-character limit. A bounded read deserves review before any production promotion.",
+  "patch_readme_mapping": "The editable guest README.md comes from the repository SEED.md; this review patch targets SEED.md accordingly.",
+  "repository_patch_check_passed": true
+}

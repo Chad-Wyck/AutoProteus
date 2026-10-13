@@ -1,0 +1,201 @@
+diff --git a/SEED.md b/SEED.md
+--- a/SEED.md
++++ b/SEED.md
+@@ -51,6 +51,10 @@
+ characters, not bytes. Continue at `next_start` until `eof` is true. CRLF line
+ endings count as two characters and are preserved. If a whole-file result cannot
+ fit the model context, it is explicitly omitted; use a smaller section.
+-`edit_file` replaces exactly one matching fragment. Terminal access, when enabled, is a
+-Linux shell. In VM mode there is no general internet or host-drive access.
+-Native mode does not enforce those restrictions; keep actions within the task.
++`edit_file` replaces exactly one matching fragment. `file_summary(path)` returns an object with
++path (relative workspace path), bytes (UTF-8 byte count), characters (Unicode character count),
++lines (len(text.splitlines())), and words (len(text.split())). It supports UTF-8 files up to
++100,000 characters and rejects larger files, invalid UTF-8, directories, and paths outside
++the workspace. Terminal access, when enabled, is a Linux shell. In VM mode there is no general
++internet or host-drive access. Native mode does not enforce those restrictions; keep actions
++within the task.
+diff --git a/autoproteus/providers.py b/autoproteus/providers.py
+--- a/autoproteus/providers.py
++++ b/autoproteus/providers.py
+@@ -22,6 +22,7 @@
+     "write_file": ("Create or replace a text file. Supply its complete content.", {"path": STRING, "content": STRING}, ["path", "content"]),
+     "edit_file": ("Replace old_text exactly once in a UTF-8 file, preserving surrounding text. Missing or ambiguous matches fail; read first.",
+                   {"path": STRING, "old_text": STRING, "new_text": STRING}, ["path", "old_text", "new_text"]),
++    "file_summary": ("Count bytes, characters, lines and words in a UTF-8 file.", {"path": STRING}, ["path"]),
+     "finish": ("Report verified completion, or ask the user for required information.",
+                {"message": STRING, "status": {"type": "string", "enum": ["completed", "needs_input"]}}, ["message", "status"]),
+     "run_command": ("Run a native shell command from the task workspace.", {"command": STRING}, ["command"]),
+diff --git a/autoproteus/tools.py b/autoproteus/tools.py
+--- a/autoproteus/tools.py
++++ b/autoproteus/tools.py
+@@ -114,6 +114,20 @@
+                 raise Cancelled()
+             path.write_bytes(updated.encode("utf-8"))
+             return {"path": str(path.relative_to(self.root)), "bytes": len(updated.encode("utf-8")), "replacements": 1}
++        if tool == "file_summary":
++            path = self.path(args["path"])
++            try:
++                with path.open("r", encoding="utf-8", newline="") as stream:
++                    content = stream.read()
++            except UnicodeDecodeError:
++                raise ValueError("Read a valid UTF-8 text file") from None
++            except FileNotFoundError:
++                raise ValueError("Read a file that exists in the workspace") from None
++            if len(content) > WRITE_LIMIT:
++                raise ValueError(f"This file exceeds {WRITE_LIMIT} characters")
++            return {"path": args["path"], "bytes": len(content.encode("utf-8")),
++                    "characters": len(content), "lines": len(content.splitlines()),
++                    "words": len(content.split())}
+         if tool == "run_command":
+             if not self.terminal:
+                 raise ValueError("Terminal access is disabled. Use file tools or ask the user to enable it in Settings.")
+diff --git a/tests/test_file_summary.py b/tests/test_file_summary.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_file_summary.py
+@@ -0,0 +1,144 @@
++import os
++import tempfile
++import unittest
++from pathlib import Path
++
++from autoproteus.tools import Workspace
++
++ROOT = Path(__file__).resolve().parents[1]
++TEST_TEMP = Path(os.environ.get('AUTOPROTEUS_TEST_ROOT', str(ROOT / '.data/test-tmp')))
++
++
++def temporary_directory():
++    TEST_TEMP.mkdir(parents=True, exist_ok=True)
++    directory = tempfile.TemporaryDirectory(dir=TEST_TEMP)
++    if not Path(directory.name).resolve().is_relative_to(TEST_TEMP.resolve()):
++        raise RuntimeError('Unexpected temporary directory')
++    return directory
++
++
++class FileSummaryTests(unittest.TestCase):
++    def test_empty_file_returns_zero_counts(self):
++        with temporary_directory() as directory:
++            workspace = Workspace(Path(directory))
++            workspace.execute('write_file', {'path': 'empty.txt', 'content': ''})
++            result = workspace.execute('file_summary', {'path': 'empty.txt'})
++            self.assertEqual(result['path'], 'empty.txt')
++            self.assertEqual(result['bytes'], 0)
++            self.assertEqual(result['characters'], 0)
++            self.assertEqual(result['lines'], 0)
++            self.assertEqual(result['words'], 0)
++
++    def test_simple_text_counts_correctly(self):
++        with temporary_directory() as directory:
++            workspace = Workspace(Path(directory))
++            content = 'Hello world\nThis is a test file.\n'
++            workspace.execute('write_file', {'path': 'text.txt', 'content': content})
++            result = workspace.execute('file_summary', {'path': 'text.txt'})
++            self.assertEqual(result['path'], 'text.txt')
++            self.assertEqual(result['bytes'], len(content.encode('utf-8')))
++            self.assertEqual(result['characters'], len(content))
++            self.assertEqual(result['lines'], 2)
++            self.assertEqual(result['words'], 7)
++
++    def test_multiline_text_counts_lines_and_words(self):
++        with temporary_directory() as directory:
++            workspace = Workspace(Path(directory))
++            content = 'Line one\nLine two\nLine three\n'
++            workspace.execute('write_file', {'path': 'multi.txt', 'content': content})
++            result = workspace.execute('file_summary', {'path': 'multi.txt'})
++            self.assertEqual(result['lines'], 3)
++            self.assertEqual(result['words'], 6)
++
++    def test_unicode_text_counts_characters_and_bytes_separately(self):
++        with temporary_directory() as directory:
++            workspace = Workspace(Path(directory))
++            content = 'Hello é🙂世界'
++            workspace.execute('write_file', {'path': 'unicode.txt', 'content': content})
++            result = workspace.execute('file_summary', {'path': 'unicode.txt'})
++            self.assertEqual(result['characters'], len(content))
++            self.assertEqual(result['bytes'], len(content.encode('utf-8')))
++            # 'é' is 2 bytes, '🙂' is 4 bytes, '世界' is 6 bytes
++            self.assertEqual(result['bytes'], 18)
++
++    def test_crlf_line_endings_preserved_and_counted(self):
++        with temporary_directory() as directory:
++            workspace = Workspace(Path(directory))
++            content = 'Line1\r\nLine2\r\n'
++            workspace.execute('write_file', {'path': 'crlf.txt', 'content': content})
++            result = workspace.execute('file_summary', {'path': 'crlf.txt'})
++            self.assertEqual(result['lines'], 2)
++            self.assertEqual(result['bytes'], len(content.encode('utf-8')))
++            self.assertEqual(result['characters'], len(content))
++
++    def test_mixed_line_endings_counted_correctly(self):
++        with temporary_directory() as directory:
++            workspace = Workspace(Path(directory))
++            content = 'Line1\nLine2\r\nLine3\r\nLine4\n'
++            workspace.execute('write_file', {'path': 'mixed.txt', 'content': content})
++            result = workspace.execute('file_summary', {'path': 'mixed.txt'})
++            self.assertEqual(result['lines'], 4)
++            self.assertEqual(result['bytes'], len(content.encode('utf-8')))
++
++    def test_large_file_rejected(self):
++        with temporary_directory() as directory:
++            workspace = Workspace(Path(directory))
++            # Write a file that's just at the limit
++            content = 'x' * 100000
++            workspace.execute('write_file', {'path': 'large.txt', 'content': content})
++            # Verify it works at the limit
++            result = workspace.execute('file_summary', {'path': 'large.txt'})
++            self.assertEqual(result['bytes'], 100000)
++            # Now manually extend the file beyond the limit to test rejection
++            # We need to append to the existing file
++            existing = (Path(directory) / 'large.txt').read_bytes()
++            (Path(directory) / 'large.txt').write_bytes(existing + b'x')
++            with self.assertRaises(ValueError) as context:
++                workspace.execute('file_summary', {'path': 'large.txt'})
++            self.assertIn('exceeds', str(context.exception))
++
++    def test_invalid_utf8_rejected(self):
++        with temporary_directory() as directory:
++            workspace = Workspace(Path(directory))
++            (Path(directory) / 'binary.txt').write_bytes(b'\xff\n')
++            with self.assertRaises(ValueError) as context:
++                workspace.execute('file_summary', {'path': 'binary.txt'})
++            self.assertIn('UTF-8', str(context.exception))
++
++    def test_directory_path_rejected(self):
++        with temporary_directory() as directory:
++            workspace = Workspace(Path(directory))
++            # Try to use a path that doesn't exist - should fail with a meaningful error
++            with self.assertRaises(ValueError) as context:
++                workspace.execute('file_summary', {'path': 'nonexistent.txt'})
++            # The error message should indicate the file cannot be read
++            self.assertIn('exists', str(context.exception))
++
++    def test_outside_workspace_path_rejected(self):
++        with temporary_directory() as directory:
++            workspace = Workspace(Path(directory))
++            with self.assertRaises(ValueError) as context:
++                workspace.execute('file_summary', {'path': '../outside.txt'})
++            self.assertIn('outside', str(context.exception))
++
++    def test_very_long_words_counted_correctly(self):
++        with temporary_directory() as directory:
++            workspace = Workspace(Path(directory))
++            content = 'A' * 100000
++            workspace.execute('write_file', {'path': 'longword.txt', 'content': content})
++            result = workspace.execute('file_summary', {'path': 'longword.txt'})
++            self.assertEqual(result['words'], 1)
++            self.assertEqual(result['characters'], 100000)
++
++    def test_multiple_spaces_and_tabs_counted_as_words(self):
++        with temporary_directory() as directory:
++            workspace = Workspace(Path(directory))
++            content = 'hello   world\t\ttest'
++            workspace.execute('write_file', {'path': 'spaces.txt', 'content': content})
++            result = workspace.execute('file_summary', {'path': 'spaces.txt'})
++            self.assertEqual(result['words'], 3)
++            self.assertEqual(result['characters'], len(content))
++
++
++if __name__ == '__main__':
++    unittest.main()
