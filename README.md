@@ -2,11 +2,29 @@
 
 A small, model-agnostic agent that grows its own harness inside a disposable Linux VM. A separate host controller keeps model connections, credentials, the browser interface, safety policy, and recovery outside the editable seed.
 
+VM isolation is the default. An explicitly acknowledged **Linux native mode** is available for disposable machines and environments isolated by their operator. The security claims below apply to VM mode unless stated otherwise.
+
 ## Start
 
 On **64-bit Windows 11**, double-click **Start AutoProteus.cmd**. Choose a local model, hosted connection, or scripted demo. Before the first task, choose **Prepare isolated environment**. The app downloads pinned portable QEMU and Linux components into this project, then continues your task. Later runs reuse them.
 
 **Windows Hypervisor Platform must be enabled.** This backend works on the tested Windows 11 Home PC using its existing hardware virtualization. If unavailable, the app explains how to enable it through Windows Features and restart. Enabling that Windows feature may require administrator access; portable setup does not install drivers or alter Windows features. There is no software-emulation or native-host execution fallback.
+
+### Linux without AutoProteus VM protection
+
+For a disposable Linux machine, container, or cloud workspace you manage, use Python 3.10+:
+
+```sh
+sh launch.sh --execution native --acknowledge-host-access
+```
+
+Add `--no-browser` when accessing the loopback interface through your environment's port forwarding. The app prints a warning and displays it persistently. Both flags are required on every controller launch; preferences, model output, container detection and a failed VM launch cannot enable this mode. An already-running app in a different mode must be quit before switching.
+
+**This mode adds no filesystem or network isolation.** Seed code and commands have the account's permissions, even when ordinary file tools restrict paths or terminal access is off. Code may access or modify the controller, starter, other files, credentials, tests and reports. A dedicated computer still exposes everything accessible on that computer. An external container/cloud boundary must be reviewed for host mounts, network access, privileged capabilities, management sockets and secrets. Never assume that a detected container is sufficient protection.
+
+Native runs copy the same seed into a fresh temporary directory and use the existing inference/artifact broker. They do not intentionally inherit provider keys. Stop and shutdown terminate the worker and ordinary command descendants; parent-death cleanup is best effort. Deliberately detached code can evade these controls. There are no AutoProteus-enforced aggregate CPU, memory, disk or network limits in this mode; configure them externally. Session histories and evaluation reports record the execution mode. Native checks are functional evidence only, and are not protected against same-account candidate code.
+
+On Linux, connect an installed Ollama service, a hosted provider, or the scripted demo. Automatic engine installation remains Windows-only. API keys entered in the Linux interface stay in memory for that launch; `AUTOPROTEUS_API_KEY` is also supported. The surrounding environment must protect keys. This release adds Linux native execution, **not a Linux KVM backend or Windows native mode**. A default Linux launch continues to refuse agent execution when VM isolation is unavailable.
 
 Isolation downloads are about 290 MB. Preparing a local model requires several additional GB. The launcher can download official portable Python if Python 3.10+ is unavailable. No pip packages are required. `python app.py --no-browser` starts the protected controller directly. Other operating systems currently cannot execute agent tasks through this backend.
 
@@ -48,9 +66,9 @@ The browser interface and `controller/` are maintained by the human developer. G
 
 | Path | Purpose |
 | --- | --- |
-| `app.py`, `launch.ps1` | Protected host launcher |
+| `app.py`, `launch.ps1`, `launch.sh` | Host launcher and explicit execution choice |
 | `controller/` | Host UI/API, credentials, inference, VM policy, broker |
-| `guest/worker.py` | Guest bootstrap and communication adapter |
+| `guest/worker.py` | Shared VM/native bootstrap and communication adapter |
 | `seed.py`, `autoproteus/` | Editable guest entry point, agent and tools |
 | `web/` | Trusted host interface, outside the editable seed |
 | `SEED.md` | Copied into the guest as `harness/README.md` |
@@ -58,15 +76,24 @@ The browser interface and `controller/` are maintained by the human developer. G
 | `.data/evaluations/checks/` | Frozen comparisons, diffs, reports and isolated evaluation sessions |
 | `.data/sessions/<id>/` | Session state, journal, quarantined artifact blobs |
 | `.data/models/` | Managed local model cache |
+| `.data/native-runs/` | Temporary native workers; not a sandbox |
 | `.runtime/isolation/` | VM engine, kernel, and guest appliance |
 | `.runtime/` | Portable Python, Ollama, and download caches |
 | `old/` | Earlier experiments, untouched |
 
-Existing sessions and model downloads are preserved. Legacy files can be previewed; resuming copies their contents into a VM. Oversized legacy inputs must be reduced before migration. No session resumes natively.
+Existing sessions and model downloads are preserved. Legacy files can be previewed; resuming copies their contents into the environment explicitly selected at launch. Oversized legacy inputs must be reduced before migration. Execution history retains prior native runs even if a later resume uses VM mode.
 
 ## Verify
 
 `python -m unittest discover -s tests -v` runs regression and broker tests. Set `AUTOPROTEUS_VM_TESTS=1` on a prepared Windows host to include real VM checks for host file visibility, networking, guest privilege, forged exports, Stop, restoration, and recovery. Guest tests copied into `harness/tests/` run inside the VM; controller tests stay on the host.
+
+On Linux, `python3 -m unittest discover -s tests -p test_native.py -v` runs trusted, offline native-worker fixtures for consent, startup, broker exports, checkpoint restoration, functional regressions, Stop and ordinary parent-exit cleanup. These are not hostile-code isolation tests. To evaluate the demo without a VM:
+
+```sh
+python3 evaluate.py --execution native --acknowledge-host-access
+```
+
+The evaluator accepts the same launch flags for live/candidate trials. Reports include `execution_mode`, `isolated`, `checks_protected` and the warning. Native regression passes do not claim immutable tests or a protected controller. Runtime fingerprints from a VM installation are not evidence for native execution.
 
 `python evaluate.py` checks the scripted demo inside the VM. `--live` uses the configured model with independent artifact checks; `--model MODEL_NAME` selects another model without changing preferences, including a cached local model while the app is in demo mode. `--task exact-file` selects one task, `--repeat 2` repeats tasks, and `--candidate SESSION_ID` compares a saved editable copy with the starter. Hosted evaluations may incur charges. VM execution is serialized across the app, evaluator and tests. Input bytes are integrity-checked before guest source is loaded.
 

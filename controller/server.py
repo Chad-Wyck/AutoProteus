@@ -20,15 +20,17 @@ from .providers import ModelClient
 from .runtime import LocalRuntime
 from .storage import Store
 from .evaluation import EvaluationService
+from .execution import ExecutionPolicy
 
 
 class Application:
-    def __init__(self, root, data=None, client_factory=None):
+    def __init__(self, root, data=None, client_factory=None, execution=None):
         self.root = Path(root).resolve()
         self.data = Path(data or self.root / ".data")
         self.settings = Settings(self.data)
         self.store = Store(self.data / "sessions")
-        self.agent = IsolatedAgent(self.root, self.store, self.settings, client_factory)
+        self.execution = execution or ExecutionPolicy()
+        self.agent = IsolatedAgent(self.root, self.store, self.settings, client_factory, self.execution)
         self.local = LocalRuntime(self.root, self.settings)
         self.evaluations = EvaluationService(self.root, self.data / 'evaluations', self.settings, self.agent)
         self.token = secrets.token_urlsafe(32)
@@ -39,7 +41,8 @@ class Application:
     def state(self):
         return {"version": __version__, "settings": self.settings.public(), "sessions": self.store.public(),
                 "setup": self.local.public(), "isolation": self.agent.appliance.public(),
-                "evaluation": self.evaluations.public(), "root": str(self.root)}
+                "evaluation": self.evaluations.public(), "execution": self.execution.public(),
+                "platform": 'windows' if os.name == 'nt' else 'linux', "root": str(self.root)}
 
     def start_run(self, session, message=None, candidate=None):
         with self.evaluations.gate:
@@ -115,7 +118,9 @@ def handler_for(app):
                 return
             try:
                 if path == "/health":
-                    return self.send({"app": "AutoProteus", "identity": app.identity, "version": __version__, "isolation_required": True})
+                    return self.send({"app": "AutoProteus", "identity": app.identity, "version": __version__,
+                                      "isolation_required": app.execution.mode == 'vm',
+                                      "execution_mode": app.execution.mode})
                 if path == "/api/state":
                     return self.send(app.state())
                 if path == '/api/seed-check':
@@ -180,6 +185,8 @@ def handler_for(app):
                 if not isinstance(data, dict):
                     raise ValueError("Provide a JSON object")
                 if self.path == "/api/settings":
+                    if any(key in data for key in ('execution', 'execution_mode', 'acknowledge_host_access')):
+                        raise ValueError('Execution mode can only be selected at launch')
                     return self.send(app.settings.update(data))
                 if self.path == "/api/connect":
                     config = app.settings.preview({**data, "configured": False})

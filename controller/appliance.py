@@ -120,7 +120,9 @@ class Appliance:
                 'installed': installed, 'busy': self.busy, 'message': self.message or (
                     'Isolation is ready' if available and installed else
                     'Prepare the isolated environment' if available else
-                    'Enable Windows Hypervisor Platform in Windows Features, restart, then reopen AutoProteus.'),
+                    'Enable Windows Hypervisor Platform in Windows Features, restart, then reopen AutoProteus.'
+                    if os.name == 'nt' else
+                    'VM isolation currently supports Windows. Linux native execution requires an explicit launch choice in a separately protected or disposable environment.'),
                 'error': self.error, 'backend': 'QEMU / Windows Hypervisor Platform',
                 'memory_mb': 2048, 'cpus': 2, 'workspace_mb': 512, 'network': False}
 

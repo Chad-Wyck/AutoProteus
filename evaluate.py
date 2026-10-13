@@ -11,6 +11,8 @@ from controller.evaluation import candidate_source, freeze_source, run_task, run
 from controller.isolation import IsolatedAgent, seed_files
 from controller.runtime import LocalRuntime
 from controller.storage import Store, atomic_json
+from controller.execution import add_execution_arguments, execution_from_args
+import sys
 
 
 def harness_files(root):
@@ -57,7 +59,11 @@ def main():
     parser.add_argument('--context-tokens', type=int)
     parser.add_argument('--response-tokens', type=int)
     parser.add_argument('--task-file', help='A human-supplied local task definition; never a guest capability.')
+    add_execution_arguments(parser)
     args = parser.parse_args()
+    execution = execution_from_args(parser, args)
+    if execution.mode == 'native':
+        print('WARNING: ' + execution.public()['warning'], file=sys.stderr, flush=True)
     if not 1 <= args.repeat <= 3 or not 0 < args.timeout <= 3600:
         parser.error('Use 1–3 repeats and a positive timeout of at most 3600 seconds.')
     if (args.model or args.candidate or args.self_improve) and not args.live:
@@ -92,7 +98,7 @@ def main():
     report_id = uuid.uuid4().hex
     directory = root / '.data/evaluations/runs' / report_id
     store = Store(directory / 'sessions')
-    agent = IsolatedAgent(root, store, fixed)
+    agent = IsolatedAgent(root, store, fixed, execution=execution)
     results = []
     try:
         if config['provider'] == 'ollama':
@@ -114,12 +120,14 @@ def main():
             sources['edited'] = candidate_source(app_store, app_store.get(args.candidate))
         frozen = {name: freeze_source(store, source, name) for name, source in sources.items()}
         report = {'id': report_id, 'model': config['model'], 'live': args.live,
+                  'execution_mode': execution.mode, 'isolated': execution.mode == 'vm',
+                  'checks_protected': execution.mode == 'vm', 'warning': execution.public()['warning'],
                   'configuration': {k:v for k,v in config.items() if k not in ('base_url','api_key')},
                   'source_sha256': {name:source_identity(source) for name,source in sources.items()},
                   'results': results, 'summary': {}, 'regressions': {}, 'self_improve': args.self_improve}
         if args.candidate:
             for version in sources:
-                report['regressions'][version] = run_regressions(root, store, frozen[version])
+                report['regressions'][version] = run_regressions(root, store, frozen[version], execution=execution)
             if not all(result['passed'] for result in report['regressions'].values()):
                 report.update(status='rejected', message='Protected guest checks failed. Task comparison did not run.')
                 atomic_json(directory / 'report.json', report)
@@ -141,7 +149,7 @@ def main():
                                       review_required=True, changed_files=[c['path'] for c in changes])
                         if ready:
                             candidate = freeze_source(store, edited, 'Self-improvement candidate')
-                            report['regressions']['edited'] = run_regressions(root, store, candidate)
+                            report['regressions']['edited'] = run_regressions(root, store, candidate, execution=execution)
                         atomic_json(directory / 'candidate-source.json', edited)
                         atomic_json(directory / 'changes.json', changes)
                     results.append({**result, 'version': version, 'repeat': repeat})

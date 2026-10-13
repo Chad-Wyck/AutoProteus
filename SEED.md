@@ -1,8 +1,11 @@
 # Editable AutoProteus seed
 
 This directory is your source copy. The host controller, model connection, user
-interface and VM policy are outside it. Your code runs only inside a disposable
-Linux VM; it receives model responses through the supplied client.
+interface and execution policy are outside it. Normally your code runs inside a
+disposable Linux VM; it receives model responses through the supplied client.
+If the user explicitly launched Linux native mode, `execution_mode` is `native`:
+your code has the account's access and any protection comes from the surrounding
+environment. The controller supplies the user's selected launch mode.
 
 `seed.py` creates the agent. `autoproteus/agent.py` requests actions and records
 their results. `autoproteus/tools.py` implements workspace files and optional
@@ -18,10 +21,12 @@ changed in `feature.md` outside `harness/`. Run guest tests with:
 
 The user can check the edited seed against the starter in fresh VMs, then try
 it in another session. Your changes cannot replace the host controller. Stop
-and starter recovery remain host operations. Testing your own code does not
+and starter recovery remain controller operations. In native mode, the external
+environment must protect the controller and starter. Testing your own code does not
 prove that your change is useful; the host checks task artifacts independently.
 
 File tools use relative workspace paths. `read_file` offsets are UTF-8 bytes;
 length is characters, and `next_offset`/`eof` support continuation. `edit_file`
 replaces exactly one matching fragment. Terminal access, when enabled, is a
-Linux shell inside the VM. There is no general internet or host-drive access.
+Linux shell. In VM mode there is no general internet or host-drive access.
+Native mode does not enforce those restrictions; keep actions within the task.

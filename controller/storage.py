@@ -106,5 +106,7 @@ class Store:
         with self.lock:
             if session_id:
                 return json.loads(json.dumps(self.get(session_id)))
-            return [{key: session[key] for key in ("id", "title", "updated", "status", "provider", "model")}
+            return [{**{key: session[key] for key in ("id", "title", "updated", "status", "provider", "model")},
+                     'execution_mode': session.get('execution_mode', 'unknown'),
+                     'isolation': session.get('isolation', False)}
                     for session in sorted(self.sessions.values(), key=lambda item: item["updated"], reverse=True)]

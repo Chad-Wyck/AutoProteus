@@ -22,6 +22,14 @@ function saveBlob(blob, name) { const a = document.createElement('a'); a.href = 
 
 function renderApp() {
   const app = state.app, config = app.settings;
+  const native = app.execution?.mode === 'native';
+  visible('execution-warning', native); text('execution-warning', app.execution?.warning || '');
+  text('terminal-help', native ? 'Commands run with this account’s access. Files and networks are restricted only by your surrounding environment.' : 'Let the agent run Linux commands inside its virtual machine. Your host drives and network remain unavailable.');
+  text('try-seed', native ? 'Try edited seed without VM protection →' : 'Try edited seed in a new VM →');
+  text('key-help', app.platform === 'windows' ? 'Saved keys are encrypted for your Windows account.' : 'Keys stay in memory for this launch. The surrounding environment must protect them.');
+  text('seed-help', native ? 'The agent edits a source copy in harness/. Your surrounding environment must protect the starter and controller.' : 'The agent can edit its own source copy in harness/. Your running seed stays recoverable.');
+  text('local-setup-help', app.platform === 'linux' ? 'Connect an installed Ollama service, or choose a hosted connection or the demo.' : 'AutoProteus can prepare the engine and model for you. No separate terminal or server setup needed.');
+  text('local-download-note', app.platform === 'linux' ? 'Automatic engine installation currently supports Windows. An installed Ollama service can download your selected model; hosted connections and the demo need no local engine.' : 'First-time setup downloads the engine and model, which can take several minutes and several GB of disk space. Everything stays in this project when using the managed engine.');
   text('session-count', app.sessions.length);
   const sessions = $('sessions'); sessions.replaceChildren();
   if (!app.sessions.length) sessions.append(node('p', 'sidebar-empty', 'Your work will appear here.\nEvery session is saved.'));
@@ -94,6 +102,8 @@ function renderSession() {
   const labels = { running: 'Working', stopping: 'Stopping', completed: 'Finished', waiting: 'Your input needed', paused: 'Paused', interrupted: 'Interrupted', error: 'Needs attention', ready: 'Ready' };
   text('status-label', labels[session.status] || session.status); $('status-dot').className = 'status-dot ' + session.status;
   text('step-count', `${session.steps} step${session.steps === 1 ? '' : 's'} · ${session.provider === 'demo' ? 'Scripted demo' : session.model}`);
+  const previouslyNative = session.execution_history?.some(run => run.mode === 'native');
+  text('execution-label', session.execution_mode === 'native' ? 'Ran without AutoProteus VM protection' : session.execution_mode === 'vm' ? 'VM execution' + (previouslyNative ? ' · previously ran without VM protection' : '') : 'Execution mode not recorded');
   const todo = $('todo'); todo.replaceChildren();
   if (!session.todo.trim()) todo.append(node('p', 'muted', "The agent hasn't made a checklist yet."));
   session.todo.split('\n').filter(line => line.trim()).forEach(line => {
@@ -163,11 +173,16 @@ $('workspace-button').onclick = async () => { try { saveBlob(await api('/api/ope
 
 function renderIsolation(info) {
   if (!info) return;
+  const native = state.app.execution?.mode === 'native';
+  text('isolation-title', native ? 'Running without VM protection.' : 'A safe place to grow.');
+  text('isolation-eyebrow', native ? 'EXTERNAL PROTECTION REQUIRED' : 'PROTECTED ENVIRONMENT');
+  text('isolation-description', native ? 'AutoProteus adds no filesystem or network isolation in this mode. The worker has this account’s permissions, including access to the controller. Protection must come from a disposable machine or your externally configured environment.' : 'The agent runs in a fresh Linux virtual machine. Your drives, network, clipboard, and devices stay outside it. Only model requests and bounded saved files pass through the controller.');
+  visible('prepare-isolation', !native); visible('isolation-footnote', !native);
   text('isolation-message', info.message);
   error('isolation-error', info.error);
   $('prepare-isolation').disabled = info.busy || !info.available;
   text('prepare-isolation', info.busy ? 'Preparing…' : info.ready ? 'Prepare again' : 'Prepare isolated environment');
-  text('isolation-status', info.ready ? 'VM isolation ready' : info.busy ? 'Preparing isolation…' : 'Set up isolation');
+  text('isolation-status', native ? 'VM protection off' : info.ready ? 'VM isolation ready' : info.busy ? 'Preparing isolation…' : 'Set up isolation');
   if (info.ready && state.pendingTask && $('isolation-dialog').open) {
     const task = state.pendingTask; state.pendingTask = null; $('isolation-dialog').close();
     startTask(task).catch(e => toast(e.message));
@@ -190,6 +205,10 @@ $('prepare-isolation').onclick = async () => {
 
 function renderEvaluation(report) {
   state.checkReport = report;
+  const native = (report?.execution_mode || state.app.execution?.mode) === 'native';
+  visible('check-execution', native);
+  text('check-execution', native ? 'Native functional checks only. The controller, tests and reports are not protected from the code being checked.' : '');
+  text('check-description', native ? 'Both versions run the starter tests and the same ten tasks in fresh Linux processes. Sources and settings are copied for the comparison, but same-account code can alter them. These results do not verify VM isolation.' : 'First, both versions must pass the starter’s unchanged tests. Then they run the same ten tasks in fresh VMs, with saved files checked independently. Your source and model settings are frozen for this comparison.');
   text('check-message', report?.message || 'Compare this source copy with the starter using the connected model.');
   visible('stop-checks', report?.status === 'running');
   $('run-checks').disabled = report?.status === 'running' || state.app.evaluation?.busy || busy();
@@ -204,13 +223,13 @@ function renderEvaluation(report) {
       node('span', '', result ? `${result.passed}/${result.total} verified tasks` : 'Task comparison not run'));
     if (result) card.append(node('small', '', `${result.seconds}s · ${result.steps} reported steps · ${result.format_repairs} format repairs`));
     if (regression) {
-      card.append(node('small', regression.passed ? 'check-pass' : 'check-fail', `Guest regressions: ${regression.passed ? 'passed' : 'failed'} · ${regression.tests} test${regression.tests === 1 ? '' : 's'}`));
+      card.append(node('small', regression.passed ? 'check-pass' : 'check-fail', `${native ? 'Native functional' : 'Seed'} regressions: ${regression.passed ? 'passed' : 'failed'} · ${regression.tests} test${regression.tests === 1 ? '' : 's'}`));
       const details = node('details'); details.append(node('summary', '', 'Guest test output'), node('pre', '', regression.output || ''));
       card.append(details);
     }
     summary.append(card);
   }
-  text('check-model', report ? `${report.model} · ${report.results.length}/${report.total} runs` : 'Uses your connected model.');
+  text('check-model', report ? `${report.model} · ${report.results.length}/${report.total} runs · ${report.execution_mode === 'native' ? 'without VM protection' : report.execution_mode === 'vm' ? 'VM execution' : 'execution mode not recorded'}` : 'Uses your connected model.');
   const body = $('check-rows'); body.replaceChildren();
   const rows = new Map();
   for (const result of report?.results || []) {
@@ -279,7 +298,7 @@ async function detectLocal() {
   try {
     const result = await api('/api/local'); state.installed = result.models;
     $('installed-models').replaceChildren(...result.models.map(model => { const option = node('option'); option.value = model.name; return option; }));
-    text('engine-status', result.available ? `Local engine found · ${result.models.length} installed model${result.models.length === 1 ? '' : 's'}` : 'No local engine found. AutoProteus can prepare one for you.');
+    text('engine-status', result.available ? `Local engine found · ${result.models.length} installed model${result.models.length === 1 ? '' : 's'}` : state.app.platform === 'linux' ? 'Install Ollama first, then connect it here; or choose a hosted connection or demo.' : 'No local engine found. AutoProteus can prepare one for you.');
     $('engine-status').classList.toggle('available', result.available); renderConnectButton();
   } catch (e) { text('engine-status', e.message); }
 }

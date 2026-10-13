@@ -1,4 +1,4 @@
-"""Runs inside the VM only. Every byte sent back is untrusted by the host."""
+"""Copied seed runner. VM by default; Linux native transport requires explicit flags."""
 import base64
 import hashlib
 import io
@@ -13,8 +13,7 @@ import time
 
 PREFIX = b'AP1 '
 MAX_FRAME = 4 * 1024 * 1024
-channel = open('/dev/vport0p1', 'r+b', buffering=0)
-reader = io.BufferedReader(channel)
+channel = reader = None
 lock = threading.RLock()
 
 
@@ -62,21 +61,23 @@ def unpack(files, root):
         path.write_bytes(data)
 
 
-def run_verification(boot, source, workspace):
+def run_verification(boot, source, workspace, native=False):
     # The protected parent keeps the broker fd. Tests run in another process as
     # UID 1000 against root-owned starter tests and the candidate's modules.
     import re
     import signal
     import subprocess
     import tempfile
-    os.chmod('/dev/vport0p1', 0o600)
+    if not native:
+        os.chmod('/dev/vport0p1', 0o600)
     env = {'PATH': '/usr/sbin:/usr/bin:/sbin:/bin', 'PYTHONPATH': str(source),
            'AUTOPROTEUS_GUEST': '1', 'AUTOPROTEUS_TEST_ROOT': str(workspace / 'test-tmp')}
-    with tempfile.TemporaryFile(dir='/run') as output:
-        process = subprocess.Popen(['/usr/bin/python3', '-m', 'unittest', 'discover',
+    with tempfile.TemporaryFile(dir=workspace if native else '/run') as output:
+        process = subprocess.Popen([sys.executable if native else '/usr/bin/python3', '-m', 'unittest', 'discover',
                                     '-s', str(source / '__verify__'), '-v'],
             cwd=workspace, env=env, stdin=subprocess.DEVNULL, stdout=output,
-            stderr=subprocess.STDOUT, user=1000, group=1000, extra_groups=[],
+            stderr=subprocess.STDOUT,
+            **({} if native else {'user':1000, 'group':1000, 'extra_groups':[]}),
             close_fds=True, start_new_session=True)
         deadline = time.monotonic() + 60
         limited = False
@@ -106,12 +107,14 @@ def run_verification(boot, source, workspace):
         time.sleep(1)
 
 
-def main():
+def main(native_root=None):
     send({'op': 'ready', 'protocol': 2})
     boot = receive()
     if boot.get('op') != 'boot':
         raise ValueError('Expected boot message')
-    source, workspace = Path('/seed'), Path('/work/task')
+    source = native_root / 'seed' if native_root else Path('/seed')
+    workspace = native_root / 'task' if native_root else Path('/work/task')
+    source.mkdir(exist_ok=True)
     workspace.mkdir()
     send({'op': 'input_ready'})
     while True:
@@ -122,21 +125,23 @@ def main():
             raise ValueError('Invalid input message')
         unpack([item], source if item['area'] == 'seed' else workspace)
         send({'op': 'input_saved'})
-    state = Path('/work/state')
+    state = native_root / 'state' if native_root else Path('/work/state')
     state.mkdir()
-    os.chown(state, 1000, 1000)
-    os.chown(workspace, 1000, 1000)
-    for path in workspace.rglob('*'):
-        os.chown(path, 1000, 1000)
-    Path('/proc/sys/user/max_user_namespaces').write_text('0')
-    resource.setrlimit(resource.RLIMIT_NPROC, (128, 128))
+    if not native_root:
+        os.chown(state, 1000, 1000)
+        os.chown(workspace, 1000, 1000)
+        for path in workspace.rglob('*'):
+            os.chown(path, 1000, 1000)
+        Path('/proc/sys/user/max_user_namespaces').write_text('0')
+        resource.setrlimit(resource.RLIMIT_NPROC, (128, 128))
     resource.setrlimit(resource.RLIMIT_NOFILE, (256, 256))
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
     if boot.get('verification'):
-        run_verification(boot, source, workspace)
-    os.setgroups([])
-    os.setgid(1000)
-    os.setuid(1000)
+        run_verification(boot, source, workspace, native=bool(native_root))
+    if not native_root:
+        os.setgroups([])
+        os.setgid(1000)
+        os.setuid(1000)
     os.environ['AUTOPROTEUS_GUEST'] = '1'
     sys.path.insert(0, str(source))
     os.chdir(workspace)
@@ -208,12 +213,43 @@ def main():
         time.sleep(1)
 
 
-try:
-    main()
-except BaseException as error:
+def entrypoint():
+    global channel, reader
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--native-root', type=Path)
+    parser.add_argument('--acknowledge-host-access', action='store_true')
+    parser.add_argument('--controller-pid', type=int)
+    args = parser.parse_args()
+    if args.native_root:
+        if sys.platform != 'linux' or not args.acknowledge_host_access or not args.controller_pid:
+            parser.error('Native worker requires Linux, explicit acknowledgement and a controller PID')
+        # Best-effort parent-death cleanup, not an immutable security control.
+        import ctypes
+        import signal
+        libc = ctypes.CDLL(None, use_errno=True)
+        if libc.prctl(1, signal.SIGKILL, 0, 0, 0) != 0:
+            raise OSError(ctypes.get_errno(), 'Could not configure parent-death cleanup')
+        if os.getppid() != args.controller_pid:
+            raise RuntimeError('The controller has already exited')
+        channel, reader = sys.stdout.buffer, sys.stdin.buffer
+        # Normal prints must not corrupt the protocol stream.
+        sys.stdout = sys.stderr
+    else:
+        if args.acknowledge_host_access or args.controller_pid:
+            parser.error('Native flags require --native-root')
+        channel = open('/dev/vport0p1', 'r+b', buffering=0)
+        reader = io.BufferedReader(channel)
     try:
-        send({'op': 'failure', 'message': str(error)[:2000]})
-    except BaseException:
-        pass
-    while True:
-        time.sleep(1)
+        main(args.native_root)
+    except BaseException as error:
+        try:
+            send({'op': 'failure', 'message': str(error)[:2000]})
+        except BaseException:
+            pass
+        while True:
+            time.sleep(1)
+
+
+if __name__ == '__main__':
+    entrypoint()

@@ -14,6 +14,7 @@ import time
 
 from .appliance import Appliance
 from .errors import Cancelled, IsolationError
+from .execution import ExecutionPolicy, NativeEnvironment
 from .providers import DemoClient, ModelClient
 from .storage import atomic_json
 
@@ -34,7 +35,6 @@ class VMLease:
         self.stream = None
 
     def acquire(self, cancel, deadline):
-        import msvcrt
         self.stream = self.path.open('a+b')
         if not self.path.stat().st_size:
             self.stream.write(b'0'); self.stream.flush()
@@ -45,7 +45,12 @@ class VMLease:
                 raise IsolationError('Timed out waiting for the isolated environment')
             try:
                 self.stream.seek(0)
-                msvcrt.locking(self.stream.fileno(), msvcrt.LK_NBLCK, 1)
+                if os.name == 'nt':
+                    import msvcrt
+                    msvcrt.locking(self.stream.fileno(), msvcrt.LK_NBLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(self.stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 return
             except OSError:
                 cancel.wait(.1)
@@ -194,28 +199,19 @@ def vm_command(appliance):
             '-append', 'console=ttyS0 quiet panic=1 rdinit=/init']
 
 
-class VM:
-    def __init__(self, appliance):
-        from .windows_job import Job
-        self.job, self.process = Job(), None
+class WorkerTransport:
+    """Bounded pipe protocol shared by VM and opt-in native workers."""
+    def __init__(self):
+        self.job, self.process = None, None
         self.frames = queue.Queue(maxsize=8)
         self.stderr = bytearray()
         self.output_bytes = 0
         self.closed = threading.Event()
         self.close_lock = threading.Lock()
-        try:
-            # No provider credentials or user-selected environment is inherited.
-            environment = {key: value for key, value in os.environ.items()
-                           if key.upper() in ('SYSTEMROOT', 'WINDIR', 'TEMP', 'TMP')}
-            self.process = subprocess.Popen(vm_command(appliance), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, cwd=appliance.directory, env=environment,
-                creationflags=subprocess.CREATE_NO_WINDOW | 0x4)
-            self.job.attach_and_resume(self.process)
-            threading.Thread(target=self._read, daemon=True).start()
-            threading.Thread(target=self._errors, daemon=True).start()
-        except Exception:
-            self.close()
-            raise
+
+    def start_readers(self):
+        threading.Thread(target=self._read, daemon=True).start()
+        threading.Thread(target=self._errors, daemon=True).start()
 
     def _errors(self):
         while chunk := self.process.stderr.read1(4096):
@@ -279,13 +275,40 @@ class VM:
             if self.closed.is_set():
                 return
             self.closed.set()
-            self.job.close()
+            if self.job:
+                self.job.close()
             if self.process:
-                if self.process.poll() is None:
-                    self.process.kill()
+                self.kill()
                 self.process.wait(timeout=5)
                 for stream in (self.process.stdin, self.process.stdout, self.process.stderr):
                     stream.close()
+            self.cleanup()
+
+    def kill(self):
+        if self.process.poll() is None:
+            self.process.kill()
+
+    def cleanup(self):
+        pass
+
+
+class VM(WorkerTransport):
+    def __init__(self, appliance):
+        super().__init__()
+        from .windows_job import Job
+        self.job = Job()
+        try:
+            # No provider credentials or user-selected environment is inherited.
+            environment = {key: value for key, value in os.environ.items()
+                           if key.upper() in ('SYSTEMROOT', 'WINDIR', 'TEMP', 'TMP')}
+            self.process = subprocess.Popen(vm_command(appliance), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, cwd=appliance.directory, env=environment,
+                creationflags=subprocess.CREATE_NO_WINDOW | 0x4)
+            self.job.attach_and_resume(self.process)
+            self.start_readers()
+        except Exception:
+            self.close()
+            raise
 
 
 class Broker:
@@ -387,9 +410,10 @@ class Broker:
 
 
 class IsolatedAgent:
-    def __init__(self, root, store, settings, client_factory=None):
+    def __init__(self, root, store, settings, client_factory=None, execution=None):
         self.root, self.store, self.settings = Path(root).resolve(), store, settings
-        self.appliance = Appliance(self.root)
+        self.execution = execution or ExecutionPolicy()
+        self.appliance = NativeEnvironment(self.root) if self.execution.mode == 'native' else Appliance(self.root)
         self.client_factory = client_factory
         self.workers, self.vms = {}, {}
         self.lock = threading.RLock()
@@ -424,11 +448,18 @@ class IsolatedAgent:
             # Do not send host directories, credentials, or quarantine metadata.
             boot['session'].pop('artifacts', None)
             boot['session']['workspace'] = '/work/task'
+            boot['session']['execution_mode'] = self.execution.mode
             boot['session'].pop('isolation', None)
             if len(json.dumps({key: value for key, value in boot.items() if key not in ('seed', 'files')}).encode()) > MAX_FRAME - 100:
                 raise IsolationError('Session history exceeds the restore limit')
-            session.update(status='running', activity='Starting the isolated environment…', isolation=True)
+            session.update(status='running', activity='Starting the virtual machine…' if self.execution.mode == 'vm'
+                           else 'Starting without AutoProteus VM protection…',
+                           isolation=self.execution.mode == 'vm', execution_mode=self.execution.mode)
+            history = session.setdefault('execution_history', [])
+            history.append({'mode': self.execution.mode, 'isolated': session['isolation']})
+            del history[:-200]
             self.store.save(session)
+            self.store.event(session, 'execution_started', self.execution.public())
             cancel = threading.Event()
             thread = threading.Thread(target=self._run, args=(session, boot, client, config, cancel), daemon=True)
             self.workers[session['id']] = cancel, thread
@@ -442,7 +473,11 @@ class IsolatedAgent:
         try:
             lease = VMLease(self.appliance.directory)
             lease.acquire(cancel, deadline)
-            vm = VM(self.appliance)
+            if self.execution.mode == 'native':
+                from .native import NativeWorker
+                vm = NativeWorker(self.root, self.execution)
+            else:
+                vm = VM(self.appliance)
             with self.lock:
                 self.vms[session['id']] = vm
                 if cancel.is_set():

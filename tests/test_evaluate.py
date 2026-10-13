@@ -70,7 +70,8 @@ class EvaluationTests(unittest.TestCase):
                     patch('controller.evaluation.run_regressions', return_value={'passed':True, 'tests':23}):
                 report = service.start(candidate, repeats=2)
                 settings.values['model'] = 'different-model'
-                service.thread.join(timeout=10)
+                # Forty persisted mock runs can exceed ten seconds on a mounted filesystem.
+                service.thread.join(timeout=30)
             final = service.load(report['id'])
             self.assertEqual(final['status'], 'completed')
             self.assertEqual(len(visited), 40)

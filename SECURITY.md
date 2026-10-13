@@ -2,6 +2,18 @@
 
 ## Threat model
 
+**The isolation guarantees in this document apply to VM mode only.** It is the default. Linux native mode requires `--execution native --acknowledge-host-access` at every launch; missing virtualization never activates it. The UI/API and editable seed cannot select the launch policy through settings or broker operations.
+
+### Explicit Linux native mode
+
+Native mode is for disposable machines or environments isolated by their operator. It runs copied seed code in a separate Linux process with the launching account's permissions. A working directory, environment marker, file-tool checks, separate process and warning are not security boundaries. Same-account code can bypass those checks, access networks and other files, inspect credentials, alter the controller/starter/tests/reports, and defeat recovery. Running as root exposes root's access. Turning off terminal tools does not make edited Python safe.
+
+The native transport still validates messages and quarantines exports during normal operation; it does not make the controller inaccessible to native code. Keys are not deliberately passed to the worker, but same-account access is not prevented. Fresh directories, Stop, deadlines, ordinary-descendant termination and Linux parent-death signals provide best-effort lifecycle handling. They cannot contain deliberately detached processes, hostile resource consumption or controller tampering. Aggregate resource quotas and actual restrictions must come from the external environment. No host mounts, management sockets or broader credentials should be supplied without accepting their exposure.
+
+Native sessions record their mode and retain run history. Reports explicitly mark `isolated: false` and `checks_protected: false`; native regressions and artifact checks are functional diagnostics and may be manipulated by candidate code with account access. VM isolation tests never select native mode. This release has no Linux KVM backend and no Windows native backend.
+
+The remaining sections describe VM mode.
+
 Treat all guest code, commands, model responses, harness changes and protocol output as hostile. The host executes `app.py` and `controller/`; it never imports candidate code, `seed.py`, or `autoproteus/`. It owns credentials, provider configuration, UI assets, VM arguments, runtime hashes, quotas, Stop, recovery, and quarantine storage. Source and inputs enter the VM as copied bytes, never host mounts.
 
 The supported backend is QEMU 11.1.0 using WHPX hardware virtualization on x86-64 Windows. No accelerator means no execution. Windows Sandbox and full Hyper-V management are not required. QEMU runs as an ordinary user in a Windows job, with a minimal host environment that excludes provider keys. The environment marker used by guest code prevents accidental native launch; it is not a security boundary.

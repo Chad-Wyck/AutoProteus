@@ -214,10 +214,10 @@ def run(root, store, settings, client_factory, session, message=None):
         original = Path.read_text
         def read_text(path, *args, **kwargs):
             return json.dumps([task]) if path == ROOT / 'evaluations/tasks.json' else original(path, *args, **kwargs)
-        def make_agent(root, store, settings):
+        def make_agent(root, store, settings, execution=None):
             return IsolatedAgent(root, store, settings, lambda _: ScriptedClient([
                 {'action':{'tool':'write_file','arguments':{'path':'greeting.txt','content':'Hello, AutoProteus!\n'}}},
-                {'status':'completed'}]))
+                {'status':'completed'}]), execution=execution)
         try:
             with patch.object(Path, 'read_text', read_text), patch('controller.evaluation.IsolatedAgent', side_effect=make_agent):
                 initial = service.start(candidate, repeats=1)

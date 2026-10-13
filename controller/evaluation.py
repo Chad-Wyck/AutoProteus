@@ -119,6 +119,7 @@ def run_task(agent, store, config, task, source, timeout=180, cancel=None):
                     data = event['data']
                     action_errors += not isinstance(data, dict) or not data.get('ok')
         return {'task': task['name'], 'session': session['id'], 'status': session['status'],
+                'execution_mode': agent.execution.mode, 'isolated': agent.execution.mode == 'vm',
                 'passed': all(item['passed'] for item in checks) and session['status'] == 'completed' and not timed_out,
                 'checks': checks, 'steps': session['steps'], 'seconds': round(time.monotonic() - started, 2),
                 'model_requests': session.get('model_requests', 0),
@@ -129,6 +130,7 @@ def run_task(agent, store, config, task, source, timeout=180, cancel=None):
         raise
     except Exception as error:
         return {'task': task['name'], 'session': session['id'], 'status': 'error', 'passed': False,
+                'execution_mode': agent.execution.mode, 'isolated': agent.execution.mode == 'vm',
                 'checks': [], 'steps': session.get('steps', 0), 'seconds': round(time.monotonic() - started, 2),
                 'timed_out': timed_out, 'format_repairs': 0, 'action_errors': 0, 'detail': str(error)[:1000]}
 
@@ -145,12 +147,12 @@ def summarize(results):
     return summary
 
 
-def run_regressions(root, store, source, cancel=None):
+def run_regressions(root, store, source, cancel=None, execution=None):
     """A protected guest driver runs the unchanged starter tests, without inference."""
     from .config import DEFAULTS
     settings = SimpleNamespace(values={**DEFAULTS, 'configured': True, 'provider': 'demo',
                                       'model': 'guest regression driver'}, key=lambda: '')
-    agent = IsolatedAgent(root, store, settings)
+    agent = IsolatedAgent(root, store, settings, execution=execution)
     session = store.create('Run the protected seed regression suite', 'demo', 'guest regression driver')
     cancel = cancel or threading.Event()
     try:
@@ -167,11 +169,15 @@ def run_regressions(root, store, source, cancel=None):
         result = json.loads(Artifacts(store, session).read('regression-result.json'))
         result['session'] = session['id']
         result['suite_sha256'] = hashlib.sha256((Path(root) / 'tests/test_seed.py').read_bytes()).hexdigest()
+        result.update(execution_mode=agent.execution.mode, isolated=agent.execution.mode == 'vm',
+                      checks_protected=agent.execution.mode == 'vm')
         return result
     except Cancelled:
         raise
     except Exception as error:
-        return {'passed': False, 'tests': 0, 'session': session['id'], 'output': str(error)[:2000]}
+        return {'passed': False, 'tests': 0, 'session': session['id'], 'output': str(error)[:2000],
+                'execution_mode': agent.execution.mode, 'isolated': agent.execution.mode == 'vm',
+                'checks_protected': agent.execution.mode == 'vm'}
     finally:
         agent.close()
 
@@ -229,19 +235,27 @@ class EvaluationService:
             # Never save credentials or provider addresses in comparison reports.
             public_config = {key: value for key, value in config.items() if key not in ('base_url', 'api_key')}
             self.report = {'id': report_id, 'session': session['id'], 'status': 'running', 'created': now(),
-                           'message': 'Starting a comparison in fresh VMs…', 'model': config['model'],
+                           'message': 'Starting a comparison in fresh VMs…' if self.task_agent.execution.mode == 'vm'
+                               else 'Starting native functional checks without VM protection…', 'model': config['model'],
+                           'execution_mode': self.task_agent.execution.mode,
+                           'isolated': self.task_agent.execution.mode == 'vm',
+                           'warning': self.task_agent.execution.public()['warning'],
+                           'checks_protected': self.task_agent.execution.mode == 'vm',
                            'configuration': public_config, 'repeats': repeats, 'total': len(tasks)*repeats*2,
                            'results': [], 'summary': {}, 'regressions': {}, 'changes': source_changes(starter, candidate),
                            'starter_sha256': source_identity(starter), 'edited_sha256': source_identity(candidate),
                            'task_sha256': hashlib.sha256(json.dumps(tasks, sort_keys=True).encode()).hexdigest(),
                            'runtime_sha256': hashlib.sha256((self.task_agent.appliance.directory / 'installed.json').read_bytes()).hexdigest()
-                               if (self.task_agent.appliance.directory / 'installed.json').exists() else None,
-                           'scope': 'Host checks of the existing task suite; new features still need independent review.'}
+                               if self.task_agent.execution.mode == 'vm' and
+                                   (self.task_agent.appliance.directory / 'installed.json').exists() else None,
+                           'scope': 'Host checks of the existing task suite; new features still need independent review.'
+                               if self.task_agent.execution.mode == 'vm' else
+                               'Native functional checks only. Code has this account\'s access; the controller, tests and reports are not protected from it. New features need independent review.'}
             session['evaluation_check'] = report_id
             self.task_agent.store.save(session)
             self.cancel = threading.Event()
             fixed_settings = SimpleNamespace(values=config, key=lambda key=self.settings.key(): key)
-            self.agent = IsolatedAgent(self.root, store, fixed_settings)
+            self.agent = IsolatedAgent(self.root, store, fixed_settings, execution=self.task_agent.execution)
             self._save()
             self.thread = threading.Thread(target=self._run, args=(store, tasks, frozen), daemon=True)
             self.thread.start()
@@ -251,19 +265,21 @@ class EvaluationService:
         try:
             for version in ('starter', 'edited'):
                 with self.gate:
-                    self.report['message'] = f'Running the protected guest regression suite: {version}'
+                    kind = 'protected guest' if self.task_agent.execution.mode == 'vm' else 'native functional'
+                    self.report['message'] = f'Running the {kind} regression suite: {version}'
                     self._save()
-                result = run_regressions(self.root, store, frozen[version], self.cancel)
+                result = run_regressions(self.root, store, frozen[version], self.cancel,
+                                         execution=self.task_agent.execution)
                 with self.gate:
                     self.report['regressions'][version] = result
                     self._save()
             if not self.report['regressions']['starter']['passed']:
                 with self.gate:
-                    self.report.update(status='error', message='The starter failed its protected guest checks. Task comparison did not run.')
+                    self.report.update(status='error', message='The starter failed its regression checks. Task comparison did not run.')
                 return
             if not self.report['regressions']['edited']['passed']:
                 with self.gate:
-                    self.report.update(status='rejected', message='The edited seed failed the protected guest checks. Task comparison did not run.')
+                    self.report.update(status='rejected', message='The edited seed failed the regression checks. Task comparison did not run.')
                 return
             for repeat in range(1, self.report['repeats'] + 1):
                 for task in tasks:
