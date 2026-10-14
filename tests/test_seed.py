@@ -197,11 +197,12 @@ class WorkspaceTests(unittest.TestCase):
 
     def test_enabled_terminal_returns_exit_code_and_times_out(self):
         with temporary_directory() as directory:
-            workspace = Workspace(Path(directory), terminal=True, timeout=1)
+            workspace = Workspace(Path(directory), terminal=True, timeout=15)
             command = "Write-Output 'terminal-ok'" if os.name == 'nt' else "printf terminal-ok"
             result = workspace.execute('run_command', {'command': command})
             self.assertEqual(result['exit_code'], 0)
             self.assertIn('terminal-ok', result['output'])
+            workspace.timeout = 1
             command = 'Start-Sleep -Seconds 10' if os.name == 'nt' else 'sleep 10'
             result = workspace.execute('run_command', {'command': command})
             self.assertTrue(result['timed_out'])

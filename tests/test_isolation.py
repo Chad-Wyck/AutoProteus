@@ -34,7 +34,8 @@ class BoundaryTests(unittest.TestCase):
         self.temp.cleanup()
 
     def test_command_line_has_no_host_sharing_network_monitor_or_fallback(self):
-        args = vm_command(Appliance(ROOT))
+        with patch.object(Appliance, 'binary', return_value=ROOT / 'fixture-qemu'):
+            args = vm_command(Appliance(ROOT))
         for flag, expected in [('-accel', 'kvm' if sys.platform == 'linux' else 'whpx'), ('-nic', 'none'), ('-monitor', 'none'), ('-display', 'none')]:
             self.assertEqual(args[args.index(flag) + 1], expected)
         self.assertIn('-no-user-config', args)
