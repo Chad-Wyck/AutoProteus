@@ -6,16 +6,30 @@ VM isolation is the default. An explicitly acknowledged **Linux native mode** is
 
 ## Start
 
+### Windows
+
 On **64-bit Windows 11**, double-click **Start AutoProteus.cmd**. Choose a local model, hosted connection, or scripted demo. Before the first task, choose **Prepare isolated environment**. The app downloads pinned portable QEMU and Linux components into this project, then continues your task. Later runs reuse them.
+
+**Windows Hypervisor Platform must be enabled.** If unavailable, the app explains how to enable it through Windows Features and restart. Portable setup does not install drivers or alter Windows features.
+
+### Linux
+
+On a **64-bit Intel/AMD Linux desktop**, open **Start AutoProteus.desktop** in the downloaded project folder. If your file manager asks, choose **Allow Launching** or **Run**. The launcher takes care of first-time setup and opens the same browser interface used on Windows. No preinstalled Python, Ollama, QEMU, pip packages, or separate setup commands are required.
+
+The setup window explains any administrator prompt before installing missing components through your distribution's package manager and granting your account access to KVM. Ubuntu/Debian, Fedora, Arch and openSUSE package managers are supported. The launcher downloads checksum-pinned private Python into `.runtime/python-linux/`. Choose a local model in the browser to download its engine and weights, then choose **Prepare isolated environment** before the first task. Later launches reuse the setup.
+
+Linux tasks run inside the same diskless, network-free guest appliance, using **QEMU/KVM**. QEMU is managed by the distribution; its executable and the pinned guest image are checked before execution. Model-written code cannot change this host setup or give itself access to host files. Hardware virtualization must be enabled and KVM exposed to the computer; if unavailable, the app explains the next step and refuses VM execution. Native mode is never selected automatically.
+
+First-time setup needs internet access and disk space for the engine and selected model. Local inference can use the CPU when a compatible GPU is unavailable. Linux ARM and macOS VM backends are not included in this release.
 
 The interface starts in dark mode. Use **Light mode** in the top bar to switch;
 your browser remembers the choice across launches.
 
-**Windows Hypervisor Platform must be enabled.** This backend works on the tested Windows 11 Home PC using its existing hardware virtualization. If unavailable, the app explains how to enable it through Windows Features and restart. Enabling that Windows feature may require administrator access; portable setup does not install drivers or alter Windows features. There is no software-emulation or native-host execution fallback.
+## Advanced execution
 
 ### Linux without AutoProteus VM protection
 
-For a disposable Linux machine, container, or cloud workspace you manage, use Python 3.10+:
+For a disposable Linux machine, container, or cloud workspace you manage, explicitly launch:
 
 ```sh
 sh launch.sh --execution native --acknowledge-host-access
@@ -27,14 +41,14 @@ Add `--no-browser` when accessing the loopback interface through your environmen
 
 Native runs copy the same seed into a fresh temporary directory and use the existing inference/artifact broker. They do not intentionally inherit provider keys. Stop and shutdown terminate the worker and ordinary command descendants; parent-death cleanup is best effort. Deliberately detached code can evade these controls. There are no AutoProteus-enforced aggregate CPU, memory, disk or network limits in this mode; configure them externally. Session histories and evaluation reports record the execution mode. Native checks are functional evidence only, and are not protected against same-account candidate code.
 
-On Linux, connect an installed Ollama service, a hosted provider, or the scripted demo. Automatic engine installation remains Windows-only. API keys entered in the Linux interface stay in memory for that launch; `AUTOPROTEUS_API_KEY` is also supported. The surrounding environment must protect keys. This release adds Linux native execution, **not a Linux KVM backend or Windows native mode**. A default Linux launch continues to refuse agent execution when VM isolation is unavailable.
+Automatic model-engine setup works on Windows and Linux. An installed Ollama service, hosted provider, or scripted demo can also be selected. API keys entered in the Linux interface stay in memory for that launch; `AUTOPROTEUS_API_KEY` is also supported. The surrounding native environment must protect keys. Windows native execution is not supported.
 
-Isolation downloads are about 290 MB. Preparing a local model requires several additional GB. The launcher can download official portable Python if Python 3.10+ is unavailable. No pip packages are required. `python app.py --no-browser` starts the protected controller directly. Other operating systems currently cannot execute agent tasks through this backend.
+Preparing a local model requires several GB. Both launchers can prepare Python automatically, with no pip dependencies. Developers with Python 3.10+ can also use `python app.py --no-browser` to start the controller directly; normal desktop use starts from the platform's Start file.
 
 ## Models
 
 - **Local model** is the default. Prepare portable Ollama and Qwen3 4B Instruct, choose the lighter 1.7B model, or connect an existing engine. Ollama runs on the host to use your GPU. The VM receives responses through the broker and cannot access the engine directly.
-- **Hosted connection** accepts a compatible chat-completions service, model ID, and optional key. Keys are encrypted with Windows DPAPI. The host keeps provider addresses, credentials, and settings. Hosted requests send task data to the provider and may incur charges.
+- **Hosted connection** accepts a compatible chat-completions service, model ID, and optional key. Windows encrypts saved keys with DPAPI; Linux keeps entered keys in memory for that launch. The host keeps provider addresses, credentials, and settings. Hosted requests send task data to the provider and may incur charges.
 - **Interactive demo** creates real files using a deterministic script inside the same VM boundary. It does not call an AI model.
 
 Native tool calls and a JSON text fallback share a small action protocol. Incomplete replies never execute actions. Native replies must explicitly call `finish`; plain prose enters a bounded repair loop. Tool compatibility does not guarantee task competence.
@@ -75,7 +89,7 @@ The seed's `TOOL_SPECS` table supplies both native and JSON descriptions. To add
 
 | Path | Purpose |
 | --- | --- |
-| `app.py`, `launch.ps1`, `launch.sh` | Host launcher and explicit execution choice |
+| `app.py`, `launch.ps1`, `launch.sh`, `Start AutoProteus.desktop` | Host launchers and explicit execution choice |
 | `controller/` | Host UI/API, credentials, inference, VM policy, broker |
 | `guest/worker.py` | Shared VM/native bootstrap and communication adapter |
 | `seed.py`, `autoproteus/` | Editable guest entry point, agent and tools |
@@ -94,7 +108,7 @@ Existing sessions and model downloads are preserved. Legacy files can be preview
 
 ## Verify
 
-`python -m unittest discover -s tests -v` runs regression and broker tests. Set `AUTOPROTEUS_VM_TESTS=1` on a prepared Windows host to include real VM checks for host file visibility, networking, guest privilege, forged exports, Stop, restoration, and recovery. Guest tests copied into `harness/tests/` run inside the VM; controller tests stay on the host.
+`python -m unittest discover -s tests -v` runs regression and broker tests. Set `AUTOPROTEUS_VM_TESTS=1` on a prepared Windows/WHPX or Linux/KVM host to include real VM checks for host file visibility, networking, guest privilege, forged exports, Stop, restoration, and recovery. `tests/test_linux.py` also covers Linux runtime integrity and managed engine cleanup. Guest tests copied into `harness/tests/` run inside the VM; controller tests stay on the host.
 
 On Linux, `python3 -m unittest discover -s tests -p test_native.py -v` runs trusted, offline native-worker fixtures for consent, startup, broker exports, checkpoint restoration, functional regressions, Stop and ordinary parent-exit cleanup. These are not hostile-code isolation tests. To evaluate the demo without a VM:
 
@@ -118,5 +132,5 @@ Downloads and SHA-256 hashes are pinned in `controller/runtime-lock.json`. Hashe
 
 - [QEMU downloads](https://www.qemu.org/download/#windows), [WHPX backend](https://www.qemu.org/docs/master/system/whpx.html), and [Windows build provider](https://qemu.weilnetz.de/w64/)
 - [Alpine Linux releases](https://alpinelinux.org/releases/)
-- [Ollama Windows distribution](https://docs.ollama.com/windows) and [chat API](https://docs.ollama.com/api/chat)
+- [Ollama Windows distribution](https://docs.ollama.com/windows), [Linux distribution](https://docs.ollama.com/linux), and [chat API](https://docs.ollama.com/api/chat)
 - [Python portable distribution](https://www.python.org/downloads/release/python-31312/)

@@ -7,3 +7,4 @@
 *.css text eol=lf
 *.html text eol=lf
 *.sh text eol=lf
+*.desktop text eol=lf

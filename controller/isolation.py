@@ -190,14 +190,18 @@ class Artifacts:
 def vm_command(appliance, bridge_port=0):
     """Fixed policy: no disk, NIC, monitor, UI, USB, sharing, or accelerator fallback."""
     runtime = appliance.directory
-    return [str(runtime / 'qemu/qemu-system-x86_64.exe'),
-            '-no-user-config', '-nodefaults', '-machine', 'q35', '-accel', 'whpx',
+    linux = appliance.linux
+    result = [str(appliance.binary()),
+            '-no-user-config', '-nodefaults', '-machine', 'q35', '-accel', 'kvm' if linux else 'whpx',
             '-m', '2048', '-smp', '2', '-display', 'none', '-monitor', 'none',
             '-nic', 'none', '-serial', 'none', '-no-reboot',
             '-device', 'virtio-serial-pci', '-chardev', f'socket,id=bridge,host=127.0.0.1,port={bridge_port},server=off,nodelay=on',
             '-device', 'virtserialport,chardev=bridge,name=org.autoproteus.bridge',
             '-kernel', str(runtime / 'vmlinuz'), '-initrd', str(runtime / 'initrd.gz'),
             '-append', 'console=ttyS0 quiet panic=1 rdinit=/init']
+    if linux:
+        result.extend(['-sandbox', 'on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny'])
+    return result
 
 
 class WorkerTransport:
@@ -298,23 +302,33 @@ class VM(WorkerTransport):
     def __init__(self, appliance):
         super().__init__()
         self.bridge = None
-        from .windows_job import Job
+        linux = appliance.linux
+        if linux:
+            from .linux_process import Job, command
+        else:
+            from .windows_job import Job
         self.job = Job()
         try:
             # No provider credentials or user-selected environment is inherited.
-            environment = {key: value for key, value in os.environ.items()
-                           if key.upper() in ('SYSTEMROOT', 'WINDIR', 'TEMP', 'TMP')}
+            environment = ({'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'} if linux else
+                           {key: value for key, value in os.environ.items()
+                            if key.upper() in ('SYSTEMROOT', 'WINDIR', 'TEMP', 'TMP')})
             # Windows QEMU stdio can drop input bytes. A private loopback
             # socket carries the same broker frames; the VM still has no NIC.
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
-                listener.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+                if not linux:
+                    listener.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
                 listener.bind(('127.0.0.1', 0))
                 listener.listen(1)
                 listener.settimeout(10)
-                self.process = subprocess.Popen(vm_command(appliance, listener.getsockname()[1]),
+                arguments = vm_command(appliance, listener.getsockname()[1])
+                if linux:
+                    arguments = command(arguments[0], arguments[1:], 'vm')
+                self.process = subprocess.Popen(arguments,
                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
                     cwd=appliance.directory, env=environment,
-                    creationflags=subprocess.CREATE_NO_WINDOW | 0x4)
+                    **({'start_new_session': True} if linux else
+                       {'creationflags': subprocess.CREATE_NO_WINDOW | 0x4}))
                 self.job.attach_and_resume(self.process)
                 self.bridge, _ = listener.accept()
             self.bridge.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)

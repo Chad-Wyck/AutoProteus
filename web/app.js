@@ -28,8 +28,8 @@ function renderApp() {
   text('try-seed', native ? 'Try edited seed without VM protection →' : 'Try edited seed in a new VM →');
   text('key-help', app.platform === 'windows' ? 'Saved keys are encrypted for your Windows account.' : 'Keys stay in memory for this launch. The surrounding environment must protect them.');
   text('seed-help', native ? 'The agent edits a source copy in harness/. Your surrounding environment must protect the starter and controller.' : 'The agent can edit its own source copy in harness/. Your running seed stays recoverable.');
-  text('local-setup-help', app.platform === 'linux' ? 'Connect an installed Ollama service, or choose a hosted connection or the demo.' : 'AutoProteus can prepare the engine and model for you. No separate terminal or server setup needed.');
-  text('local-download-note', app.platform === 'linux' ? 'Automatic engine installation currently supports Windows. An installed Ollama service can download your selected model; hosted connections and the demo need no local engine.' : 'First-time setup downloads the engine and model, which can take several minutes and several GB of disk space. Everything stays in this project when using the managed engine.');
+  text('local-setup-help', 'AutoProteus can prepare the engine and model for you. No separate terminal or server setup needed.');
+  text('local-download-note', 'First-time setup downloads the engine and model, which can take several minutes and several GB of disk space. Everything stays in this project when using the managed engine.');
   text('session-count', app.sessions.length);
   const sessions = $('sessions'); sessions.replaceChildren();
   if (!app.sessions.length) sessions.append(node('p', 'sidebar-empty', 'Your work will appear here.\nEvery session is saved.'));
@@ -178,6 +178,7 @@ function renderIsolation(info) {
   text('isolation-eyebrow', native ? 'EXTERNAL PROTECTION REQUIRED' : 'PROTECTED ENVIRONMENT');
   text('isolation-description', native ? 'AutoProteus adds no filesystem or network isolation in this mode. The worker has this account’s permissions, including access to the controller. Protection must come from a disposable machine or your externally configured environment.' : 'The agent runs in a fresh Linux virtual machine. Your drives, network, clipboard, and devices stay outside it. Only model requests and bounded saved files pass through the controller.');
   visible('prepare-isolation', !native); visible('isolation-footnote', !native);
+  text('isolation-footnote', state.app.platform === 'linux' ? 'One-time guest download: about 70 MB. KVM must be available; the Linux launcher handles dependency and permission setup. Later tasks reuse the downloaded environment.' : 'One-time download: about 290 MB. Windows Hypervisor Platform must be enabled. Subsequent tasks start in a few seconds.');
   text('isolation-message', info.message);
   error('isolation-error', info.error);
   $('prepare-isolation').disabled = info.busy || !info.available;
@@ -298,7 +299,7 @@ async function detectLocal() {
   try {
     const result = await api('/api/local'); state.installed = result.models;
     $('installed-models').replaceChildren(...result.models.map(model => { const option = node('option'); option.value = model.name; return option; }));
-    text('engine-status', result.available ? `Local engine found · ${result.models.length} installed model${result.models.length === 1 ? '' : 's'}` : state.app.platform === 'linux' ? 'Install Ollama first, then connect it here; or choose a hosted connection or demo.' : 'No local engine found. AutoProteus can prepare one for you.');
+    text('engine-status', result.available ? `Local engine found · ${result.models.length} installed model${result.models.length === 1 ? '' : 's'}` : 'No local engine found. AutoProteus can prepare one for you.');
     $('engine-status').classList.toggle('available', result.available); renderConnectButton();
   } catch (e) { text('engine-status', e.message); }
 }

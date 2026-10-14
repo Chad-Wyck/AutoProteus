@@ -1,4 +1,4 @@
-"""Real hostile-guest tests. Opt in with AUTOPROTEUS_VM_TESTS=1 on a prepared Windows host."""
+"""Real hostile-guest tests. Opt in on a prepared Windows/WHPX or Linux/KVM host."""
 import base64
 import json
 import os

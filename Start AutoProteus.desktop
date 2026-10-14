@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=AutoProteus
+Comment=Start AutoProteus and complete guided setup
+Exec=sh -c "task_file=\\${1:-\\${GIO_LAUNCHED_DESKTOP_FILE:-}}; [ -n \\"\\$task_file\\" ] || { echo 'Cannot find the AutoProteus project folder.' >&2; exit 1; }; case \\"\\$task_file\\" in file://*) task_file=\\$(env printf '%%b' \\"\\$(printf '%%s' \\"\\${task_file#file://}\\" | sed 's/\\\\\\\\/\\\\\\\\\\\\\\\\/g; s/%%/\\\\\\\\x/g')\\");; esac; exec sh \\"\\$(dirname -- \\"\\$task_file\\")/launch.sh\\"" autoproteus %k
+Icon=applications-development
+Terminal=true
+Categories=Utility;

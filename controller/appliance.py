@@ -6,8 +6,10 @@ import hashlib
 import io
 import json
 import os
+import platform
 import stat
 import subprocess
+import sys
 import tarfile
 import threading
 import urllib.request
@@ -85,6 +87,18 @@ def build_initrd(root, cache, destination):
 
 
 def hypervisor_available():
+    if sys.platform == 'linux':
+        if platform.machine().lower() not in ('x86_64', 'amd64'):
+            return False
+        try:
+            import fcntl
+            descriptor = os.open('/dev/kvm', os.O_RDWR | os.O_CLOEXEC)
+            try:
+                return fcntl.ioctl(descriptor, 0xae00, 0) == 12
+            finally:
+                os.close(descriptor)
+        except OSError:
+            return False
     if os.name != 'nt':
         return False
     import ctypes
@@ -107,23 +121,54 @@ class Appliance:
         self.lock = threading.Lock()
         self.busy, self.message, self.error = False, '', ''
 
+    @property
+    def linux(self):
+        return sys.platform == 'linux'
+
+    @property
+    def record_path(self):
+        return self.directory / ('installed-linux.json' if self.linux else 'installed.json')
+
+    def binary(self):
+        if not self.linux:
+            return self.directory / 'qemu/qemu-system-x86_64.exe'
+        for name in ('/usr/bin/qemu-system-x86_64', '/usr/local/bin/qemu-system-x86_64'):
+            path = Path(name).resolve()
+            if path.is_file() and os.access(path, os.X_OK):
+                info = path.stat()
+                if info.st_uid == 0 and not info.st_mode & 0o022:
+                    return path
+        raise IsolationError('Open the Linux launcher to finish installing QEMU.')
+
+    def unavailable_message(self):
+        if self.linux:
+            if platform.machine().lower() not in ('x86_64', 'amd64'):
+                return 'VM isolation currently requires a 64-bit Intel or AMD Linux computer.'
+            if Path('/dev/kvm').exists():
+                return 'KVM needs permission to run. Reopen the Linux launcher and approve its setup prompt.'
+            return ('Hardware virtualization is unavailable. Enable virtualization in your computer firmware, '
+                    'or enable nested virtualization on your VM host, then reopen AutoProteus. '
+                    'Native execution is available only through an explicitly acknowledged separate launch.')
+        return ('Enable Windows Hypervisor Platform in Windows Features, restart, then reopen AutoProteus.'
+                if os.name == 'nt' else 'This VM backend supports Windows and 64-bit Intel/AMD Linux.')
+
     def public(self):
         available = hypervisor_available()
-        installed = (self.directory / 'installed.json').exists()
+        installed = self.record_path.exists()
         if installed:
             try:
-                record = json.loads((self.directory / 'installed.json').read_text(encoding='utf-8'))
+                record = json.loads(self.record_path.read_text(encoding='utf-8'))
                 installed = record.get('guest_sha256') == digest(self.root / 'guest/worker.py') and record.get('lock_sha256') == digest(self.root / 'controller/runtime-lock.json')
-            except (ValueError, OSError):
+                if self.linux and installed:
+                    installed = record.get('qemu_path') == str(self.binary()) and record.get('qemu_sha256') == digest(self.binary())
+            except (ValueError, OSError, IsolationError):
                 installed = False
         return {'ready': available and installed and not self.busy, 'available': available,
                 'installed': installed, 'busy': self.busy, 'message': self.message or (
                     'Isolation is ready' if available and installed else
                     'Prepare the isolated environment' if available else
-                    'Enable Windows Hypervisor Platform in Windows Features, restart, then reopen AutoProteus.'
-                    if os.name == 'nt' else
-                    'VM isolation currently supports Windows. Linux native execution requires an explicit launch choice in a separately protected or disposable environment.'),
-                'error': self.error, 'backend': 'QEMU / Windows Hypervisor Platform',
+                    self.unavailable_message()),
+                'error': self.error, 'backend': 'QEMU / Linux KVM' if self.linux else 'QEMU / Windows Hypervisor Platform',
                 'memory_mb': 2048, 'cpus': 2, 'workspace_mb': 512, 'network': False}
 
     def prepare(self):
@@ -149,8 +194,11 @@ class Appliance:
         self.cache.mkdir(parents=True, exist_ok=True)
         self.directory.mkdir(parents=True, exist_ok=True)
         manifest = json.loads((self.root / 'controller/runtime-lock.json').read_text(encoding='utf-8'))
-        for index, item in enumerate(manifest['sources']):
-            self.message = f"Preparing the isolated environment ({index + 1}/{len(manifest['sources'])})…"
+        sources = [item for item in manifest['sources'] if not self.linux or not item['name'].endswith('.exe')]
+        if self.linux:
+            self.binary()
+        for index, item in enumerate(sources):
+            self.message = f"Preparing the isolated environment ({index + 1}/{len(sources)})…"
             target = self.cache / item['name']
             if not target.exists() or digest(target) != item['sha256']:
                 temporary = target.with_suffix('.download')
@@ -168,25 +216,36 @@ class Appliance:
         seven = self.directory / '7zip'
         qemu = self.directory / 'qemu'
         flags = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
+        if not self.linux:
+            self._install_windows(seven, qemu, flags)
+        (self.directory / 'vmlinuz').write_bytes((self.cache / 'vmlinuz-virt').read_bytes())
+        build_initrd(self.root, self.cache, self.directory / 'initrd.gz')
+        files = [self.directory / 'vmlinuz', self.directory / 'initrd.gz']
+        if not self.linux:
+            files.extend(qemu.rglob('*'))
+        record = {
+            'lock_sha256': digest(self.root / 'controller/runtime-lock.json'),
+            'guest_sha256': digest(self.root / 'guest/worker.py'),
+            'files': {p.relative_to(self.directory).as_posix(): digest(p) for p in files if p.is_file()}}
+        if self.linux:
+            record.update(qemu_path=str(self.binary()), qemu_sha256=digest(self.binary()))
+        atomic_json(self.record_path, record)
+
+    def _install_windows(self, seven, qemu, flags):
         subprocess.run([str(self.cache / '7zr.exe'), 'x', '-y', '-o' + str(seven),
                         str(self.cache / '7z-x64.exe'), '7z.exe', '7z.dll'],
                        check=True, stdout=subprocess.DEVNULL, creationflags=flags)
         subprocess.run([str(seven / '7z.exe'), 'x', '-y', '-o' + str(qemu), str(self.cache / 'qemu.exe'),
                         'qemu-system-x86_64.exe', '*.dll', 'share/*', 'COPYING*'],
                        check=True, stdout=subprocess.DEVNULL, creationflags=flags)
-        (self.directory / 'vmlinuz').write_bytes((self.cache / 'vmlinuz-virt').read_bytes())
-        build_initrd(self.root, self.cache, self.directory / 'initrd.gz')
-        files = [self.directory / 'vmlinuz', self.directory / 'initrd.gz', *qemu.rglob('*')]
-        atomic_json(self.directory / 'installed.json', {
-            'lock_sha256': digest(self.root / 'controller/runtime-lock.json'),
-            'guest_sha256': digest(self.root / 'guest/worker.py'),
-            'files': {p.relative_to(self.directory).as_posix(): digest(p) for p in files if p.is_file()}})
 
     def verify(self):
         if not hypervisor_available():
             raise IsolationError(self.public()['message'])
         try:
-            record = json.loads((self.directory / 'installed.json').read_text(encoding='utf-8'))
+            record = json.loads(self.record_path.read_text(encoding='utf-8'))
+            if self.linux and (record.get('qemu_path') != str(self.binary()) or record.get('qemu_sha256') != digest(self.binary())):
+                raise IsolationError('QEMU changed. Prepare isolation again to verify the updated Linux runtime.')
             if record['lock_sha256'] != digest(self.root / 'controller/runtime-lock.json') or record['guest_sha256'] != digest(self.root / 'guest/worker.py'):
                 raise IsolationError('Prepare isolation again to update the guest runtime')
             for name, expected in record['files'].items():
@@ -199,8 +258,8 @@ class Appliance:
     def rebuild_guest(self):
         """Development helper: rebuild trusted guest bootstrap, never candidate code."""
         build_initrd(self.root, self.cache, self.directory / 'initrd.gz')
-        record = json.loads((self.directory / 'installed.json').read_text(encoding='utf-8'))
+        record = json.loads(self.record_path.read_text(encoding='utf-8'))
         record['guest_sha256'] = digest(self.root / 'guest/worker.py')
         for name in ('vmlinuz', 'initrd.gz'):
             record['files'][name] = digest(self.directory / name)
-        atomic_json(self.directory / 'installed.json', record)
+        atomic_json(self.record_path, record)

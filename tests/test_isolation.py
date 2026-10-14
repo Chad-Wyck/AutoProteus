@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import sys
 from pathlib import Path
 import tempfile
 import threading
@@ -34,7 +35,7 @@ class BoundaryTests(unittest.TestCase):
 
     def test_command_line_has_no_host_sharing_network_monitor_or_fallback(self):
         args = vm_command(Appliance(ROOT))
-        for flag, expected in [('-accel', 'whpx'), ('-nic', 'none'), ('-monitor', 'none'), ('-display', 'none')]:
+        for flag, expected in [('-accel', 'kvm' if sys.platform == 'linux' else 'whpx'), ('-nic', 'none'), ('-monitor', 'none'), ('-display', 'none')]:
             self.assertEqual(args[args.index(flag) + 1], expected)
         self.assertIn('-no-user-config', args)
         self.assertIn('-nodefaults', args)

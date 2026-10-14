@@ -55,13 +55,14 @@ class Settings:
         if os.environ.get("AUTOPROTEUS_API_KEY"):
             return os.environ["AUTOPROTEUS_API_KEY"]
         path = self.directory / "credential.bin"
-        if path.exists():
+        if os.name == 'nt' and path.exists():
             return protect(base64.b64decode(path.read_bytes()), decrypt=True).decode()
         return ""
 
     def public(self):
         value = dict(self.values)
-        value["has_key"] = bool(self.memory_key or os.environ.get("AUTOPROTEUS_API_KEY") or (self.directory / "credential.bin").exists())
+        value['has_key'] = bool(self.memory_key or os.environ.get('AUTOPROTEUS_API_KEY') or
+                                (os.name == 'nt' and (self.directory / 'credential.bin').exists()))
         return value
 
     def update(self, data):
@@ -116,7 +117,8 @@ class Settings:
             self.memory_key = key
         if data.get("clear_key"):
             self.memory_key = ""
-            (self.directory / "credential.bin").unlink(missing_ok=True)
+            if os.name == 'nt':
+                (self.directory / 'credential.bin').unlink(missing_ok=True)
         self.values = candidate
         atomic_json(self.path, candidate)
         return self.public()
