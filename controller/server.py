@@ -256,7 +256,7 @@ def handler_for(app):
                 self.send({"error": str(error)}, 400)
 
         def do_POST(self):
-            if self.path in ('/api/start', '/api/resume', '/api/reset', '/api/try-seed', '/api/import', '/api/session/manage'):
+            if self.path in ('/api/start', '/api/resume', '/api/reset', '/api/try-seed', '/api/restart-seed', '/api/import', '/api/session/manage'):
                 with app.evaluations.gate:
                     if app.evaluations.busy:
                         if self.allowed(api=True):
@@ -327,6 +327,11 @@ def handler_for(app):
                             raise
                     app.start_run(session)
                     return self.send({"id": session["id"]})
+                if self.path == '/api/restart-seed':
+                    app.ensure_idle()
+                    session = app.store.get(data.get('id'))
+                    app.agent.restart_seed(session)
+                    return self.send({'id': session['id']})
                 if self.path == '/api/try-seed':
                     app.ensure_idle()
                     candidate = app.store.get(data.get('id'))

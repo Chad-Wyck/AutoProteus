@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import uuid
 
 from controller.config import Settings
-from controller.evaluation import candidate_source, freeze_source, run_task, run_regressions, source_changes, source_identity, summarize
+from controller.evaluation import candidate_source, freeze_source, run_task, run_regressions, source_changes, source_identity, summarize, upgrade_review
 from controller.isolation import IsolatedAgent, seed_files
 from controller.runtime import LocalRuntime
 from controller.storage import Store, atomic_json
@@ -140,6 +140,7 @@ def main():
                 for version in (list(sources) if repeat % 2 else list(reversed(sources))):
                     result = run_task(agent, store, config, task, frozen[version], args.timeout)
                     if args.self_improve:
+                        regression = None
                         session = store.get(result['session'])
                         try:
                             edited = candidate_source(store, session)
@@ -151,9 +152,15 @@ def main():
                                       review_required=True, changed_files=[c['path'] for c in changes])
                         if ready:
                             candidate = freeze_source(store, edited, 'Self-improvement candidate')
-                            report['regressions']['edited'] = run_regressions(root, store, candidate, execution=execution)
+                            regression = run_regressions(root, store, candidate, execution=execution)
+                            report['regressions']['edited'] = regression
+                            if not regression['passed']:
+                                result.update(artifact_passed=False, passed=False)
                         atomic_json(directory / 'candidate-source.json', edited)
                         atomic_json(directory / 'changes.json', changes)
+                        result['review'] = upgrade_review(store, session, sources['starter'], edited)
+                        result['review']['regressions'] = regression
+                        atomic_json(directory / 'review.json', result['review'])
                     results.append({**result, 'version': version, 'repeat': repeat})
                     report['summary'] = summarize([r for r in results if r['passed'] is not None])
                     atomic_json(directory / 'report.json', report)

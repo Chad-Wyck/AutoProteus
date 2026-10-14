@@ -23,6 +23,30 @@ def source_identity(source):
         for item in source), separators=(',', ':')).encode()).hexdigest()
 
 
+def upgrade_review(store, session, starter, candidate):
+    """Assemble review evidence on the host; guest claims remain diagnostic."""
+    commands = []
+    journal = store.directory(session['id']) / 'events.jsonl'
+    if journal.exists():
+        for line in journal.read_text(encoding='utf-8').splitlines():
+            event = json.loads(line)
+            data = event.get('data', {})
+            if not isinstance(data, dict):
+                continue
+            action = data.get('action', {})
+            if event.get('type') == 'action_result' and isinstance(action, dict) and action.get('tool') == 'run_command':
+                arguments = action.get('arguments', {})
+                commands.append({'command': arguments.get('command', '') if isinstance(arguments, dict) else None,
+                                 'result': data.get('result'), 'ok': data.get('ok')})
+    explanation = next((item['text'] for item in reversed(session.get('feed', []))
+                        if item.get('kind') == 'assistant'), '')
+    return {'session': session['id'], 'status': session['status'], 'candidate_available': bool(candidate), 'model_explanation': explanation,
+            'starter_sha256': source_identity(starter), 'candidate_sha256': source_identity(candidate),
+            'files': {item['path']: hashlib.sha256(base64.b64decode(item['data'], validate=True)).hexdigest() for item in candidate},
+            'changes': source_changes(starter, candidate), 'commands': commands,
+            'verification': 'Recorded guest commands are development feedback; independent checks are required.'}
+
+
 def candidate_source(store, session):
     source = [{'path': item['path'][8:], 'data': item['data']}
               for item in Artifacts(store, session).pack() if item['path'].startswith('harness/')]

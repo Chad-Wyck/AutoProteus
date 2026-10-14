@@ -156,6 +156,8 @@ class ModelClient:
         if native and tools is None:
             raise ProviderError('Native inference requires tool definitions supplied by the seed')
         wire = wire_messages(messages, config['provider'] == 'ollama') if native else messages
+        # Older editable seeds may forward journal provenance unchanged.
+        wire = [{key: value for key, value in item.items() if key != 'origin'} for item in wire]
         validate_context(wire, tools if native else [], config)
         base = config["base_url"].rstrip("/")
         if config["provider"] == "ollama":

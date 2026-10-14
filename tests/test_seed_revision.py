@@ -22,7 +22,7 @@ class SeedRevisionTests(unittest.TestCase):
         (self.seed / 'autoproteus').mkdir(parents=True)
         (self.seed / 'tests').mkdir()
         shutil.copyfile(ROOT / 'seed.py', self.seed / 'seed.py')
-        for name in ('__init__.py', 'providers.py', 'tools.py'):
+        for name in ('__init__.py', 'providers.py', 'tools.py', 'search.py', 'terminal.py'):
             shutil.copyfile(ROOT / 'autoproteus' / name, self.seed / 'autoproteus' / name)
         self.test_file = self.seed / 'tests/test_example.py'
         self.test_file.write_text('import unittest\nclass Example(unittest.TestCase):\n def test_example(self): self.assertTrue(True)\n', encoding='utf-8')
@@ -78,6 +78,7 @@ class SeedRevisionTests(unittest.TestCase):
     def test_new_limits_preserve_saved_preferences_and_broker_has_final_status_room(self):
         settings = Settings(self.workspace / 'settings')
         self.assertEqual(settings.values['max_steps'], 128)
+        self.assertEqual(settings.values['context_tokens'], 32768)
         self.assertEqual(settings.values['response_tokens'], 8192)
         settings.update({'max_steps': 32, 'context_tokens': 8192, 'response_tokens': 2048})
         restored = Settings(settings.directory)

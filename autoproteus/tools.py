@@ -1,11 +1,11 @@
 """Workspace file tools and optional native terminal execution."""
 from __future__ import annotations
 
-import os
-import subprocess
 import threading
-import time
 from pathlib import Path
+
+from .search import search_files
+from .terminal import run_command, terminate
 
 LIMIT = 12000
 READ_DEFAULT = 1000
@@ -63,55 +63,7 @@ class Workspace:
             path.unlink()
             return {'path': value, 'deleted': True}
         if tool == 'search_files':
-            query = args['query']
-            if not isinstance(query, str) or not query or len(query) > 200 or '\n' in query or '\r' in query:
-                raise ValueError('Search for one nonempty literal of at most 200 characters')
-            root = self.path(args.get('path', '.'))
-            if not root.exists():
-                raise ValueError('The search path does not exist')
-            matches, scanned, total, visited, output, incomplete = [], 0, 0, 0, 0, False
-            paths = [root] if root.is_file() else root.rglob('*')
-            for path in paths:
-                if self.cancel.is_set():
-                    raise Cancelled()
-                visited += 1
-                if visited > 2000:
-                    incomplete = True; break
-                if path.is_symlink() or not path.is_file() or any(p.startswith('.') or p == '__pycache__' for p in path.relative_to(self.root).parts):
-                    continue
-                path = self.path(str(path.relative_to(self.root)))
-                size = path.stat().st_size
-                if size > 400000:
-                    incomplete = True; continue
-                scanned += 1; total += size
-                if scanned > 200 or total > 2 * 1024 * 1024:
-                    incomplete = True; break
-                try:
-                    with path.open('rb') as stream:
-                        raw = stream.read(400001)
-                    if len(raw) > 400000:
-                        incomplete = True; continue
-                    content = raw.decode('utf-8')
-                except UnicodeError:
-                    continue
-                offset = 0
-                for number, raw_line in enumerate(content.splitlines(keepends=True), 1):
-                    line = raw_line.rstrip('\r\n')
-                    position = line.find(query)
-                    if position >= 0:
-                        match = {'path': path.relative_to(self.root).as_posix(), 'line': number,
-                                 'start': offset + max(0, position - 60),
-                                 'snippet': line[max(0, position - 60):position + len(query) + 100]}
-                        output += len(str(match).encode('utf-8'))
-                        if output > LIMIT:
-                            incomplete = True; break
-                        matches.append(match)
-                        if len(matches) == 30:
-                            incomplete = True; break
-                    offset += len(raw_line)
-                if len(matches) == 30 or output > LIMIT:
-                    break
-            return {'matches': matches, 'files_scanned': min(scanned, 200), 'incomplete': incomplete}
+            return search_files(self, args)
         if tool in ("read_file", "read_section"):
             path = self.path(args["path"])
             if tool == "read_file" and any(key in args for key in ("offset", "start", "length")):
@@ -200,45 +152,6 @@ class Workspace:
         raise ValueError("Unknown tool: " + str(tool))
 
     def command(self, command):
-        if not isinstance(command, str) or not command.strip() or len(command) > 20000:
-            raise ValueError("Provide a nonempty command of at most 20,000 characters")
-        argv = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command] if os.name == "nt" else ["/bin/sh", "-c", command]
-        if os.name == "nt":
-            argv[-1] = "$OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false); " + command
-        kwargs = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {"start_new_session": True}
-        # Spool output to disk to avoid retaining unlimited subprocess output in RAM.
-        output_path = self.root / ".terminal-output"
-        with output_path.open("wb") as stream:
-            process = subprocess.Popen(argv, cwd=self.root, stdin=subprocess.DEVNULL, stdout=stream,
-                                       stderr=subprocess.STDOUT, **kwargs)
-            started = time.monotonic()
-            timed_out = False
-            output_limited = False
-            try:
-                while process.poll() is None:
-                    if self.cancel.is_set() or time.monotonic() - started > self.timeout or output_path.stat().st_size > 32000000:
-                        timed_out = not self.cancel.is_set()
-                        output_limited = output_path.stat().st_size > 32000000
-                        if output_limited:
-                            timed_out = False
-                        self._terminate(process)
-                        break
-                    time.sleep(0.1)
-                process.wait(timeout=10)
-            finally:
-                if process.poll() is None:
-                    self._terminate(process)
-        with output_path.open("rb") as stream:
-            output = stream.read(48000).decode("utf-8", errors="replace")
-        if self.cancel.is_set():
-            raise Cancelled()
-        return {"exit_code": process.returncode, "output": clipped(output), "timed_out": timed_out, "output_limited": output_limited}
+        return run_command(self, command)
 
-    @staticmethod
-    def _terminate(process):
-        if os.name == "nt":
-            subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"], capture_output=True,
-                           creationflags=subprocess.CREATE_NO_WINDOW, timeout=10)
-        else:
-            import signal
-            os.killpg(process.pid, signal.SIGKILL)
+    _terminate = staticmethod(terminate)

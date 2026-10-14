@@ -28,6 +28,7 @@ function renderApp() {
   visible('active-work', !!active);
   if (active) text('active-work-label', `${active.title} · ${active.activity}`);
   $('send').disabled = !!active;
+  $('restart-seed').disabled = !!active || app.evaluation?.status === 'running';
   $('attach-button').disabled = !!active;
   text('composer-note', active ? 'An active task is still running. Use Stop above to pause it.' : 'Enter to send · Shift + Enter for a new line');
   const provider = active?.provider || config.provider;
@@ -290,6 +291,10 @@ $('try-seed').onclick = async () => {
 };
 $('reset-seed').onclick = async () => {
   try { await api('/api/reset', {id: state.id}); await poll(); }
+  catch (e) { toast(e.message); }
+};
+$('restart-seed').onclick = async () => {
+  try { await api('/api/restart-seed', {id: state.id}); await poll(); }
   catch (e) { toast(e.message); }
 };
 $('prepare-isolation').onclick = async () => {

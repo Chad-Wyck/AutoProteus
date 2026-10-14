@@ -47,6 +47,19 @@ class FakeModelServer:
 
 
 class HostProviderTests(unittest.TestCase):
+    def test_journal_provenance_is_not_sent_to_either_model_protocol(self):
+        for native in (False, True):
+            server = FakeModelServer(hosted=True, native=native)
+            try:
+                config = {**DEFAULTS, 'provider': 'hosted', 'base_url': server.url,
+                          'protocol': 'native' if native else 'json'}
+                messages = [{'role': 'user', 'content': 'Use the supplied tool.', 'origin': 'human'}]
+                ModelClient(config).complete(messages, threading.Event(), tools=tool_definitions() if native else None)
+                self.assertEqual(server.payloads[0]['messages'], [{'role': 'user', 'content': 'Use the supplied tool.'}])
+                self.assertEqual(messages[0]['origin'], 'human')
+            finally:
+                server.close()
+
     def run_client(self, server, hosted=False):
         config = dict(DEFAULTS)
         config.update(provider='hosted' if hosted else 'ollama', base_url=server.url, protocol='json', response_tokens=2048)

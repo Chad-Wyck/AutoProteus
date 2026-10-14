@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 
 from controller.config import Settings
 from controller.errors import Cancelled
-from controller.evaluation import EvaluationService, artifact_check, freeze_source, source_changes, source_identity
+from controller.evaluation import EvaluationService, artifact_check, freeze_source, source_changes, source_identity, upgrade_review
 from controller.isolation import Artifacts, IsolatedAgent, seed_files
 from controller.storage import Store
 from test_seed import temporary_directory
@@ -22,6 +22,24 @@ def source(path, data):
 
 
 class EvaluationTests(unittest.TestCase):
+    def test_upgrade_review_records_evidence_without_importing_code_or_requiring_a_report(self):
+        with temporary_directory() as directory:
+            store = Store(Path(directory) / 'sessions')
+            session = store.create('Add a tool.', 'demo', 'fixture')
+            store.feed(session, 'assistant', 'Added the capability and checked its Unicode boundary.')
+            store.event(session, 'action_result', {'action': {'tool': 'run_command', 'arguments': {'command': 'python3 harness/seed.py check'}},
+                                                'result': {'exit_code': 0, 'output': 'fixture result'}, 'ok': True})
+            session['status'] = 'completed'
+            starter = [source('autoproteus/tools.py', b'original')]
+            candidate = [source('autoproteus/tools.py', b'raise RuntimeError("never import")'),
+                         source('tests/test_added.py', b'def test_added(): pass')]
+            review = upgrade_review(store, session, starter, candidate)
+            self.assertEqual(set(review['files']), {'autoproteus/tools.py', 'tests/test_added.py'})
+            self.assertNotEqual(review['starter_sha256'], review['candidate_sha256'])
+            self.assertEqual(review['commands'][0]['result']['exit_code'], 0)
+            self.assertIn('Unicode', review['model_explanation'])
+            self.assertIn('independent checks', review['verification'])
+
     def test_exact_checks_preserve_bytes_and_do_not_accept_claimed_completion(self):
         with temporary_directory() as directory:
             store = Store(Path(directory) / 'sessions')

@@ -17,7 +17,7 @@ from types import SimpleNamespace
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from controller.config import DEFAULTS
-from controller.evaluation import candidate_source, freeze_source, run_regressions, run_task, source_changes, source_identity
+from controller.evaluation import candidate_source, freeze_source, run_regressions, run_task, source_changes, source_identity, upgrade_review
 from controller.isolation import Artifacts, IsolatedAgent, seed_files
 from controller.providers import ModelClient, request_json
 from controller.runtime import LocalRuntime
@@ -101,7 +101,8 @@ def assess(store,starter,result,feature,directory):
     protected_unchanged=all(candidate.get(name)==content for name,content in original.items() if name not in {'autoproteus/tools.py','autoproteus/providers.py','README.md'})
     allowed=all(name in {'autoproteus/tools.py','autoproteus/providers.py','README.md'} or
                 (name in additions and name.startswith('tests/') and name.endswith('.py')) for name in changed)
-    review={'source_sha256':source_identity(source),'changed_files':sorted(changed),'new_test_files':new_tests,'protected_unchanged':protected_unchanged,'allowed_files_only':allowed,'documentation_updated':'README.md' in changed,'runtime_changed':runtime_changed,'completed':result['status']=='completed' and not result['timed_out'],'feature_report':any(c.get('path')=='feature.md' and c.get('passed') for c in result['checks'])}
+    review={'source_sha256':source_identity(source),'changed_files':sorted(changed),'new_test_files':new_tests,'protected_unchanged':protected_unchanged,'allowed_files_only':allowed,'documentation_updated':'README.md' in changed,'runtime_changed':runtime_changed,'completed':result['status']=='completed' and not result['timed_out'],
+            'submission':upgrade_review(store,session,starter,source)}
     frozen=freeze_source(store,source,'Candidate '+feature)
     # Runtime edits get checked even when the author prematurely stops or claims failure.
     if runtime_changed:
@@ -112,7 +113,7 @@ def assess(store,starter,result,feature,directory):
         else:review['feature']={'passed':False,'reason':'Requested unchanged execution loop or existing tests were modified'}
     else:
         review['feature']={'passed':False,'reason':'No runtime source edit'}
-    review['accepted']=all([review['completed'],review['feature_report'],review['runtime_changed'],review['documentation_updated'],bool(new_tests),protected_unchanged,allowed,review.get('regressions',{}).get('passed'),review.get('feature',{}).get('passed'),review.get('public',{}).get('passed')])
+    review['accepted']=all([review['completed'],review['runtime_changed'],bool(new_tests),protected_unchanged,allowed,review.get('regressions',{}).get('passed'),review.get('feature',{}).get('passed'),review.get('public',{}).get('passed')])
     atomic_json(directory/'review.json',review)
     return review
 
@@ -293,7 +294,7 @@ def run(args):
                 directory.mkdir(parents=True,exist_ok=True)
                 report['active']={'kind':'upgrade','model':slug,'task':task['name'],'repeat':repeat,'started':now()}
                 atomic_json(report_path,report)
-                result=enrich(store,run_task(agent,store,config,{**task,'checks':[{'path':'feature.md'}]},frozen,args.timeout))
+                result=enrich(store,run_task(agent,store,config,{**task,'checks':[]},frozen,args.timeout))
                 result['model']=slug
                 result['repeat']=repeat
                 result['review']=assess(store,source,result,task['name'],directory)

@@ -11,14 +11,11 @@ from . import __version__
 from .providers import ProviderError, tool_instructions, tool_definitions
 from .tools import Cancelled, Workspace, clipped, EditConflict
 
-GUIDANCE = '''Search for the relevant function or dispatch, then read enough surrounding source to edit it.
-Use read_file for a whole small file. For larger files, read_section uses character positions and lengths.
-Prefer useful sections (often 2000-6000 characters) over many tiny reads. Stop reading when you have enough context.
-Only continue at next_start until eof when the task needs the whole file. Use edit_file for a small, unique replacement.
-For seed upgrades, read harness/README.md and keep a short todo.txt checklist: implementation, registration,
-boundary tests, documentation, candidate checks and real invocation, final report. Update it as work progresses.
-Edited tools are available in a new process, not in this running loop. With terminal access, run
-python3 harness/seed.py check early and after edits; its --tool and --arguments options exercise an edited tool.
+GUIDANCE = '''Search for the relevant code, then read useful surrounding sections (often 2000-6000 characters).
+Use read_file for small files; read_section positions and lengths count characters. Stop reading when you have enough context.
+For seed upgrades, follow harness/README.md: one implementation, one tool definition, focused tests and a concise explanation.
+Use todo.txt only when a checklist helps. With terminal access, python3 harness/seed.py check tests the edited copy;
+--tool and --arguments exercise an edited tool. The controller can restart this task with the edited seed and saved checkpoint.
 '''
 
 PROTOCOL = '''You are AutoProteus, an autonomous assistant working in a private task workspace.
@@ -132,14 +129,14 @@ class Agent:
             client = self.client_factory(config)
             self.snapshot(session)
             if not session["messages"]:
-                session["messages"].append({"role": "user", "content": session["task"]})
+                session["messages"].append({"role": "user", "content": session["task"], "origin": "human"})
                 self.store.feed(session, "user", session["task"])
             elif message:
-                session["messages"].append({"role": "user", "content": message})
+                session["messages"].append({"role": "user", "content": message, "origin": "human"})
                 self.store.feed(session, "user", message)
             else:
                 notice = "Resume this task. Inspect current files and todo.txt before continuing. A previous action may have been interrupted or completed without its result being recorded. Do not blindly repeat it."
-                session["messages"].append({"role": "user", "content": notice})
+                session["messages"].append({"role": "user", "content": notice, "origin": "internal"})
                 self.store.feed(session, "notice", "Session resumed. Checking the current workspace before continuing.")
             session.update(status="running", activity="Starting…", provider=config["provider"], model=config["model"], runs=session["runs"] + 1)
             self.store.event(session, "run_started", {"settings": config, "seed_version": session.get("seed_version"), "seed_sha256": session.get("seed_sha256")})
@@ -175,19 +172,36 @@ class Agent:
                    "Finishing or asking for input uses no tool action. At zero, finish only if verified; further tool requests pause saved work for Resume. "
                    "Resume keeps the files and gives a fresh allowance; do not rush unverified changes.")
         original = {"role": "user", "content": session["task"]}
-        history = [dict(item) for item in session["messages"] if item != original]
+        history = [dict(item) for item in session["messages"]]
+        human_texts = {item['text'] for item in session.get('feed', []) if item.get('kind') == 'user'}
+        def human(item):
+            if item['role'] != 'user':
+                return False
+            if 'origin' in item:
+                return item['origin'] == 'human'
+            # Legacy journals have no origin. Prefer recorded human inputs;
+            # recognize the old generated notices only as a migration fallback.
+            return item['content'] in human_texts or not item['content'].startswith((
+                'ACTION RESULT\n', 'Your response was not accepted:', 'Resume this task. Inspect current files',
+                'Your finish call was deferred', 'A large prior action was omitted.'))
+        for index, item in enumerate(history):
+            if human(item) and item['content'] == session['task']:
+                history.pop(index)
+                break
         # Keep the original request and latest follow-up complete. Never silently
         # shorten user instructions to accommodate fixed prompts or tool schemas.
-        followup = next((item for item in reversed(history) if item['role'] == 'user'
-                         and not item['content'].startswith('ACTION RESULT\n')), None)
+        followup = next((item for item in reversed(history) if human(item)), None)
         required = [original] + ([followup] if followup else [])
         schemas = tool_definitions(config['terminal']) if native else []
         allowance = max(0, config['context_tokens'] - config['response_tokens'] - 128) * 2
+        def plain(items):
+            # Journal provenance is local bookkeeping, never provider API fields.
+            return [{'role': item['role'], 'content': item['content']} for item in items]
         def size(items):
-            return len(json.dumps({'messages': items, 'tools': schemas}, ensure_ascii=False).encode('utf-8'))
+            return len(json.dumps({'messages': plain(items), 'tools': schemas}, ensure_ascii=False).encode('utf-8'))
         fixed = [{"role": "system", "content": system}, original]
         if config['provider'] == 'demo':
-            return [{"role": "system", "content": system + ("\nCurrent todo.txt:\n" + todo if todo else '')}, original, *history]
+            return plain([{"role": "system", "content": system + ("\nCurrent todo.txt:\n" + todo if todo else '')}, original, *history])
         if size([fixed[0], *required]) > allowance:
             raise ValueError('The task, follow-up and tool instructions exceed the configured context estimate. Shorten the request or increase the context window in Settings.')
         if todo:
@@ -221,16 +235,16 @@ class Agent:
                                             'characters': len(data['content']), 'hint': 'Use read_section with a smaller length.'}
                     else:
                         result['result'] = {'context_shortened': True, 'preview': clipped(json.dumps(data, ensure_ascii=False), limit)}
-                    shortened.append({'role': 'user', 'content': 'ACTION RESULT\n' + json.dumps(result, ensure_ascii=False)})
+                    shortened.append({'role': 'user', 'content': 'ACTION RESULT\n' + json.dumps(result, ensure_ascii=False), 'origin': 'tool'})
                 else:
-                    shortened.append({'role': 'user', 'content': 'A large prior action was omitted. Inspect current files before continuing.'})
+                    shortened.append({'role': 'user', 'content': 'A large prior action was omitted. Inspect current files before continuing.', 'origin': 'internal'})
             history = shortened
         while history and size(fixed + history) > allowance:
             index = 1 if history[0] == followup else 0
             history.pop(index)
             if len(history) > index and history[index]['content'].startswith('ACTION RESULT\n'):
                 history.pop(index)
-        return [fixed[0], original, *history]
+        return plain([fixed[0], original, *history])
 
     def _run(self, session, config, client, cancel):
         workspace = Workspace(Path(session["workspace"]), config["terminal"], cancel, config["command_timeout"])
@@ -264,7 +278,7 @@ class Agent:
                     if repairs > 2:
                         raise ValueError("This model did not follow the action format after two retries. Try another model or adjust its settings.")
                     instruction = 'Use the supplied tools with valid arguments.' if config.get('protocol', 'native') == 'native' and config['provider'] != 'demo' else 'Return exactly one complete JSON object following the system instructions.'
-                    session["messages"].append({"role": "user", "content": "Your response was not accepted: " + str(error) + '. ' + instruction + " No action was executed."})
+                    session["messages"].append({"role": "user", "content": "Your response was not accepted: " + str(error) + '. ' + instruction + " No action was executed.", "origin": "internal"})
                     self.store.feed(session, "notice", "The response format was invalid. Asking the model to correct it; no action was executed.")
                     continue
                 repairs = 0
@@ -313,7 +327,7 @@ class Agent:
                         previous_read, repeated_reads = None, 0
                         read_streak = 0
                     session.pop("pending_action", None)
-                    session["messages"].append({"role": "user", "content": "ACTION RESULT\n" + json.dumps({"tool": action["tool"], "ok": ok, "result": result}, ensure_ascii=False)})
+                    session["messages"].append({"role": "user", "content": "ACTION RESULT\n" + json.dumps({"tool": action["tool"], "ok": ok, "result": result}, ensure_ascii=False), "origin": "tool"})
                     self.store.feed(session, "result", "Done" if ok else "Action needs attention", result=result, ok=ok)
                     self.messages(session, config, steps)
                     self.store.save(session)
@@ -321,7 +335,7 @@ class Agent:
                         # Later calls may depend on this result. Let the model replan.
                         break
                 if deferred_finish:
-                    session['messages'].append({'role': 'user', 'content': 'Your finish call was deferred until you inspect the tool results above. Verify the requested outcome before finishing.'})
+                    session['messages'].append({'role': 'user', 'content': 'Your finish call was deferred until you inspect the tool results above. Verify the requested outcome before finishing.', 'origin': 'internal'})
                 if final_request:
                     break
             session.update(status="paused", activity="Action allowance reached")

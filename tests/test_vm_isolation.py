@@ -29,6 +29,89 @@ class ScriptedClient:
 
 @unittest.skipUnless(os.environ.get('AUTOPROTEUS_VM_TESTS') == '1', 'Real VM checks require explicit opt in')
 class RealVMTests(unittest.TestCase):
+    def test_two_extensions_are_used_and_retained_across_restarts_and_resume(self):
+        from controller.evaluation import source_identity
+        starter_hash = source_identity(seed_files(ROOT))
+        self.settings.values['max_steps'] = 16
+        dispatch = '        if tool == "list_files":'
+        table = 'TOOL_SPECS = {'
+        upper = '''        if tool == "uppercase_file":
+            text = self.execute("read_file", {"path": args["path"]})["content"]
+            return self.execute("write_file", {"path": args["path"], "content": text.upper()})
+'''
+        append = '''        if tool == "append_note":
+            text = self.execute("read_file", {"path": args["path"]})["content"]
+            return self.execute("write_file", {"path": args["path"], "content": text + args["content"]})
+'''
+        upper_spec = '\n    "uppercase_file": ("Uppercase a file.", {"path": STRING}, ["path"]),'
+        append_spec = '\n    "append_note": ("Append a note.", {"path": STRING, "content": STRING}, ["path", "content"]),'
+        tests_a = '''import unittest
+from pathlib import Path
+from autoproteus.tools import Workspace
+from test_seed import temporary_directory
+
+class ExtensionTests(unittest.TestCase):
+    def test_uppercase(self):
+        with temporary_directory() as directory:
+            workspace = Workspace(Path(directory))
+            workspace.execute("write_file", {"path": "note.txt", "content": "seed"})
+            workspace.execute("uppercase_file", {"path": "note.txt"})
+            self.assertEqual(workspace.execute("read_file", {"path": "note.txt"})["content"], "SEED")
+'''
+        tests_ab = tests_a + '''
+    def test_append_preserves_first_tool(self):
+        with temporary_directory() as directory:
+            workspace = Workspace(Path(directory))
+            workspace.execute("write_file", {"path": "note.txt", "content": "seed"})
+            workspace.execute("append_note", {"path": "note.txt", "content": "!"})
+            workspace.execute("uppercase_file", {"path": "note.txt"})
+            self.assertEqual(workspace.execute("read_file", {"path": "note.txt"})["content"], "SEED!")
+'''
+        def action(tool, **arguments):
+            return {'action': {'tool': tool, 'arguments': arguments}}
+        def install(code, spec, tests):
+            return [action('edit_file', path='harness/autoproteus/tools.py', old_text=dispatch, new_text=code + dispatch),
+                    action('edit_file', path='harness/autoproteus/providers.py', old_text=table, new_text=table + spec),
+                    action('write_file', path='harness/tests/test_extensions.py', content=tests)]
+        phases = [
+            [action('uppercase_file', path='note.txt'),  # encounter a missing capability
+             action('write_file', path='note.txt', content='seed\n'),
+             action('write_file', path='probe.txt', content='probe\n'),
+             *install(upper, upper_spec, tests_a),
+             action('run_command', command="python3 harness/seed.py check --tool uppercase_file --arguments '{\"path\":\"probe.txt\"}'"),
+             {'message': 'Verified A. Restart this checkpoint to use it.', 'status': 'needs_input'}],
+            [action('uppercase_file', path='note.txt'),
+             *install(append, append_spec, tests_ab),
+             action('run_command', command="python3 harness/seed.py check --tool append_note --arguments '{\"path\":\"probe.txt\",\"content\":\"!\"}'"),
+             {'message': 'Verified A and B. Restart this checkpoint.', 'status': 'needs_input'}],
+            [action('uppercase_file', path='note.txt'), action('append_note', path='note.txt', content='|B'),
+             {'message': 'Both tools used. Ready for Resume.', 'status': 'needs_input'}],
+            [action('append_note', path='note.txt', content='|resume'), action('uppercase_file', path='note.txt'),
+             {'message': 'Used both tools after Resume.', 'status': 'completed'}],
+        ]
+        agent = IsolatedAgent(ROOT, self.store, self.settings, lambda _: ScriptedClient(phases.pop(0)))
+        self.agents.append(agent)
+        task = 'Grow two file capabilities, keep both, and finish the same saved note after Resume.'
+        session = self.store.create(task, 'hosted', 'scripted growth fixture')
+        identifier = session['id']
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session, 120), 'waiting', session['feed'])
+        agent.restart_seed(session)
+        self.assertEqual(self.wait(agent, session, 120), 'waiting', session['feed'])
+        self.assertEqual(Artifacts(self.store, session).read('note.txt'), b'SEED\n')
+        agent.restart_seed(session)
+        self.assertEqual(self.wait(agent, session, 120), 'waiting', session['feed'])
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session, 120), 'completed', session['feed'])
+        self.assertEqual((session['id'], session['task'], session['runs']), (identifier, task, 4))
+        self.assertEqual(session['candidate_from'], identifier)
+        self.assertEqual(Artifacts(self.store, session).read('note.txt'), b'SEED\n|B|RESUME')
+        events = [json.loads(line) for line in (self.store.directory(identifier) / 'events.jsonl').read_text(encoding='utf-8').splitlines()]
+        commands = [event['data'] for event in events if event['type'] == 'action_result' and event['data']['action']['tool'] == 'run_command']
+        self.assertEqual(len(commands), 2)
+        self.assertTrue(all(item['ok'] and item['result']['exit_code'] == 0 for item in commands), commands)
+        self.assertEqual(source_identity(seed_files(ROOT)), starter_hash)
+
     def test_development_check_invokes_an_edited_tool_inside_the_vm(self):
         from controller.evaluation import freeze_source
         source = seed_files(ROOT)

@@ -282,6 +282,64 @@ def model_response(content, calls, native):
 
 
 class AgentTests(unittest.TestCase):
+    def test_human_correction_survives_internal_notices_and_legacy_journals(self):
+        agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
+        notices = ['Your response was not accepted: invalid format. No action was executed.',
+                   'Resume this task. Inspect current files and todo.txt before continuing.',
+                   'Your finish call was deferred until you inspect the tool results above.']
+        try:
+            for protocol in ('native', 'json'):
+                for legacy in (False, True):
+                    for notice in notices:
+                        with self.subTest(protocol=protocol, legacy=legacy, notice=notice):
+                            session = self.store.create('Add a capability without removing existing behavior.', 'ollama', 'offline-test')
+                            correction = 'Your response was not accepted: preserve the original Unicode and CRLF behavior.'
+                            self.store.feed(session, 'user', correction)
+                            session['messages'] = [
+                                {'role': 'user', 'content': session['task']},
+                                {'role': 'assistant', 'content': json.dumps({'action': {'tool': 'read_file', 'arguments': {'path': 'old.txt'}}})},
+                                {'role': 'user', 'content': 'ACTION RESULT\n' + json.dumps({'tool': 'read_file', 'ok': True, 'result': {'content': 'x' * 30000}})},
+                                {'role': 'user', 'content': correction, **({} if legacy else {'origin': 'human'})},
+                                {'role': 'assistant', 'content': json.dumps({'action': {'tool': 'read_file', 'arguments': {'path': 'current.txt'}}})},
+                                {'role': 'user', 'content': 'ACTION RESULT\n' + json.dumps({'tool': 'read_file', 'ok': True, 'result': {'content': 'current source'}})},
+                                {'role': 'user', 'content': notice, **({} if legacy else {'origin': 'internal'})}]
+                            original_history = [dict(item) for item in session['messages']]
+                            config = {**self.settings.values, 'provider': 'ollama', 'protocol': protocol,
+                                      'context_tokens': 8192, 'response_tokens': 2048}
+                            messages = agent.messages(session, config)
+                            self.assertIn({'role': 'user', 'content': correction}, messages)
+                            self.assertEqual(sum(item['content'] == session['task'] for item in messages), 1)
+                            self.assertTrue(all(set(item) == {'role', 'content'} for item in messages))
+                            self.assertEqual(session['messages'], original_history)
+        finally:
+            agent.close()
+
+    def test_start_resume_and_format_repair_record_explicit_message_origins(self):
+        class Client:
+            calls = 0
+            def complete(client, *args):
+                client.calls += 1
+                return {'content': 'invalid JSON' if client.calls == 1 else json.dumps({'status': 'needs_input'})}
+        client = Client()
+        agent = Agent(ROOT, self.store, self.settings, lambda _: client)
+        try:
+            session = self.store.create('Track human inputs.', 'demo', 'fixture')
+            agent.start(session)
+            self.assertEqual(wait_session(agent, session), 'waiting')
+            self.assertEqual(session['messages'][0]['origin'], 'human')
+            repair = next(item for item in session['messages'] if item['content'].startswith('Your response was not accepted:'))
+            self.assertEqual(repair['origin'], 'internal')
+            correction = 'Resume this task. Inspect current files, but preserve my constraint.'
+            agent.start(session, correction)
+            self.assertEqual(wait_session(agent, session), 'waiting')
+            self.assertEqual(next(item for item in session['messages'] if item['content'] == correction)['origin'], 'human')
+            agent.start(session)
+            self.assertEqual(wait_session(agent, session), 'waiting')
+            resume = next(item for item in reversed(session['messages']) if item.get('origin') == 'internal')
+            self.assertTrue(resume['content'].startswith('Resume this task.'))
+        finally:
+            agent.close()
+
     def test_finish_after_last_action_is_free_and_budget_reaches_both_protocols(self):
         for protocol in ('native', 'json'):
             with self.subTest(protocol=protocol):

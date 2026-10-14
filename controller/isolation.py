@@ -470,8 +470,6 @@ class IsolatedAgent:
                 source = [{'path': item['path'][8:], 'data': item['data']} for item in Artifacts(self.store, candidate).pack() if item['path'].startswith('harness/')]
                 if not {'seed.py', 'autoproteus/agent.py'}.issubset({item['path'] for item in source}):
                     raise IsolationError('This candidate is missing seed.py or autoproteus/agent.py')
-                # Freeze this version for subsequent resumes, without running it on the host.
-                atomic_json(self.store.directory(session['id']) / 'candidate.json', source)
             elif session.get('candidate_from'):
                 source = json.loads((self.store.directory(session['id']) / 'candidate.json').read_text(encoding='utf-8'))
             if verification:
@@ -491,6 +489,9 @@ class IsolatedAgent:
             boot['session'].pop('isolation', None)
             if len(json.dumps({key: value for key, value in boot.items() if key not in ('seed', 'files')}).encode()) > MAX_FRAME - 100:
                 raise IsolationError('Session history exceeds the restore limit')
+            if candidate:
+                # Freeze only after input validation; candidate bytes never run here.
+                atomic_json(self.store.directory(session['id']) / 'candidate.json', source)
             session.update(status='running', activity='Starting the virtual machine…' if self.execution.mode == 'vm'
                            else 'Starting without AutoProteus VM protection…',
                            isolation=self.execution.mode == 'vm', execution_mode=self.execution.mode)
@@ -503,6 +504,20 @@ class IsolatedAgent:
             thread = threading.Thread(target=self._run, args=(session, boot, client, config, cancel), daemon=True)
             self.workers[session['id']] = cancel, thread
             thread.start()
+
+    def restart_seed(self, session):
+        """Explicit controller action: activate this checkpoint in the same task."""
+        with self.lock:
+            previous = session.get('candidate_from')
+            session['candidate_from'] = session['id']
+            try:
+                self.start(session, candidate=session)
+            except Exception:
+                if previous is None:
+                    session.pop('candidate_from', None)
+                else:
+                    session['candidate_from'] = previous
+                raise
 
     def _run(self, session, boot, client, config, cancel):
         vm, broker = None, Broker(self.store, session, client, config, cancel)

@@ -18,6 +18,23 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class BoundaryTests(unittest.TestCase):
+    def test_failed_restart_preserves_the_previous_candidate_selection(self):
+        session = self.store.create('Keep the previous version.', 'demo', 'fixture')
+        agent = IsolatedAgent(ROOT, self.store, self.settings)
+        try:
+            for previous in (None, 'a' * 32):
+                if previous is None:
+                    session.pop('candidate_from', None)
+                else:
+                    session['candidate_from'] = previous
+                with patch.object(agent, 'start', side_effect=IsolationError('fixture failure')):
+                    with self.assertRaises(IsolationError):
+                        agent.restart_seed(session)
+                self.assertEqual(session.get('candidate_from'), previous)
+                self.assertEqual(session['task'], 'Keep the previous version.')
+        finally:
+            agent.close()
+
     def setUp(self):
         parent = ROOT / '.data/test-tmp'
         parent.mkdir(parents=True, exist_ok=True)

@@ -46,6 +46,40 @@ class StartupTests(unittest.TestCase):
 
 
 class HostApiTests(unittest.TestCase):
+    def test_restart_uses_the_same_task_and_checkpoint_without_creating_a_session(self):
+        session = self.app.store.create('Continue this exact task.', 'demo', 'fixture')
+        session['messages'] = [{'role': 'user', 'content': 'Preserve my correction.', 'origin': 'human'}]
+        files = Artifacts(self.app.store, session)
+        files.put('note.txt', base64.b64encode(b'checkpoint').decode())
+        files.checkpoint(['note.txt'])
+        with patch.object(self.app.agent, 'restart_seed') as restart:
+            with self.request('/api/restart-seed', {'id': session['id']}) as response:
+                self.assertEqual(json.load(response)['id'], session['id'])
+            restart.assert_called_once_with(session)
+        self.assertEqual(len(self.app.store.public()), 1)
+        self.assertEqual(session['task'], 'Continue this exact task.')
+        self.assertEqual(files.read('note.txt'), b'checkpoint')
+        self.assertEqual(session['messages'][0]['origin'], 'human')
+
+    def test_restart_is_rejected_while_a_task_or_comparison_is_active(self):
+        from unittest.mock import Mock
+        session = self.app.store.create('Waiting task.', 'demo', 'fixture')
+        thread = Mock(); thread.is_alive.return_value = True
+        with patch.object(self.app.agent, 'restart_seed') as restart:
+            self.app.agent.workers[session['id']] = (threading.Event(), thread)
+            try:
+                with self.assertRaises(urllib.error.HTTPError):
+                    self.request('/api/restart-seed', {'id': session['id']})
+            finally:
+                self.app.agent.workers.clear()
+            self.app.evaluations.thread = thread
+            try:
+                with self.assertRaises(urllib.error.HTTPError):
+                    self.request('/api/restart-seed', {'id': session['id']})
+            finally:
+                self.app.evaluations.thread = None
+            restart.assert_not_called()
+
     def test_active_worker_prevents_creating_a_conflicting_saved_session(self):
         from unittest.mock import Mock
         session = self.app.store.create('Active', 'demo', 'none')
