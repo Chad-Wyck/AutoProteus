@@ -29,6 +29,36 @@ class ScriptedClient:
 
 @unittest.skipUnless(os.environ.get('AUTOPROTEUS_VM_TESTS') == '1', 'Real VM checks require explicit opt in')
 class RealVMTests(unittest.TestCase):
+    def test_development_check_invokes_an_edited_tool_inside_the_vm(self):
+        from controller.evaluation import freeze_source
+        source = seed_files(ROOT)
+        for item in source:
+            if item['path'] not in ('autoproteus/tools.py', 'autoproteus/providers.py'):
+                continue
+            text = base64.b64decode(item['data']).decode('utf-8')
+            if item['path'].endswith('tools.py'):
+                text = text.replace('        if tool == "list_files":',
+                    '        if tool == "fixture_echo":\n            return {"edited_copy": True, "text": args["text"]}\n        if tool == "list_files":')
+            else:
+                text = text.replace('TOOL_SPECS = {',
+                    'TOOL_SPECS = {\n    "fixture_echo": ("Echo a fixture.", {"text": STRING}, ["text"]),')
+            item['data'] = base64.b64encode(text.encode('utf-8')).decode()
+        candidate = freeze_source(self.store, source, 'Known development-check fixture')
+        self.settings.values['max_steps'] = 1  # Finish must still work after the final tool result.
+        command = "python3 harness/seed.py check --tool fixture_echo --arguments '{\"text\":\"edited copy\"}' > development-check.txt"
+        agent = self.agent([
+            {'action': {'tool': 'run_command', 'arguments': {'command': command}}},
+            {'status': 'completed'},
+        ])
+        session = self.store.create('Check edited tools in the guest', 'hosted', 'offline-test')
+        agent.start(session, candidate=candidate)
+        self.assertEqual(self.wait(agent, session, seconds=90), 'completed', session['feed'])
+        output = Artifacts(self.store, session).read('development-check.txt').decode('utf-8')
+        records = [json.loads(line) for line in output.splitlines() if line.startswith('{')]
+        self.assertTrue(records[0]['passed'], output)
+        self.assertGreater(records[0]['tests'], 30)
+        self.assertEqual(records[1]['result'], {'edited_copy': True, 'text': 'edited copy'})
+
     def test_deleted_file_recreated_with_identical_bytes_survives_checkpoint_and_resume(self):
         agent = self.agent([
             {'action': {'tool': 'write_file', 'arguments': {'path': 'lifecycle.txt', 'content': 'same\n'}}},

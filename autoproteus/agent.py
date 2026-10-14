@@ -9,10 +9,21 @@ from pathlib import Path
 
 from . import __version__
 from .providers import ProviderError, tool_instructions, tool_definitions
-from .tools import Cancelled, Workspace, clipped
+from .tools import Cancelled, Workspace, clipped, EditConflict
+
+GUIDANCE = '''Search for the relevant function or dispatch, then read enough surrounding source to edit it.
+Use read_file for a whole small file. For larger files, read_section uses character positions and lengths.
+Prefer useful sections (often 2000-6000 characters) over many tiny reads. Stop reading when you have enough context.
+Only continue at next_start until eof when the task needs the whole file. Use edit_file for a small, unique replacement.
+For seed upgrades, read harness/README.md and keep a short todo.txt checklist: implementation, registration,
+boundary tests, documentation, candidate checks and real invocation, final report. Update it as work progresses.
+Edited tools are available in a new process, not in this running loop. With terminal access, run
+python3 harness/seed.py check early and after edits; its --tool and --arguments options exercise an edited tool.
+'''
 
 PROTOCOL = '''You are AutoProteus, an autonomous assistant working in a private task workspace.
 Complete the user's task using the tools below. Read before changing existing files. Verify results.
+{guidance}
 Use todo.txt when the user requests a checklist or a persistent plan helps. Update it with write_file.
 Ask the user when required information is missing.
 The user can see your message, actions, and results. Use plain language in message.
@@ -34,9 +45,7 @@ Changes to that copy do not change the running app. Explain your changes and how
 NATIVE_PROMPT = '''You are AutoProteus, an autonomous assistant working in a private task workspace.
 Use the supplied tools to actually complete the user's task. Prefer one tool call at a time.
 Read before modifying existing files. Verify results by inspecting them.
-Use read_file for a whole small file, or read_section for a chosen section of a larger file.
-Section start and length are characters. Continue at next_start until eof is true.
-If a whole-file result cannot fit the context, use read_section. Use edit_file for small changes; old_text must match exactly once.
+{guidance}
 Use todo.txt when the user requests a checklist or a persistent plan helps. Update it with write_file.
 After verifying the requested outcome, you must call finish with message and status="completed".
 If required information is missing, you must call finish with your question and status="needs_input".
@@ -149,7 +158,7 @@ class Agent:
                 self.store.save(session)
                 worker[0].set()
 
-    def messages(self, session, config):
+    def messages(self, session, config, steps=0):
         todo_path = Path(session["workspace"]) / "todo.txt"
         todo = clipped(todo_path.read_text(encoding="utf-8", errors="replace"), 6000) if todo_path.exists() else ""
         session["todo"] = todo
@@ -159,7 +168,12 @@ class Agent:
         environment = ("This run has no AutoProteus VM protection. Code has this account's access; stay within the requested workspace."
                        if session.get('execution_mode') == 'native' else
                        "Commands run inside a disposable Linux VM. Host files, the controller and general network access are unavailable.")
-        system = prompt.replace("{tools}", tool_instructions(config['terminal'])).replace("{terminal}", terminal).replace('{environment}', environment)
+        system = prompt.replace("{tools}", tool_instructions(config['terminal'])).replace("{terminal}", terminal).replace('{environment}', environment).replace('{guidance}', GUIDANCE)
+        remaining = max(0, config['max_steps'] - steps)
+        system += (f"\nAction allowance this run: {steps}/{config['max_steps']} tool actions used; {remaining} remaining. "
+                   "Each attempted tool call counts, including failed calls and each call in a batch. "
+                   "Finishing or asking for input uses no tool action. At zero, finish only if verified; further tool requests pause saved work for Resume. "
+                   "Resume keeps the files and gives a fresh allowance; do not rush unverified changes.")
         original = {"role": "user", "content": session["task"]}
         history = [dict(item) for item in session["messages"] if item != original]
         # Keep the original request and latest follow-up complete. Never silently
@@ -222,14 +236,16 @@ class Agent:
         workspace = Workspace(Path(session["workspace"]), config["terminal"], cancel, config["command_timeout"])
         repairs = 0
         previous_read, repeated_reads = None, 0
+        read_streak = 0
         try:
             steps = 0
-            while steps < config['max_steps']:
+            while True:
+                final_request = steps >= config['max_steps']
                 if cancel.is_set():
                     raise Cancelled()
                 session["activity"] = "Thinking…"
                 self.store.save(session)
-                messages = self.messages(session, config)
+                messages = self.messages(session, config, steps)
                 self.store.event(session, "model_request", {"messages": messages, "model": config["model"], "provider": config["provider"]})
                 try:
                     response = client.complete(messages, cancel)
@@ -255,10 +271,8 @@ class Agent:
                 for decision in decisions:
                     if cancel.is_set():
                         raise Cancelled()
-                    if steps >= config['max_steps']:
+                    if 'action' in decision and steps >= config['max_steps']:
                         break
-                    steps += 1
-                    session["steps"] += 1
                     session["messages"].append({"role": "assistant", "content": json.dumps(decision, ensure_ascii=False)})
                     if decision.get("message"):
                         self.store.feed(session, "assistant", decision["message"])
@@ -268,6 +282,8 @@ class Agent:
                         self.store.save(session)
                         return
                     action = decision["action"]
+                    steps += 1
+                    session["steps"] += 1
                     session["activity"] = "Working…"
                     session["pending_action"] = action
                     self.store.event(session, "action_started", action)
@@ -279,8 +295,11 @@ class Agent:
                         raise
                     except (ValueError, OSError, KeyError, TypeError) as error:
                         result, ok = {"error": str(error)}, False
+                        if isinstance(error, EditConflict):
+                            result.update(error.details)
                     self.store.event(session, "action_result", {"action": action, "result": result, "ok": ok})
                     if ok and action['tool'] in ('read_file', 'read_section', 'search_files'):
+                        read_streak += 1
                         signature = (action['tool'], json.dumps(action['arguments'], sort_keys=True),
                                      hashlib.sha256(json.dumps(result, sort_keys=True).encode()).hexdigest())
                         repeated_reads = repeated_reads + 1 if signature == previous_read else 1
@@ -288,20 +307,25 @@ class Agent:
                         if repeated_reads == 3:
                             result = {**result, 'progress_hint': 'This unchanged material has been read three times. Use search_files or proceed to a concrete edit and verification.'}
                             self.store.feed(session, 'notice', 'The same unchanged material is being read repeatedly. The agent received a progress hint.')
+                        elif read_streak % 8 == 0:
+                            result = {**result, 'progress_hint': f'{read_streak} consecutive source reads without an edit or check. If you have enough context, make a small change and test it. Otherwise search for the missing detail and read a useful section.'}
                     else:
                         previous_read, repeated_reads = None, 0
+                        read_streak = 0
                     session.pop("pending_action", None)
                     session["messages"].append({"role": "user", "content": "ACTION RESULT\n" + json.dumps({"tool": action["tool"], "ok": ok, "result": result}, ensure_ascii=False)})
                     self.store.feed(session, "result", "Done" if ok else "Action needs attention", result=result, ok=ok)
-                    self.messages(session, config)
+                    self.messages(session, config, steps)
                     self.store.save(session)
                     if not ok:
                         # Later calls may depend on this result. Let the model replan.
                         break
                 if deferred_finish:
                     session['messages'].append({'role': 'user', 'content': 'Your finish call was deferred until you inspect the tool results above. Verify the requested outcome before finishing.'})
-            session.update(status="paused", activity="Step limit reached")
-            self.store.feed(session, "notice", "The run reached its step limit. Review the work, then resume to continue.")
+                if final_request:
+                    break
+            session.update(status="paused", activity="Action allowance reached")
+            self.store.feed(session, "notice", "The run used its action allowance. Your work is saved; Resume gives a fresh allowance in the same workspace.")
         except Cancelled:
             session.update(status="paused", activity="Stopped")
             self.store.event(session, "run_stopped", {"pending_action": session.get("pending_action")})

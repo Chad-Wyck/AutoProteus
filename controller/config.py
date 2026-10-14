@@ -11,8 +11,8 @@ from .storage import atomic_json
 
 DEFAULTS = {
     "configured": False, "provider": "ollama", "base_url": "http://127.0.0.1:11434",
-    "model": "qwen3:4b-instruct", "context_tokens": 8192, "response_tokens": 2048,
-    "temperature": 0.2, "max_steps": 32, "request_timeout": 180,
+    "model": "qwen3:4b-instruct", "context_tokens": 16384, "response_tokens": 8192,
+    "temperature": 0.2, "max_steps": 128, "request_timeout": 300,
     "command_timeout": 60, "terminal": False, "json_mode": False, "thinking": None,
     "protocol": "native",
 }

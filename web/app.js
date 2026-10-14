@@ -461,6 +461,13 @@ function openSettings() {
   error('settings-error', ''); $('settings-dialog').showModal();
 }
 $('settings-button').onclick = openSettings; $('close-settings').onclick = () => $('settings-dialog').close();
+$('upgrade-limits').onclick = () => {
+  $('max-steps').value = 128; $('response-tokens').value = 8192;
+  $('context-tokens').value = Math.max(32768, Number($('context-tokens').value));
+  $('request-timeout').value = Math.max(300, Number($('request-timeout').value));
+  $('settings-form').querySelector('details').open = true;
+  toast('Longer upgrade allowances selected. Save preferences to apply them.');
+};
 $('change-model').onclick = () => { $('settings-dialog').close(); openSetup(); };
 $('settings-form').onsubmit = async event => {
   event.preventDefault(); const data = { protocol: $('protocol').value, terminal: $('terminal').checked, thinking: $('thinking').value === 'auto' ? null : $('thinking').value === 'on' };

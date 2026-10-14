@@ -35,6 +35,32 @@ def wait_session(agent, session, seconds=8):
 
 
 class WorkspaceTests(unittest.TestCase):
+    def test_edit_conflict_locations_count_overlaps_and_preserve_bytes(self):
+        with temporary_directory() as directory:
+            workspace = Workspace(Path(directory))
+            path = Path(directory) / 'source.txt'
+            raw = '猫\r\naaa\r\naaa'.encode('utf-8')
+            path.write_bytes(raw)
+            with self.assertRaises(ValueError) as failure:
+                workspace.execute('edit_file', {'path': 'source.txt', 'old_text': 'aa', 'new_text': 'x'})
+            details = failure.exception.details
+            self.assertEqual(details['matches'], 4)
+            self.assertEqual([item['start'] for item in details['locations']], [3, 4, 8])
+            self.assertEqual(details['locations'][0]['line'], 2)
+            self.assertEqual(path.read_bytes(), raw)
+            with self.assertRaises(ValueError) as failure:
+                workspace.execute('edit_file', {'path': 'source.txt', 'old_text': '猫\naaa', 'new_text': 'x'})
+            self.assertEqual(failure.exception.details['matches'], 0)
+            self.assertIn('line endings', failure.exception.details['hint'])
+            self.assertEqual(path.read_bytes(), raw)
+            path.write_text('a' * 1000, encoding='utf-8')
+            with self.assertRaises(ValueError) as failure:
+                workspace.execute('edit_file', {'path': 'source.txt', 'old_text': 'aa', 'new_text': 'x'})
+            self.assertEqual(failure.exception.details['matches'], 50)
+            self.assertTrue(failure.exception.details['matches_truncated'])
+            self.assertEqual(len(failure.exception.details['locations']), 3)
+            self.assertEqual(path.read_text(encoding='utf-8'), 'a' * 1000)
+
     def test_delete_recreate_identical_file_and_reject_directories(self):
         with temporary_directory() as directory:
             workspace = Workspace(Path(directory))
@@ -256,6 +282,122 @@ def model_response(content, calls, native):
 
 
 class AgentTests(unittest.TestCase):
+    def test_finish_after_last_action_is_free_and_budget_reaches_both_protocols(self):
+        for protocol in ('native', 'json'):
+            with self.subTest(protocol=protocol):
+                self.settings.update({'provider': 'ollama', 'protocol': protocol, 'max_steps': 1})
+                prompts = []
+                class Client:
+                    def complete(client, messages, cancel):
+                        prompts.append(messages[0]['content'])
+                        decision = ({'action': {'tool': 'write_file', 'arguments': {'path': 'last.txt', 'content': 'saved'}}}
+                                    if len(prompts) == 1 else {'status': 'completed'})
+                        return {'content': json.dumps(decision)}
+                agent = Agent(ROOT, self.store, self.settings, lambda _: Client())
+                try:
+                    session = self.store.create('Use the last action', 'ollama', 'offline-test')
+                    agent.start(session)
+                    self.assertEqual(wait_session(agent, session), 'completed')
+                    self.assertEqual(session['steps'], 1)
+                    self.assertIn('0/1 tool actions used; 1 remaining', prompts[0])
+                    self.assertIn('1/1 tool actions used; 0 remaining', prompts[1])
+                    self.assertIn('Stop reading when you have enough context', prompts[0])
+                finally:
+                    agent.close()
+
+    def test_exhausted_budget_blocks_tools_and_resume_resets_counter(self):
+        self.settings.update({'max_steps': 1})
+        prompts = []
+        class Client:
+            def complete(client, messages, cancel):
+                prompts.append(messages[0]['content'])
+                decision = ({'status': 'completed'} if len(prompts) == 4 else
+                            {'action': {'tool': 'write_file', 'arguments': {'path': f'call-{len(prompts)}.txt', 'content': 'saved'}}})
+                return {'content': json.dumps(decision)}
+        agent = Agent(ROOT, self.store, self.settings, lambda _: Client())
+        try:
+            session = self.store.create('Save and resume', 'demo', 'offline-test')
+            agent.start(session)
+            self.assertEqual(wait_session(agent, session), 'paused')
+            workspace = Path(session['workspace'])
+            self.assertTrue((workspace / 'call-1.txt').exists())
+            self.assertFalse((workspace / 'call-2.txt').exists())
+            agent.start(session)
+            self.assertEqual(wait_session(agent, session), 'completed')
+            self.assertEqual(session['steps'], 2)
+            self.assertIn('0/1 tool actions used; 1 remaining', prompts[2])
+            self.assertTrue((workspace / 'call-3.txt').exists())
+        finally:
+            agent.close()
+
+    def test_native_batch_cannot_exceed_budget_and_can_finish_after_inspection(self):
+        self.settings.update({'max_steps': 2})
+        class Client:
+            calls = 0
+            def complete(client, messages, cancel):
+                client.calls += 1
+                if client.calls == 1:
+                    return {'content': json.dumps({'actions': [
+                        {'tool': 'write_file', 'arguments': {'path': f'batch-{i}.txt', 'content': 'saved'}} for i in range(3)]})}
+                self.assertIn('2/2 tool actions used; 0 remaining', messages[0]['content'])
+                return {'content': json.dumps({'status': 'completed'})}
+        agent = Agent(ROOT, self.store, self.settings, lambda _: Client())
+        try:
+            session = self.store.create('Bound a native batch', 'demo', 'offline-test')
+            agent.start(session)
+            self.assertEqual(wait_session(agent, session), 'completed')
+            self.assertEqual(session['steps'], 2)
+            self.assertFalse((Path(session['workspace']) / 'batch-2.txt').exists())
+        finally:
+            agent.close()
+
+    def test_edit_failure_details_reach_model_and_allow_a_corrected_edit(self):
+        class Client:
+            calls = 0
+            def complete(client, messages, cancel):
+                client.calls += 1
+                if client.calls == 1:
+                    decision = {'action': {'tool': 'edit_file', 'arguments': {'path': 'source.txt', 'old_text': 'x', 'new_text': 'y'}}}
+                elif client.calls == 2:
+                    result = json.loads(messages[-1]['content'].split('\n', 1)[1])
+                    self.assertFalse(result['ok'])
+                    self.assertEqual(result['result']['matches'], 2)
+                    self.assertEqual(result['result']['locations'][1]['start'], 4)
+                    decision = {'action': {'tool': 'edit_file', 'arguments': {'path': 'source.txt', 'old_text': 'x = x', 'new_text': 'x = 1'}}}
+                else:
+                    decision = {'status': 'completed'}
+                return {'content': json.dumps(decision)}
+        agent = Agent(ROOT, self.store, self.settings, lambda _: Client())
+        try:
+            session = self.store.create('Repair the exact match', 'demo', 'offline-test')
+            path = Path(session['workspace']) / 'source.txt'; path.write_bytes(b'x = x\r\n')
+            agent.start(session)
+            self.assertEqual(wait_session(agent, session), 'completed')
+            self.assertEqual(path.read_bytes(), b'x = 1\r\n')
+        finally:
+            agent.close()
+
+    def test_different_tiny_reads_receive_a_progress_hint_without_forcing_a_stop(self):
+        class Client:
+            calls = 0
+            def complete(client, messages, cancel):
+                client.calls += 1
+                if client.calls <= 8:
+                    decision = {'action': {'tool': 'read_section', 'arguments': {'path': 'source.txt', 'start': client.calls - 1, 'length': 1}}}
+                else:
+                    result = json.loads(messages[-1]['content'].split('\n', 1)[1])['result']
+                    self.assertIn('8 consecutive source reads', result['progress_hint'])
+                    decision = {'status': 'completed'}
+                return {'content': json.dumps(decision)}
+        agent = Agent(ROOT, self.store, self.settings, lambda _: Client())
+        try:
+            session = self.store.create('Navigate efficiently', 'demo', 'offline-test')
+            (Path(session['workspace']) / 'source.txt').write_text('abcdefgh')
+            agent.start(session)
+            self.assertEqual(wait_session(agent, session), 'completed')
+        finally:
+            agent.close()
+
     def test_complete_input_budget_rejects_oversize_without_shortening_user_text(self):
         agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
         session = self.store.create('x' * 12000, 'ollama', 'offline-test')
@@ -341,7 +483,7 @@ class AgentTests(unittest.TestCase):
         agent.start(session)
         self.assertEqual(wait_session(agent, session), 'completed')
         self.assertEqual(client.calls, 2)
-        self.assertEqual(session['steps'], 1)
+        self.assertEqual(session['steps'], 0)
         self.assertEqual(len([item for item in session['feed'] if item['kind'] == 'notice']), 1)
         agent.close()
 

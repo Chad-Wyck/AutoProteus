@@ -49,7 +49,7 @@ class FakeModelServer:
 class HostProviderTests(unittest.TestCase):
     def run_client(self, server, hosted=False):
         config = dict(DEFAULTS)
-        config.update(provider='hosted' if hosted else 'ollama', base_url=server.url, protocol='json')
+        config.update(provider='hosted' if hosted else 'ollama', base_url=server.url, protocol='json', response_tokens=2048)
         return ModelClient(config).complete([{'role': 'user', 'content': 'test'}], threading.Event())
 
     def test_complete_ollama_stream_and_generation_budget(self):

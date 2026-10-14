@@ -16,6 +16,12 @@ class Cancelled(Exception):
     pass
 
 
+class EditConflict(ValueError):
+    def __init__(self, message, details):
+        super().__init__(message)
+        self.details = details
+
+
 def clipped(text, limit=LIMIT):
     return text if len(text) <= limit else text[:limit] + "\n[Output shortened; read a smaller section if needed.]"
 
@@ -164,10 +170,22 @@ class Workspace:
             if len(content) > WRITE_LIMIT:
                 raise ValueError("Edit files of at most 100,000 UTF-8 characters")
             start = content.find(old)
-            if start < 0:
-                raise ValueError("old_text was not found; read the current file before editing")
-            if content.find(old, start + 1) >= 0:
-                raise ValueError("old_text is ambiguous; include more surrounding text to match exactly once")
+            if start < 0 or content.find(old, start + 1) >= 0:
+                count, locations, position = 0, [], start
+                while position >= 0 and count < 50:
+                    count += 1
+                    if len(locations) < 3:
+                        context_start = max(0, position - 80)
+                        locations.append({'start': position, 'line': content.count('\n', 0, position) + 1,
+                                          'context_start': context_start,
+                                          'content': content[context_start:position + min(len(old), 160) + 80]})
+                    position = content.find(old, position + 1)
+                hint = ('Read one listed location with read_section and include enough surrounding text for one match.'
+                        if count else 'Search for a short distinctive fragment, then read the current section and copy its exact text.')
+                if not count and old.replace('\r\n', '\n') in content.replace('\r\n', '\n'):
+                    hint = 'The line endings differ. Read the current section and preserve its exact newline characters.'
+                raise EditConflict(f'old_text {"was not found" if not count else "is ambiguous"}: {count}{"+" if position >= 0 else ""} matches. No file was changed.',
+                                   {'matches': count, 'matches_truncated': position >= 0, 'locations': locations, 'hint': hint})
             updated = content[:start] + new + content[start + len(old):]
             if len(updated) > WRITE_LIMIT:
                 raise ValueError("The edited file would exceed 100,000 characters")

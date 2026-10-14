@@ -349,7 +349,8 @@ class Broker:
         self.store, self.session, self.client, self.cancel = store, session, client, cancel
         self.artifacts = Artifacts(store, session)
         self.requests, self.frames = 0, 0
-        self.request_limit = min(config['max_steps'] + 2, 202)
+        # Allow a final status after the last tool action and two format repairs.
+        self.request_limit = min(config['max_steps'] + 3, 203)
         self.finished = False
         self.last_status = 'running'
 

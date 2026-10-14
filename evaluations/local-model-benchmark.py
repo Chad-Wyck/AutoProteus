@@ -205,10 +205,12 @@ def run(args):
             if item['path'].endswith(('.py','.md')):
                 item['data']=base64.b64encode(base64.b64decode(item['data']).replace(b'\r\n',b'\n')).decode()
     report_path=DATA/'results.json'
-    report=json.loads(report_path.read_text(encoding='utf-8')) if report_path.exists() else {'started':now(),'source_sha256':source_identity(source),'source_files':[{ 'path':i['path'],'sha256':hashlib.sha256(base64.b64decode(i['data'])).hexdigest()} for i in source],'downloads':downloads,'ordinary':[],'upgrades':[],'models':{},'method':{'execution':'vm','ordinary_timeout':180,'upgrade_timeout':args.timeout,'response_tokens':args.response_tokens,'context_tokens':args.context_tokens,'temperature':0.6,'sampling_seed':None,'repeats':1,'thinking':'enabled for supported models; none for non-reasoning models','max_steps':48,'inference':'host GPU; candidate commands and tests only in isolated VMs'}}
+    report=json.loads(report_path.read_text(encoding='utf-8')) if report_path.exists() else {'started':now(),'source_sha256':source_identity(source),'source_files':[{ 'path':i['path'],'sha256':hashlib.sha256(base64.b64decode(i['data'])).hexdigest()} for i in source],'downloads':downloads,'ordinary':[],'upgrades':[],'models':{},'method':{'execution':'vm','ordinary_timeout':180,'upgrade_timeout':args.timeout,'response_tokens':args.response_tokens,'context_tokens':args.context_tokens,'temperature':0.6,'sampling_seed':None,'repeats':1,'thinking':'enabled for supported models; none for non-reasoning models','max_steps':args.upgrade_steps,'inference':'host GPU; candidate commands and tests only in isolated VMs'}}
     if report['source_sha256']!=source_identity(source):raise ValueError('Starter changed since benchmark began')
     if (report['method']['context_tokens'],report['method']['response_tokens'])!=(args.context_tokens,args.response_tokens):
         raise ValueError('Use a separate data directory when changing context or response limits')
+    if (report['method']['max_steps'], report['method']['upgrade_timeout']) != (args.upgrade_steps, args.timeout):
+        raise ValueError('Use a separate data directory when changing action or time limits')
     report['canonical_source_sha256']=canonical_source_sha256
     report['variant']='user-turn-pinned' if args.pin_user else __version__ + '-unmodified'
     if report['method'].get('upgrade_repeats', args.upgrade_repeats) != args.upgrade_repeats:
@@ -251,7 +253,7 @@ def run(args):
             capabilities=show.get('capabilities',[])
             protocol=args.protocol or ('native' if 'tools' in capabilities else 'json')
             thinking=True if 'thinking' in capabilities else None
-            config={**DEFAULTS,'configured':True,'provider':'ollama','base_url':base,'model':model['model'],'context_tokens':args.context_tokens,'response_tokens':args.response_tokens,'temperature':0.6,'max_steps':48,'request_timeout':300,'command_timeout':60,'terminal':True,'protocol':protocol,'thinking':thinking}
+            config={**DEFAULTS,'configured':True,'provider':'ollama','base_url':base,'model':model['model'],'context_tokens':args.context_tokens,'response_tokens':args.response_tokens,'temperature':0.6,'max_steps':args.upgrade_steps,'request_timeout':300,'command_timeout':60,'terminal':True,'protocol':protocol,'thinking':thinking}
             settings.values=config
             report['models'][slug]={'model':model['model'],'capabilities':capabilities,'details':show.get('details'),'config':{k:v for k,v in config.items() if k!='base_url'},'gpu_before':gpu()}
             tags=request_json(base+'/api/tags')['models']
@@ -323,14 +325,19 @@ if __name__=='__main__':
     parser.add_argument('--data-dir',help='Separate saved batch directory under .data; never overwrite earlier results')
     parser.add_argument('--self-check',action='store_true')
     parser.add_argument('--models',nargs='*')
-    parser.add_argument('--timeout',type=int,default=900)
-    parser.add_argument('--context-tokens',type=int,default=16384)
-    parser.add_argument('--response-tokens',type=int,default=4096)
+    parser.add_argument('--timeout',type=int,default=2700,help='Seconds per upgrade attempt (host runtime ceiling still applies)')
+    parser.add_argument('--context-tokens',type=int,default=32768)
+    parser.add_argument('--response-tokens',type=int,default=8192)
+    parser.add_argument('--upgrade-steps',type=int,default=128,help='Tool actions per upgrade attempt, 1-200; ordinary tasks retain 32')
     parser.add_argument('--pin-user',action='store_true',help='Test a separate copied seed retaining the original user turn; does not edit starter')
     parser.add_argument('--upgrades-only',action='store_true')
     parser.add_argument('--upgrade-repeats', type=int, choices=range(1, 4), default=1, help='Independent repeats for each feature upgrade')
     parser.add_argument('--protocol',choices=['native','json'],help='Separate protocol diagnostic; preserves original primary results')
     parser.add_argument('--lf-source',action='store_true',help='Normalize only the copied seed source to LF, leaving ordinary workspace bytes unchanged')
     args=parser.parse_args()
+    if not 1 <= args.upgrade_steps <= 200:
+        parser.error('--upgrade-steps must be between 1 and 200')
+    if args.response_tokens >= args.context_tokens:
+        parser.error('--response-tokens must be smaller than --context-tokens')
     if args.self_check:self_check(args.data_dir)
     else:run(args)
