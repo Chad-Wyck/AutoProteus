@@ -136,6 +136,8 @@ See [SECURITY.md](SECURITY.md) for the threat model and limits. Virtualization p
 
 The [v0.3 findings](evaluations/seed-v0.3-findings.md) record the seed reduction, local-model measurements, and rejected self-improvement attempts, including limitations of the comparison.
 
+The [v0.6 local findings](evaluations/seed-v0.6-local-findings.md) compare the cached Qwen3.5 9B with K2-Horizon 7B on the expanded suite and repeated feature upgrades, including independent functional checks and a targeted JSON fallback diagnostic.
+
 ## Runtime sources
 
 VM downloads and SHA-256 hashes are pinned in `controller/runtime-lock.json`. Managed Python and Ollama versions, URLs and hashes are pinned in `controller/managed-runtime-lock.json`: Windows Python 3.13.12, Linux Python 3.13.16, and Ollama 0.40.4. Hashes are checked before extraction. Installed private runtimes are inventoried and verified before reuse, including libraries and added or missing files. An old unrecorded engine is replaced through verified setup while preserving model weights; damaged runtimes stop or require verified setup. Independently installed model services remain user-managed and are not covered by these private-runtime manifests.
