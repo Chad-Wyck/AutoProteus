@@ -14,6 +14,7 @@ import uuid
 from .errors import Cancelled, IsolationError
 from .isolation import Artifacts, IsolatedAgent, relative_name, safe_path, seed_files
 from .storage import Store, atomic_json, now
+from .compatibility import model_identity
 
 
 def source_identity(source):
@@ -53,6 +54,8 @@ def source_changes(starter, candidate):
 
 
 def artifact_check(artifacts, rule):
+    if 'python_function' in rule:
+        raise ValueError('Behavior checks require a fresh isolated verifier')
     name = relative_name(rule['path'])
     present = name in artifacts.session.get('artifacts', {})
     if rule.get('absent'):
@@ -92,13 +95,26 @@ def run_task(agent, store, config, task, source, timeout=180, cancel=None):
         path = safe_path(session['workspace'], name)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content.encode('utf-8'))
+    for name, generator in task.get('fixture_generators', {}).items():
+        content = generator['line'] * generator['count'] + generator.get('tail', '')
+        path = safe_path(session['workspace'], name); path.parent.mkdir(parents=True, exist_ok=True)
+        if len(content.encode()) > 2 * 1024 * 1024:
+            raise ValueError('Generated fixture is too large')
+        path.write_text(content, encoding='utf-8', newline='')
     started = time.monotonic()
     timed_out = False
     try:
         agent.start(session, candidate=source)
         worker = agent.workers[session['id']][1]
+        interrupted = False
         while worker.is_alive():
             worker.join(timeout=.1)
+            if task.get('interrupt_after_steps') and not interrupted and session['steps'] >= task['interrupt_after_steps']:
+                agent.stop(session['id']); worker.join(timeout=10)
+                if worker.is_alive(): raise IsolationError('The interrupted task did not stop')
+                interrupted = True
+                agent.start(session, 'Continue from your saved checkpoint. Verify the current files before editing.')
+                worker = agent.workers[session['id']][1]
             if cancel.is_set() or time.monotonic() - started > timeout:
                 timed_out = not cancel.is_set()
                 agent.stop(session['id'])
@@ -106,11 +122,28 @@ def run_task(agent, store, config, task, source, timeout=180, cancel=None):
                 if worker.is_alive():
                     raise IsolationError('The evaluation VM did not terminate')
                 break
+        for followup in task.get('followups', []) if not timed_out and session['status'] in ('completed', 'waiting', 'paused') else []:
+            if cancel.is_set():
+                raise Cancelled()
+            if timed_out:
+                break
+            agent.start(session, followup)
+            worker = agent.workers[session['id']][1]
+            while worker.is_alive():
+                worker.join(timeout=.1)
+                if cancel.is_set() or time.monotonic() - started > timeout:
+                    agent.stop(session['id']); worker.join(timeout=10)
+                    if worker.is_alive():
+                        raise IsolationError('The evaluation VM did not terminate')
+                    timed_out = not cancel.is_set(); break
         if cancel.is_set():
             raise Cancelled()
         artifacts = Artifacts(store, session)
-        checks = [{'path': rule['path'], 'passed': artifact_check(artifacts, rule)} for rule in task['checks']]
-        format_repairs, action_errors = 0, 0
+        rules = [rule for rule in task['checks'] if 'python_function' in rule]
+        behavior = verify_behavior(agent, store, session, rules, cancel) if rules and not timed_out else {'passed': False}
+        checks = [{'path': rule['path'], 'passed': behavior['passed'] if 'python_function' in rule else artifact_check(artifacts, rule)} for rule in task['checks']]
+        format_repairs, action_errors, reads, repeated_reads = 0, 0, 0, 0
+        previous_read = None
         with (store.directory(session['id']) / 'events.jsonl').open(encoding='utf-8') as journal:
             for line in journal:
                 event = json.loads(line)
@@ -118,13 +151,22 @@ def run_task(agent, store, config, task, source, timeout=180, cancel=None):
                 if event['type'] == 'action_result':
                     data = event['data']
                     action_errors += not isinstance(data, dict) or not data.get('ok')
+                    if data.get('action', {}).get('tool') in ('read_file', 'read_section', 'search_files'):
+                        reads += 1
+                        signature = json.dumps({'action': data['action'], 'result': data.get('result')}, sort_keys=True)
+                        repeated_reads += signature == previous_read
+                        previous_read = signature
+                    else:
+                        previous_read = None
         return {'task': task['name'], 'session': session['id'], 'status': session['status'],
                 'execution_mode': agent.execution.mode, 'isolated': agent.execution.mode == 'vm',
-                'passed': all(item['passed'] for item in checks) and session['status'] == 'completed' and not timed_out,
+                'passed': all(item['passed'] for item in checks) and session['status'] == 'completed' and not timed_out and (not task.get('interrupt_after_steps') or interrupted),
                 'checks': checks, 'steps': session['steps'], 'seconds': round(time.monotonic() - started, 2),
                 'model_requests': session.get('model_requests', 0),
                 'timed_out': timed_out, 'format_repairs': format_repairs,
                 'action_errors': action_errors,
+                'read_actions': reads, 'repeated_reads': repeated_reads, 'interrupted': interrupted,
+                'failure_kind': session.get('error_category') or ('compatibility' if format_repairs > 2 and session['status'] == 'error' else 'timeout' if timed_out else 'task' if not all(i['passed'] for i in checks) else None),
                 'detail': session['activity'][:1000] if session['status'] != 'completed' else ''}
     except Cancelled:
         raise
@@ -133,6 +175,36 @@ def run_task(agent, store, config, task, source, timeout=180, cancel=None):
                 'execution_mode': agent.execution.mode, 'isolated': agent.execution.mode == 'vm',
                 'checks': [], 'steps': session.get('steps', 0), 'seconds': round(time.monotonic() - started, 2),
                 'timed_out': timed_out, 'format_repairs': 0, 'action_errors': 0, 'detail': str(error)[:1000]}
+
+
+def verify_behavior(agent, store, session, rules, cancel=None):
+    """Copy only selected artifact bytes into another guest and check actual returns."""
+    probe = store.create('Independently verify artifact behavior', 'demo', 'protected verifier')
+    files = Artifacts(store, probe)
+    original = Artifacts(store, session)
+    for rule in rules:
+        if not isinstance(rule.get('python_function'), str) or not rule['python_function'].isidentifier() or not isinstance(rule.get('cases'), list) or not 1 <= len(rule['cases']) <= 20:
+            raise ValueError('Invalid behavioral check')
+        name = relative_name(rule['path'])
+        files.put(name, base64.b64encode(original.read(name)).decode())
+    files.checkpoint(list(dict.fromkeys(rule['path'] for rule in rules)))
+    from .config import DEFAULTS
+    settings = SimpleNamespace(values={**DEFAULTS, 'configured': True, 'provider': 'demo'}, key=lambda: '')
+    verifier = IsolatedAgent(agent.root, store, settings, execution=agent.execution)
+    cancel = cancel or threading.Event()
+    try:
+        verifier.start(probe, verification={'rules': rules})
+        worker = verifier.workers[probe['id']][1]
+        deadline = time.monotonic() + 90
+        while worker.is_alive():
+            worker.join(timeout=.1)
+            if cancel.is_set() or time.monotonic() > deadline:
+                verifier.stop(probe['id']); worker.join(timeout=10)
+                if cancel.is_set(): raise Cancelled()
+                return {'passed': False, 'output': 'Behavior check timed out'}
+        return json.loads(Artifacts(store, probe).read('behavior-result.json'))
+    finally:
+        verifier.close()
 
 
 def summarize(results):
@@ -242,12 +314,13 @@ class EvaluationService:
                            'warning': self.task_agent.execution.public()['warning'],
                            'checks_protected': self.task_agent.execution.mode == 'vm',
                            'configuration': public_config, 'repeats': repeats, 'total': len(tasks)*repeats*2,
+                           'model_identity': model_identity(config),
                            'results': [], 'summary': {}, 'regressions': {}, 'changes': source_changes(starter, candidate),
                            'starter_sha256': source_identity(starter), 'edited_sha256': source_identity(candidate),
                            'task_sha256': hashlib.sha256(json.dumps(tasks, sort_keys=True).encode()).hexdigest(),
-                           'runtime_sha256': hashlib.sha256((self.task_agent.appliance.directory / 'installed.json').read_bytes()).hexdigest()
+                           'runtime_sha256': hashlib.sha256(self.task_agent.appliance.record_path.read_bytes()).hexdigest()
                                if self.task_agent.execution.mode == 'vm' and
-                                   (self.task_agent.appliance.directory / 'installed.json').exists() else None,
+                                   self.task_agent.appliance.record_path.exists() else None,
                            'scope': 'Host checks of the existing task suite; new features still need independent review.'
                                if self.task_agent.execution.mode == 'vm' else
                                'Native functional checks only. Code has this account\'s access; the controller, tests and reports are not protected from it. New features need independent review.'}

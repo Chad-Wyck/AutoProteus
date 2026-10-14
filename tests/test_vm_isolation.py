@@ -29,6 +29,36 @@ class ScriptedClient:
 
 @unittest.skipUnless(os.environ.get('AUTOPROTEUS_VM_TESTS') == '1', 'Real VM checks require explicit opt in')
 class RealVMTests(unittest.TestCase):
+    def test_deleted_file_recreated_with_identical_bytes_survives_checkpoint_and_resume(self):
+        agent = self.agent([
+            {'action': {'tool': 'write_file', 'arguments': {'path': 'lifecycle.txt', 'content': 'same\n'}}},
+            {'action': {'tool': 'delete_file', 'arguments': {'path': 'lifecycle.txt'}}},
+            {'action': {'tool': 'write_file', 'arguments': {'path': 'lifecycle.txt', 'content': 'same\n'}}},
+            {'action': {'tool': 'read_file', 'arguments': {'path': 'lifecycle.txt'}}},
+            {'status': 'completed'},
+        ])
+        session = self.store.create('Checkpoint deletion lifecycle', 'hosted', 'offline-test')
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session), 'completed', session['feed'])
+        self.assertEqual(Artifacts(self.store, session).read('lifecycle.txt'), b'same\n')
+        agent.start(session, 'Verify the restored file')
+        self.assertEqual(self.wait(agent, session), 'completed', session['feed'])
+        self.assertEqual(Artifacts(self.store, session).read('lifecycle.txt'), b'same\n')
+
+    def test_behavior_check_executes_actual_function_and_rejects_comments_and_early_exit(self):
+        from controller.evaluation import verify_behavior
+        agent = self.agent([])
+        rules = [{'path': 'add.py', 'python_function': 'add', 'cases': [
+            {'args': [1, 2], 'equals': 3}, {'args': [-8, 3], 'equals': -5}]}]
+        for code, expected in [('def add(a,b):\n # return a + b\n return 0\n', False),
+                               ('import os\nos._exit(0)\n', False),
+                               ('def add(a,b):\n return a+b\n', True)]:
+            session = self.store.create('Behavior verifier', 'hosted', 'offline-test')
+            files = Artifacts(self.store, session)
+            files.put('add.py', base64.b64encode(code.encode()).decode()); files.checkpoint(['add.py'])
+            result = verify_behavior(agent, self.store, session, rules)
+            self.assertEqual(result['passed'], expected, result)
+
     def setUp(self):
         parent = ROOT / '.data/test-tmp'
         parent.mkdir(exist_ok=True, parents=True)

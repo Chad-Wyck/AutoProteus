@@ -5,18 +5,21 @@ import hashlib
 import io
 import json
 import mimetypes
+import base64
 import os
 import secrets
 import threading
+import time
 import urllib.parse
 import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from . import __version__
-from .isolation import IsolatedAgent, Artifacts, safe_path
+from .isolation import IsolatedAgent, Artifacts, safe_path, relative_name, MAX_FILE, MAX_FILES, MAX_EXPORT, seed_files, packed_files
 from .config import Settings
-from .providers import ModelClient
+from .providers import ModelClient, ProviderError, ERROR_MESSAGES
+from .compatibility import check_protocol
 from .runtime import LocalRuntime
 from .storage import Store
 from .evaluation import EvaluationService
@@ -36,13 +39,96 @@ class Application:
         self.token = secrets.token_urlsafe(32)
         self.identity = hashlib.sha256(str(self.root).encode()).hexdigest()[:20]
         self.server = None
+        self.usage_cache = None
+        self.usage_time = 0
         self.local.restore()
 
-    def state(self):
-        return {"version": __version__, "settings": self.settings.public(), "sessions": self.store.public(),
+    def active(self):
+        with self.agent.lock:
+            for identifier, (_, thread) in self.agent.workers.items():
+                if thread.is_alive():
+                    session = self.store.get(identifier)
+                    return {k: session[k] for k in ('id', 'title', 'status', 'activity', 'provider', 'model')}
+        return None
+
+    def state(self, query='', offset=0, archived=False):
+        page = self.store.page(query, offset, archived=archived)
+        return {"version": __version__, "settings": self.settings.public(), "sessions": page['items'],
+                'session_page': {k: v for k, v in page.items() if k != 'items'}, 'active': self.active(),
+                'tasks_count': len(json.loads((self.root / 'evaluations/tasks.json').read_text(encoding='utf-8'))),
                 "setup": self.local.public(), "isolation": self.agent.appliance.public(),
                 "evaluation": self.evaluations.public(), "execution": self.execution.public(),
                 "platform": 'windows' if os.name == 'nt' else 'linux', "root": str(self.root)}
+
+    def ensure_idle(self, session_id=None):
+        if self.evaluations.busy:
+            raise ValueError('Stop the seed checks before changing this task')
+        active = self.active()
+        if active and (session_id is None or active['id'] == session_id):
+            raise ValueError('Stop the active task before changing or starting work')
+
+    def import_files(self, session, files):
+        if not isinstance(files, list) or len(files) > MAX_FILES - len(seed_files(self.root)):
+            raise ValueError('Too many imported files')
+        previous = session.get('artifacts', {}) if session else {}
+        legacy = packed_files(session['workspace']) if session and 'artifacts' not in session else []
+        existing = set(previous) | {item['path'] for item in legacy}
+        seen, decoded, total = {name.casefold() for name in existing}, [], 0
+        for item in files:
+            if not isinstance(item, dict) or set(item) != {'path', 'data'}:
+                raise ValueError('Import file names and encoded bytes')
+            name = relative_name(item['path'])
+            if name.startswith('harness/') or any(part.startswith('.') for part in name.split('/')) or name.casefold() in seen:
+                raise ValueError('Choose distinct ordinary task file names; harness/ is reserved')
+            data = item['data']
+            if not isinstance(data, str) or len(data) > MAX_FILE * 4 // 3 + 8:
+                raise ValueError('Each imported file must be at most 2 MiB')
+            try:
+                raw = base64.b64decode(data, validate=True)
+            except ValueError:
+                raise ValueError('Invalid imported file encoding') from None
+            if len(raw) > MAX_FILE:
+                raise ValueError('Each imported file must be at most 2 MiB')
+            seen.add(name.casefold()); total += len(raw); decoded.append((name, data))
+        if len(existing) + len(decoded) + (0 if any(n.startswith('harness/') for n in existing) else len(seed_files(self.root))) > MAX_FILES:
+            raise ValueError('Too many files for one checkpoint')
+        if total + sum(i['bytes'] for i in previous.values()) + sum(len(base64.b64decode(i['data'])) for i in legacy) + (0 if any(n.startswith('harness/') for n in existing) else sum(len(base64.b64decode(i['data'])) for i in seed_files(self.root))) > MAX_EXPORT:
+            raise ValueError('Imported files and the editable seed must fit the 32 MiB checkpoint limit')
+        if session is None:
+            return
+        artifacts = Artifacts(self.store, session)
+        for item in legacy:
+            artifacts.put(item['path'], item['data'])
+        for name, data in decoded:
+            artifacts.put(name, data)
+        artifacts.checkpoint([*existing, *(name for name, _ in decoded)])
+        self.store.event(session, 'files_imported', {'paths': [name for name, _ in decoded], 'bytes': total})
+
+    def storage_usage(self):
+        if self.usage_cache is not None and time.monotonic() - self.usage_time < 30:
+            return self.usage_cache
+        def size(root):
+            total = 0
+            def ordinary(path):
+                try:
+                    return not path.is_symlink() and not getattr(path.lstat(), 'st_file_attributes', 0) & 0x400
+                except OSError:
+                    return False
+            for directory, names, files in os.walk(root, followlinks=False):
+                names[:] = [n for n in names if ordinary(Path(directory) / n)]
+                for name in files:
+                    path = Path(directory) / name
+                    if ordinary(path):
+                        try:
+                            total += path.stat().st_size
+                        except OSError:
+                            pass
+            return total
+        self.usage_cache = {name: size(path) for name, path in {'sessions': self.store.root, 'models': self.root / '.data/models',
+            'evaluations': self.data / 'evaluations', 'runtime': self.root / '.runtime', 'trash': self.store.root / '.trash'}.items()}
+        self.usage_cache['sessions'] -= self.usage_cache['trash']
+        self.usage_time = time.monotonic()
+        return self.usage_cache
 
     def start_run(self, session, message=None, candidate=None):
         with self.evaluations.gate:
@@ -122,7 +208,11 @@ def handler_for(app):
                                       "isolation_required": app.execution.mode == 'vm',
                                       "execution_mode": app.execution.mode})
                 if path == "/api/state":
-                    return self.send(app.state())
+                    return self.send(app.state(query.get('query', [''])[0], int(query.get('offset', ['0'])[0]), query.get('archived', ['false'])[0] == 'true'))
+                if path == '/api/storage':
+                    return self.send(app.storage_usage())
+                if path == '/api/trash':
+                    return self.send(app.store.trash())
                 if path == '/api/seed-check':
                     return self.send(app.evaluations.load(query.get('id', [''])[0]))
                 if path == "/api/local":
@@ -134,7 +224,8 @@ def handler_for(app):
                 if path in ("/api/session", "/api/files", "/api/file", "/api/export", "/api/download"):
                     session = app.store.get(query.get("id", [""])[0])
                     if path == "/api/session":
-                        return self.send(app.store.public(session["id"]))
+                        return self.send(app.store.view(session['id'], int(query.get('after', ['0'])[0]),
+                            int(query['revision'][0]) if 'revision' in query else None))
                     if path == "/api/files":
                         return self.send(app.files(session))
                     if path in ("/api/file", "/api/download"):
@@ -165,7 +256,7 @@ def handler_for(app):
                 self.send({"error": str(error)}, 400)
 
         def do_POST(self):
-            if self.path in ('/api/start', '/api/resume', '/api/reset', '/api/try-seed'):
+            if self.path in ('/api/start', '/api/resume', '/api/reset', '/api/try-seed', '/api/import', '/api/session/manage'):
                 with app.evaluations.gate:
                     if app.evaluations.busy:
                         if self.allowed(api=True):
@@ -179,7 +270,7 @@ def handler_for(app):
                 return
             try:
                 size = int(self.headers.get("Content-Length", 0))
-                if not 0 < size <= 250000:
+                if not 0 < size <= (MAX_EXPORT * 4 // 3 + 100000 if self.path in ('/api/start', '/api/import') else 250000):
                     raise ValueError("The request is empty or too large")
                 data = json.loads(self.rfile.read(size))
                 if not isinstance(data, dict):
@@ -187,22 +278,22 @@ def handler_for(app):
                 if self.path == "/api/settings":
                     if any(key in data for key in ('execution', 'execution_mode', 'acknowledge_host_access')):
                         raise ValueError('Execution mode can only be selected at launch')
-                    return self.send(app.settings.update(data))
+                    candidate = app.settings.preview(data)
+                    changed = any(candidate[k] != app.settings.values[k] for k in ('protocol', 'context_tokens', 'response_tokens', 'json_mode', 'thinking'))
+                    compatibility = check_protocol(candidate, app.settings.key()) if candidate['configured'] and changed else None
+                    result = app.settings.update(data)
+                    if compatibility:
+                        result = app.settings.record_compatibility(compatibility)
+                    return self.send(result)
                 if self.path == "/api/connect":
                     config = app.settings.preview({**data, "configured": False})
                     if config["provider"] == "ollama":
                         names = [item["name"] for item in app.local.models(config["base_url"])]
                         if config["model"] not in names and config["model"] + ":latest" not in names:
                             raise ValueError("This model is not installed yet. Use Prepare local model to download it.")
-                    elif config["provider"] == "hosted":
-                        test_config = {**config, "protocol": "json", "json_mode": False, "response_tokens": 256, "request_timeout": 30}
-                        answer = ModelClient(test_config, data.get('api_key') or app.settings.key()).complete([
-                            {"role": "system", "content": 'Return exactly {"message":"Ready","status":"completed"} as JSON.'},
-                            {"role": "user", "content": "Test the connection."}], threading.Event())
-                        result = json.loads(answer['content'])
-                        if result.get('status') != 'completed':
-                            raise ValueError('The connection test did not complete')
-                    return self.send(app.settings.update({**data, "configured": True}))
+                    compatibility = check_protocol(config, data.get('api_key') or app.settings.key())
+                    app.settings.update({**data, "configured": True})
+                    return self.send(app.settings.record_compatibility(compatibility))
                 if self.path == "/api/setup":
                     app.local.prepare(data.get("model", "qwen3:4b-instruct"))
                     return self.send(app.local.public())
@@ -216,6 +307,7 @@ def handler_for(app):
                     app.evaluations.stop()
                     return self.send({'ok': True})
                 if self.path == "/api/start":
+                    app.ensure_idle()
                     task = data.get("task", "").strip()
                     if not task or len(task) > 12000:
                         raise ValueError("Describe your task in 12,000 characters or fewer")
@@ -224,10 +316,19 @@ def handler_for(app):
                     app.agent.appliance.verify()
                     if app.settings.values['provider'] == 'ollama' and app.local.public()['busy']:
                         raise ValueError('Your local model engine is starting. Give it a moment, then start the task.')
+                    if data.get('files'):
+                        app.import_files(None, data['files'])
                     session = app.store.create(task, app.settings.values["provider"], app.settings.values["model"])
+                    if data.get('files'):
+                        try:
+                            app.import_files(session, data['files'])
+                        except Exception:
+                            app.store.delete(session['id'])
+                            raise
                     app.start_run(session)
                     return self.send({"id": session["id"]})
                 if self.path == '/api/try-seed':
+                    app.ensure_idle()
                     candidate = app.store.get(data.get('id'))
                     task = data.get('task', candidate['task'])
                     if not isinstance(task, str) or not task.strip() or len(task) > 12000:
@@ -236,9 +337,25 @@ def handler_for(app):
                     session['candidate_from'] = candidate['id']
                     app.start_run(session, candidate=candidate)
                     return self.send({'id': session['id']})
+                if self.path == '/api/import':
+                    session = app.store.get(data.get('id'))
+                    app.ensure_idle(session['id'])
+                    app.import_files(session, data.get('files'))
+                    return self.send({'ok': True})
+                if self.path == '/api/session/manage':
+                    identifier, action = data.get('id'), data.get('action')
+                    app.ensure_idle(identifier)
+                    if action == 'rename': app.store.rename(identifier, data.get('title'))
+                    elif action == 'archive': app.store.archive(identifier, data.get('archived', True))
+                    elif action == 'delete': app.store.delete(identifier)
+                    elif action == 'restore': app.store.restore(identifier)
+                    else: raise ValueError('Unknown session action')
+                    app.usage_cache = None
+                    return self.send({'ok': True})
                 if self.path in ("/api/resume", "/api/stop", "/api/reset", "/api/open-workspace"):
                     session = app.store.get(data.get("id"))
                     if self.path == "/api/resume":
+                        app.ensure_idle()
                         message = data.get("message", "")
                         if not isinstance(message, str) or len(message) > 12000:
                             raise ValueError("Keep your reply under 12,000 characters")
@@ -246,6 +363,9 @@ def handler_for(app):
                     elif self.path == "/api/stop":
                         app.agent.stop(session["id"])
                     elif self.path == '/api/reset':
+                        active = app.active()
+                        if active and active['id'] != session['id']:
+                            raise ValueError('Stop the active task before resetting another session')
                         app.agent.stop(session['id'])
                         worker = app.agent.workers.get(session['id'])
                         if worker:
@@ -266,6 +386,8 @@ def handler_for(app):
                     threading.Thread(target=app.server.shutdown, daemon=True).start()
                     return
                 self.send({"error": "Unknown action"}, 404)
+            except ProviderError as error:
+                self.send({'error': ERROR_MESSAGES[error.category], 'category': error.category}, 400)
             except Exception as error:
                 self.send({"error": str(error)}, 400)
     return Handler

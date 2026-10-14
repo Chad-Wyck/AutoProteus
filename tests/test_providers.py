@@ -7,7 +7,7 @@ from autoproteus.providers import tool_definitions
 
 
 class FakeModelServer:
-    def __init__(self, cut_short=False, hosted=False, native=False):
+    def __init__(self, cut_short=False, hosted=False, native=False, diagnostic=False):
         self.payloads = []; parent = self
         class Handler(BaseHTTPRequestHandler):
             def log_message(self, *_): pass
@@ -16,6 +16,17 @@ class FakeModelServer:
                 self.send_response(200); self.send_header('Content-Type', 'application/json'); self.end_headers()
                 content = json.dumps({'message': 'Ready', 'status': 'completed'})
                 calls = [{'function': {'name': 'write_file', 'arguments': {'path': 'sample.txt', 'content': 'sample'}}}]
+                if diagnostic:
+                    messages = parent.payloads[-1]['messages']
+                    if messages[-1]['role'] == 'tool' or messages[-1]['content'].startswith('ACTION RESULT\n'):
+                        result = json.loads(messages[-1]['content'].removeprefix('ACTION RESULT\n'))
+                        decision = {'message': result['result']['receipt'], 'status': 'completed'}
+                        calls = [{'function': {'name': 'finish', 'arguments': decision}}]
+                    else:
+                        value = messages[-1]['content'].split('Test value: ')[1]
+                        decision = {'action': {'tool': 'diagnostic_echo', 'arguments': {'value': value}}}
+                        calls = [{'function': {'name': 'diagnostic_echo', 'arguments': {'value': value}}}]
+                    content = json.dumps(decision)
                 if hosted:
                     message = {'content': '' if native else content}
                     if native:

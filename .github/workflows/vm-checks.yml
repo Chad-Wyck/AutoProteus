@@ -1,0 +1,25 @@
+name: Hardware VM checks
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Prepared runner platform
+        required: true
+        type: choice
+        options: [Linux, Windows]
+permissions:
+  contents: read
+jobs:
+  isolated:
+    # Manual only: review the selected revision before running on your hardware.
+    runs-on: [self-hosted, autoproteus-vm, '${{ inputs.platform }}']
+    timeout-minutes: 30
+    env:
+      AUTOPROTEUS_VM_TESTS: '1'
+      AUTOPROTEUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Prepare pinned appliance
+        run: python -c "from pathlib import Path; from controller.appliance import Appliance; a=Appliance(Path.cwd()); a.install(); a.verify()"
+      - name: Run hardware isolation regressions
+        run: python -X utf8 -m unittest discover -s tests -v

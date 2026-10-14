@@ -12,9 +12,28 @@ from .errors import Cancelled
 
 
 class ProviderError(Exception):
-    def __init__(self, message, response=None):
+    def __init__(self, message, response=None, category='connection'):
         super().__init__(message)
         self.response = response
+        self.category = category if category in ERROR_MESSAGES else 'connection'
+
+
+ERROR_MESSAGES = {
+    'connection': 'The model service could not be reached. Check the connection and retry.',
+    'timeout': 'The model response timed out. Retry or choose a smaller model.',
+    'cutoff': 'The model response was cut short. Increase the response budget or retry; no partial action ran.',
+    'protocol': 'The model did not follow the selected action protocol. Try JSON fallback or another model.',
+    'context': 'The input exceeds the configured context estimate. Shorten the task or increase the context window in Settings.',
+}
+
+
+def validate_context(messages, tools, config):
+    """A model-agnostic upper bound on our estimate, not an exact tokenizer."""
+    size = len(json.dumps({'messages': messages, 'tools': tools or []}, ensure_ascii=False).encode('utf-8'))
+    allowance = max(0, config['context_tokens'] - config['response_tokens'] - 128) * 2
+    if size > allowance:
+        raise ProviderError(ERROR_MESSAGES['context'], category='context')
+    return {'estimated_input_tokens': (size + 1) // 2, 'allowance_tokens': allowance // 2}
 
 
 def wire_messages(messages, ollama):
@@ -122,7 +141,7 @@ class ModelClient:
             if cancel.is_set():
                 raise Cancelled()
             if time.monotonic() > deadline:
-                raise ProviderError("The model took too long to respond. Try a smaller model or resume the session.")
+                raise ProviderError(ERROR_MESSAGES['timeout'], category='timeout')
             try:
                 ok, value = result.get(timeout=0.1)
             except queue.Empty:
@@ -136,9 +155,11 @@ class ModelClient:
         native = config.get('protocol', 'native') == 'native'
         if native and tools is None:
             raise ProviderError('Native inference requires tool definitions supplied by the seed')
+        wire = wire_messages(messages, config['provider'] == 'ollama') if native else messages
+        validate_context(wire, tools if native else [], config)
         base = config["base_url"].rstrip("/")
         if config["provider"] == "ollama":
-            payload = {"model": config["model"], "messages": wire_messages(messages, True) if native else messages, "stream": True,
+            payload = {"model": config["model"], "messages": wire, "stream": True,
                        "options": {"num_ctx": config["context_tokens"], "num_predict": config["response_tokens"],
                                    "temperature": config["temperature"]}, "keep_alive": "10m"}
             if native:
@@ -182,18 +203,18 @@ class ModelClient:
                             break
                 if not done or metrics.get("done_reason") == "length":
                     raise ProviderError("The model response was cut short. No action was executed. Increase the response budget or retry.",
-                                        {'raw_content':text, 'thinking':thinking, 'tool_calls':calls, 'usage':metrics, 'incomplete':True})
+                                        {'raw_content':text, 'thinking':thinking, 'tool_calls':calls, 'usage':metrics, 'incomplete':True}, category='cutoff')
                 return model_response(text, calls, native, thinking=thinking, usage=metrics)
             except urllib.error.HTTPError as error:
                 raise ProviderError(f"Local model error (HTTP {error.code}): {error.read(2000).decode(errors='replace')}") from None
             except (urllib.error.URLError, TimeoutError, OSError) as error:
                 raise ProviderError(f"The local model connection was interrupted: {error}. No partial action was executed.",
                                     {'raw_content':text, 'thinking':thinking, 'tool_calls':calls, 'incomplete':True}) from None
-        payload = {"model": config["model"], "messages": wire_messages(messages, False) if native else messages, "stream": False,
+        payload = {"model": config["model"], "messages": wire, "stream": False,
                    "max_tokens": config["response_tokens"], "temperature": config["temperature"]}
         if native:
             payload['tools'] = tools
-        if config.get("json_mode"):
+        if config.get("json_mode") and not native:
             payload["response_format"] = {"type": "json_object"}
         headers = {"Authorization": "Bearer " + self.key} if self.key else {}
         data = request_json(base + "/chat/completions", payload, headers, config.get("request_timeout", 180))
@@ -201,7 +222,7 @@ class ModelClient:
             choice = data["choices"][0]
             if choice.get("finish_reason") not in ("stop", "tool_calls", None):
                 raise ProviderError("The model response was cut short or rejected. No action was executed.",
-                                    {'raw_content':choice.get('message',{}), 'usage':data.get('usage',{}), 'incomplete':True})
+                                    {'raw_content':choice.get('message',{}), 'usage':data.get('usage',{}), 'incomplete':True}, category='cutoff')
             content = choice["message"].get("content") or ""
             if not isinstance(content, str):
                 raise ProviderError("The provider did not return a text response.")

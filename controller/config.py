@@ -73,6 +73,12 @@ class Settings:
         with self.lock:
             return self._update(data, save=False)
 
+    def record_compatibility(self, result):
+        with self.lock:
+            self.values['compatibility'] = dict(result)
+            atomic_json(self.path, self.values)
+            return self.public()
+
     def _update(self, data, save=True):
         candidate = dict(self.values)
         for key in DEFAULTS:
@@ -110,6 +116,9 @@ class Settings:
                 raise ValueError("Invalid API key")
         if not save:
             return candidate
+        if key or data.get('clear_key') or any(candidate[k] != self.values[k] for k in
+                ('provider', 'base_url', 'model', 'protocol', 'json_mode', 'thinking', 'context_tokens', 'response_tokens')):
+            candidate.pop('compatibility', None)
         if key:
             if os.name == "nt":
                 self.directory.mkdir(parents=True, exist_ok=True)

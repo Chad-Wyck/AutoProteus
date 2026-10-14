@@ -64,10 +64,21 @@ if [ "$task_mode" = vm ] && [ -e /dev/kvm ] && { [ ! -r /dev/kvm ] || [ ! -w /de
 fi
 mkdir -p .runtime .data
 task_python="$task_root/.runtime/python-linux/bin/python3"
-if [ ! -x "$task_python" ]; then
+task_manifest="$task_root/.runtime/python-linux.sha256"
+task_sha='d0080766b6b74aeb81e1949ef0d9a20e6c17f7b160fb295a69b936ccb17660be'
+task_links_safe() {
+    [ ! -L .runtime/python-linux ] || return 1
+    find .runtime/python-linux -type l -exec sh -c 'task_prefix=$1; shift; for task_link do task_target=$(readlink -f "$task_link") || exit 1; case "$task_target" in "$task_prefix"/*) ;; *) exit 1 ;; esac; done' sh "$task_root/.runtime/python-linux" {} +
+}
+task_verified=no
+if [ -x "$task_python" ] && [ -f "$task_manifest" ] && [ "$(sed -n '1p' "$task_manifest")" = "# $task_sha" ] && task_links_safe && sha256sum --check --status "$task_manifest"; then
+    task_expected=$(($(wc -l < "$task_manifest") - 1))
+    task_actual=$(find .runtime/python-linux \( -type f -o -xtype f \) -printf '.' | wc -c)
+    [ "$task_expected" -ne "$task_actual" ] || task_verified=yes
+fi
+if [ "$task_verified" != yes ]; then
     printf '%s\n' 'Preparing private Python (35 MB). No Python installation or pip packages are needed.'
     task_url='https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.13.16%2B20261013-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz'
-    task_sha='d0080766b6b74aeb81e1949ef0d9a20e6c17f7b160fb295a69b936ccb17660be'
     task_archive="$task_root/.runtime/python-linux-download.tar.gz"
     if [ ! -f "$task_archive" ] || [ "$(sha256sum "$task_archive" | cut -d ' ' -f 1)" != "$task_sha" ]; then
         if command -v curl >/dev/null 2>&1; then
@@ -88,9 +99,14 @@ if [ ! -x "$task_python" ]; then
     mv -- "$task_stage/python" "$task_root/.runtime/python-linux"
     rmdir -- "$task_stage"
     rm -- "$task_archive"
+    task_links_safe || { printf '%s\n' 'The private Python archive contains an unexpected link.' >&2; exit 1; }
+    printf '# %s\n' "$task_sha" > "$task_manifest"
+    find .runtime/python-linux \( -type f -o -xtype f \) -print0 | sort -z | xargs -0 sha256sum >> "$task_manifest"
+    sha256sum --check --status "$task_manifest" || { printf '%s\n' 'The private Python runtime failed verification.' >&2; exit 1; }
 fi
 unset PYTHONHOME PYTHONPATH
 export PYTHONNOUSERSITE=1
+export PYTHONDONTWRITEBYTECODE=1
 if ! "$task_python" -c 'import sys; assert sys.version_info >= (3, 10)' 2>/dev/null; then
     printf '%s\n' 'The bundled Python cannot run here. A recent glibc-based Linux desktop is required.' >&2
     exit 1

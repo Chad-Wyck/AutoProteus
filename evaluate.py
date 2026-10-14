@@ -28,6 +28,8 @@ def harness_changes(workspace, baseline):
 
 
 def check(workspace, rule):
+    if 'python_function' in rule:
+        raise ValueError('Behavior checks require the protected guest verifier')
     path = (workspace / rule['path']).resolve()
     if not path.is_relative_to(workspace.resolve()):
         return False

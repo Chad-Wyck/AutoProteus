@@ -8,7 +8,7 @@ import threading
 from pathlib import Path
 
 from . import __version__
-from .providers import ProviderError, tool_instructions
+from .providers import ProviderError, tool_instructions, tool_definitions
 from .tools import Cancelled, Workspace, clipped
 
 PROTOCOL = '''You are AutoProteus, an autonomous assistant working in a private task workspace.
@@ -154,59 +154,74 @@ class Agent:
         todo = clipped(todo_path.read_text(encoding="utf-8", errors="replace"), 6000) if todo_path.exists() else ""
         session["todo"] = todo
         terminal = "Terminal commands run in the environment described below." if config["terminal"] else "Terminal access is disabled. Use the file tools."
-        prompt = NATIVE_PROMPT if config.get("protocol", "native") == "native" and config["provider"] != "demo" else PROTOCOL
-        environment = ('This run has no AutoProteus VM protection. Commands and Python code have this account\'s access. '
-                       'The surrounding environment supplies any restrictions; stay within the requested task workspace.'
+        native = config.get("protocol", "native") == "native" and config["provider"] != "demo"
+        prompt = NATIVE_PROMPT if native else PROTOCOL
+        environment = ("This run has no AutoProteus VM protection. Code has this account's access; stay within the requested workspace."
                        if session.get('execution_mode') == 'native' else
-                       'Commands, if enabled, run inside a disposable Linux VM. Host files and the controller are unavailable. There is no general network access.')
-        system = prompt.replace("{tools}", tool_instructions(config['terminal'])).replace("{terminal}", terminal).replace('{environment}', environment) + "\nOriginal task:\n" + session["task"]
+                       "Commands run inside a disposable Linux VM. Host files, the controller and general network access are unavailable.")
+        system = prompt.replace("{tools}", tool_instructions(config['terminal'])).replace("{terminal}", terminal).replace('{environment}', environment)
+        original = {"role": "user", "content": session["task"]}
+        history = [dict(item) for item in session["messages"] if item != original]
+        # Keep the original request and latest follow-up complete. Never silently
+        # shorten user instructions to accommodate fixed prompts or tool schemas.
+        followup = next((item for item in reversed(history) if item['role'] == 'user'
+                         and not item['content'].startswith('ACTION RESULT\n')), None)
+        required = [original] + ([followup] if followup else [])
+        schemas = tool_definitions(config['terminal']) if native else []
+        allowance = max(0, config['context_tokens'] - config['response_tokens'] - 128) * 2
+        def size(items):
+            return len(json.dumps({'messages': items, 'tools': schemas}, ensure_ascii=False).encode('utf-8'))
+        fixed = [{"role": "system", "content": system}, original]
+        if config['provider'] == 'demo':
+            return [{"role": "system", "content": system + ("\nCurrent todo.txt:\n" + todo if todo else '')}, original, *history]
+        if size([fixed[0], *required]) > allowance:
+            raise ValueError('The task, follow-up and tool instructions exceed the configured context estimate. Shorten the request or increase the context window in Settings.')
         if todo:
-            system += "\nCurrent todo.txt:\n" + todo
-        # A conservative character budget, not an exact tokenizer. Drop whole
-        # request/action/result groups; the complete journal remains on disk.
-        budget = max(1000, (config["context_tokens"] - config["response_tokens"]) * 2 - len(system) - len(session["task"]))
-        messages = list(session["messages"])
-        if config["provider"] != "demo":
-            while len(messages) > 2 and sum(len(item["content"]) for item in messages) > budget:
-                messages.pop(0)
-                while len(messages) > 2 and messages[0]["role"] != "user":
-                    messages.pop(0)
-            if sum(len(item["content"]) for item in messages) > budget:
-                shortened = []
-                limit = max(500, budget // len(messages))
-                for item in messages:
-                    content = item['content']
-                    if len(content) <= limit:
-                        shortened.append(item)
-                    elif item['role'] == 'assistant':
-                        # Never slice a serialized tool call into invalid JSON.
-                        shortened.append({'role':'user', 'content':'A large prior action was omitted from this context. Its full record is in the journal. Inspect current files before continuing.'})
-                    elif content.startswith('ACTION RESULT\n'):
-                        result = json.loads(content.split('\n', 1)[1])
-                        data = result['result']
-                        if result['tool'] == 'read_section' and 'next_start' in data:
-                            # Keep a shortened section usable for character continuation.
-                            preview = data['content'][:max(1, limit // 2)]
-                            result['result'] = {**data, 'content': preview, 'context_shortened': True,
-                                                'next_start': data['start'] + len(preview),
-                                                'eof': data['eof'] if preview == data['content'] else False}
-                        elif result['tool'] == 'read_file' and 'content' in data:
-                            result['result'] = {'path': data['path'], 'context_shortened': True, 'content_omitted': True,
-                                                'characters': len(data['content']),
-                                                'hint': 'The whole-file result cannot fit this context. Use read_section with a smaller length.'}
-                        else:
-                            result['result'] = {'context_shortened': True, 'preview': clipped(json.dumps(data, ensure_ascii=False), limit)}
-                        shortened.append({'role':'user', 'content':'ACTION RESULT\n' + json.dumps(result, ensure_ascii=False)})
+            with_todo = [{"role": "system", "content": system + "\nCurrent todo.txt:\n" + todo}, *required]
+            if size(with_todo) <= allowance:
+                fixed[0] = with_todo[0]
+        # Keep recent complete action/result groups. The full journal stays saved.
+        budget = allowance - size([fixed[0], *required])
+        while len(history) > 2 and size(fixed + history) > allowance:
+            index = 1 if history[0] == followup else 0
+            history.pop(index)
+            while len(history) > index and history[index] != followup and history[index]['role'] != 'assistant':
+                history.pop(index)
+        if history and size(fixed + history) > allowance:
+            limit = max(1, budget // max(1, len(history)) // 2)
+            shortened = []
+            for item in history:
+                content = item['content']
+                if item == followup or len(content.encode('utf-8')) <= limit:
+                    shortened.append(item)
+                elif content.startswith('ACTION RESULT\n'):
+                    result = json.loads(content.split('\n', 1)[1])
+                    data = result['result']
+                    if result['tool'] == 'read_section' and 'next_start' in data:
+                        preview = data['content'].encode('utf-8')[:max(1, limit // 2)].decode('utf-8', errors='ignore')
+                        result['result'] = {**data, 'content': preview, 'context_shortened': True,
+                                            'next_start': data['start'] + len(preview),
+                                            'eof': data['eof'] if preview == data['content'] else False}
+                    elif result['tool'] == 'read_file' and 'content' in data:
+                        result['result'] = {'path': data['path'], 'context_shortened': True, 'content_omitted': True,
+                                            'characters': len(data['content']), 'hint': 'Use read_section with a smaller length.'}
                     else:
-                        shortened.append({'role':item['role'], 'content':clipped(content, limit)})
-                messages = shortened
-        if not any(item["role"] == "user" and item["content"] == session["task"] for item in messages):
-            messages.insert(0, {"role": "user", "content": session["task"]})
-        return [{"role": "system", "content": system}] + messages
+                        result['result'] = {'context_shortened': True, 'preview': clipped(json.dumps(data, ensure_ascii=False), limit)}
+                    shortened.append({'role': 'user', 'content': 'ACTION RESULT\n' + json.dumps(result, ensure_ascii=False)})
+                else:
+                    shortened.append({'role': 'user', 'content': 'A large prior action was omitted. Inspect current files before continuing.'})
+            history = shortened
+        while history and size(fixed + history) > allowance:
+            index = 1 if history[0] == followup else 0
+            history.pop(index)
+            if len(history) > index and history[index]['content'].startswith('ACTION RESULT\n'):
+                history.pop(index)
+        return [fixed[0], original, *history]
 
     def _run(self, session, config, client, cancel):
         workspace = Workspace(Path(session["workspace"]), config["terminal"], cancel, config["command_timeout"])
         repairs = 0
+        previous_read, repeated_reads = None, 0
         try:
             steps = 0
             while steps < config['max_steps']:
@@ -265,6 +280,16 @@ class Agent:
                     except (ValueError, OSError, KeyError, TypeError) as error:
                         result, ok = {"error": str(error)}, False
                     self.store.event(session, "action_result", {"action": action, "result": result, "ok": ok})
+                    if ok and action['tool'] in ('read_file', 'read_section', 'search_files'):
+                        signature = (action['tool'], json.dumps(action['arguments'], sort_keys=True),
+                                     hashlib.sha256(json.dumps(result, sort_keys=True).encode()).hexdigest())
+                        repeated_reads = repeated_reads + 1 if signature == previous_read else 1
+                        previous_read = signature
+                        if repeated_reads == 3:
+                            result = {**result, 'progress_hint': 'This unchanged material has been read three times. Use search_files or proceed to a concrete edit and verification.'}
+                            self.store.feed(session, 'notice', 'The same unchanged material is being read repeatedly. The agent received a progress hint.')
+                    else:
+                        previous_read, repeated_reads = None, 0
                     session.pop("pending_action", None)
                     session["messages"].append({"role": "user", "content": "ACTION RESULT\n" + json.dumps({"tool": action["tool"], "ok": ok, "result": result}, ensure_ascii=False)})
                     self.store.feed(session, "result", "Done" if ok else "Action needs attention", result=result, ok=ok)

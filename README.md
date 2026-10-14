@@ -65,13 +65,19 @@ Saved files enter a quarantine store as inert blobs. The interface previews text
 
 Exports are limited to 2 MiB per file, 500 files, and 32 MiB per checkpoint. The VM receives 2 GiB RAM, two virtual CPUs, and a 512 MiB task filesystem in RAM. External process, CPU, memory, transfer, journal, model-request, and one-hour runtime limits apply. One task runs at a time. “Finished” reflects the model's report; review outputs or use independent checks.
 
-Conversation history stays bounded by a conservative character estimate of the selected context window. The original user request is retained when older history is trimmed, and the full journal remains on disk. Source files use LF line endings on Windows and Linux so exact source edits see consistent text.
+Conversation history stays bounded by a conservative estimate of serialized UTF-8 bytes, including the system prompt and native tool schemas, with room reserved for the response. The complete original request and latest follow-up stay in context. If those alone exceed the estimate, the task stops with a settings hint before another model request. This is an estimate rather than an exact tokenizer for every model. Older history may be trimmed; the full journal remains on disk. Source files use LF line endings on Windows and Linux so exact source edits see consistent text.
+
+An active task keeps a visible Stop control even after choosing New task or viewing another session. Conflicting starts are rejected before a new session is created. The interface identifies local or hosted inference and defaults to dark mode, with a light-mode toggle. Saved sessions support title search, pagination, renaming and archiving. Delete moves a session to recoverable Trash; **Saved work & storage** shows usage and restores it. Histories load on demand and polling transfers new conversation entries rather than full model context.
+
+Use **Files** to copy inputs into a new task, or **Add files** in a stopped session. Imports are inert bytes in quarantine; they do not grant access to the original host folder. The same 2 MiB/file, 500-file and 32 MiB/checkpoint limits include the editable seed. Existing names and `harness/` cannot be overwritten by imports.
+
+Connecting or preparing a model checks the selected native-tool or JSON protocol with a harmless two-request tool/result exchange. Protocol-related settings are checked before saving. Failed checks report a connection, timeout, cutoff, context or protocol category without exposing provider response bodies or credentials. Compatibility confirms that exchange, not task competence; AutoProteus never silently switches protocols.
 
 ## Growing the seed
 
 Each workspace has `harness/`, a small copy of the editable source: `seed.py`, the agent, tools, session storage, tool descriptions, guest documentation, and tests. Model adapters, download/setup code, browser assets and evaluation definitions remain outside this copy. The model edits its seed without overwriting the protected starter or controller.
 
-**Check edited seed** compares the starter with that frozen source copy using the connected real model. The same ten tasks run in fresh VMs, twice by default; order alternates between repeats. The host checks saved file bytes independently and records source fingerprints, configuration, runtime identity, changes, successes, failures, time and reported steps. A comparison can take several minutes and hosted requests may incur charges. **Stop checks** saves incomplete results. Checks use a separate store and never activate a candidate. A new feature still requires independent functional review beyond these existing tasks. Saved comparisons can be reopened from the source panel after restarting the app.
+**Check edited seed** compares the starter with that frozen source copy using the connected real model. The same sixteen tasks run in fresh VMs, twice by default; order alternates between repeats. They include file recreation, source search, long files, follow-up corrections, multiple files and interruption/resume. The bug-fix check calls the submitted function with several inputs in a fresh guest instead of accepting a matching comment. The host checks saved file bytes independently and records source fingerprints, configuration, runtime identity, model digest and engine version when available, changes, successes, failures, reads, time and reported steps. A comparison can take several minutes and hosted requests may incur charges. **Stop checks** saves incomplete results. Checks use a separate store and never activate a candidate. A new feature still requires independent functional review beyond these existing tasks. Saved comparisons can be reopened from the source panel after restarting the app.
 
 The optional [role diagnostic](evaluations/role-check.py) asks "Who are you, and what is your role?" at the start and after a separate file task, using cached models from the local benchmark plan. It preserves answers and distinguishes role wording from the required completion protocol. It runs outside the editable seed and is not an upgrade acceptance or safety check. See the [initial findings](evaluations/role-check-findings.md).
 
@@ -84,6 +90,8 @@ The browser interface and `controller/` are maintained by the human developer. G
 `read_file(path)` returns the whole UTF-8 file up to 12,000 characters, and rejects larger files instead of truncating them. `read_section(path, start=0, length=1000)` reads a chosen section of up to 12,000 characters. Both `start` and `length` count characters; continue at `next_start` until `eof`. Unicode and original line endings are preserved. Whole-file results that cannot fit the model context are explicitly omitted with a section-reading hint. This replaces the older byte-offset `read_file` API; existing candidate copies retain their own implementation. `edit_file` replaces exactly one matching fragment, preserving surrounding bytes and line endings. Writes and edits are limited to 100,000 characters. Optional checklists use `todo.txt`.
 
 The seed's `TOOL_SPECS` table supplies both native and JSON descriptions. To add a tool, implement its dispatch, add one table entry and focused tests, then follow the short recipe in the copied `harness/README.md`. The host forwards descriptions as data and never imports the editable modules.
+
+`search_files(query, path=".")` searches a literal in bounded UTF-8 files and returns paths, lines, snippets and character starts usable with `read_section`. It reads at most 200 files / 2 MiB, visits at most 2,000 entries, skips links and hidden files, and returns at most 30 matches. `delete_file(path)` deletes one ordinary workspace file. Three identical consecutive reads receive a progress hint; this does not force a stop or change the model's tools.
 
 ## Files
 
@@ -108,6 +116,8 @@ Existing sessions and model downloads are preserved. Legacy files can be preview
 
 ## Verify
 
+GitHub CI runs ordinary tests on Windows and Linux, plus interface syntax checks. The manual **Hardware VM checks** workflow uses a prepared self-hosted runner labelled `autoproteus-vm` and `linux` or `windows`. Review the selected revision before dispatching it: this lane runs trusted repository code with hardware access. It is never triggered automatically by pull requests. The runner needs Python 3.13, internet for pinned appliance setup, and working KVM or WHPX. It runs the real VM checks, including identical-byte file recreation and functional grading.
+
 `python -m unittest discover -s tests -v` runs regression and broker tests. Set `AUTOPROTEUS_VM_TESTS=1` on a prepared Windows/WHPX or Linux/KVM host to include real VM checks for host file visibility, networking, guest privilege, forged exports, Stop, restoration, and recovery. `tests/test_linux.py` also covers Linux runtime integrity and managed engine cleanup. Guest tests copied into `harness/tests/` run inside the VM; controller tests stay on the host.
 
 On Linux, `python3 -m unittest discover -s tests -p test_native.py -v` runs trusted, offline native-worker fixtures for consent, startup, broker exports, checkpoint restoration, functional regressions, Stop and ordinary parent-exit cleanup. These are not hostile-code isolation tests. To evaluate the demo without a VM:
@@ -128,7 +138,9 @@ The [v0.3 findings](evaluations/seed-v0.3-findings.md) record the seed reduction
 
 ## Runtime sources
 
-Downloads and SHA-256 hashes are pinned in `controller/runtime-lock.json`. Hashes are checked before extraction and installed components before execution. Pins identify the selected bytes; upstream suppliers and security updates still require review.
+VM downloads and SHA-256 hashes are pinned in `controller/runtime-lock.json`. Managed Python and Ollama versions, URLs and hashes are pinned in `controller/managed-runtime-lock.json`: Windows Python 3.13.12, Linux Python 3.13.16, and Ollama 0.40.4. Hashes are checked before extraction. Installed private runtimes are inventoried and verified before reuse, including libraries and added or missing files. An old unrecorded engine is replaced through verified setup while preserving model weights; damaged runtimes stop or require verified setup. Independently installed model services remain user-managed and are not covered by these private-runtime manifests.
+
+Pin updates require reviewing official upstream metadata, changing the version/URL/hash together, synchronizing the Linux launcher's Python pin, and repeating launcher, integrity and hardware checks. Pins identify selected bytes; upstream suppliers and security updates still require review.
 
 - [QEMU downloads](https://www.qemu.org/download/#windows), [WHPX backend](https://www.qemu.org/docs/master/system/whpx.html), and [Windows build provider](https://qemu.weilnetz.de/w64/)
 - [Alpine Linux releases](https://alpinelinux.org/releases/)

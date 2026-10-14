@@ -41,6 +41,10 @@ Candidate comparisons freeze both versions, model settings and trusted task defi
 
 Before model tasks, the fixed guest bootstrap runs the host's unchanged seed tests from a root-owned directory against the selected modules. Its unprivileged child has no broker descriptor and cannot open the broker device. The protected parent collects the real process exit status and bounded test output. Candidate tests are excluded from this regression suite. Candidate modules still control their behavior and can manipulate test output, so a pass is diagnostic evidence rather than a security proof. Failure rejects the comparison before inference.
 
+Functional Python checks also run in a fresh guest, with host-selected function names, arguments and expected values. The protected parent requires a successful child exit and one complete result frame. A matching comment or an early exit with status zero does not satisfy the check. Arbitrary submitted code still controls the guest's behavior; known cases and output can be gamed. This is functional evidence, not a proof of honesty. Candidate Python is never imported on the host.
+
+File imports copy bounded bytes into the same quarantine and manifest system. They provide no host directory mounts or new broker operations. Session deletion moves its protected storage directory to recoverable Trash. Runtime archive hashes and installed file inventories cover privately managed Python and Ollama; external model services and OS-managed Linux QEMU remain separately trusted dependencies.
+
 ## Limits and recovery
 
 | Resource | Limit |

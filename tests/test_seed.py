@@ -35,6 +35,39 @@ def wait_session(agent, session, seconds=8):
 
 
 class WorkspaceTests(unittest.TestCase):
+    def test_delete_recreate_identical_file_and_reject_directories(self):
+        with temporary_directory() as directory:
+            workspace = Workspace(Path(directory))
+            for _ in range(2):
+                workspace.execute('write_file', {'path': 'file.txt', 'content': 'same'})
+                self.assertTrue(workspace.execute('delete_file', {'path': 'file.txt'})['deleted'])
+                self.assertFalse((Path(directory) / 'file.txt').exists())
+            for value in ('.', '../outside', 'missing.txt'):
+                with self.assertRaises((ValueError, OSError)):
+                    workspace.execute('delete_file', {'path': value})
+
+    def test_literal_search_returns_unicode_line_numbers_without_running_regex(self):
+        with temporary_directory() as directory:
+            workspace = Workspace(Path(directory))
+            workspace.execute('write_file', {'path': 'source/code.py', 'content': 'first\r\nneedle.* café\nlast\n'})
+            result = workspace.execute('search_files', {'query': 'needle.*', 'path': 'source'})
+            self.assertEqual(result['matches'], [{'path': 'source/code.py', 'line': 2, 'start': 7, 'snippet': 'needle.* café'}])
+            self.assertFalse(result['incomplete'])
+            self.assertEqual(workspace.execute('search_files', {'query': 'needle.+'})['matches'], [])
+            with self.assertRaises(ValueError): workspace.execute('search_files', {'query': 'x', 'path': '../outside'})
+
+    def test_search_bounds_results_skips_binary_and_checks_cancellation(self):
+        with temporary_directory() as directory:
+            workspace = Workspace(Path(directory))
+            (Path(directory) / 'binary').write_bytes(b'\xff')
+            workspace.execute('write_file', {'path': 'many.txt', 'content': 'find me\n' * 60})
+            result = workspace.execute('search_files', {'query': 'find'})
+            self.assertEqual(len(result['matches']), 30)
+            self.assertTrue(result['incomplete'])
+            for query in ('', 'x' * 201, 'a\nb'):
+                with self.assertRaises(ValueError): workspace.execute('search_files', {'query': query})
+            workspace.cancel.set()
+            with self.assertRaises(Cancelled): workspace.execute('search_files', {'query': 'find'})
     def test_traversal_and_absolute_paths_are_rejected(self):
         with temporary_directory() as directory:
             workspace = Workspace(Path(directory))
@@ -222,6 +255,19 @@ def model_response(content, calls, native):
 
 
 class AgentTests(unittest.TestCase):
+    def test_complete_input_budget_rejects_oversize_without_shortening_user_text(self):
+        agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
+        session = self.store.create('x' * 12000, 'ollama', 'offline-test')
+        session['messages'] = [{'role': 'user', 'content': session['task']}]
+        with self.assertRaisesRegex(ValueError, 'context'):
+            agent.messages(session, {**self.settings.values, 'provider': 'ollama', 'context_tokens': 2048, 'response_tokens': 512})
+        self.assertEqual(session['task'], 'x' * 12000)
+        config = {**self.settings.values, 'provider': 'ollama', 'context_tokens': 16384}
+        messages = agent.messages(session, config)
+        self.assertEqual(sum(item['content'] == session['task'] for item in messages), 1)
+        self.assertNotIn(session['task'], messages[0]['content'])
+        agent.close()
+
     def setUp(self):
         self.guest_marker = patch.dict(os.environ, {'AUTOPROTEUS_GUEST': '1'})
         self.guest_marker.start()
@@ -371,7 +417,7 @@ class AgentTests(unittest.TestCase):
         agent.close()
 
     def test_large_history_keeps_tool_messages_valid(self):
-        self.settings.update({'context_tokens': 2048, 'response_tokens': 512})
+        self.settings.update({'context_tokens': 4096, 'response_tokens': 512})
         agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
         session = self.store.create('Preserve valid history', 'demo', 'scripted-demo')
         session['messages'] = [
@@ -454,7 +500,7 @@ class AgentTests(unittest.TestCase):
         session['messages'] = [
             {'role': 'assistant', 'content': json.dumps({'action': {'tool': 'read_section', 'arguments': {'path': 'large.txt'}}})},
             {'role': 'user', 'content': 'ACTION RESULT\n' + json.dumps({'tool': 'read_section', 'ok': True, 'result': result})}]
-        config = {**self.settings.values, 'provider': 'ollama', 'context_tokens': 2048, 'response_tokens': 512}
+        config = {**self.settings.values, 'provider': 'ollama', 'context_tokens': 4096, 'response_tokens': 512}
         shortened = json.loads(agent.messages(session, config)[-1]['content'].split('\n', 1)[1])['result']
         self.assertTrue(shortened['context_shortened'])
         self.assertFalse(shortened['eof'])
@@ -475,7 +521,7 @@ class AgentTests(unittest.TestCase):
         session['messages'] = [
             {'role': 'assistant', 'content': json.dumps({'action': {'tool': 'read_file', 'arguments': {'path': 'text.txt'}}})},
             {'role': 'user', 'content': 'ACTION RESULT\n' + json.dumps({'tool': 'read_file', 'ok': True, 'result': result})}]
-        config = {**self.settings.values, 'provider': 'ollama', 'context_tokens': 2048, 'response_tokens': 512}
+        config = {**self.settings.values, 'provider': 'ollama', 'context_tokens': 4096, 'response_tokens': 512}
         omitted = json.loads(agent.messages(session, config)[-1]['content'].split('\n', 1)[1])['result']
         self.assertTrue(omitted['content_omitted'])
         self.assertNotIn('content', omitted)

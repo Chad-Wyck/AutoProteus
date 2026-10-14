@@ -1,0 +1,24 @@
+{
+  "python_windows": {
+    "version": "3.13.12",
+    "url": "https://www.python.org/ftp/python/3.13.12/python-3.13.12-embed-amd64.zip",
+    "sha256": "76f238f606250c87c6beac75dccd35ee99070a13490555936abb6cb64ecce3d0"
+  },
+  "python_linux": {
+    "version": "3.13.16+20261013",
+    "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.13.16%2B20261013-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+    "sha256": "d0080766b6b74aeb81e1949ef0d9a20e6c17f7b160fb295a69b936ccb17660be"
+  },
+  "ollama_windows": {
+    "version": "0.40.4",
+    "url": "https://github.com/ollama/ollama/releases/download/v0.40.4/ollama-windows-amd64.zip",
+    "size": 1469916992,
+    "sha256": "7485a1172f8527db4342a63521b9342fc466185ff0855da378cc864ecf6354cf"
+  },
+  "ollama_linux": {
+    "version": "0.40.4",
+    "url": "https://github.com/ollama/ollama/releases/download/v0.40.4/ollama-linux-amd64.tar.zst",
+    "size": 1436408810,
+    "sha256": "15f31e9576d15a481e099b4145dba6e9f8c1f295927d6b8895300ae30ed3740a"
+  }
+}

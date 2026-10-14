@@ -16,7 +16,7 @@ import time
 from .appliance import Appliance
 from .errors import Cancelled, IsolationError
 from .execution import ExecutionPolicy, NativeEnvironment
-from .providers import DemoClient, ModelClient
+from .providers import DemoClient, ModelClient, ProviderError, ERROR_MESSAGES
 from .storage import atomic_json
 
 PREFIX = b'AP1 '
@@ -384,6 +384,9 @@ class Broker:
                 return self.client.complete(messages, self.cancel)
             except Cancelled:
                 raise
+            except ProviderError as error:
+                self.session['error_category'] = error.category
+                raise IsolationError(ERROR_MESSAGES[error.category]) from None
             except Exception:
                 # Provider errors can echo headers or credentials. Keep them on the host.
                 raise IsolationError('The configured model service could not complete this request. Check the host connection.') from None
@@ -478,6 +481,8 @@ class IsolatedAgent:
             boot = {'op': 'boot', 'seed': source, 'files': inputs, 'session': dict(session),
                     'config': guest_config, 'message': message}
             boot['verification'] = bool(verification)
+            if isinstance(verification, dict):
+                boot['behavior_rules'] = verification['rules']
             # Do not send host directories, credentials, or quarantine metadata.
             boot['session'].pop('artifacts', None)
             boot['session']['workspace'] = '/work/task'

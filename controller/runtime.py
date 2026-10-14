@@ -16,7 +16,9 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-from .providers import request_json, ProviderError
+from .providers import request_json, ProviderError, ERROR_MESSAGES
+from .compatibility import check_protocol
+from .integrity import record_runtime, verify_runtime
 
 
 ENGINE_PORT = 11435
@@ -32,6 +34,10 @@ class LocalRuntime:
         self.job = None
         self.closed = threading.Event()
 
+    def pin(self):
+        pins = json.loads((self.root / 'controller/managed-runtime-lock.json').read_text(encoding='utf-8'))
+        return pins['ollama_linux' if sys.platform == 'linux' else 'ollama_windows']
+
     def restore(self):
         if self.settings.values['configured'] and self.settings.values['provider'] == 'ollama':
             self.update(busy=True, phase='starting', message='Starting your local model service…', progress=None)
@@ -44,7 +50,7 @@ class LocalRuntime:
             self.update(busy=False, phase='ready', message='Your local model is ready', progress=100)
         except Exception as error:
             self.settings.update({'configured': False})
-            self.update(busy=False, phase='error', message=str(error), progress=None)
+            self.update(busy=False, phase='error', message=ERROR_MESSAGES[error.category] if isinstance(error, ProviderError) else str(error), progress=None)
 
     def update(self, **values):
         with self.lock:
@@ -81,12 +87,21 @@ class LocalRuntime:
                     self.root / '.runtime/ollama/ollama.exe')
         installed = Path(os.environ.get('LOCALAPPDATA', '')) / 'Programs' / 'Ollama' / 'ollama.exe'
         binary = str(portable) if portable.exists() else shutil.which('ollama') or (str(installed) if installed.exists() else str(portable))
+        if binary == str(portable) and portable.exists():
+            try:
+                verify_runtime(portable.parents[1] if sys.platform == 'linux' else portable.parent, self.pin())
+            except ValueError:
+                if not allow_download:
+                    raise
+                self._download_runtime()
         if not Path(binary).exists():
             if not allow_download:
                 raise ValueError('Your local engine is not available. Use model setup to prepare it or reconnect an existing service.')
             if os.name != 'nt' and sys.platform != 'linux':
                 raise ValueError('Automatic engine setup supports Windows and Linux.')
             self._download_runtime()
+        if binary == str(portable):
+            verify_runtime(portable.parents[1] if sys.platform == 'linux' else portable.parent, self.pin())
         base = f"http://127.0.0.1:{ENGINE_PORT}"
         # Reuse a managed server from a previous app launch, if it is still alive.
         try:
@@ -137,14 +152,11 @@ class LocalRuntime:
 
     def _download_runtime(self):
         self.update(phase="download", message="Downloading the local model engine…", progress=None)
-        release = request_json("https://api.github.com/repos/ollama/ollama/releases/latest", headers={"User-Agent": "AutoProteus-Seed"}, timeout=30)
+        pin = self.pin()
         linux = sys.platform == 'linux'
         if linux and platform.machine().lower() not in ('x86_64', 'amd64'):
             raise ValueError('Automatic Linux engine setup currently supports 64-bit Intel/AMD computers.')
-        name = 'ollama-linux-amd64.tar.zst' if linux else 'ollama-windows-amd64.zip'
-        asset = next((a for a in release['assets'] if a['name'] == name), None)
-        if not asset:
-            raise ValueError('The official runtime download is unavailable. Retry later or connect an installed service.')
+        asset = {'size': pin['size'], 'browser_download_url': pin['url'], 'digest': 'sha256:' + pin['sha256']}
         if linux and (not shutil.which('zstd') or not hasattr(tarfile, 'data_filter')):
             raise ValueError('Reopen the Linux launcher to complete the bundled runtime setup.')
         if linux and not str(asset.get('digest', '')).startswith('sha256:'):
@@ -175,16 +187,27 @@ class LocalRuntime:
             raise ValueError('The runtime download was interrupted. Please retry.')
         if linux:
             self._extract_linux(archive, directory / 'ollama-linux', asset['size'])
+            record_runtime(directory / 'ollama-linux', pin)
             archive.unlink(missing_ok=True)
             return
-        target = directory / "ollama"
-        target.mkdir(exist_ok=True)
-        with zipfile.ZipFile(archive) as bundle:
-            for member in bundle.infolist():
-                path = (target / member.filename).resolve()
-                if not path.is_relative_to(target.resolve()) or ":" in member.filename:
-                    raise ValueError("The runtime archive contains an unexpected path")
-            bundle.extractall(target)
+        target = directory / 'ollama'
+        with tempfile.TemporaryDirectory(prefix='ollama-win-stage-', dir=directory) as stage:
+            with zipfile.ZipFile(archive) as bundle:
+                if len(bundle.infolist()) > 50000 or sum(m.file_size for m in bundle.infolist()) > 16 * 1024**3:
+                    raise ValueError('The runtime archive exceeded its extraction limits')
+                for member in bundle.infolist():
+                    path = (Path(stage) / member.filename).resolve()
+                    if not path.is_relative_to(Path(stage).resolve()) or ':' in member.filename or '\\' in member.filename or (member.external_attr >> 16) & 0o170000 == 0o120000:
+                        raise ValueError('The runtime archive contains an unexpected path')
+                bundle.extractall(stage)
+            if not (Path(stage) / 'ollama.exe').is_file():
+                raise ValueError('The runtime archive is missing its executable')
+            record_runtime(stage, pin)
+            if target.exists():
+                if target.is_symlink():
+                    raise ValueError('The runtime cache contains an unexpected link')
+                target.rename(target.with_name('ollama-incomplete-' + str(time.time_ns())))
+            Path(stage).rename(target)
         archive.unlink(missing_ok=True)
 
     def _extract_linux(self, archive, target, compressed_size):
@@ -238,11 +261,15 @@ class LocalRuntime:
                         completed = True
             if not completed:
                 raise ValueError("The model download was interrupted. Try again; Ollama can reuse downloaded layers.")
+            config = self.settings.preview({'provider': 'ollama', 'base_url': base, 'model': model, 'thinking': None})
+            self.update(phase='check', message='Checking tool compatibility…', progress=None)
+            compatibility = check_protocol(config, self.settings.key())
             self.settings.update({"provider": "ollama", "base_url": base, "model": model, "configured": True,
                                   "thinking": None})
+            self.settings.record_compatibility(compatibility)
             self.update(busy=False, phase="ready", message=f"{model} is ready", progress=100)
         except Exception as error:
-            self.update(busy=False, phase="error", message=str(error), progress=None)
+            self.update(busy=False, phase="error", message=ERROR_MESSAGES[error.category] if isinstance(error, ProviderError) else str(error), progress=None)
 
     def close(self):
         self.closed.set()

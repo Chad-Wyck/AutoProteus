@@ -22,6 +22,8 @@ from controller.isolation import Artifacts, IsolatedAgent, seed_files
 from controller.providers import ModelClient, request_json
 from controller.runtime import LocalRuntime
 from controller.storage import Store, atomic_json, now
+from controller.compatibility import model_identity
+from controller import __version__
 
 DATA=ROOT/'.data/local-model-tests'
 PROBE=(ROOT/'evaluations/local-feature-probe.py').read_text(encoding='utf-8')
@@ -208,7 +210,10 @@ def run(args):
     if (report['method']['context_tokens'],report['method']['response_tokens'])!=(args.context_tokens,args.response_tokens):
         raise ValueError('Use a separate data directory when changing context or response limits')
     report['canonical_source_sha256']=canonical_source_sha256
-    report['variant']='user-turn-pinned' if args.pin_user else 'v0.5-unmodified'
+    report['variant']='user-turn-pinned' if args.pin_user else __version__ + '-unmodified'
+    if report['method'].get('upgrade_repeats', args.upgrade_repeats) != args.upgrade_repeats:
+        raise ValueError('Use a separate directory when changing upgrade repeats')
+    report['method']['upgrade_repeats'] = args.upgrade_repeats
     report['source_lf_normalized']=args.lf_source
     atomic_json(DATA/'starter-source.json',source)
     report['status']='running'
@@ -232,7 +237,7 @@ def run(args):
     try:
         base=engine.ensure_service(allow_download=False)
         settings.values['base_url']=base
-        frozen=freeze_source(store,source,'Frozen v0.5 starter')
+        frozen=freeze_source(store,source,'Frozen ' + __version__ + ' starter')
         if 'starter_regressions' not in report:
             report['starter_regressions']=run_regressions(ROOT,store,frozen)
             atomic_json(report_path,report)
@@ -240,7 +245,7 @@ def run(args):
         for model in models:
             slug=model['slug']
             if ((args.upgrades_only or len([r for r in report['ordinary'] if r['model']==slug])==len(ORDINARY)) and
-                len([r for r in report['upgrades'] if r['model']==slug])==len(TASKS)):
+                len([r for r in report['upgrades'] if r['model']==slug])==len(TASKS) * args.upgrade_repeats):
                 continue
             show=request_json(base+'/api/show',{'model':model['model']},timeout=40)
             capabilities=show.get('capabilities',[])
@@ -263,6 +268,7 @@ def run(args):
                 atomic_json(report_path,report)
                 continue
             atomic_json(report_path,report)
+            report['models'][slug]['identity'] = model_identity(config)
             agent=IsolatedAgent(ROOT,store,settings)
             for task in ([] if args.upgrades_only else ORDINARY):
                 if any(r['model']==slug and r['task']==task['name'] for r in report['ordinary']):continue
@@ -276,16 +282,18 @@ def run(args):
                 report.pop('active',None)
                 atomic_json(report_path,report)
                 print('RESULT',result['passed'],result['seconds'],result['status'],flush=True)
-            for task in TASKS:
-                if any(r['model']==slug and r['task']==task['name'] for r in report['upgrades']):continue
+            trials = [(task, repeat) for repeat in range(1, args.upgrade_repeats + 1) for task in TASKS]
+            for task, repeat in trials:
+                if any(r['model']==slug and r['task']==task['name'] and r.get('repeat', 1)==repeat for r in report['upgrades']):continue
                 settings.values=config
-                print('UPGRADE',slug,task['name'],flush=True)
-                directory=DATA/'trials'/(slug+'-'+task['name'])
+                print('UPGRADE',slug,task['name'],'repeat',repeat,flush=True)
+                directory=DATA/'trials'/(slug+'-'+task['name']+'-'+str(repeat))
                 directory.mkdir(parents=True,exist_ok=True)
-                report['active']={'kind':'upgrade','model':slug,'task':task['name'],'started':now()}
+                report['active']={'kind':'upgrade','model':slug,'task':task['name'],'repeat':repeat,'started':now()}
                 atomic_json(report_path,report)
                 result=enrich(store,run_task(agent,store,config,{**task,'checks':[{'path':'feature.md'}]},frozen,args.timeout))
                 result['model']=slug
+                result['repeat']=repeat
                 result['review']=assess(store,source,result,task['name'],directory)
                 report['upgrades'].append(result)
                 report.pop('active',None)
@@ -320,6 +328,7 @@ if __name__=='__main__':
     parser.add_argument('--response-tokens',type=int,default=4096)
     parser.add_argument('--pin-user',action='store_true',help='Test a separate copied seed retaining the original user turn; does not edit starter')
     parser.add_argument('--upgrades-only',action='store_true')
+    parser.add_argument('--upgrade-repeats', type=int, choices=range(1, 4), default=1, help='Independent repeats for each feature upgrade')
     parser.add_argument('--protocol',choices=['native','json'],help='Separate protocol diagnostic; preserves original primary results')
     parser.add_argument('--lf-source',action='store_true',help='Normalize only the copied seed source to LF, leaving ordinary workspace bytes unchanged')
     args=parser.parse_args()

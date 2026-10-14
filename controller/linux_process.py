@@ -13,7 +13,7 @@ def start_time(pid):
 
 
 def command(binary, arguments, profile):
-    return [sys.executable, '-I', '-u', str(Path(__file__).resolve()),
+    return [sys.executable, '-I', '-B', '-u', str(Path(__file__).resolve()),
             str(os.getpid()), start_time(os.getpid()), profile, str(binary), *arguments]
 
 

@@ -71,10 +71,29 @@ def run_verification(boot, source, workspace, native=False):
     if not native:
         os.chmod('/dev/vport0p1', 0o600)
     env = {'PATH': '/usr/sbin:/usr/bin:/sbin:/bin', 'PYTHONPATH': str(source),
-           'AUTOPROTEUS_GUEST': '1', 'AUTOPROTEUS_TEST_ROOT': str(workspace / 'test-tmp')}
+           'AUTOPROTEUS_GUEST': '1', 'AUTOPROTEUS_TEST_ROOT': str(workspace / 'test-tmp'),
+           'PYTHONDONTWRITEBYTECODE': '1'}
+    rules = boot.get('behavior_rules')
+    if rules is not None:
+        # Only the host selects these rules. Generated modules run unprivileged
+        # in a fresh guest, never on the host or in the protected parent.
+        driver = '''import importlib.util,json,pathlib,sys
+rules=json.loads(sys.argv[1]); values=[]
+for rule in rules:
+ path=pathlib.Path(rule['path']).resolve()
+ if not path.is_relative_to(pathlib.Path.cwd()): raise ValueError('Invalid test module path')
+ spec=importlib.util.spec_from_file_location('checked_module',path)
+ module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+ function=getattr(module,rule['python_function'])
+ actual=[function(*case['args']) for case in rule['cases']]
+ values.append(actual)
+print('AP_CHECK '+json.dumps(values,ensure_ascii=True),flush=True)
+'''
+        arguments = ['-I', '-c', driver, json.dumps(rules)]
+    else:
+        arguments = ['-m', 'unittest', 'discover', '-s', str(source / '__verify__'), '-v']
     with tempfile.TemporaryFile(dir=workspace if native else '/run') as output:
-        process = subprocess.Popen([sys.executable if native else '/usr/bin/python3', '-m', 'unittest', 'discover',
-                                    '-s', str(source / '__verify__'), '-v'],
+        process = subprocess.Popen([sys.executable if native else '/usr/bin/python3', '-B', *arguments],
             cwd=workspace, env=env, stdin=subprocess.DEVNULL, stdout=output,
             stderr=subprocess.STDOUT,
             **({} if native else {'user':1000, 'group':1000, 'extra_groups':[]}),
@@ -90,6 +109,20 @@ def run_verification(boot, source, workspace, native=False):
         process.wait(timeout=5)
         output.seek(0)
         log = output.read(32000).decode('utf-8', errors='replace')
+    if rules is not None:
+        try:
+            frames = [json.loads(line[9:]) for line in log.splitlines() if line.startswith('AP_CHECK ')]
+            expected = [[case['equals'] for case in rule['cases']] for rule in rules]
+            passed = process.returncode == 0 and not limited and len(frames) == 1 and frames[0] == expected
+        except (ValueError, KeyError, TypeError):
+            passed = False
+        result = {'passed': passed, 'exit_code': process.returncode, 'limited': limited, 'output': log,
+                  'checks': [passed] * len(rules)}
+        call({'op': 'file', 'path': 'behavior-result.json', 'data': base64.b64encode(json.dumps(result).encode()).decode()})
+        call({'op': 'checkpoint', 'paths': ['behavior-result.json']})
+        call({'op': 'done'})
+        while True:
+            time.sleep(1)
     count = re.search(r'Ran (\d+) tests?', log)
     expected = len(re.findall(r'^    def test_', (source / '__verify__/test_seed.py').read_text(), re.M))
     result = {'passed': process.returncode == 0 and not limited and bool(count)
@@ -185,6 +218,7 @@ def main(native_root=None):
                     self.exported[name] = digest
                 manifest.append(name)
             call({'op': 'checkpoint', 'paths': manifest})
+            self.exported = {name: self.exported[name] for name in manifest}
             call({'op': 'state', 'session': session})
 
         def save(self, session):

@@ -46,6 +46,32 @@ class StartupTests(unittest.TestCase):
 
 
 class HostApiTests(unittest.TestCase):
+    def test_active_worker_prevents_creating_a_conflicting_saved_session(self):
+        from unittest.mock import Mock
+        session = self.app.store.create('Active', 'demo', 'none')
+        thread = Mock(); thread.is_alive.return_value = True
+        self.app.agent.workers[session['id']] = (threading.Event(), thread)
+        try:
+            with self.assertRaises(urllib.error.HTTPError): self.request('/api/start', {'task': 'conflicting'})
+            self.assertEqual(len(self.app.store.public()), 1)
+            with self.request('/api/state') as response:
+                self.assertEqual(json.load(response)['active']['id'], session['id'])
+        finally:
+            self.app.agent.workers.clear()
+
+    def test_session_controls_are_recoverable_and_incremental_views_exclude_context(self):
+        session = self.app.store.create('Original', 'demo', 'none')
+        session['messages'] = [{'role': 'user', 'content': 'private context'}]; self.app.store.save(session)
+        identifier = session['id']
+        self.request('/api/session/manage', {'id': identifier, 'action': 'rename', 'title': 'Renamed'}).close()
+        with self.request('/api/session?id=' + identifier) as response:
+            first = json.load(response); self.assertEqual(first['title'], 'Renamed'); self.assertNotIn('messages', first)
+        with self.request('/api/session?id=' + identifier + '&revision=' + str(first['revision'])) as response:
+            self.assertTrue(json.load(response)['unchanged'])
+        self.request('/api/session/manage', {'id': identifier, 'action': 'delete'}).close()
+        with self.request('/api/trash') as response: self.assertEqual(json.load(response)[0]['id'], identifier)
+        self.request('/api/session/manage', {'id': identifier, 'action': 'restore'}).close()
+        self.assertEqual(self.app.store.get(identifier)['title'], 'Renamed')
     def setUp(self):
         self.temp = temporary_directory()
         self.app = Application(ROOT, data=Path(self.temp.name))
@@ -75,6 +101,17 @@ class HostApiTests(unittest.TestCase):
             with self.assertRaises(urllib.error.HTTPError) as error:
                 self.request('/api/state', **kwargs)
             self.assertEqual(error.exception.code, 403)
+
+    def test_provider_diagnostic_errors_are_categorized_without_raw_details(self):
+        from controller.providers import ProviderError
+        with patch('controller.server.check_protocol', side_effect=ProviderError('secret-provider-body fake-key', category='timeout')):
+            with self.assertRaises(urllib.error.HTTPError) as error:
+                self.request('/api/connect', {'provider': 'hosted', 'base_url': 'https://example.test/v1', 'model': 'test'})
+            response = json.load(error.exception)
+            self.assertEqual(response['category'], 'timeout')
+            self.assertNotIn('secret-provider-body', response['error'])
+            self.assertNotIn('fake-key', response['error'])
+            self.assertFalse(self.app.settings.values['configured'])
 
     def test_unavailable_isolation_prevents_session_and_native_launch(self):
         self.app.settings.update({'provider': 'demo', 'model': 'scripted-demo', 'configured': True})
@@ -123,15 +160,18 @@ class HostApiTests(unittest.TestCase):
             self.request('/api/connect', {'provider':'hosted', 'base_url':'https://bad.example', 'model':'', 'api_key':'do-not-save'})
         self.assertEqual(self.app.settings.public(), previous)
         self.assertFalse((self.app.data / 'credential.bin').exists())
-    def test_hosted_connection_probes_json_and_keeps_native_preference(self):
-        provider = FakeModelServer(hosted=True)
+    def test_hosted_connection_checks_selected_protocol_and_consumes_result(self):
+        provider = FakeModelServer(hosted=True, native=True, diagnostic=True)
         try:
             with self.request('/api/connect', {'provider': 'hosted', 'base_url': provider.url,
                                                'model': 'fake-model', 'protocol': 'native', 'json_mode': True}) as response:
                 self.assertTrue(json.load(response)['configured'])
             self.assertEqual(self.app.settings.values['protocol'], 'native')
-            self.assertNotIn('tools', provider.payloads[0])
+            self.assertIn('tools', provider.payloads[0])
             self.assertNotIn('response_format', provider.payloads[0])
+            self.assertEqual(len(provider.payloads), 2)
+            self.assertEqual(provider.payloads[1]['messages'][-1]['role'], 'tool')
+            self.assertTrue(self.app.settings.values['compatibility']['passed'])
         finally:
             provider.close()
 

@@ -27,8 +27,9 @@ class NativeWorker(WorkerTransport):
             # This avoids deliberately passing keys. Same-account access remains possible.
             environment = {key: value for key, value in os.environ.items()
                            if key in ('PATH', 'LANG', 'LC_ALL', 'TZ')}
+            environment['PYTHONDONTWRITEBYTECODE'] = '1'
             self.process = subprocess.Popen(
-                [sys.executable, '-I', '-u', str(root / 'guest/worker.py'),
+                [sys.executable, '-I', '-B', '-u', str(root / 'guest/worker.py'),
                  '--native-root', str(self.workspace), '--acknowledge-host-access',
                  '--controller-pid', str(os.getpid())],
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,

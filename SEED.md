@@ -16,8 +16,9 @@ session state. `tests/test_seed.py` exercises the editable behavior.
 When asked to improve yourself, change one concrete limitation in this source
 copy. For a new tool:
 
-1. Read the relevant files. Use `read_file` for small files, or `read_section`
-   to inspect a chosen section. Implement the behavior in `Workspace.execute`
+1. Locate the relevant dispatch and definition with `search_files`, then use
+   its character `start` with `read_section`. Use `read_file` for small files.
+   Implement the behavior in `Workspace.execute`
    in `autoproteus/tools.py`, using `self.path` for workspace file paths.
 2. Add its name, description, argument properties and required arguments to
    `TOOL_SPECS` in `autoproteus/providers.py`. Both native and JSON descriptions
@@ -54,3 +55,13 @@ fit the model context, it is explicitly omitted; use a smaller section.
 `edit_file` replaces exactly one matching fragment. Terminal access, when enabled, is a
 Linux shell. In VM mode there is no general internet or host-drive access.
 Native mode does not enforce those restrictions; keep actions within the task.
+
+`search_files(query, path='.')` performs a literal UTF-8 text search, returning
+at most 30 short matches with file names, line numbers and character positions.
+Search is bounded to 200 files, 2 MiB of input and 2,000 visited entries; narrow
+the path when `incomplete` is true. It skips hidden files and outside links.
+`delete_file(path)` removes one ordinary task file. Directories are rejected.
+Repeated unchanged reads receive a progress hint; they are not automatically
+stopped. Make a small concrete edit, then verify it rather than repeatedly
+inspecting the same source. User instructions remain complete in context;
+oversized requests require a shorter task or a larger configured context.

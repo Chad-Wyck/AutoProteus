@@ -2,6 +2,7 @@
 const $ = id => document.getElementById(id);
 const token = document.querySelector('meta[name="app-token"]').content;
 const state = { app: null, session: null, id: null, provider: 'ollama', installed: [], feedIds: new Set(), polling: false, file: null, started: 0, setupBusy: false };
+Object.assign(state, {query: '', offset: 0, archived: false, attachments: []});
 
 async function api(path, data, binary = false) {
   const response = await fetch(path, { method: data === undefined ? 'GET' : 'POST', headers: { 'X-AutoProteus-Token': token, 'Content-Type': 'application/json' }, body: data === undefined ? undefined : JSON.stringify(data) });
@@ -17,11 +18,21 @@ function text(id, value) { $(id).textContent = value; }
 function node(tag, className, content) { const n = document.createElement(tag); if (className) n.className = className; if (content !== undefined) n.textContent = content; return n; }
 function toast(message) { text('toast', message); visible('toast', true); clearTimeout(toast.timer); toast.timer = setTimeout(() => visible('toast', false), 6000); }
 function error(id, message) { text(id, message); visible(id, !!message); }
-function busy() { return state.session && ['running', 'stopping'].includes(state.session.status); }
+function busy() { return !!state.app?.active; }
+function stateAddress() { return '/api/state?' + new URLSearchParams({query: state.query, offset: state.offset, archived: state.archived}); }
 function saveBlob(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); }
 
 function renderApp() {
   const app = state.app, config = app.settings;
+  const active = app.active;
+  visible('active-work', !!active);
+  if (active) text('active-work-label', `${active.title} · ${active.activity}`);
+  $('send').disabled = !!active;
+  $('attach-button').disabled = !!active;
+  text('composer-note', active ? 'An active task is still running. Use Stop above to pause it.' : 'Enter to send · Shift + Enter for a new line');
+  const provider = active?.provider || config.provider;
+  text('privacy-label', !config.configured && !active ? 'Local workspace' : provider === 'hosted' ? 'Hosted model · task data sent to provider' : provider === 'ollama' ? 'Local model · on your computer' : 'Scripted demo · no model requests');
+  text('compatibility-note', config.compatibility?.passed ? `Tool compatibility checked · ${config.compatibility.protocol}` : 'Tool compatibility is checked when you connect or prepare a model.');
   const native = app.execution?.mode === 'native';
   visible('execution-warning', native); text('execution-warning', app.execution?.warning || '');
   text('terminal-help', native ? 'Commands run with this account’s access. Files and networks are restricted only by your surrounding environment.' : 'Let the agent run Linux commands inside its virtual machine. Your host drives and network remain unavailable.');
@@ -30,9 +41,12 @@ function renderApp() {
   text('seed-help', native ? 'The agent edits a source copy in harness/. Your surrounding environment must protect the starter and controller.' : 'The agent can edit its own source copy in harness/. Your running seed stays recoverable.');
   text('local-setup-help', 'AutoProteus can prepare the engine and model for you. No separate terminal or server setup needed.');
   text('local-download-note', 'First-time setup downloads the engine and model, which can take several minutes and several GB of disk space. Everything stays in this project when using the managed engine.');
-  text('session-count', app.sessions.length);
+  text('session-count', app.session_page.total);
+  text('session-page', app.session_page.total ? `${state.offset + 1}–${state.offset + app.sessions.length}` : '0');
+  $('sessions-previous').disabled = state.offset === 0;
+  $('sessions-next').disabled = state.offset + app.sessions.length >= app.session_page.total;
   const sessions = $('sessions'); sessions.replaceChildren();
-  if (!app.sessions.length) sessions.append(node('p', 'sidebar-empty', 'Your work will appear here.\nEvery session is saved.'));
+  if (!app.sessions.length) sessions.append(node('p', 'sidebar-empty', state.query || state.archived ? 'No matching sessions.' : 'Your work will appear here.\nEvery session is saved.'));
   app.sessions.forEach(session => {
     const button = node('button', 'session-link' + (session.id === state.id ? ' active' : ''));
     button.title = session.title; button.setAttribute('aria-label', session.title);
@@ -42,7 +56,7 @@ function renderApp() {
   text('connection-title', config.configured ? (config.provider === 'demo' ? 'Interactive demo' : config.model) : 'Choose a model');
   text('connection-sub', config.configured ? (config.provider === 'ollama' ? 'Local model' : config.provider === 'demo' ? 'Scripted tour · no AI model' : 'Hosted connection') : 'Get ready to start');
   document.querySelector('.connection-dot').classList.toggle('ready', config.configured);
-  const current = busy() ? state.session : config;
+  const current = active || config;
   text('composer-model', config.configured ? (current.provider === 'demo' ? 'Demo · scripted tour' : current.model + (current.provider === 'ollama' ? ' · local' : ' · hosted')) : 'Choose a model to begin');
   renderSetupProgress(app.setup);
   renderIsolation(app.isolation);
@@ -59,10 +73,82 @@ function home() {
   visible('session-banner', false); visible('stop', false); visible('send', true);
   text('page-name', 'New task'); $('task').placeholder = 'Describe a task, an idea, or a problem…'; $('task').disabled = false;
   $('task').value = ''; $('send').disabled = false; if (state.app) renderApp(); $('task').focus();
+  state.attachments = []; renderAttachments();
 }
 
+function resetSessionFilter() {
+  state.query = ''; state.offset = 0; state.archived = false;
+  $('session-search').value = ''; $('show-archived').checked = false;
+}
+$('session-search').oninput = () => { state.query = $('session-search').value; state.offset = 0; clearTimeout(state.searchTimer); state.searchTimer = setTimeout(poll, 250); };
+$('show-archived').onchange = () => { state.archived = $('show-archived').checked; state.offset = 0; poll(); };
+$('sessions-previous').onclick = () => { state.offset = Math.max(0, state.offset - 30); poll(); };
+$('sessions-next').onclick = () => { state.offset += 30; poll(); };
+
+function renderAttachments() {
+  const area = $('attachments'); area.replaceChildren(); visible('attachments', state.attachments.length > 0);
+  state.attachments.forEach((file, index) => {
+    const row = node('span', 'attachment', file.path + ' ');
+    const remove = node('button', 'quiet', '×'); remove.type = 'button'; remove.setAttribute('aria-label', 'Remove ' + file.path);
+    remove.onclick = () => { state.attachments.splice(index, 1); renderAttachments(); };
+    row.append(remove); area.append(row);
+  });
+}
+async function encodeFiles(files) {
+  if (files.length > 400 || [...files].reduce((n, f) => n + f.size, 0) > 32 * 1024 * 1024) throw new Error('Choose at most 400 files totalling less than 32 MiB.');
+  const result = [];
+  for (const file of files) {
+    if (file.size > 2 * 1024 * 1024) throw new Error('Each imported file must be at most 2 MiB.');
+    const bytes = new Uint8Array(await file.arrayBuffer()); let value = '';
+    for (let i = 0; i < bytes.length; i += 8192) value += String.fromCharCode(...bytes.subarray(i, i + 8192));
+    result.push({path: file.webkitRelativePath || file.name, data: btoa(value), bytes: file.size});
+  }
+  return result;
+}
+$('attach-button').onclick = () => $(state.id ? 'import-files' : 'attach-files').click();
+$('attach-files').onchange = async () => {
+  try {
+    const files = await encodeFiles($('attach-files').files);
+    if (state.attachments.length + files.length > 400 || [...state.attachments, ...files].reduce((n, f) => n + f.bytes, 0) > 32 * 1024 * 1024) throw new Error('The attachment limit is 400 files and 32 MiB.');
+    state.attachments.push(...files); renderAttachments();
+  } catch (e) { toast(e.message); } finally { $('attach-files').value = ''; }
+};
+$('import-session').onclick = () => $('import-files').click();
+$('import-files').onchange = async () => {
+  try { const files = await encodeFiles($('import-files').files); await api('/api/import', {id: state.id, files: files.map(({path, data}) => ({path, data}))}); toast('Files copied into this task.'); await poll(); }
+  catch (e) { toast(e.message); } finally { $('import-files').value = ''; }
+};
+async function manageSession(action, extra = {}) {
+  try {
+    await api('/api/session/manage', {id: state.id, action, ...extra});
+    state.offset = 0;
+    if (action === 'delete') home();
+    await poll();
+  } catch (e) { toast(e.message); }
+}
+$('rename-session').onclick = () => { const title = prompt('Rename this session', state.session.title); if (title !== null) manageSession('rename', {title}); };
+$('archive-session').onclick = () => manageSession('archive', {archived: !state.session.archived});
+$('delete-session').onclick = () => { if (confirm('Move this session to Trash? You can restore it from Saved work & storage.')) manageSession('delete'); };
+function byteLabel(bytes) { return bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KiB` : bytes < 1073741824 ? `${(bytes / 1048576).toFixed(1)} MiB` : `${(bytes / 1073741824).toFixed(1)} GiB`; }
+async function refreshStorage() {
+  const [usage, trash] = await Promise.all([api('/api/storage'), api('/api/trash')]);
+  const area = $('storage-usage'); area.replaceChildren();
+  Object.entries(usage).forEach(([name, bytes]) => { const item = node('div', 'storage-item'); item.append(node('span', '', name), node('strong', '', byteLabel(bytes))); area.append(item); });
+  const list = $('trash-list'); list.replaceChildren();
+  if (!trash.length) list.append(node('p', 'muted', 'Trash is empty.'));
+  trash.forEach(session => {
+    const row = node('div', 'trash-item'); row.append(node('span', '', session.title));
+    const restore = node('button', 'quiet', 'Restore'); restore.onclick = async () => {
+      try { await api('/api/session/manage', {id: session.id, action: 'restore'}); await refreshStorage(); await poll(); }
+      catch (e) { toast(e.message); }
+    }; row.append(restore); list.append(row);
+  });
+}
+$('storage-button').onclick = async () => { try { await refreshStorage(); $('storage-dialog').showModal(); } catch (e) { toast(e.message); } };
+$('close-storage').onclick = () => $('storage-dialog').close();
+
 async function selectSession(id) {
-  state.id = id; state.feedIds.clear(); $('feed').replaceChildren(); state.started = Date.now();
+  state.id = id; state.session = null; state.feedIds.clear(); $('feed').replaceChildren(); state.started = Date.now();
   visible('welcome', false); visible('feed', true); visible('inspector-empty', false); visible('inspector-session', true); visible('trace-button', true);
   $('task').value = '';
   try {
@@ -95,7 +181,7 @@ function renderSession() {
   let added = false;
   session.feed.forEach(item => { if (!state.feedIds.has(item.id)) { feed.append(feedItem(item)); state.feedIds.add(item.id); added = true; } });
   if (added && (nearBottom || state.feedIds.size < 5)) feed.scrollTop = feed.scrollHeight;
-  const active = busy(); visible('activity', active); text('activity-label', session.activity);
+  const active = state.app?.active?.id === session.id; visible('activity', active); text('activity-label', session.activity);
   text('elapsed', active ? Math.floor((Date.now() - state.started) / 1000) + 's' : '');
   visible('stop', active); visible('send', !active); $('stop').disabled = session.status === 'stopping';
   $('task').disabled = active; $('task').placeholder = active ? 'AutoProteus is working. You can stop and resume at any time.' : 'Add a reply, clarify the task, or request a change…';
@@ -119,6 +205,8 @@ function renderSession() {
     const button = node('button', '', 'Resume'); button.onclick = () => resume(); banner.append(button);
   }
   if (state.app) renderApp();
+  text('archive-session', session.archived ? 'Unarchive' : 'Archive');
+  ['rename-session', 'archive-session', 'delete-session', 'import-session'].forEach(id => $(id).disabled = active || !!state.app.evaluation?.busy);
 }
 
 async function refreshFiles() {
@@ -137,10 +225,13 @@ async function refreshFiles() {
 }
 
 async function startTask(task) {
+  if (busy()) { toast('Stop the active task before starting another.'); return; }
   if (!state.app.settings.configured) { openSetup(); return; }
   if (!state.app.isolation?.ready) { state.pendingTask = task; $('isolation-dialog').showModal(); return; }
-  const response = await api('/api/start', { task });
-  $('task').value = ''; state.app = await api('/api/state'); await selectSession(response.id);
+  const response = await api('/api/start', { task, files: state.attachments.map(({path, data}) => ({path, data})) });
+  state.attachments = []; renderAttachments();
+  resetSessionFilter();
+  $('task').value = ''; state.app = await api(stateAddress()); await selectSession(response.id);
 }
 async function resume(message = '') {
   try { await api('/api/resume', { id: state.id, message }); state.started = Date.now(); await poll(); }
@@ -150,10 +241,12 @@ $('task-form').onsubmit = async event => {
   event.preventDefault(); const task = $('task').value.trim(); if (!task || busy()) return;
   $('send').disabled = true;
   try { if (state.id) { await resume(task); $('task').value = ''; } else await startTask(task); }
-  catch (e) { toast(e.message); } finally { $('send').disabled = false; }
+  catch (e) { toast(e.message); } finally { if (state.app) renderApp(); }
 };
 $('task').onkeydown = event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); $('task-form').requestSubmit(); } };
 $('stop').onclick = async () => { try { await api('/api/stop', { id: state.id }); await poll(); } catch (e) { toast(e.message); } };
+$('stop-active').onclick = async () => { try { const id = state.app?.active?.id; if (id) await api('/api/stop', {id}); await poll(); } catch (e) { toast(e.message); } };
+$('view-active').onclick = () => { if (state.app.active) selectSession(state.app.active.id); };
 $('new-task').onclick = home;
 $('details-toggle').onclick = () => { const inspector = document.querySelector('.inspector'); inspector.classList.toggle('open'); $('details-toggle').setAttribute('aria-expanded', inspector.classList.contains('open')); };
 document.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'n') { event.preventDefault(); home(); } });
@@ -192,7 +285,7 @@ function renderIsolation(info) {
 $('close-isolation').onclick = () => $('isolation-dialog').close();
 $('isolation-status').onclick = () => $('isolation-dialog').showModal();
 $('try-seed').onclick = async () => {
-  try { const result = await api('/api/try-seed', {id: state.id}); state.app = await api('/api/state'); await selectSession(result.id); }
+  try { const result = await api('/api/try-seed', {id: state.id}); resetSessionFilter(); state.app = await api(stateAddress()); await selectSession(result.id); }
   catch (e) { toast(e.message); }
 };
 $('reset-seed').onclick = async () => {
@@ -209,7 +302,8 @@ function renderEvaluation(report) {
   const native = (report?.execution_mode || state.app.execution?.mode) === 'native';
   visible('check-execution', native);
   text('check-execution', native ? 'Native functional checks only. The controller, tests and reports are not protected from the code being checked.' : '');
-  text('check-description', native ? 'Both versions run the starter tests and the same ten tasks in fresh Linux processes. Sources and settings are copied for the comparison, but same-account code can alter them. These results do not verify VM isolation.' : 'First, both versions must pass the starter’s unchanged tests. Then they run the same ten tasks in fresh VMs, with saved files checked independently. Your source and model settings are frozen for this comparison.');
+  text('check-description', native ? 'Both versions run the starter tests and the same task suite in fresh Linux processes. Sources and settings are copied for the comparison, but same-account code can alter them. These results do not verify VM isolation.' : 'First, both versions must pass the starter’s unchanged tests. Then they run the same task suite in fresh VMs, with saved files and code behavior checked independently. Your source and model settings are frozen for this comparison.');
+  Array.from($('check-repeats').options).forEach(option => { const repeats = Number(option.value); option.textContent = `${repeats} repeat${repeats === 1 ? '' : 's'} · ${(state.app.tasks_count || 16) * repeats * 2} runs`; });
   text('check-message', report?.message || 'Compare this source copy with the starter using the connected model.');
   visible('stop-checks', report?.status === 'running');
   $('run-checks').disabled = report?.status === 'running' || state.app.evaluation?.busy || busy();
@@ -353,7 +447,7 @@ function renderSetupProgress(setup) {
 async function demo() {
   try {
     await api('/api/connect', { provider: 'demo', model: 'scripted-demo' });
-    $('setup-dialog').close(); state.app = await api('/api/state');
+    $('setup-dialog').close(); state.app = await api(stateAddress());
     await startTask('Show me how AutoProteus works: create a welcome note, verify it, and update the checklist.');
   } catch (e) { toast(e.message); }
 }
@@ -380,10 +474,14 @@ async function poll() {
   if (state.polling) return;
   state.polling = true;
   try {
-    state.app = await api('/api/state'); renderApp();
+    state.app = await api(stateAddress()); renderApp();
     if (state.id) {
-      const id = state.id, session = await api('/api/session?id=' + id);
-      if (state.id === id) { const changed = !state.session || state.session.feed.length !== session.feed.length; state.session = session; renderSession(); if (changed) await refreshFiles(); }
+      const id = state.id, update = await api('/api/session?' + new URLSearchParams({id, after: state.session?.feed_count || 0, revision: state.session?.revision || -1}));
+      if (state.id === id && !update.unchanged) {
+        const previous = state.session?.feed || [];
+        const feed = update.reset || update.feed_start === 0 ? update.feed : [...previous.slice(0, update.feed_start), ...update.feed];
+        state.session = {...update, feed}; renderSession(); await refreshFiles();
+      }
     }
   } catch (e) { if (!poll.warned) { toast('The app disconnected. Reopen AutoProteus or refresh this page.'); poll.warned = true; } }
   finally { state.polling = false; }

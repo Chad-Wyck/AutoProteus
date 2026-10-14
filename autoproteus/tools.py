@@ -45,6 +45,67 @@ class Workspace:
             entries = sorted(path.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower()))
             return {"files": [{"name": p.name, "directory": p.is_dir(), "bytes": p.stat().st_size if p.is_file() else None}
                               for p in entries[:200]], "truncated": len(entries) > 200}
+        if tool == "delete_file":
+            value = args['path']
+            if not isinstance(value, str) or (self.root / value).is_symlink():
+                raise ValueError('Delete an ordinary workspace file')
+            path = self.path(value)
+            if not path.is_file():
+                raise ValueError('Delete an existing ordinary file, not a directory')
+            if self.cancel.is_set():
+                raise Cancelled()
+            path.unlink()
+            return {'path': value, 'deleted': True}
+        if tool == 'search_files':
+            query = args['query']
+            if not isinstance(query, str) or not query or len(query) > 200 or '\n' in query or '\r' in query:
+                raise ValueError('Search for one nonempty literal of at most 200 characters')
+            root = self.path(args.get('path', '.'))
+            if not root.exists():
+                raise ValueError('The search path does not exist')
+            matches, scanned, total, visited, output, incomplete = [], 0, 0, 0, 0, False
+            paths = [root] if root.is_file() else root.rglob('*')
+            for path in paths:
+                if self.cancel.is_set():
+                    raise Cancelled()
+                visited += 1
+                if visited > 2000:
+                    incomplete = True; break
+                if path.is_symlink() or not path.is_file() or any(p.startswith('.') or p == '__pycache__' for p in path.relative_to(self.root).parts):
+                    continue
+                path = self.path(str(path.relative_to(self.root)))
+                size = path.stat().st_size
+                if size > 400000:
+                    incomplete = True; continue
+                scanned += 1; total += size
+                if scanned > 200 or total > 2 * 1024 * 1024:
+                    incomplete = True; break
+                try:
+                    with path.open('rb') as stream:
+                        raw = stream.read(400001)
+                    if len(raw) > 400000:
+                        incomplete = True; continue
+                    content = raw.decode('utf-8')
+                except UnicodeError:
+                    continue
+                offset = 0
+                for number, raw_line in enumerate(content.splitlines(keepends=True), 1):
+                    line = raw_line.rstrip('\r\n')
+                    position = line.find(query)
+                    if position >= 0:
+                        match = {'path': path.relative_to(self.root).as_posix(), 'line': number,
+                                 'start': offset + max(0, position - 60),
+                                 'snippet': line[max(0, position - 60):position + len(query) + 100]}
+                        output += len(str(match).encode('utf-8'))
+                        if output > LIMIT:
+                            incomplete = True; break
+                        matches.append(match)
+                        if len(matches) == 30:
+                            incomplete = True; break
+                    offset += len(raw_line)
+                if len(matches) == 30 or output > LIMIT:
+                    break
+            return {'matches': matches, 'files_scanned': min(scanned, 200), 'incomplete': incomplete}
         if tool in ("read_file", "read_section"):
             path = self.path(args["path"])
             if tool == "read_file" and any(key in args for key in ("offset", "start", "length")):

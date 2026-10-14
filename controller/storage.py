@@ -32,19 +32,26 @@ class Store:
         self.root.mkdir(parents=True, exist_ok=True)
         self.lock = threading.RLock()
         self.sessions = {}
+        self.summaries = {}
+        self.revision = 0
         for path in self.root.glob("*/session.json"):
             try:
-                session = json.loads(path.read_text(encoding="utf-8"))
+                summary_path = path.with_name('summary.json')
+                fresh_summary = summary_path.exists() and summary_path.stat().st_mtime_ns >= path.stat().st_mtime_ns
+                session = json.loads((summary_path if fresh_summary else path).read_text(encoding="utf-8"))
                 if session['id'] != path.parent.name or path.parent.is_symlink() or getattr(path.parent.lstat(), 'st_file_attributes', 0) & 0x400:
                     continue
                 directory = self.directory(session['id'])
                 # Saved guest/legacy metadata cannot select arbitrary host folders.
-                session['workspace'] = str(directory / 'workspace')
+                self.summaries[session['id']] = self.summary(session)
+                self.revision = max(self.revision, session.get('_revision', 0))
                 if session.get("status") in ("running", "stopping"):
+                    session = self.get(session['id'])
                     session["status"] = "interrupted"
                     session["activity"] = "Ready to resume"
-                    atomic_json(path, session)
-                self.sessions[session["id"]] = session
+                    self.save(session)
+                elif not fresh_summary:
+                    atomic_json(summary_path, self.summary(session))
             except (OSError, ValueError, KeyError):
                 continue
 
@@ -77,13 +84,26 @@ class Store:
     def get(self, session_id):
         with self.lock:
             if session_id not in self.sessions:
-                raise ValueError("Session not found")
+                if session_id not in self.summaries:
+                    raise ValueError("Session not found")
+                directory = self.directory(session_id)
+                if directory.is_symlink() or getattr(directory.lstat(), 'st_file_attributes', 0) & 0x400:
+                    raise ValueError('Session storage cannot be a link')
+                session = json.loads((directory / 'session.json').read_text(encoding='utf-8'))
+                if session['id'] != session_id:
+                    raise ValueError('Invalid session identity')
+                session['workspace'] = str(directory / 'workspace')
+                self.sessions[session_id] = session
             return self.sessions[session_id]
 
     def save(self, session):
         with self.lock:
             session["updated"] = now()
+            self.revision += 1
+            session['_revision'] = self.revision
             atomic_json(self.directory(session["id"]) / "session.json", session)
+            self.summaries[session['id']] = self.summary(session)
+            atomic_json(self.directory(session['id']) / 'summary.json', self.summaries[session['id']])
 
     def event(self, session, kind, data):
         with self.lock:
@@ -106,7 +126,81 @@ class Store:
         with self.lock:
             if session_id:
                 return json.loads(json.dumps(self.get(session_id)))
-            return [{**{key: session[key] for key in ("id", "title", "updated", "status", "provider", "model")},
-                     'execution_mode': session.get('execution_mode', 'unknown'),
-                     'isolation': session.get('isolation', False)}
-                    for session in sorted(self.sessions.values(), key=lambda item: item["updated"], reverse=True)]
+            return [dict(s) for s in sorted(self.summaries.values(), key=lambda item: item['updated'], reverse=True)]
+
+    @staticmethod
+    def summary(session):
+        return {**{key: session[key] for key in ('id', 'title', 'updated', 'status', 'provider', 'model')},
+                'execution_mode': session.get('execution_mode', 'unknown'), 'isolation': session.get('isolation', False),
+                'archived': session.get('archived', False), '_revision': session.get('_revision', 0)}
+
+    def page(self, query='', offset=0, limit=30, archived=False):
+        if not isinstance(query, str) or len(query) > 200 or type(offset) is not int or offset < 0 or not 1 <= limit <= 100:
+            raise ValueError('Invalid session page')
+        values = [s for s in self.public() if bool(s['archived']) == archived and query.casefold() in s['title'].casefold()]
+        return {'items': values[offset:offset+limit], 'total': len(values), 'offset': offset, 'limit': limit}
+
+    def view(self, session_id, after=0, revision=None):
+        with self.lock:
+            session = self.get(session_id)
+            if revision == session.get('_revision'):
+                return {'id': session_id, 'unchanged': True, 'revision': revision}
+            if type(after) is not int or after < 0:
+                raise ValueError('Invalid feed position')
+            feed = session['feed']
+            reset = after > len(feed)
+            start = 0 if reset else after
+            omitted = {'messages', 'artifacts', 'workspace', 'feed', '_revision'}
+            return {**{k: v for k, v in session.items() if k not in omitted}, 'feed': feed[start:],
+                    'feed_start': start, 'feed_count': len(feed), 'reset': reset, 'revision': session.get('_revision', 0)}
+
+    def rename(self, session_id, title):
+        if not isinstance(title, str) or not title.strip() or len(title) > 120 or any(ord(c) < 32 for c in title):
+            raise ValueError('Use a title of 1–120 characters')
+        session = self.get(session_id); session['title'] = title.strip(); self.save(session)
+
+    def archive(self, session_id, archived=True):
+        if type(archived) is not bool:
+            raise ValueError('Invalid archive preference')
+        session = self.get(session_id); session['archived'] = archived; self.save(session)
+
+    def delete(self, session_id):
+        with self.lock:
+            self.get(session_id)
+            source, destination = self.directory(session_id), self.root / '.trash' / session_id
+            self._move(source, destination)
+            self.sessions.pop(session_id, None); self.summaries.pop(session_id, None); self.revision += 1
+
+    def restore(self, session_id):
+        with self.lock:
+            target = self.directory(session_id)
+            source = self.root / '.trash' / session_id
+            session = json.loads((source / 'session.json').read_text(encoding='utf-8'))
+            if session['id'] != session_id:
+                raise ValueError('Invalid trashed session')
+            self._move(source, target)
+            session['workspace'] = str(target / 'workspace')
+            self.sessions[session_id] = session; self.save(session)
+
+    def _move(self, source, destination):
+        # Fixed storage locations, checked before moving a directory on Windows.
+        for path in (source, destination, destination.parent):
+            if path.is_symlink() or (path.exists() and getattr(path.lstat(), 'st_file_attributes', 0) & 0x400) or not path.resolve().is_relative_to(self.root):
+                raise ValueError('Invalid session move location')
+        if destination.exists():
+            raise ValueError('The destination session already exists')
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        source.rename(destination)
+
+    def trash(self):
+        result = []
+        for path in (self.root / '.trash').glob('*/summary.json'):
+            if path.parent.is_symlink() or getattr(path.parent.lstat(), 'st_file_attributes', 0) & 0x400:
+                continue
+            try:
+                item = json.loads(path.read_text(encoding='utf-8'))
+                if self.directory(item['id']).name == path.parent.name:
+                    result.append(item)
+            except (ValueError, KeyError, OSError):
+                continue
+        return sorted(result, key=lambda s: s['updated'], reverse=True)

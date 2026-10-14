@@ -1,0 +1,31 @@
+name: Windows and Linux checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  regression:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    env:
+      AUTOPROTEUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.13'
+      - run: python -X utf8 -m unittest discover -s tests -v
+      - name: Check browser code
+        run: node --check web/app.js
+      - name: Check Windows launcher syntax
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tokens=$null; $errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $pwd 'launch.ps1'),[ref]$tokens,[ref]$errors) | Out-Null
+          if ($errors.Count) { throw ($errors | Out-String) }
