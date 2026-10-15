@@ -166,11 +166,14 @@ class Agent:
                        if session.get('execution_mode') == 'native' else
                        "Commands run inside a disposable Linux VM. Host files, the controller and general network access are unavailable.")
         system = prompt.replace("{tools}", tool_instructions(config['terminal'])).replace("{terminal}", terminal).replace('{environment}', environment).replace('{guidance}', GUIDANCE)
-        remaining = max(0, config['max_steps'] - steps)
-        system += (f"\nAction allowance this run: {steps}/{config['max_steps']} tool actions used; {remaining} remaining. "
-                   "Each attempted tool call counts, including failed calls and each call in a batch. "
-                   "Finishing or asking for input uses no tool action. At zero, finish only if verified; further tool requests pause saved work for Resume. "
-                   "Resume keeps the files and gives a fresh allowance; do not rush unverified changes.")
+        # Keep the opening prefix stable so local runtimes can reuse its cache.
+        # _run still enforces the action cap, including failed calls.
+        runtime = []
+        if steps >= config['max_steps']:
+            runtime.append({'role': 'user', 'content':
+                            'Runtime notice: The tool action allowance is exhausted. Finishing or asking for input uses no tool action. '
+                            'Finish only if verified; further tool requests pause saved work for Resume. '
+                            'Resume keeps the files and gives a fresh allowance; do not rush unverified changes.'})
         original = {"role": "user", "content": session["task"]}
         history = [dict(item) for item in session["messages"]]
         human_texts = {item['text'] for item in session.get('feed', []) if item.get('kind') == 'user'}
@@ -201,21 +204,25 @@ class Agent:
             return len(json.dumps({'messages': plain(items), 'tools': schemas}, ensure_ascii=False).encode('utf-8'))
         fixed = [{"role": "system", "content": system}, original]
         if config['provider'] == 'demo':
-            return plain([{"role": "system", "content": system + ("\nCurrent todo.txt:\n" + todo if todo else '')}, original, *history])
+            todo_state = [{'role': 'user', 'content': 'Current todo.txt:\n' + todo}] if todo else []
+            return plain([*fixed, *history, *todo_state, *runtime])
         if size([fixed[0], *required]) > allowance:
             raise ValueError('The task, follow-up and tool instructions exceed the configured context estimate. Shorten the request or increase the context window in Settings.')
+        # A notice must not prevent the free finish request or displace user text.
+        if runtime and size([fixed[0], *required, *runtime]) > allowance:
+            runtime = []
         if todo:
-            with_todo = [{"role": "system", "content": system + "\nCurrent todo.txt:\n" + todo}, *required]
-            if size(with_todo) <= allowance:
-                fixed[0] = with_todo[0]
+            todo_state = {'role': 'user', 'content': 'Current todo.txt:\n' + todo}
+            if size([fixed[0], *required, todo_state, *runtime]) <= allowance:
+                runtime.insert(0, todo_state)
         # Keep recent complete action/result groups. The full journal stays saved.
-        budget = allowance - size([fixed[0], *required])
-        while len(history) > 2 and size(fixed + history) > allowance:
+        budget = allowance - size([fixed[0], *required, *runtime])
+        while len(history) > 2 and size(fixed + history + runtime) > allowance:
             index = 1 if history[0] == followup else 0
             history.pop(index)
             while len(history) > index and history[index] != followup and history[index]['role'] != 'assistant':
                 history.pop(index)
-        if history and size(fixed + history) > allowance:
+        if history and size(fixed + history + runtime) > allowance:
             limit = max(1, budget // max(1, len(history)) // 2)
             shortened = []
             for item in history:
@@ -239,12 +246,12 @@ class Agent:
                 else:
                     shortened.append({'role': 'user', 'content': 'A large prior action was omitted. Inspect current files before continuing.', 'origin': 'internal'})
             history = shortened
-        while history and size(fixed + history) > allowance:
+        while history and size(fixed + history + runtime) > allowance:
             index = 1 if history[0] == followup else 0
             history.pop(index)
             if len(history) > index and history[index]['content'].startswith('ACTION RESULT\n'):
                 history.pop(index)
-        return plain([fixed[0], original, *history])
+        return plain([fixed[0], original, *history, *runtime])
 
     def _run(self, session, config, client, cancel):
         workspace = Workspace(Path(session["workspace"]), config["terminal"], cancel, config["command_timeout"])

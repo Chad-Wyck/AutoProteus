@@ -340,14 +340,14 @@ class AgentTests(unittest.TestCase):
         finally:
             agent.close()
 
-    def test_finish_after_last_action_is_free_and_budget_reaches_both_protocols(self):
+    def test_finish_after_last_action_is_free_with_stable_opening_in_both_protocols(self):
         for protocol in ('native', 'json'):
             with self.subTest(protocol=protocol):
                 self.settings.update({'provider': 'ollama', 'protocol': protocol, 'max_steps': 1})
                 prompts = []
                 class Client:
                     def complete(client, messages, cancel):
-                        prompts.append(messages[0]['content'])
+                        prompts.append(messages)
                         decision = ({'action': {'tool': 'write_file', 'arguments': {'path': 'last.txt', 'content': 'saved'}}}
                                     if len(prompts) == 1 else {'status': 'completed'})
                         return {'content': json.dumps(decision)}
@@ -357,9 +357,10 @@ class AgentTests(unittest.TestCase):
                     agent.start(session)
                     self.assertEqual(wait_session(agent, session), 'completed')
                     self.assertEqual(session['steps'], 1)
-                    self.assertIn('0/1 tool actions used; 1 remaining', prompts[0])
-                    self.assertIn('1/1 tool actions used; 0 remaining', prompts[1])
-                    self.assertIn('Stop reading when you have enough context', prompts[0])
+                    self.assertEqual(prompts[0][0], prompts[1][0])
+                    self.assertFalse(any('allowance is exhausted' in item['content'] for item in prompts[0]))
+                    self.assertIn('allowance is exhausted', prompts[1][-1]['content'])
+                    self.assertIn('Stop reading when you have enough context', prompts[0][0]['content'])
                 finally:
                     agent.close()
 
@@ -383,7 +384,8 @@ class AgentTests(unittest.TestCase):
             agent.start(session)
             self.assertEqual(wait_session(agent, session), 'completed')
             self.assertEqual(session['steps'], 2)
-            self.assertIn('0/1 tool actions used; 1 remaining', prompts[2])
+            self.assertEqual(prompts[0], prompts[2])
+            self.assertNotIn('tool actions used', prompts[2])
             self.assertTrue((workspace / 'call-3.txt').exists())
         finally:
             agent.close()
@@ -397,7 +399,8 @@ class AgentTests(unittest.TestCase):
                 if client.calls == 1:
                     return {'content': json.dumps({'actions': [
                         {'tool': 'write_file', 'arguments': {'path': f'batch-{i}.txt', 'content': 'saved'}} for i in range(3)]})}
-                self.assertIn('2/2 tool actions used; 0 remaining', messages[0]['content'])
+                self.assertIn('allowance is exhausted', messages[-1]['content'])
+                self.assertNotIn('allowance is exhausted', messages[0]['content'])
                 return {'content': json.dumps({'status': 'completed'})}
         agent = Agent(ROOT, self.store, self.settings, lambda _: Client())
         try:
@@ -468,6 +471,52 @@ class AgentTests(unittest.TestCase):
         self.assertEqual(sum(item['content'] == session['task'] for item in messages), 1)
         self.assertNotIn(session['task'], messages[0]['content'])
         agent.close()
+
+    def test_todo_and_exhaustion_notice_follow_history_without_changing_opening(self):
+        agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
+        try:
+            session = self.store.create('Keep my task intact.', 'ollama', 'offline-test')
+            session['messages'] = [{'role': 'user', 'content': session['task'], 'origin': 'human'}]
+            config = {**self.settings.values, 'provider': 'ollama', 'protocol': 'native',
+                      'context_tokens': 8192, 'response_tokens': 2048, 'max_steps': 2}
+            first = agent.messages(session, config, 0)
+            todo = Path(session['workspace']) / 'todo.txt'
+            todo.write_text('[ ] Verify the edit', encoding='utf-8')
+            later = agent.messages(session, config, 1)
+            todo.write_text('[x] Verify the edit', encoding='utf-8')
+            final = agent.messages(session, config, 2)
+            self.assertEqual(first, later[:len(first)])
+            self.assertEqual(first, final[:len(first)])
+            self.assertIn('[ ] Verify the edit', later[-1]['content'])
+            self.assertIn('[x] Verify the edit', final[-2]['content'])
+            self.assertIn('allowance is exhausted', final[-1]['content'])
+            self.assertNotIn('Current todo.txt:', first[0]['content'])
+            limit = (config['context_tokens'] - config['response_tokens'] - 128) * 2
+            self.assertLessEqual(len(json.dumps({'messages': final, 'tools': tool_definitions(config['terminal'])}, ensure_ascii=False).encode('utf-8')), limit)
+            self.assertEqual(len(session['messages']), 1)
+        finally:
+            agent.close()
+
+    def test_exhaustion_notice_cannot_displace_a_full_user_request(self):
+        agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
+        try:
+            for protocol in ('native', 'json'):
+                with self.subTest(protocol=protocol):
+                    session = self.store.create('Preserve the complete request.', 'ollama', 'offline-test')
+                    config = {**self.settings.values, 'provider': 'ollama', 'protocol': protocol,
+                              'context_tokens': 8192, 'response_tokens': 2048, 'max_steps': 1}
+                    schemas = tool_definitions(config['terminal']) if protocol == 'native' else []
+                    def size(messages):
+                        return len(json.dumps({'messages': messages, 'tools': schemas}, ensure_ascii=False).encode('utf-8'))
+                    allowance = (config['context_tokens'] - config['response_tokens'] - 128) * 2
+                    session['task'] += 'x' * (allowance - size(agent.messages(session, config)))
+                    before = agent.messages(session, config, 0)
+                    exhausted = agent.messages(session, config, 1)
+                    self.assertEqual(size(before), allowance)
+                    self.assertEqual(before, exhausted)
+                    self.assertEqual(exhausted[1]['content'], session['task'])
+        finally:
+            agent.close()
 
     def setUp(self):
         self.guest_marker = patch.dict(os.environ, {'AUTOPROTEUS_GUEST': '1'})

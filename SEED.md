@@ -65,6 +65,9 @@ paths, snippets and character positions.
 up to three locations and a recovery hint without changing bytes. Writes and
 edits are limited to 100,000 characters. Validate before writing.
 
-The prompt shows the actions used and remaining. Failed calls and each tool in
-a batch count; finishing is free. Resume preserves the checkpoint and grants a
-fresh allowance. Report unfinished work honestly rather than rushing to finish.
+The seed enforces the action allowance and adds an exhaustion notice when it
+fits without displacing user instructions. Failed calls and each tool in a batch
+count; finishing is free.
+Resume preserves the checkpoint and grants a fresh allowance. Report unfinished
+work honestly rather than rushing to finish. Opening instructions stay stable;
+the current checklist, when present, appears after the conversation history.
