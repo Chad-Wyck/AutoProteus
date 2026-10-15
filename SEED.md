@@ -22,9 +22,28 @@ Source map:
    `self.path` for workspace paths. Add its description, argument types and
    required arguments to `TOOL_SPECS` in `autoproteus/providers.py`. Both action
    formats use this table. A new tool normally needs no agent-loop changes.
+   Reuse the existing text helpers for file capabilities:
+
+   - `self.read_text(path, missing_ok=False)` returns UTF-8 text up to
+     `TEXT_CHARACTER_LIMIT` (100000 Unicode characters), preserves CRLF,
+     and rejects invalid or oversized input. A missing file returns empty
+     text only with `missing_ok=True`.
+   - `self.write_text(path, content)` replaces a file after validating its
+     character limit, creates parent directories, and returns path and bytes.
+     The public `write_file` tool uses this same helper.
+
+   Helpers accept relative strings or validated `Path` objects. The text
+   limit applies to `len(text)`. Only report byte size using
+   `len(text.encode("utf-8"))`; valid Unicode text can exceed 100000 bytes.
 3. Add focused tests and preserve existing behavior and tests. For file tools,
    cover empty text, Unicode versus byte counts, CRLF, exact limits, invalid
    inputs and failed writes preserving the original bytes.
+   New `tests/test_*.py` files can import `unittest`, `Path` from `pathlib`,
+   `Workspace` from `autoproteus.tools`, and `temporary_directory` from
+   `test_seed`. Inside `with temporary_directory() as directory:`, construct
+   `Workspace(Path(directory))`. You do not need to read the full existing
+   test suite to use this helper. Generate large fixtures with short expressions
+   such as `'猫' * 100000`, rather than writing repeated literal text.
 4. From the task workspace, run:
 
        python3 harness/seed.py check
@@ -37,11 +56,19 @@ Source map:
 
    Inspect the returned values against the expected result. These editable
    development checks do not replace independent controller checks. Terminal
-   access must be enabled to run commands.
+   access must be enabled to run commands. The check already bounds its output;
+   run it directly so a shell pipeline cannot hide its failure status.
 5. Finish with a concise explanation of the change and actual checks. Update
    usage documentation where needed. A checklist in `todo.txt` is optional;
    no separate `feature.md` report is required. The host records the diff,
    source fingerprints and command results.
+
+Every command starts at the task workspace root; use relative `harness/` paths.
+Optional task notes belong in `todo.txt` at that root, beside `harness/`.
+After enough inspection, make a small implementation, test it and repair concrete
+failures. Re-reading the whole existing suite is not an upgrade requirement.
+Cut-off model responses execute no partial action. The seed shares its two format
+repair retries with output cutoffs; retry with a smaller action when asked.
 
 ## Continue with the edited seed
 

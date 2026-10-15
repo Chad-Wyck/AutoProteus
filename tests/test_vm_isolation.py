@@ -29,6 +29,77 @@ class ScriptedClient:
 
 @unittest.skipUnless(os.environ.get('AUTOPROTEUS_VM_TESTS') == '1', 'Real VM checks require explicit opt in')
 class RealVMTests(unittest.TestCase):
+    def test_long_history_uses_bounded_deltas_and_keeps_every_result(self):
+        self.settings.values['max_steps'] = 105
+        text = 'x' * 6000
+        actions = [{'action': {'tool': 'write_file', 'arguments': {'path': 'source.txt', 'content': text}}}]
+        actions += [{'action': {'tool': 'read_file', 'arguments': {'path': 'source.txt'}}}] * 100
+        actions += [{'status': 'completed'}]
+        agent = self.agent(actions)
+        session = self.store.create('Keep a long journal without repeated full-state transfer.', 'hosted', 'offline-history-fixture')
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session, 180), 'completed', session['feed'][-3:])
+        self.assertEqual(session['steps'], 101)
+        results = [item for item in session['messages'] if item['content'].startswith('ACTION RESULT\n')]
+        self.assertEqual(len(results), 101)
+        reads = [json.loads(item['content'].split('\n', 1)[1]) for item in results]
+        self.assertEqual(sum(item['tool'] == 'read_file' and item['result']['content'] == text for item in reads), 100)
+        self.assertEqual(Artifacts(self.store, session).read('source.txt'), text.encode())
+
+    def test_checkpoint_ignores_transient_hidden_paths_and_handles_a_disappearing_file(self):
+        candidate = self.candidate('''from pathlib import Path
+from autoproteus.agent import Agent
+
+def run(root, store, settings, client_factory, session, message=None):
+    workspace = Path(session['workspace'])
+    (workspace / '.ignored-export').write_text('ignored')
+    (workspace / 'vanished.txt').write_text('transient')
+    (workspace / 'keep.txt').write_text('preserved')
+    original_stat, original_read = Path.lstat, Path.read_bytes
+    def transient_stat(path, *args, **kwargs):
+        if path.name == '.ignored-export':
+            raise FileNotFoundError(str(path))
+        return original_stat(path, *args, **kwargs)
+    def transient_read(path, *args, **kwargs):
+        if path.name == 'vanished.txt':
+            path.unlink(missing_ok=True)
+            raise FileNotFoundError(str(path))
+        return original_read(path, *args, **kwargs)
+    Path.lstat, Path.read_bytes = transient_stat, transient_read
+    agent = Agent(root, store, settings, client_factory)
+    agent.start(session, message)
+    return agent
+''')
+        agent = self.agent([{'status': 'completed'}])
+        session = self.store.create('Ignore paths that vanish during a checkpoint.', 'hosted', 'offline-export-fixture')
+        agent.start(session, candidate=candidate)
+        self.assertEqual(self.wait(agent, session), 'completed', session['feed'])
+        self.assertEqual(Artifacts(self.store, session).read('keep.txt'), b'preserved')
+        self.assertNotIn('vanished.txt', session['artifacts'])
+        self.assertFalse(any('.ignored-export' in name for name in session['artifacts']))
+
+    def test_cutoff_marker_reaches_the_seed_and_partial_calls_never_execute(self):
+        from controller.providers import ProviderError
+        class Client:
+            calls = 0
+            def complete(client, messages, cancel):
+                client.calls += 1
+                if client.calls == 1:
+                    raise ProviderError('Bearer private-host-key', response={'tool_calls': [{'unsafe': True}]}, category='cutoff')
+                if client.calls == 2:
+                    return {'content': json.dumps({'action': {'tool': 'write_file', 'arguments': {'path': 'safe.txt', 'content': 'recovered'}}})}
+                return {'content': json.dumps({'status': 'completed'})}
+        client = Client()
+        agent = IsolatedAgent(ROOT, self.store, self.settings, lambda _: client)
+        self.agents.append(agent)
+        session = self.store.create('Recover without executing partial calls.', 'hosted', 'offline-cutoff-fixture')
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session), 'completed', session['feed'])
+        self.assertEqual(Artifacts(self.store, session).read('safe.txt'), b'recovered')
+        self.assertEqual(session['steps'], 1)
+        self.assertEqual(client.calls, 3)
+        self.assertNotIn('private-host-key', json.dumps(session))
+
     def test_two_extensions_are_used_and_retained_across_restarts_and_resume(self):
         from controller.evaluation import source_identity
         starter_hash = source_identity(seed_files(ROOT))
@@ -104,6 +175,10 @@ class ExtensionTests(unittest.TestCase):
         agent.start(session)
         self.assertEqual(self.wait(agent, session, 120), 'completed', session['feed'])
         self.assertEqual((session['id'], session['task'], session['runs']), (identifier, task, 4))
+        activations = [message for message in session['messages']
+                       if message['content'].startswith('Your edited seed is now active.')]
+        self.assertEqual(len(activations), 2)  # Ordinary Resume must not claim another activation.
+        self.assertTrue(all(message.get('origin') == 'internal' for message in activations))
         self.assertEqual(session['candidate_from'], identifier)
         self.assertEqual(Artifacts(self.store, session).read('note.txt'), b'SEED\n|B|RESUME')
         events = [json.loads(line) for line in (self.store.directory(identifier) / 'events.jsonl').read_text(encoding='utf-8').splitlines()]

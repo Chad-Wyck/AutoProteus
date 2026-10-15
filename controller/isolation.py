@@ -27,6 +27,7 @@ MAX_EXPORT = 32 * 1024 * 1024
 MAX_WIRE = 100 * 1024 * 1024
 MAX_JOURNAL = 64 * 1024 * 1024
 MAX_SECONDS = 3600
+SEED_TESTS = ('tests/test_seed.py', 'tests/test_text_helpers.py')
 
 
 class VMLease:
@@ -116,7 +117,7 @@ def seed_files(root):
     result = []
     for name in ('autoproteus',):
         result.extend(packed_files(Path(root) / name, name + '/'))
-    for name in ('seed.py', 'SEED.md', 'tests/test_seed.py'):
+    for name in ('seed.py', 'SEED.md', *SEED_TESTS):
         data = (Path(root) / name).read_bytes()
         result.append({'path': 'README.md' if name == 'SEED.md' else name, 'data': base64.b64encode(data).decode()})
     return result
@@ -386,6 +387,11 @@ class Broker:
             except Cancelled:
                 raise
             except ProviderError as error:
+                if error.category == 'cutoff':
+                    # Discard partial text/calls. Only a fixed marker crosses the
+                    # boundary; the seed can spend its bounded format retries.
+                    self.store.event(self.session, 'provider_cutoff', {'partial_action_executed': False})
+                    return {'content': '', 'provider_error': 'cutoff'}
                 self.session['error_category'] = error.category
                 raise IsolationError(ERROR_MESSAGES[error.category]) from None
             except Exception:
@@ -395,8 +401,22 @@ class Broker:
             self.artifacts.put(frame['path'], frame['data'])
         elif op == 'checkpoint' and set(frame) == {'op', 'paths'}:
             self.artifacts.checkpoint(frame['paths'])
-        elif op == 'state' and set(frame) == {'op', 'session'}:
+        elif op == 'state' and set(frame) in ({'op', 'session'}, {'op', 'session', 'changes'}):
             value = frame['session']
+            if 'changes' in frame:
+                changes = frame['changes']
+                if (not isinstance(value, dict) or {'messages', 'feed'} & value.keys() or
+                        not isinstance(changes, dict) or set(changes) != {'messages', 'feed'}):
+                    raise IsolationError('Invalid history changes')
+                value = dict(value)
+                for name in ('messages', 'feed'):
+                    change = changes[name]
+                    previous = self.session.get(name, [])
+                    if (not isinstance(change, dict) or set(change) != {'prefix', 'items'} or
+                            type(change['prefix']) is not int or not 0 <= change['prefix'] <= len(previous) or
+                            not isinstance(change['items'], list) or change['prefix'] + len(change['items']) > 2000):
+                        raise IsolationError('Invalid history changes')
+                    value[name] = previous[:change['prefix']] + change['items']
             if not isinstance(value, dict) or len(json.dumps(value).encode()) > 1500000:
                 raise IsolationError('Session state too large')
             fields = {'status', 'activity', 'messages', 'feed', 'steps', 'runs', 'todo', 'seed_version', 'seed_sha256'}
@@ -474,11 +494,12 @@ class IsolatedAgent:
                 source = json.loads((self.store.directory(session['id']) / 'candidate.json').read_text(encoding='utf-8'))
             if verification:
                 source = [item for item in source if not item['path'].startswith('__verify__/')]
-                source.append({'path': '__verify__/test_seed.py', 'data': base64.b64encode(
-                    (self.root / 'tests/test_seed.py').read_bytes()).decode()})
+                for name in SEED_TESTS:
+                    source.append({'path': '__verify__/' + Path(name).name, 'data': base64.b64encode(
+                        (self.root / name).read_bytes()).decode()})
             guest_config = {key: value for key, value in config.items() if key not in ('base_url', 'api_key')}
             boot = {'op': 'boot', 'seed': source, 'files': inputs, 'session': dict(session),
-                    'config': guest_config, 'message': message}
+                    'config': guest_config, 'message': message, 'seed_activated': candidate is session}
             boot['verification'] = bool(verification)
             if isinstance(verification, dict):
                 boot['behavior_rules'] = verification['rules']

@@ -9,7 +9,8 @@ from .terminal import run_command, terminate
 
 LIMIT = 12000
 READ_DEFAULT = 1000
-WRITE_LIMIT = 100000
+TEXT_CHARACTER_LIMIT = 100000
+WRITE_LIMIT = TEXT_CHARACTER_LIMIT  # Compatibility name; the unit is characters.
 
 
 class Cancelled(Exception):
@@ -27,6 +28,36 @@ def clipped(text, limit=LIMIT):
 
 
 class Workspace:
+    def read_text(self, path, missing_ok=False):
+        """Read bounded UTF-8 text; character counts and CRLF stay unchanged."""
+        if self.cancel.is_set():
+            raise Cancelled()
+        path = self.path(str(path) if isinstance(path, Path) else path)
+        try:
+            with path.open("r", encoding="utf-8", newline="") as stream:
+                text = stream.read(TEXT_CHARACTER_LIMIT + 1)
+        except FileNotFoundError:
+            if missing_ok:
+                return ""
+            raise
+        if len(text) > TEXT_CHARACTER_LIMIT:
+            raise ValueError("Read text of at most 100,000 characters")
+        if self.cancel.is_set():
+            raise Cancelled()
+        return text
+
+    def write_text(self, path, content):
+        """Replace UTF-8 text after character-limit validation; create parents."""
+        path = self.path(str(path) if isinstance(path, Path) else path)
+        if not isinstance(content, str) or len(content) > TEXT_CHARACTER_LIMIT:
+            raise ValueError("Write a text string of at most 100,000 characters")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if self.cancel.is_set():
+            raise Cancelled()
+        data = content.encode("utf-8")
+        path.write_bytes(data)
+        return {"path": str(path.relative_to(self.root)), "bytes": len(data), "written": True}
+
     def __init__(self, root: Path, terminal=False, cancel=None, timeout=60):
         self.root = root.resolve()
         self.terminal = terminal
@@ -97,29 +128,20 @@ class Workspace:
             return {"path": args["path"], "content": content, "start": start,
                     "next_start": start + len(content), "eof": eof}
         if tool == "write_file":
-            target = args["path"]
-            path = self.path(target)
-            content = args["content"]
-            if not isinstance(content, str) or len(content) > WRITE_LIMIT:
-                raise ValueError("Write a text string of at most 100,000 characters")
-            path.parent.mkdir(parents=True, exist_ok=True)
-            if self.cancel.is_set():
-                raise Cancelled()
-            path.write_bytes(content.encode("utf-8"))
-            return {"path": str(path.relative_to(self.root)), "bytes": len(content.encode("utf-8")), "written": True}
+            return self.write_text(args["path"], args["content"])
         if tool == "edit_file":
             path = self.path(args["path"])
             old, new = args["old_text"], args["new_text"]
             if not isinstance(old, str) or not old or not isinstance(new, str):
                 raise ValueError("Supply a nonempty old_text and a text new_text")
-            if max(len(old), len(new)) > WRITE_LIMIT:
+            if max(len(old), len(new)) > TEXT_CHARACTER_LIMIT:
                 raise ValueError("Edit text must be at most 100,000 characters")
             with path.open("rb") as stream:
-                raw = stream.read(WRITE_LIMIT * 4 + 1)
-            if len(raw) > WRITE_LIMIT * 4:
+                raw = stream.read(TEXT_CHARACTER_LIMIT * 4 + 1)
+            if len(raw) > TEXT_CHARACTER_LIMIT * 4:
                 raise ValueError("Edit files of at most 100,000 UTF-8 characters")
             content = raw.decode("utf-8")
-            if len(content) > WRITE_LIMIT:
+            if len(content) > TEXT_CHARACTER_LIMIT:
                 raise ValueError("Edit files of at most 100,000 UTF-8 characters")
             start = content.find(old)
             if start < 0 or content.find(old, start + 1) >= 0:
@@ -139,7 +161,7 @@ class Workspace:
                 raise EditConflict(f'old_text {"was not found" if not count else "is ambiguous"}: {count}{"+" if position >= 0 else ""} matches. No file was changed.',
                                    {'matches': count, 'matches_truncated': position >= 0, 'locations': locations, 'hint': hint})
             updated = content[:start] + new + content[start + len(old):]
-            if len(updated) > WRITE_LIMIT:
+            if len(updated) > TEXT_CHARACTER_LIMIT:
                 raise ValueError("The edited file would exceed 100,000 characters")
             if self.cancel.is_set():
                 raise Cancelled()

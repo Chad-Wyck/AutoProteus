@@ -12,7 +12,7 @@ from types import SimpleNamespace
 import uuid
 
 from .errors import Cancelled, IsolationError
-from .isolation import Artifacts, IsolatedAgent, relative_name, safe_path, seed_files
+from .isolation import Artifacts, IsolatedAgent, SEED_TESTS, relative_name, safe_path, seed_files
 from .storage import Store, atomic_json, now
 from .compatibility import model_identity
 
@@ -264,7 +264,9 @@ def run_regressions(root, store, source, cancel=None, execution=None):
                 raise IsolationError('Guest regression checks timed out')
         result = json.loads(Artifacts(store, session).read('regression-result.json'))
         result['session'] = session['id']
-        result['suite_sha256'] = hashlib.sha256((Path(root) / 'tests/test_seed.py').read_bytes()).hexdigest()
+        result['suite_files'] = {name: hashlib.sha256((Path(root) / name).read_bytes()).hexdigest()
+                                for name in SEED_TESTS}
+        result['suite_sha256'] = hashlib.sha256(json.dumps(result['suite_files'], sort_keys=True).encode()).hexdigest()
         result.update(execution_mode=agent.execution.mode, isolated=agent.execution.mode == 'vm',
                       checks_protected=agent.execution.mode == 'vm')
         return result

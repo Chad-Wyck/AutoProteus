@@ -14,6 +14,7 @@ from .tools import Cancelled, Workspace, clipped, EditConflict
 GUIDANCE = '''Search for the relevant code, then read useful surrounding sections (often 2000-6000 characters).
 Use read_file for small files; read_section positions and lengths count characters. Stop reading when you have enough context.
 For seed upgrades, follow harness/README.md: one implementation, one tool definition, focused tests and a concise explanation.
+Reuse Workspace.read_text and Workspace.write_text for UTF-8 file capabilities. TEXT_CHARACTER_LIMIT counts Unicode characters, not encoded bytes.
 Use todo.txt only when a checklist helps. With terminal access, python3 harness/seed.py check tests the edited copy;
 --tool and --arguments exercise an edited tool. The controller can restart this task with the edited seed and saved checkpoint.
 '''
@@ -278,6 +279,9 @@ class Agent:
                     raise Cancelled()
                 self.store.event(session, "model_response", response)
                 try:
+                    if response.get('provider_error') == 'cutoff':
+                        raise ValueError('The response exceeded its output budget. Send a smaller action or patch. '
+                                         'Generate large test data with short code rather than repeated literal text.')
                     decisions, deferred_finish = parse_decisions(response)
                 except (ValueError, KeyError, TypeError) as error:
                     repairs += 1

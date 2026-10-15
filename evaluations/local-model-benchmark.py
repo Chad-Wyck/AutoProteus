@@ -15,11 +15,12 @@ import time
 from types import SimpleNamespace
 
 ROOT=Path(__file__).resolve().parents[1]
+DRIVER_SOURCE=Path(__file__).read_bytes()
 sys.path.insert(0,str(ROOT))
 from controller.config import DEFAULTS
 from controller.evaluation import candidate_source, freeze_source, run_regressions, run_task, source_changes, source_identity, upgrade_review
 from controller.isolation import Artifacts, IsolatedAgent, seed_files
-from controller.providers import ModelClient, request_json
+from controller.providers import ModelClient, ProviderError, request_json
 from controller.runtime import LocalRuntime
 from controller.storage import Store, atomic_json, now
 from controller.compatibility import model_identity
@@ -36,6 +37,30 @@ class ScriptedClient:
         result=self.actions[min(self.index,len(self.actions)-1)]
         self.index+=1
         return {'content':json.dumps(result,ensure_ascii=False),'usage':{}}
+
+
+class DiagnosticClient(ModelClient):
+    """Keep incomplete local generations as private evidence, never as actions."""
+    def __init__(self, config, directory, trial):
+        super().__init__(config)
+        self.directory, self.trial = directory, trial
+        self.interfaces = set()
+
+    def complete(self, messages, cancel, progress=None, tools=None):
+        if tools is not None:
+            identity = hashlib.sha256(json.dumps(tools, sort_keys=True).encode()).hexdigest()
+            if identity not in self.interfaces:
+                target = self.directory.parent / 'tool-interfaces'
+                target.mkdir(parents=True, exist_ok=True)
+                atomic_json(target / (identity + '.json'), {'sha256': identity, 'tools': tools})
+                self.interfaces.add(identity)
+        try:
+            return super().complete(messages, cancel, progress, tools)
+        except ProviderError as error:
+            self.directory.mkdir(parents=True, exist_ok=True)
+            atomic_json(self.directory / (str(time.time_ns()) + '.json'),
+                {'trial': self.trial, 'category': error.category, 'message': str(error), 'response': error.response})
+            raise
 
 def read_artifact(store,session,name):
     try:return json.loads(Artifacts(store,session).read(name))
@@ -96,10 +121,16 @@ def assess(store,starter,result,feature,directory):
     candidate={item['path']:base64.b64decode(item['data']) for item in source}
     changed={item['path'] for item in changes}
     additions=changed-original.keys()
-    runtime_changed=bool(changed & {'autoproteus/tools.py','autoproteus/providers.py'})
+    editable={'autoproteus/tools.py','autoproteus/providers.py'}
+    if 'autoproteus/extensions.py' in original:
+        editable.add('autoproteus/extensions.py')
+    runtime_changed=bool(changed & editable)
     new_tests=[name for name in additions if name.startswith('tests/test_') and name.endswith('.py') and b'def test_' in candidate[name]]
-    protected_unchanged=all(candidate.get(name)==content for name,content in original.items() if name not in {'autoproteus/tools.py','autoproteus/providers.py','README.md'})
-    allowed=all(name in {'autoproteus/tools.py','autoproteus/providers.py','README.md'} or
+    # Reused candidates may contain disposable text fixtures from prior checks.
+    # Their contents are not protected test code or part of the runtime edit scope.
+    text_files={name for name in changed | original.keys() if Path(name).suffix in {'.md', '.txt'}}
+    protected_unchanged=all(candidate.get(name)==content for name,content in original.items() if name not in editable | text_files)
+    allowed=all(name in editable | text_files or
                 (name in additions and name.startswith('tests/') and name.endswith('.py')) for name in changed)
     review={'source_sha256':source_identity(source),'changed_files':sorted(changed),'new_test_files':new_tests,'protected_unchanged':protected_unchanged,'allowed_files_only':allowed,'documentation_updated':'README.md' in changed,'runtime_changed':runtime_changed,'completed':result['status']=='completed' and not result['timed_out'],
             'submission':upgrade_review(store,session,starter,source)}
@@ -191,6 +222,16 @@ def run(args):
     if not models:raise ValueError('No selected verified models')
     source=seed_files(ROOT)
     canonical_source_sha256=source_identity(source)
+    tasks=TASKS
+    for option in ('source_json', 'tasks_file'):
+        value=getattr(args, option)
+        if value:
+            path=(ROOT/value).resolve()
+            if not path.is_relative_to((ROOT/'.data').resolve()):
+                raise ValueError('Frozen experiment inputs must stay inside .data')
+            items=json.loads(path.read_text(encoding='utf-8'))
+            if option=='source_json':source=items
+            else:tasks=items
     if args.pin_user:
         for item in source:
             if item['path']=='autoproteus/agent.py':
@@ -206,17 +247,41 @@ def run(args):
             if item['path'].endswith(('.py','.md')):
                 item['data']=base64.b64encode(base64.b64decode(item['data']).replace(b'\r\n',b'\n')).decode()
     report_path=DATA/'results.json'
-    report=json.loads(report_path.read_text(encoding='utf-8')) if report_path.exists() else {'started':now(),'source_sha256':source_identity(source),'source_files':[{ 'path':i['path'],'sha256':hashlib.sha256(base64.b64decode(i['data'])).hexdigest()} for i in source],'downloads':downloads,'ordinary':[],'upgrades':[],'models':{},'method':{'execution':'vm','ordinary_timeout':180,'upgrade_timeout':args.timeout,'response_tokens':args.response_tokens,'context_tokens':args.context_tokens,'temperature':0.6,'sampling_seed':None,'repeats':1,'thinking':'enabled for supported models; none for non-reasoning models','max_steps':args.upgrade_steps,'inference':'host GPU; candidate commands and tests only in isolated VMs'}}
+    report=json.loads(report_path.read_text(encoding='utf-8')) if report_path.exists() else {'started':now(),'source_sha256':source_identity(source),'source_files':[{ 'path':i['path'],'sha256':hashlib.sha256(base64.b64decode(i['data'])).hexdigest()} for i in source],'downloads':downloads,'ordinary':[],'upgrades':[],'models':{},'method':{'execution':'vm','ordinary_timeout':180,'upgrade_timeout':args.timeout,'response_tokens':args.response_tokens,'context_tokens':args.context_tokens,'temperature':args.temperature,'sampling_seed':None,'repeats':1,'thinking':args.thinking,'max_steps':args.upgrade_steps,'inference':'host GPU; candidate commands and tests only in isolated VMs'}}
     if report['source_sha256']!=source_identity(source):raise ValueError('Starter changed since benchmark began')
     if (report['method']['context_tokens'],report['method']['response_tokens'])!=(args.context_tokens,args.response_tokens):
         raise ValueError('Use a separate data directory when changing context or response limits')
     if (report['method']['max_steps'], report['method']['upgrade_timeout']) != (args.upgrade_steps, args.timeout):
         raise ValueError('Use a separate data directory when changing action or time limits')
+    prior_thinking = report['method'].get('thinking', 'auto')
+    if prior_thinking == 'enabled for supported models; none for non-reasoning models':
+        prior_thinking = 'auto'
+    if (report['method']['temperature'], prior_thinking) != (args.temperature, args.thinking):
+        raise ValueError('Use a separate data directory when changing sampling or thinking settings')
     report['canonical_source_sha256']=canonical_source_sha256
-    report['variant']='user-turn-pinned' if args.pin_user else __version__ + '-unmodified'
+    report['variant']='frozen-source' if args.source_json else ('user-turn-pinned' if args.pin_user else __version__ + '-unmodified')
     if report['method'].get('upgrade_repeats', args.upgrade_repeats) != args.upgrade_repeats:
         raise ValueError('Use a separate directory when changing upgrade repeats')
     report['method']['upgrade_repeats'] = args.upgrade_repeats
+    task_identity=hashlib.sha256(json.dumps(tasks,sort_keys=True).encode()).hexdigest()
+    if report.get('tasks_sha256',task_identity)!=task_identity:
+        raise ValueError('Use a separate directory when changing upgrade prompts')
+    report['tasks_sha256']=task_identity
+    atomic_json(DATA/'upgrade-tasks.json',tasks)
+    trusted = {'evaluations/local-model-benchmark.py': DRIVER_SOURCE,
+               'evaluations/local-feature-probe.py': PROBE.encode('utf-8')}
+    for name in ('controller/evaluation.py', 'controller/isolation.py', 'controller/providers.py',
+                 'controller/runtime-lock.json', 'controller/managed-runtime-lock.json', 'guest/worker.py',
+                 'tests/test_seed.py', 'tests/test_text_helpers.py'):
+        trusted[name]=(ROOT/name).read_bytes()
+    identities={name:hashlib.sha256(content).hexdigest() for name,content in trusted.items()}
+    if report.get('trusted_runner_sha256',identities)!=identities:
+        raise ValueError('Use a separate data directory when changing the trusted runner or grader')
+    for name, content in trusted.items():
+        target=DATA/'trusted-runner'/name
+        target.parent.mkdir(parents=True,exist_ok=True)
+        target.write_bytes(content)
+    report['trusted_runner_sha256']=identities
     report['source_lf_normalized']=args.lf_source
     atomic_json(DATA/'starter-source.json',source)
     report['status']='running'
@@ -248,20 +313,22 @@ def run(args):
         for model in models:
             slug=model['slug']
             if ((args.upgrades_only or len([r for r in report['ordinary'] if r['model']==slug])==len(ORDINARY)) and
-                len([r for r in report['upgrades'] if r['model']==slug])==len(TASKS) * args.upgrade_repeats):
+                len([r for r in report['upgrades'] if r['model']==slug])==len(tasks) * args.upgrade_repeats):
                 continue
             show=request_json(base+'/api/show',{'model':model['model']},timeout=40)
             capabilities=show.get('capabilities',[])
             protocol=args.protocol or ('native' if 'tools' in capabilities else 'json')
-            thinking=True if 'thinking' in capabilities else None
-            config={**DEFAULTS,'configured':True,'provider':'ollama','base_url':base,'model':model['model'],'context_tokens':args.context_tokens,'response_tokens':args.response_tokens,'temperature':0.6,'max_steps':args.upgrade_steps,'request_timeout':300,'command_timeout':60,'terminal':True,'protocol':protocol,'thinking':thinking}
+            if args.thinking == 'on' and 'thinking' not in capabilities:
+                raise ValueError('This model does not advertise thinking support')
+            thinking=(args.thinking != 'off') if 'thinking' in capabilities else None
+            config={**DEFAULTS,'configured':True,'provider':'ollama','base_url':base,'model':model['model'],'context_tokens':args.context_tokens,'response_tokens':args.response_tokens,'temperature':args.temperature,'max_steps':args.upgrade_steps,'request_timeout':300,'command_timeout':60,'terminal':True,'protocol':protocol,'thinking':thinking}
             settings.values=config
             report['models'][slug]={'model':model['model'],'capabilities':capabilities,'details':show.get('details'),'config':{k:v for k,v in config.items() if k!='base_url'},'gpu_before':gpu()}
             tags=request_json(base+'/api/tags')['models']
             report['models'][slug]['tag']=next(t for t in tags if t['name'].lower()==model['model'].lower())
             print('MODEL',slug,protocol,'thinking',thinking,flush=True)
             try:
-                warm=request_json(base+'/api/chat',{'model':model['model'],'messages':[{'role':'user','content':'Reply with exactly READY.'}],'stream':False,'think':False if 'thinking' in capabilities else None,'options':{'num_ctx':args.context_tokens,'num_predict':32,'temperature':0.6},'keep_alive':'30m'},timeout=300)
+                warm=request_json(base+'/api/chat',{'model':model['model'],'messages':[{'role':'user','content':'Reply with exactly READY.'}],'stream':False,'think':False if 'thinking' in capabilities else None,'options':{'num_ctx':args.context_tokens,'num_predict':32,'temperature':args.temperature},'keep_alive':'30m'},timeout=300)
                 report['models'][slug]['warmup']={k:warm.get(k) for k in ('done','done_reason','load_duration','eval_count','eval_duration','prompt_eval_count','prompt_eval_duration')}
                 report['models'][slug]['placement']=request_json(base+'/api/ps')
                 report['models'][slug]['gpu_loaded']=gpu()
@@ -272,7 +339,8 @@ def run(args):
                 continue
             atomic_json(report_path,report)
             report['models'][slug]['identity'] = model_identity(config)
-            agent=IsolatedAgent(ROOT,store,settings)
+            agent=IsolatedAgent(ROOT,store,settings,lambda config: DiagnosticClient(
+                config, DATA / 'provider-errors', dict(report.get('active', {}))))
             for task in ([] if args.upgrades_only else ORDINARY):
                 if any(r['model']==slug and r['task']==task['name'] for r in report['ordinary']):continue
                 # Ordinary tasks use the same reasoning setting, with commands disabled.
@@ -285,7 +353,7 @@ def run(args):
                 report.pop('active',None)
                 atomic_json(report_path,report)
                 print('RESULT',result['passed'],result['seconds'],result['status'],flush=True)
-            trials = [(task, repeat) for repeat in range(1, args.upgrade_repeats + 1) for task in TASKS]
+            trials = [(task, repeat) for repeat in range(1, args.upgrade_repeats + 1) for task in tasks]
             for task, repeat in trials:
                 if any(r['model']==slug and r['task']==task['name'] and r.get('repeat', 1)==repeat for r in report['upgrades']):continue
                 settings.values=config
@@ -324,11 +392,15 @@ def run(args):
 if __name__=='__main__':
     parser=argparse.ArgumentParser()
     parser.add_argument('--data-dir',help='Separate saved batch directory under .data; never overwrite earlier results')
+    parser.add_argument('--source-json',help='Frozen source data under .data, executed only inside the VM')
+    parser.add_argument('--tasks-file',help='Frozen upgrade prompts under .data, scored by the existing independent graders')
     parser.add_argument('--self-check',action='store_true')
     parser.add_argument('--models',nargs='*')
     parser.add_argument('--timeout',type=int,default=2700,help='Seconds per upgrade attempt (host runtime ceiling still applies)')
     parser.add_argument('--context-tokens',type=int,default=32768)
     parser.add_argument('--response-tokens',type=int,default=8192)
+    parser.add_argument('--temperature', type=float, default=0.6, help='Sampling temperature, recorded for each separate batch')
+    parser.add_argument('--thinking', choices=['auto', 'on', 'off'], default='auto', help='Enable advertised reasoning by default, or compare it explicitly')
     parser.add_argument('--upgrade-steps',type=int,default=128,help='Tool actions per upgrade attempt, 1-200; ordinary tasks retain 32')
     parser.add_argument('--pin-user',action='store_true',help='Test a separate copied seed retaining the original user turn; does not edit starter')
     parser.add_argument('--upgrades-only',action='store_true')
@@ -340,5 +412,7 @@ if __name__=='__main__':
         parser.error('--upgrade-steps must be between 1 and 200')
     if args.response_tokens >= args.context_tokens:
         parser.error('--response-tokens must be smaller than --context-tokens')
+    if not 0 <= args.temperature <= 2:
+        parser.error('--temperature must be between 0 and 2')
     if args.self_check:self_check(args.data_dir)
     else:run(args)

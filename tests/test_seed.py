@@ -282,6 +282,48 @@ def model_response(content, calls, native):
 
 
 class AgentTests(unittest.TestCase):
+    def test_cutoff_retries_a_smaller_action_without_executing_partial_content(self):
+        for protocol in ('native', 'json'):
+            with self.subTest(protocol=protocol):
+                self.settings.values.update(provider='ollama', protocol=protocol)
+                prompts = []
+                class Client:
+                    def complete(client, messages, cancel):
+                        prompts.append(messages)
+                        if len(prompts) == 1:
+                            return {'provider_error': 'cutoff', 'content': json.dumps({'action': {
+                                'tool': 'write_file', 'arguments': {'path': 'partial.txt', 'content': 'unsafe'}}})}
+                        return {'content': json.dumps({'status': 'completed'})}
+                agent = Agent(ROOT, self.store, self.settings, lambda _: Client())
+                try:
+                    session = self.store.create('Handle a cut-off response.', 'ollama', 'offline-test')
+                    agent.start(session)
+                    self.assertEqual(wait_session(agent, session), 'completed')
+                    self.assertEqual(session['steps'], 0)
+                    self.assertFalse((Path(session['workspace']) / 'partial.txt').exists())
+                    self.assertEqual(prompts[0][0], prompts[1][0])
+                    self.assertIn('smaller action or patch', prompts[1][-1]['content'])
+                    self.assertEqual(session['messages'][-2]['origin'], 'internal')
+                finally:
+                    agent.close()
+
+    def test_repeated_cutoffs_share_the_bounded_response_repair_allowance(self):
+        class Client:
+            calls = 0
+            def complete(client, *args):
+                client.calls += 1
+                return {'provider_error': 'cutoff', 'content': ''}
+        client = Client()
+        agent = Agent(ROOT, self.store, self.settings, lambda _: client)
+        try:
+            session = self.store.create('Stop repeated incomplete output.', 'demo', 'offline-test')
+            agent.start(session)
+            self.assertEqual(wait_session(agent, session), 'error')
+            self.assertEqual(client.calls, 3)
+            self.assertEqual(session['steps'], 0)
+        finally:
+            agent.close()
+
     def test_human_correction_survives_internal_notices_and_legacy_journals(self):
         agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
         notices = ['Your response was not accepted: invalid format. No action was executed.',

@@ -124,7 +124,8 @@ print('AP_CHECK '+json.dumps(values,ensure_ascii=True),flush=True)
         while True:
             time.sleep(1)
     count = re.search(r'Ran (\d+) tests?', log)
-    expected = len(re.findall(r'^    def test_', (source / '__verify__/test_seed.py').read_text(), re.M))
+    expected = sum(len(re.findall(r'^    def test_', path.read_text(), re.M))
+                   for path in (source / '__verify__').glob('test_*.py'))
     result = {'passed': process.returncode == 0 and not limited and bool(count)
                        and int(count[1]) == expected and bool(re.search(r'^OK', log, re.M)),
               'tests': int(count[1]) if count else 0, 'expected': expected,
@@ -200,26 +201,49 @@ def main(native_root=None):
         def __init__(self):
             super().__init__(state)
             self.exported = {}
+            self.sent_history = {'messages': [], 'feed': []}
 
         def sync(self, session):
             manifest = []
-            for path in sorted(workspace.rglob('*')):
-                # Do not block on FIFOs/devices or export links. The host also validates.
-                info = path.lstat()
-                if not stat.S_ISREG(info.st_mode) or any(part.startswith('.') or part == '__pycache__' for part in path.relative_to(workspace).parts):
-                    continue
-                name = path.relative_to(workspace).as_posix()
-                if info.st_size > 2 * 1024 * 1024:
-                    raise ValueError('Export files must be at most 2 MB each')
-                data = path.read_bytes()
-                digest = hashlib.sha256(data).hexdigest()
-                if self.exported.get(name) != digest:
-                    call({'op': 'file', 'path': name, 'data': base64.b64encode(data).decode()})
-                    self.exported[name] = digest
-                manifest.append(name)
+            for directory, folders, files in os.walk(workspace, followlinks=False):
+                # Prune ignored directories before inspecting transient test files.
+                folders[:] = sorted(name for name in folders if not name.startswith('.') and name != '__pycache__')
+                for filename in sorted(files):
+                    if filename.startswith('.'):
+                        continue
+                    path = Path(directory) / filename
+                    try:
+                        # Do not export links/devices or block on a FIFO.
+                        info = path.lstat()
+                        if not stat.S_ISREG(info.st_mode):
+                            continue
+                        if info.st_size > 2 * 1024 * 1024:
+                            raise ValueError('Export files must be at most 2 MB each')
+                        data = path.read_bytes()
+                    except FileNotFoundError:
+                        # A file may legitimately disappear between walk and read.
+                        continue
+                    name = path.relative_to(workspace).as_posix()
+                    digest = hashlib.sha256(data).hexdigest()
+                    if self.exported.get(name) != digest:
+                        call({'op': 'file', 'path': name, 'data': base64.b64encode(data).decode()})
+                        self.exported[name] = digest
+                    manifest.append(name)
             call({'op': 'checkpoint', 'paths': manifest})
             self.exported = {name: self.exported[name] for name in manifest}
-            call({'op': 'state', 'session': session})
+            # Transfer changed tails rather than the full growing history on every
+            # save. The host reconstructs and validates the complete state as before.
+            changes, encoded = {}, {}
+            for name in ('messages', 'feed'):
+                encoded[name] = [json.dumps(item, sort_keys=True) for item in session[name]]
+                previous, current = self.sent_history[name], encoded[name]
+                prefix = 0
+                while prefix < min(len(previous), len(current)) and previous[prefix] == current[prefix]:
+                    prefix += 1
+                changes[name] = {'prefix': prefix, 'items': session[name][prefix:]}
+            metadata = {name: session[name] for name in ('status', 'activity', 'steps', 'runs', 'todo', 'seed_version', 'seed_sha256') if name in session}
+            call({'op': 'state', 'session': metadata, 'changes': changes})
+            self.sent_history = encoded
 
         def save(self, session):
             super().save(session)
@@ -235,6 +259,16 @@ def main(native_root=None):
     session['workspace'] = str(workspace)
     store.directory(session['id']).mkdir(parents=True, exist_ok=True)
     store.sessions[session['id']] = session
+    if boot.get('seed_activated') and session['messages']:
+        from autoproteus.providers import tool_definitions
+        names = ', '.join(item['function']['name'] for item in tool_definitions(config['terminal'])
+                          if item['function']['name'] != 'finish')
+        notice = ('Your edited seed is now active. Available workspace tools: ' + names + '. '
+                  'Call the appropriate supplied tools directly to continue the original task after inspecting saved files. '
+                  'The --tool command was for development checks; the activated tools can now be called directly. '
+                  'Request another activation only if you make further seed edits.')
+        session['messages'].append({'role': 'user', 'content': notice, 'origin': 'internal'})
+        store.feed(session, 'notice', notice)
     settings = SimpleNamespace(values=config, key=lambda: '')
     import seed
     agent = seed.run(source, store, settings, lambda _: Client(), session, boot.get('message'))

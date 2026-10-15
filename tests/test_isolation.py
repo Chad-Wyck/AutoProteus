@@ -74,6 +74,7 @@ class BoundaryTests(unittest.TestCase):
         names = {item['path'] for item in seed_files(ROOT)}
         self.assertIn('seed.py', names)
         self.assertIn('autoproteus/agent.py', names)
+        self.assertIn('tests/test_text_helpers.py', names)
         self.assertNotIn('app.py', names)
         self.assertFalse(any(name.startswith('controller/') for name in names))
 
@@ -113,6 +114,21 @@ class BoundaryTests(unittest.TestCase):
             self.broker.handle({'op': 'infer', 'messages': [{'role': 'user', 'content': 'test'}]})
         self.assertNotIn('secret-test-key', str(error.exception))
 
+    def test_output_cutoff_discards_partial_calls_and_returns_only_a_fixed_marker(self):
+        from controller.providers import ProviderError
+        self.client.complete.side_effect = ProviderError('Bearer secret-test-key',
+            response={'raw_content': 'secret-test-key', 'tool_calls': [{'unsafe': True}]}, category='cutoff')
+        frame = {'op': 'infer', 'messages': [{'role': 'user', 'content': 'test'}]}
+        value = self.broker.handle(frame)
+        self.assertEqual(value, {'content': '', 'provider_error': 'cutoff'})
+        self.assertNotIn('secret-test-key', json.dumps(value))
+        self.assertNotIn('error_category', self.session)
+        self.assertEqual(self.broker.requests, 1)
+        self.broker.request_limit = 1
+        with self.assertRaises(IsolationError):
+            self.broker.handle(frame)
+        self.assertEqual(self.client.complete.call_count, 1)
+
     def test_host_identity_and_policy_cannot_be_changed_by_guest_state(self):
         original = {key: self.session[key] for key in ('id', 'workspace', 'provider', 'task')}
         state = dict(self.session, workspace='C:/', id='f'*32, provider='hosted', task='changed',
@@ -121,6 +137,42 @@ class BoundaryTests(unittest.TestCase):
         self.assertEqual({key: self.session[key] for key in original}, original)
         self.assertNotIn('terminal', self.session)
         self.assertNotIn('base_url', self.session)
+
+    def test_history_deltas_reconstruct_validated_state_without_changing_host_policy(self):
+        metadata = {'status': 'running', 'activity': 'Checking', 'steps': 1, 'runs': 1,
+                    'workspace': 'C:/', 'id': 'f' * 32, 'provider': 'hosted', 'terminal': True}
+        initial = {'messages': {'prefix': 0, 'items': [{'role': 'user', 'content': 'Keep this request.'}]},
+                   'feed': {'prefix': 0, 'items': [{'id': 'first', 'kind': 'user', 'text': 'Keep this request.'}]}}
+        identity = {name: self.session[name] for name in ('id', 'provider', 'workspace', 'task')}
+        self.broker.handle({'op': 'state', 'session': metadata, 'changes': initial})
+        changes = {'messages': {'prefix': 1, 'items': [{'role': 'assistant', 'content': 'Done'}]},
+                   'feed': {'prefix': 1, 'items': [{'id': 'second', 'kind': 'assistant', 'text': 'Done'}]}}
+        self.broker.handle({'op': 'state', 'session': metadata, 'changes': changes})
+        self.assertEqual([item['content'] for item in self.session['messages']], ['Keep this request.', 'Done'])
+        self.assertEqual([item['id'] for item in self.session['feed']], ['first', 'second'])
+        self.assertEqual({name: self.session[name] for name in identity}, identity)
+        self.assertNotIn('terminal', self.session)
+        changes['messages'] = {'prefix': 1, 'items': [{'role': 'assistant', 'content': 'Corrected'}]}
+        changes['feed'] = {'prefix': 1, 'items': [{'id': 'second', 'kind': 'assistant', 'text': 'Corrected'}]}
+        self.broker.handle({'op': 'state', 'session': metadata, 'changes': changes})
+        self.assertEqual(self.session['messages'][-1]['content'], 'Corrected')
+
+    def test_invalid_history_deltas_and_oversized_reconstructed_state_are_rejected_atomically(self):
+        metadata = {'status': 'running', 'steps': 0, 'runs': 1}
+        valid = {'messages': {'prefix': 0, 'items': []}, 'feed': {'prefix': 0, 'items': []}}
+        bad = [None, {}, {**valid, 'extra': {}},
+               {**valid, 'messages': {'prefix': True, 'items': []}},
+               {**valid, 'messages': {'prefix': -1, 'items': []}},
+               {**valid, 'messages': {'prefix': 1, 'items': []}},
+               {**valid, 'messages': {'prefix': 0, 'items': {}}},
+               {**valid, 'messages': {'prefix': 0, 'items': [{'role': 'invalid', 'content': 'bad'}]}},
+               {**valid, 'messages': {'prefix': 0, 'items': [{'role': 'user', 'content': 'x'}] * 2001}},
+               {**valid, 'messages': {'prefix': 0, 'items': [{'role': 'user', 'content': 'x' * 1500000}]}}]
+        for changes in bad:
+            with self.subTest(changes_type=type(changes).__name__), self.assertRaises(IsolationError):
+                self.broker.handle({'op': 'state', 'session': metadata, 'changes': changes})
+            self.assertEqual(self.session['messages'], [])
+            self.assertEqual(self.session['feed'], [])
 
     def test_bad_display_state_cannot_break_host_stop_controls(self):
         value = {**self.session, 'status': 'completed'}

@@ -1,0 +1,1978 @@
+{
+  "date": "2026-10-15",
+  "base_commit": "127c9be79c9c61377221fd1eeb48e275313cf6b4",
+  "prepared_version": "0.0.10",
+  "hardware": {
+    "gpu": "GTX 1080 Ti",
+    "vram_mib": 11264,
+    "host": "Windows",
+    "candidate_execution": "Disposable network-free Linux VMs under WHPX"
+  },
+  "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+  "weights_sha256": "d784ce9eda1a5a7b51e8f705a9e6310844bf4f173654d115823c775fdea56d43",
+  "method": "Exploratory sequential variants and separate fresh validation attempts. No model candidate code executed on the host or repaired by the operator. Internal model test/repair cycles are allowed within each attempt.",
+  "batches": [
+    {
+      "name": "baseline",
+      "status": "completed",
+      "started": "2026-10-15T11:38:35.462131+00:00",
+      "finished": "2026-10-15T12:06:57.388554+00:00",
+      "source_sha256": "fdb9c07abde9ce8ea0844edf3498ad60c9bf2f6b8dcb8340cab98f2b3b2dd8a8",
+      "tasks_sha256": null,
+      "method": {
+        "execution": "vm",
+        "ordinary_timeout": 180,
+        "upgrade_timeout": 1800,
+        "response_tokens": 8192,
+        "context_tokens": 32768,
+        "temperature": 0.6,
+        "sampling_seed": null,
+        "repeats": 1,
+        "thinking": "enabled for supported models; none for non-reasoning models",
+        "max_steps": 128,
+        "inference": "host GPU; candidate commands and tests only in isolated VMs",
+        "upgrade_repeats": 1
+      },
+      "source_unchanged": true,
+      "host_files_unchanged": true,
+      "trials": [
+        {
+          "task": "file_summary",
+          "repeat": 1,
+          "status": "error",
+          "steps": 32,
+          "seconds": 693.21,
+          "timed_out": false,
+          "failure_kind": "cutoff",
+          "notices": [
+            "The model response was cut short. Increase the response budget or retry; no partial action ran."
+          ],
+          "format_repairs": 0,
+          "action_errors": 4,
+          "read_actions": 13,
+          "repeated_reads": 0,
+          "generated_tokens": 9827,
+          "prompt_tokens": 276637,
+          "accepted": false,
+          "candidate_sha256": "f3212c138838eaec11e636c3f5314e3e94e1a4cd8b949b0ec6e329cbaf346a2a",
+          "new_test_files": [
+            "tests/test_file_summary.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 16,
+          "feature_checks_total": 16,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 1,
+          "status": "error",
+          "steps": 103,
+          "seconds": 932.63,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [
+            "Guest output quota exceeded"
+          ],
+          "format_repairs": 0,
+          "action_errors": 4,
+          "read_actions": 84,
+          "repeated_reads": 1,
+          "generated_tokens": 10243,
+          "prompt_tokens": 1138968,
+          "accepted": false,
+          "candidate_sha256": "6ff46e23da0d5f08d3ef8a029def4a77449d87a23fa2ba53da204026ccbcaa6e",
+          "new_test_files": [],
+          "protected_unchanged": true,
+          "allowed_files_only": false,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": false,
+          "feature_checks_passed": 0,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [
+            "append_new/deep.txt",
+            "reject_large.txt_str",
+            "reject_too-large.txt_str"
+          ],
+          "feature_reason": null
+        }
+      ],
+      "runtime_identity": {
+        "provider": "ollama",
+        "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+        "engine_version": "0.40.4",
+        "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+        "size": 7087508415,
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "9.2B",
+          "quantization_level": "Q4_K_M"
+        }
+      },
+      "placement": {
+        "models": [
+          {
+            "name": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "size": 6856900606,
+            "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen35",
+              "families": [
+                "qwen35"
+              ],
+              "parameter_size": "9.2B",
+              "quantization_level": "unknown"
+            },
+            "expires_at": "2026-10-15T06:09:15.7863713-06:00",
+            "size_vram": 6856900606,
+            "context_length": 32768,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "accepted": 0,
+      "attempts": 2
+    },
+    {
+      "name": "recovery-guide-t06",
+      "status": "completed",
+      "started": "2026-10-15T12:11:36.889283+00:00",
+      "finished": "2026-10-15T12:45:52.170753+00:00",
+      "source_sha256": "f7ef234a0f7e25059cea4c64d0d6991649cc09dc84d4da821e8b8b411b95bcd3",
+      "tasks_sha256": null,
+      "method": {
+        "execution": "vm",
+        "ordinary_timeout": 180,
+        "upgrade_timeout": 1800,
+        "response_tokens": 8192,
+        "context_tokens": 32768,
+        "temperature": 0.6,
+        "sampling_seed": null,
+        "repeats": 1,
+        "thinking": "on",
+        "max_steps": 128,
+        "inference": "host GPU; candidate commands and tests only in isolated VMs",
+        "upgrade_repeats": 1
+      },
+      "source_unchanged": true,
+      "host_files_unchanged": true,
+      "trials": [
+        {
+          "task": "file_summary",
+          "repeat": 1,
+          "status": "error",
+          "steps": 68,
+          "seconds": 700.9,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [
+            "Guest output quota exceeded"
+          ],
+          "format_repairs": 0,
+          "action_errors": 3,
+          "read_actions": 58,
+          "repeated_reads": 1,
+          "generated_tokens": 14869,
+          "prompt_tokens": 645852,
+          "accepted": false,
+          "candidate_sha256": "5cc62b10da56dc9ba95706d0472c4cfb3c277ad61099c5904269a775b323a6af",
+          "new_test_files": [],
+          "protected_unchanged": false,
+          "allowed_files_only": false,
+          "regressions_passed": true,
+          "public_passed": null,
+          "feature_passed": false,
+          "feature_checks_passed": null,
+          "feature_checks_total": null,
+          "failed_feature_checks": [],
+          "feature_reason": "Requested unchanged execution loop or existing tests were modified"
+        },
+        {
+          "task": "append_text",
+          "repeat": 1,
+          "status": "error",
+          "steps": 101,
+          "seconds": 1294.79,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [
+            "The same unchanged material is being read repeatedly. The agent received a progress hint.",
+            "Guest output quota exceeded"
+          ],
+          "format_repairs": 0,
+          "action_errors": 6,
+          "read_actions": 86,
+          "repeated_reads": 7,
+          "generated_tokens": 20740,
+          "prompt_tokens": 1059052,
+          "accepted": false,
+          "candidate_sha256": "14b660a419be865879bb9232006cd5d7ff0a3d62b3ef3ea69f2792bde8fc0516",
+          "new_test_files": [
+            "tests/test_append_text.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": false,
+          "feature_checks_passed": 0,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [
+            "append_large.txt_empty",
+            "limit_exact",
+            "reject_binary.txt_str"
+          ],
+          "feature_reason": null
+        }
+      ],
+      "runtime_identity": {
+        "provider": "ollama",
+        "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+        "engine_version": "0.40.4",
+        "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+        "size": 7087508415,
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "9.2B",
+          "quantization_level": "Q4_K_M"
+        }
+      },
+      "placement": {
+        "models": [
+          {
+            "name": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "size": 6856900606,
+            "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen35",
+              "families": [
+                "qwen35"
+              ],
+              "parameter_size": "9.2B",
+              "quantization_level": "unknown"
+            },
+            "expires_at": "2026-10-15T06:42:13.2225165-06:00",
+            "size_vram": 6856900606,
+            "context_length": 32768,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "accepted": 0,
+      "attempts": 2
+    },
+    {
+      "name": "recovery-guide-t02-no-thinking",
+      "status": "completed",
+      "started": "2026-10-15T12:46:06.355433+00:00",
+      "finished": "2026-10-15T13:10:35.316647+00:00",
+      "source_sha256": "f7ef234a0f7e25059cea4c64d0d6991649cc09dc84d4da821e8b8b411b95bcd3",
+      "tasks_sha256": "17eb40eec30b5c41aeed0752cd15bd0a0dbc1daf89185b0564a2055ca6c8f762",
+      "method": {
+        "execution": "vm",
+        "ordinary_timeout": 180,
+        "upgrade_timeout": 1800,
+        "response_tokens": 8192,
+        "context_tokens": 32768,
+        "temperature": 0.2,
+        "sampling_seed": null,
+        "repeats": 1,
+        "thinking": "off",
+        "max_steps": 128,
+        "inference": "host GPU; candidate commands and tests only in isolated VMs",
+        "upgrade_repeats": 1
+      },
+      "source_unchanged": true,
+      "host_files_unchanged": true,
+      "trials": [
+        {
+          "task": "file_summary",
+          "repeat": 1,
+          "status": "error",
+          "steps": 83,
+          "seconds": 703.51,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [
+            "The same unchanged material is being read repeatedly. The agent received a progress hint.",
+            "The same unchanged material is being read repeatedly. The agent received a progress hint.",
+            "The same unchanged material is being read repeatedly. The agent received a progress hint.",
+            "Guest output quota exceeded"
+          ],
+          "format_repairs": 0,
+          "action_errors": 8,
+          "read_actions": 73,
+          "repeated_reads": 31,
+          "generated_tokens": 13532,
+          "prompt_tokens": 888453,
+          "accepted": false,
+          "candidate_sha256": "885d5789629386a928d059e49e06ed8468d35e352479c98248e73f0431595912",
+          "new_test_files": [],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 16,
+          "feature_checks_total": 16,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 1,
+          "status": "error",
+          "steps": 88,
+          "seconds": 697.89,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [
+            "The same unchanged material is being read repeatedly. The agent received a progress hint.",
+            "The same unchanged material is being read repeatedly. The agent received a progress hint.",
+            "Guest output quota exceeded"
+          ],
+          "format_repairs": 0,
+          "action_errors": 8,
+          "read_actions": 68,
+          "repeated_reads": 18,
+          "generated_tokens": 8469,
+          "prompt_tokens": 941036,
+          "accepted": false,
+          "candidate_sha256": "4f2b4794a58bcf4a5f20b781f97903863cfb9d6348a225d7b2de440ad0718518",
+          "new_test_files": [
+            "tests/test_append_text.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": false,
+          "feature_checks_passed": 0,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [
+            "append_large.txt_empty",
+            "limit_exact",
+            "reject_binary.txt_str"
+          ],
+          "feature_reason": null
+        }
+      ],
+      "runtime_identity": {
+        "provider": "ollama",
+        "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+        "engine_version": "0.40.4",
+        "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+        "size": 7087508415,
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "9.2B",
+          "quantization_level": "Q4_K_M"
+        }
+      },
+      "placement": {
+        "models": [
+          {
+            "name": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "size": 6856900606,
+            "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen35",
+              "families": [
+                "qwen35"
+              ],
+              "parameter_size": "9.2B",
+              "quantization_level": "unknown"
+            },
+            "expires_at": "2026-10-15T07:16:42.5612176-06:00",
+            "size_vram": 6856900606,
+            "context_length": 32768,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "accepted": 0,
+      "attempts": 2
+    },
+    {
+      "name": "extension-interface",
+      "status": "completed",
+      "started": "2026-10-15T13:11:31.424988+00:00",
+      "finished": "2026-10-15T13:39:08.658681+00:00",
+      "source_sha256": "7d319d90bde65ebdfe8496a0b6b03fd4a6b0ac5cc968376955bb5ead38441c98",
+      "tasks_sha256": "9bed43e434f0c0d43be503c8c36c9c57fe6ccc81738ffed357ca0e67f849e437",
+      "method": {
+        "execution": "vm",
+        "ordinary_timeout": 180,
+        "upgrade_timeout": 1800,
+        "response_tokens": 8192,
+        "context_tokens": 32768,
+        "temperature": 0.2,
+        "sampling_seed": null,
+        "repeats": 1,
+        "thinking": "off",
+        "max_steps": 128,
+        "inference": "host GPU; candidate commands and tests only in isolated VMs",
+        "upgrade_repeats": 1
+      },
+      "source_unchanged": true,
+      "host_files_unchanged": true,
+      "trials": [
+        {
+          "task": "file_summary",
+          "repeat": 1,
+          "status": "error",
+          "steps": 76,
+          "seconds": 828.92,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [
+            "Guest output quota exceeded"
+          ],
+          "format_repairs": 0,
+          "action_errors": 3,
+          "read_actions": 65,
+          "repeated_reads": 1,
+          "generated_tokens": 6586,
+          "prompt_tokens": 811550,
+          "accepted": false,
+          "candidate_sha256": "ca6b0daf3cb9f5ef4921c52698c914c106424d64813a310051364e4551e74263",
+          "new_test_files": [],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": false,
+          "public_passed": false,
+          "feature_passed": false,
+          "feature_checks_passed": 0,
+          "feature_checks_total": 0,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 1,
+          "status": "error",
+          "steps": 77,
+          "seconds": 764.16,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [
+            "The same unchanged material is being read repeatedly. The agent received a progress hint.",
+            "Guest output quota exceeded"
+          ],
+          "format_repairs": 0,
+          "action_errors": 4,
+          "read_actions": 64,
+          "repeated_reads": 19,
+          "generated_tokens": 6494,
+          "prompt_tokens": 799553,
+          "accepted": false,
+          "candidate_sha256": "103f871d386cba81ccc0745a7b747858f18ec91198b3ab81eaca04f6f11befc0",
+          "new_test_files": [],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": false,
+          "public_passed": false,
+          "feature_passed": false,
+          "feature_checks_passed": 0,
+          "feature_checks_total": 0,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        }
+      ],
+      "runtime_identity": {
+        "provider": "ollama",
+        "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+        "engine_version": "0.40.4",
+        "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+        "size": 7087508415,
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "9.2B",
+          "quantization_level": "Q4_K_M"
+        }
+      },
+      "placement": {
+        "models": [
+          {
+            "name": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "size": 6856900606,
+            "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen35",
+              "families": [
+                "qwen35"
+              ],
+              "parameter_size": "9.2B",
+              "quantization_level": "unknown"
+            },
+            "expires_at": "2026-10-15T07:42:08.0575454-06:00",
+            "size_vram": 6856900606,
+            "context_length": 32768,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "accepted": 0,
+      "attempts": 2
+    },
+    {
+      "name": "larger-context-original",
+      "status": "completed",
+      "started": "2026-10-15T13:39:26.824982+00:00",
+      "finished": "2026-10-15T13:51:31.766369+00:00",
+      "source_sha256": "f7ef234a0f7e25059cea4c64d0d6991649cc09dc84d4da821e8b8b411b95bcd3",
+      "tasks_sha256": "17eb40eec30b5c41aeed0752cd15bd0a0dbc1daf89185b0564a2055ca6c8f762",
+      "method": {
+        "execution": "vm",
+        "ordinary_timeout": 180,
+        "upgrade_timeout": 1800,
+        "response_tokens": 4096,
+        "context_tokens": 49152,
+        "temperature": 0.6,
+        "sampling_seed": null,
+        "repeats": 1,
+        "thinking": "on",
+        "max_steps": 128,
+        "inference": "host GPU; candidate commands and tests only in isolated VMs",
+        "upgrade_repeats": 1
+      },
+      "source_unchanged": true,
+      "host_files_unchanged": true,
+      "trials": [
+        {
+          "task": "file_summary",
+          "repeat": 1,
+          "status": "completed",
+          "steps": 17,
+          "seconds": 209.85,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 1,
+          "read_actions": 5,
+          "repeated_reads": 0,
+          "generated_tokens": 7058,
+          "prompt_tokens": 155413,
+          "accepted": true,
+          "candidate_sha256": "92778a4bbae8e371db392990a6c9e5111fca8f9dcfdac7355b8b23076a9f930d",
+          "new_test_files": [
+            "tests/test_file_summary.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 16,
+          "feature_checks_total": 16,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 1,
+          "status": "completed",
+          "steps": 46,
+          "seconds": 446.97,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 4,
+          "read_actions": 26,
+          "repeated_reads": 0,
+          "generated_tokens": 9752,
+          "prompt_tokens": 728893,
+          "accepted": false,
+          "candidate_sha256": "f7cea2cca5ab75479a792fc174d6236cce807055f2b1f0a43996810c1e17ee9a",
+          "new_test_files": [
+            "tests/test_append_text.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": false,
+          "feature_checks_passed": 0,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [
+            "append_large.txt_empty",
+            "limit_exact"
+          ],
+          "feature_reason": null
+        }
+      ],
+      "runtime_identity": {
+        "provider": "ollama",
+        "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+        "engine_version": "0.40.4",
+        "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+        "size": 7087508415,
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "9.2B",
+          "quantization_level": "Q4_K_M"
+        }
+      },
+      "placement": {
+        "models": [
+          {
+            "name": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "size": 7410548734,
+            "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen35",
+              "families": [
+                "qwen35"
+              ],
+              "parameter_size": "9.2B",
+              "quantization_level": "unknown"
+            },
+            "expires_at": "2026-10-15T08:10:03.2612907-06:00",
+            "size_vram": 7410548734,
+            "context_length": 49152,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "accepted": 1,
+      "attempts": 2
+    },
+    {
+      "name": "validation-48k",
+      "status": "completed",
+      "started": "2026-10-15T13:52:58.912665+00:00",
+      "finished": "2026-10-15T15:33:31.438119+00:00",
+      "source_sha256": "f7ef234a0f7e25059cea4c64d0d6991649cc09dc84d4da821e8b8b411b95bcd3",
+      "tasks_sha256": "17eb40eec30b5c41aeed0752cd15bd0a0dbc1daf89185b0564a2055ca6c8f762",
+      "method": {
+        "execution": "vm",
+        "ordinary_timeout": 180,
+        "upgrade_timeout": 1800,
+        "response_tokens": 4096,
+        "context_tokens": 49152,
+        "temperature": 0.6,
+        "sampling_seed": null,
+        "repeats": 1,
+        "thinking": "on",
+        "max_steps": 128,
+        "inference": "host GPU; candidate commands and tests only in isolated VMs",
+        "upgrade_repeats": 3
+      },
+      "source_unchanged": true,
+      "host_files_unchanged": true,
+      "trials": [
+        {
+          "task": "file_summary",
+          "repeat": 1,
+          "status": "error",
+          "steps": 102,
+          "seconds": 1392.87,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [
+            "Guest output quota exceeded"
+          ],
+          "format_repairs": 0,
+          "action_errors": 10,
+          "read_actions": 60,
+          "repeated_reads": 1,
+          "generated_tokens": 21223,
+          "prompt_tokens": 1857046,
+          "accepted": false,
+          "candidate_sha256": "869f579a1e34817e50c7ed9deaa73f26ec898d9b401cd621ba48e99841f1245c",
+          "new_test_files": [
+            "tests/test_file_summary.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": false,
+          "feature_checks_passed": 15,
+          "feature_checks_total": 16,
+          "failed_feature_checks": [
+            "reject_too-large.txt"
+          ],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 1,
+          "status": "error",
+          "steps": 77,
+          "seconds": 1738.66,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [
+            "Guest output quota exceeded"
+          ],
+          "format_repairs": 0,
+          "action_errors": 6,
+          "read_actions": 34,
+          "repeated_reads": 0,
+          "generated_tokens": 39208,
+          "prompt_tokens": 1232792,
+          "accepted": false,
+          "candidate_sha256": "4212f0ae8df6563c4b345edad9c52f6a3309e5f0476f2f77a1178b0511c32667",
+          "new_test_files": [
+            "tests/test_append_text.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": false,
+          "feature_checks_passed": 19,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [
+            "reject_large.txt_str",
+            "reject_too-large.txt_str"
+          ],
+          "feature_reason": null
+        },
+        {
+          "task": "file_summary",
+          "repeat": 2,
+          "status": "completed",
+          "steps": 33,
+          "seconds": 288.91,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 6,
+          "read_actions": 7,
+          "repeated_reads": 0,
+          "generated_tokens": 8369,
+          "prompt_tokens": 457469,
+          "accepted": true,
+          "candidate_sha256": "30473a6aa4bd4c9b107a2270f06923f9cc14db165a187bbf2125b149f488b337",
+          "new_test_files": [
+            "tests/test_file_summary.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 16,
+          "feature_checks_total": 16,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 2,
+          "status": "completed",
+          "steps": 38,
+          "seconds": 407.93,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 6,
+          "read_actions": 5,
+          "repeated_reads": 0,
+          "generated_tokens": 13279,
+          "prompt_tokens": 487559,
+          "accepted": false,
+          "candidate_sha256": "6e7e2b60ea07492e093fe424992a16ad3fbc9588a087171b34aea68841df0c68",
+          "new_test_files": [
+            "tests/test_append_text.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": false,
+          "feature_checks_passed": 0,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [
+            "append_large.txt_empty",
+            "limit_exact"
+          ],
+          "feature_reason": null
+        },
+        {
+          "task": "file_summary",
+          "repeat": 3,
+          "status": "error",
+          "steps": 19,
+          "seconds": 234.9,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 4,
+          "read_actions": 5,
+          "repeated_reads": 0,
+          "generated_tokens": 6418,
+          "prompt_tokens": 161256,
+          "accepted": false,
+          "candidate_sha256": "0fc7f3199d2b3e0b6b9f5a91f1a1334c602e5f3d2f032bd060f1fabadca70826",
+          "new_test_files": [
+            "tests/test_file_summary.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": false,
+          "feature_checks_passed": 16,
+          "feature_checks_total": 16,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 3,
+          "status": "paused",
+          "steps": 91,
+          "seconds": 1800.13,
+          "timed_out": true,
+          "failure_kind": "timeout",
+          "notices": [
+            "The response format was invalid. Asking the model to correct it; no action was executed.",
+            "The same unchanged material is being read repeatedly. The agent received a progress hint.",
+            "The response format was invalid. Asking the model to correct it; no action was executed."
+          ],
+          "format_repairs": 2,
+          "action_errors": 15,
+          "read_actions": 42,
+          "repeated_reads": 3,
+          "generated_tokens": 32182,
+          "prompt_tokens": 1599546,
+          "accepted": false,
+          "candidate_sha256": "f1bc8899d3b99bd8fe7ad74eaa05c645ec226561cecadce01c2c697e9f8344a0",
+          "new_test_files": [
+            "tests/test_append_text.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": false,
+          "feature_checks_passed": 0,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [
+            "append_large.txt_empty",
+            "limit_exact"
+          ],
+          "feature_reason": null
+        }
+      ],
+      "runtime_identity": {
+        "provider": "ollama",
+        "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+        "engine_version": "0.40.4",
+        "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+        "size": 7087508415,
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "9.2B",
+          "quantization_level": "Q4_K_M"
+        }
+      },
+      "placement": {
+        "models": [
+          {
+            "name": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "size": 7410548734,
+            "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen35",
+              "families": [
+                "qwen35"
+              ],
+              "parameter_size": "9.2B",
+              "quantization_level": "unknown"
+            },
+            "expires_at": "2026-10-15T08:23:30.7219199-06:00",
+            "size_vram": 7410548734,
+            "context_length": 49152,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "accepted": 1,
+      "attempts": 6
+    },
+    {
+      "name": "validation-helper-48k",
+      "status": "completed",
+      "started": "2026-10-15T15:38:16.890049+00:00",
+      "finished": "2026-10-15T16:49:25.665975+00:00",
+      "source_sha256": "618631e188f05cb472bc3991eef89623294110a07c429a01c2e8ea2772f190e2",
+      "tasks_sha256": "17eb40eec30b5c41aeed0752cd15bd0a0dbc1daf89185b0564a2055ca6c8f762",
+      "method": {
+        "execution": "vm",
+        "ordinary_timeout": 180,
+        "upgrade_timeout": 1800,
+        "response_tokens": 4096,
+        "context_tokens": 49152,
+        "temperature": 0.6,
+        "sampling_seed": null,
+        "repeats": 1,
+        "thinking": "on",
+        "max_steps": 128,
+        "inference": "host GPU; candidate commands and tests only in isolated VMs",
+        "upgrade_repeats": 3
+      },
+      "source_unchanged": true,
+      "host_files_unchanged": true,
+      "trials": [
+        {
+          "task": "file_summary",
+          "repeat": 1,
+          "status": "completed",
+          "steps": 76,
+          "seconds": 929.31,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [
+            "The response format was invalid. Asking the model to correct it; no action was executed."
+          ],
+          "format_repairs": 1,
+          "action_errors": 10,
+          "read_actions": 21,
+          "repeated_reads": 0,
+          "generated_tokens": 15517,
+          "prompt_tokens": 1328377,
+          "accepted": true,
+          "candidate_sha256": "5f014b3d3d0b13fe3a592b90ef7c7c33dc4037f1f91ff07c840995ffa9dac308",
+          "new_test_files": [
+            "tests/test_file_summary.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 16,
+          "feature_checks_total": 16,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 1,
+          "status": "completed",
+          "steps": 72,
+          "seconds": 1027.55,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 10,
+          "read_actions": 28,
+          "repeated_reads": 1,
+          "generated_tokens": 25423,
+          "prompt_tokens": 1161664,
+          "accepted": false,
+          "candidate_sha256": "de2ef58ce266ed0557275ea782e5974a9a3708318d1ed0c7a32154a2c1793e11",
+          "new_test_files": [
+            "tests/test_append_text.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": false,
+          "feature_checks_passed": 0,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [
+            "append_large.txt_empty",
+            "limit_exact"
+          ],
+          "feature_reason": null
+        },
+        {
+          "task": "file_summary",
+          "repeat": 2,
+          "status": "completed",
+          "steps": 77,
+          "seconds": 799.86,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [
+            "The same unchanged material is being read repeatedly. The agent received a progress hint.",
+            "The same unchanged material is being read repeatedly. The agent received a progress hint."
+          ],
+          "format_repairs": 0,
+          "action_errors": 8,
+          "read_actions": 48,
+          "repeated_reads": 6,
+          "generated_tokens": 14118,
+          "prompt_tokens": 1410713,
+          "accepted": true,
+          "candidate_sha256": "a7d6f71713e68b6c495de22edb4ca2955897b94479bf166c1479a935fc0194ec",
+          "new_test_files": [
+            "tests/test_file_summary.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 16,
+          "feature_checks_total": 16,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 2,
+          "status": "completed",
+          "steps": 53,
+          "seconds": 641.46,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 8,
+          "read_actions": 23,
+          "repeated_reads": 0,
+          "generated_tokens": 15374,
+          "prompt_tokens": 851554,
+          "accepted": false,
+          "candidate_sha256": "462a598f99bfb268993863e86fc7568f1d71f7a60f023c8fb43ddf167c7277fb",
+          "new_test_files": [
+            "tests/test_append_text.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": false,
+          "feature_checks_passed": 0,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [
+            "append_large.txt_empty",
+            "limit_exact"
+          ],
+          "feature_reason": null
+        },
+        {
+          "task": "file_summary",
+          "repeat": 3,
+          "status": "completed",
+          "steps": 31,
+          "seconds": 311.09,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 5,
+          "read_actions": 7,
+          "repeated_reads": 0,
+          "generated_tokens": 9342,
+          "prompt_tokens": 398518,
+          "accepted": true,
+          "candidate_sha256": "d7aa7f745e6f76e8bf9ba3b5d497cc8876a480ecfde650b3a55888ca13415678",
+          "new_test_files": [
+            "tests/test_file_summary.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 16,
+          "feature_checks_total": 16,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 3,
+          "status": "completed",
+          "steps": 55,
+          "seconds": 428.9,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 5,
+          "read_actions": 32,
+          "repeated_reads": 1,
+          "generated_tokens": 10989,
+          "prompt_tokens": 864620,
+          "accepted": false,
+          "candidate_sha256": "9f1bfe6ae4f11d233d802ada119e66ca54f54e759a3fcabe24de4e7cbbc605e7",
+          "new_test_files": [
+            "tests/test_append_text.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": false,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 21,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        }
+      ],
+      "runtime_identity": {
+        "provider": "ollama",
+        "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+        "engine_version": "0.40.4",
+        "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+        "size": 7087508415,
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "9.2B",
+          "quantization_level": "Q4_K_M"
+        }
+      },
+      "placement": {
+        "models": [
+          {
+            "name": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "size": 7410548734,
+            "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen35",
+              "families": [
+                "qwen35"
+              ],
+              "parameter_size": "9.2B",
+              "quantization_level": "unknown"
+            },
+            "expires_at": "2026-10-15T10:08:52.956626-06:00",
+            "size_vram": 7410548734,
+            "context_length": 49152,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "accepted": 3,
+      "attempts": 6
+    },
+    {
+      "name": "text-api-v2-48k-pilot",
+      "status": "completed",
+      "started": "2026-10-15T16:50:27.893237+00:00",
+      "finished": "2026-10-15T16:59:15.158830+00:00",
+      "source_sha256": "bea9b0c7b10cccc08812816b070cce7283679326cdfac86f695afe9b8140b0d4",
+      "tasks_sha256": "f94979aeceeed7b82d3bd5ddfa9cf2e9f5546e114423e4ef7563b45b24127aea",
+      "method": {
+        "execution": "vm",
+        "ordinary_timeout": 180,
+        "upgrade_timeout": 1800,
+        "response_tokens": 4096,
+        "context_tokens": 49152,
+        "temperature": 0.6,
+        "sampling_seed": null,
+        "repeats": 1,
+        "thinking": "on",
+        "max_steps": 128,
+        "inference": "host GPU; candidate commands and tests only in isolated VMs",
+        "upgrade_repeats": 1
+      },
+      "source_unchanged": true,
+      "host_files_unchanged": true,
+      "trials": [
+        {
+          "task": "file_summary",
+          "repeat": 1,
+          "status": "completed",
+          "steps": 31,
+          "seconds": 219.76,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 1,
+          "read_actions": 15,
+          "repeated_reads": 0,
+          "generated_tokens": 6502,
+          "prompt_tokens": 349008,
+          "accepted": true,
+          "candidate_sha256": "49ccb4068757117ca198efd3337a14bd11f37fc58c211dd64aaf07929241a95a",
+          "new_test_files": [
+            "tests/test_file_summary.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 16,
+          "feature_checks_total": 16,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 1,
+          "status": "error",
+          "steps": 12,
+          "seconds": 239.75,
+          "timed_out": false,
+          "failure_kind": "connection",
+          "notices": [
+            "The model service could not be reached. Check the connection and retry."
+          ],
+          "format_repairs": 0,
+          "action_errors": 2,
+          "read_actions": 4,
+          "repeated_reads": 0,
+          "generated_tokens": 4277,
+          "prompt_tokens": 85581,
+          "accepted": false,
+          "candidate_sha256": "3e3692e814e3af7c81b13026accca00bcf12bd339c9cf96ec6f57092381575e6",
+          "new_test_files": [
+            "tests/test_append_text.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": false,
+          "feature_checks_passed": 21,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        }
+      ],
+      "runtime_identity": {
+        "provider": "ollama",
+        "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+        "engine_version": "0.40.4",
+        "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+        "size": 7087508415,
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "9.2B",
+          "quantization_level": "Q4_K_M"
+        }
+      },
+      "placement": {
+        "models": [
+          {
+            "name": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "size": 7410548734,
+            "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen35",
+              "families": [
+                "qwen35"
+              ],
+              "parameter_size": "9.2B",
+              "quantization_level": "unknown"
+            },
+            "expires_at": "2026-10-15T11:21:04.2057729-06:00",
+            "size_vram": 7410548734,
+            "context_length": 49152,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "accepted": 1,
+      "attempts": 2
+    },
+    {
+      "name": "text-api-v2-64k-off-pilot",
+      "status": "completed",
+      "started": "2026-10-15T16:59:15.493694+00:00",
+      "finished": "2026-10-15T17:16:30.738485+00:00",
+      "source_sha256": "bea9b0c7b10cccc08812816b070cce7283679326cdfac86f695afe9b8140b0d4",
+      "tasks_sha256": "f94979aeceeed7b82d3bd5ddfa9cf2e9f5546e114423e4ef7563b45b24127aea",
+      "method": {
+        "execution": "vm",
+        "ordinary_timeout": 180,
+        "upgrade_timeout": 1800,
+        "response_tokens": 4096,
+        "context_tokens": 65536,
+        "temperature": 0.6,
+        "sampling_seed": null,
+        "repeats": 1,
+        "thinking": "off",
+        "max_steps": 128,
+        "inference": "host GPU; candidate commands and tests only in isolated VMs",
+        "upgrade_repeats": 1
+      },
+      "source_unchanged": true,
+      "host_files_unchanged": true,
+      "trials": [
+        {
+          "task": "file_summary",
+          "repeat": 1,
+          "status": "completed",
+          "steps": 79,
+          "seconds": 688.51,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 9,
+          "read_actions": 37,
+          "repeated_reads": 2,
+          "generated_tokens": 11173,
+          "prompt_tokens": 1766922,
+          "accepted": true,
+          "candidate_sha256": "fe28641f3f4c6878ee0d4125e33e231df9be2921383a7e034d2640880c8081fe",
+          "new_test_files": [
+            "tests/test_file_summary.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 16,
+          "feature_checks_total": 16,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 1,
+          "status": "completed",
+          "steps": 35,
+          "seconds": 289.83,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 6,
+          "read_actions": 8,
+          "repeated_reads": 0,
+          "generated_tokens": 8258,
+          "prompt_tokens": 551198,
+          "accepted": true,
+          "candidate_sha256": "e84d0cb482f927654d16a0a542b0346951a4b8f6fab06975d3d2a35c01941357",
+          "new_test_files": [
+            "tests/test_append_text.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 21,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        }
+      ],
+      "runtime_identity": {
+        "provider": "ollama",
+        "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+        "engine_version": "0.40.4",
+        "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+        "size": 7087508415,
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "9.2B",
+          "quantization_level": "Q4_K_M"
+        }
+      },
+      "placement": {
+        "models": [
+          {
+            "name": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "size": 7964196862,
+            "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen35",
+              "families": [
+                "qwen35"
+              ],
+              "parameter_size": "9.2B",
+              "quantization_level": "unknown"
+            },
+            "expires_at": "2026-10-15T11:29:40.8218321-06:00",
+            "size_vram": 7964196862,
+            "context_length": 65536,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "accepted": 2,
+      "attempts": 2
+    },
+    {
+      "name": "text-api-v2-64k-off-validation",
+      "status": "completed",
+      "started": "2026-10-15T17:16:31.312924+00:00",
+      "finished": "2026-10-15T18:39:50.228358+00:00",
+      "source_sha256": "bea9b0c7b10cccc08812816b070cce7283679326cdfac86f695afe9b8140b0d4",
+      "tasks_sha256": "f94979aeceeed7b82d3bd5ddfa9cf2e9f5546e114423e4ef7563b45b24127aea",
+      "method": {
+        "execution": "vm",
+        "ordinary_timeout": 180,
+        "upgrade_timeout": 1800,
+        "response_tokens": 4096,
+        "context_tokens": 65536,
+        "temperature": 0.6,
+        "sampling_seed": null,
+        "repeats": 1,
+        "thinking": "off",
+        "max_steps": 128,
+        "inference": "host GPU; candidate commands and tests only in isolated VMs",
+        "upgrade_repeats": 3
+      },
+      "source_unchanged": true,
+      "host_files_unchanged": true,
+      "trials": [
+        {
+          "task": "file_summary",
+          "repeat": 1,
+          "status": "completed",
+          "steps": 21,
+          "seconds": 151.17,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 3,
+          "read_actions": 5,
+          "repeated_reads": 0,
+          "generated_tokens": 4182,
+          "prompt_tokens": 204972,
+          "accepted": true,
+          "candidate_sha256": "8f88ce5f3d92a06d5d0aa5725d648684754c2c6444fb7d5e005dfc2ad6a5875a",
+          "new_test_files": [
+            "tests/test_file_summary.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 16,
+          "feature_checks_total": 16,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 1,
+          "status": "completed",
+          "steps": 46,
+          "seconds": 332.58,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 6,
+          "read_actions": 8,
+          "repeated_reads": 0,
+          "generated_tokens": 9105,
+          "prompt_tokens": 801562,
+          "accepted": true,
+          "candidate_sha256": "805cd4cb566b84dc67f505dfe6bab768e41eb99868bbb8500f7f06dbe05b229b",
+          "new_test_files": [
+            "tests/test_append_text.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 21,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "file_summary",
+          "repeat": 2,
+          "status": "completed",
+          "steps": 117,
+          "seconds": 802.53,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [
+            "The same unchanged material is being read repeatedly. The agent received a progress hint.",
+            "The same unchanged material is being read repeatedly. The agent received a progress hint.",
+            "The same unchanged material is being read repeatedly. The agent received a progress hint.",
+            "The same unchanged material is being read repeatedly. The agent received a progress hint."
+          ],
+          "format_repairs": 0,
+          "action_errors": 9,
+          "read_actions": 86,
+          "repeated_reads": 28,
+          "generated_tokens": 13006,
+          "prompt_tokens": 2610048,
+          "accepted": false,
+          "candidate_sha256": "b8a5edbe4415ccdc37c4cf379d64b9a5a170623e039bdcfb01f90a903f6d9fb4",
+          "new_test_files": [],
+          "protected_unchanged": false,
+          "allowed_files_only": false,
+          "regressions_passed": true,
+          "public_passed": null,
+          "feature_passed": false,
+          "feature_checks_passed": null,
+          "feature_checks_total": null,
+          "failed_feature_checks": [],
+          "feature_reason": "Requested unchanged execution loop or existing tests were modified"
+        },
+        {
+          "task": "append_text",
+          "repeat": 2,
+          "status": "error",
+          "steps": 76,
+          "seconds": 1308.26,
+          "timed_out": false,
+          "failure_kind": "connection",
+          "notices": [
+            "The same unchanged material is being read repeatedly. The agent received a progress hint.",
+            "The model service could not be reached. Check the connection and retry."
+          ],
+          "format_repairs": 0,
+          "action_errors": 15,
+          "read_actions": 27,
+          "repeated_reads": 2,
+          "generated_tokens": 12065,
+          "prompt_tokens": 1742549,
+          "accepted": false,
+          "candidate_sha256": "10f5666f0f8b0d1f4d8a9154274a10d0daf3d08bf1a19b9a9bbcebdb3fb2ab3d",
+          "new_test_files": [
+            "tests/test_append_text.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": false,
+          "feature_passed": false,
+          "feature_checks_passed": 0,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [
+            "append_sample.txt",
+            "append_empty.txt",
+            "append_new/deep.txt",
+            "append_sample.txt_empty",
+            "append_large.txt_empty",
+            "limit_exact"
+          ],
+          "feature_reason": null
+        },
+        {
+          "task": "file_summary",
+          "repeat": 3,
+          "status": "completed",
+          "steps": 75,
+          "seconds": 480.58,
+          "timed_out": false,
+          "failure_kind": null,
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 8,
+          "read_actions": 49,
+          "repeated_reads": 2,
+          "generated_tokens": 8274,
+          "prompt_tokens": 1569946,
+          "accepted": true,
+          "candidate_sha256": "9cd8556bfb2ef70c2493f460e0632fafa451b13164b76f1f65437b1f7d4053a0",
+          "new_test_files": [
+            "tests/test_file_summary.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": true,
+          "feature_passed": true,
+          "feature_checks_passed": 16,
+          "feature_checks_total": 16,
+          "failed_feature_checks": [],
+          "feature_reason": null
+        },
+        {
+          "task": "append_text",
+          "repeat": 3,
+          "status": "paused",
+          "steps": 88,
+          "seconds": 1800.21,
+          "timed_out": true,
+          "failure_kind": "timeout",
+          "notices": [],
+          "format_repairs": 0,
+          "action_errors": 18,
+          "read_actions": 11,
+          "repeated_reads": 0,
+          "generated_tokens": 29537,
+          "prompt_tokens": 2112481,
+          "accepted": false,
+          "candidate_sha256": "90bba60ffd78dfd3f2421d616720f75c7cb859f76195603a1aa5006f12a96c01",
+          "new_test_files": [
+            "tests/test_simple.py",
+            "tests/test_append_text2.py"
+          ],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "regressions_passed": true,
+          "public_passed": false,
+          "feature_passed": false,
+          "feature_checks_passed": 0,
+          "feature_checks_total": 21,
+          "failed_feature_checks": [
+            "append_sample.txt",
+            "append_empty.txt",
+            "append_new/deep.txt",
+            "append_sample.txt_empty",
+            "append_large.txt_empty",
+            "limit_exact"
+          ],
+          "feature_reason": null
+        }
+      ],
+      "runtime_identity": {
+        "provider": "ollama",
+        "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+        "engine_version": "0.40.4",
+        "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+        "size": 7087508415,
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "9.2B",
+          "quantization_level": "Q4_K_M"
+        }
+      },
+      "placement": {
+        "models": [
+          {
+            "name": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+            "size": 7964196862,
+            "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen35",
+              "families": [
+                "qwen35"
+              ],
+              "parameter_size": "9.2B",
+              "quantization_level": "unknown"
+            },
+            "expires_at": "2026-10-15T11:47:07.7137265-06:00",
+            "size_vram": 7964196862,
+            "context_length": 65536,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "accepted": 3,
+      "attempts": 6
+    }
+  ],
+  "growth": [
+    {
+      "name": "corrected-growth-continuation",
+      "status": "completed",
+      "passed": false,
+      "source_sha256": "4ed624b9ec3b8c090d31c16fb514dd0c61f429b0a04e851d8fa31a3485d2a9e8",
+      "extension": {
+        "status": null,
+        "steps": null,
+        "seconds": null
+      },
+      "new_feature_passed": true,
+      "regressions_passed": true,
+      "protected_unchanged": true,
+      "allowed_files_only": true,
+      "public_passed": true,
+      "retained_feature_passed": true,
+      "ready_for_restart": true,
+      "restart": {
+        "status": "completed",
+        "steps": 10,
+        "seconds": 92.62,
+        "tools_used": [
+          "list_files",
+          "read_file",
+          "run_command",
+          "write_file",
+          "run_command",
+          "read_file",
+          "read_file",
+          "run_command"
+        ]
+      },
+      "audit_json": {
+        "path": "inputs/sample.txt",
+        "bytes": 19,
+        "characters": 16,
+        "lines": 2,
+        "words": 4
+      },
+      "audit_log": "BEGIN\r\nAUDIT COMPLETE\n",
+      "input_preserved": true,
+      "candidate_unchanged": true,
+      "original_verdict_preserved": true,
+      "reason": "Original grader incorrectly protected a disposable sample.txt carried over from the accepted seed. Tests and runtime edit restrictions remain unchanged."
+    },
+    {
+      "name": "text-api-v2-64k-off-exploratory-growth-1",
+      "status": "completed",
+      "passed": false,
+      "source_sha256": "8f88ce5f3d92a06d5d0aa5725d648684754c2c6444fb7d5e005dfc2ad6a5875a",
+      "extension": {
+        "status": "waiting",
+        "steps": 80,
+        "seconds": 472.26
+      },
+      "new_feature_passed": true,
+      "regressions_passed": true,
+      "protected_unchanged": true,
+      "allowed_files_only": true,
+      "public_passed": true,
+      "retained_feature_passed": true,
+      "ready_for_restart": true,
+      "restart": {
+        "status": "waiting",
+        "steps": 2,
+        "tools_used": [
+          "read_file",
+          "read_file"
+        ],
+        "same_task": true,
+        "seconds": 102.75
+      },
+      "audit_json": {
+        "path": "inputs/sample.txt",
+        "bytes": 19,
+        "characters": 16,
+        "lines": 2,
+        "words": 4
+      },
+      "audit_log": "BEGIN\r\nAUDIT COMPLETE\n",
+      "input_preserved": true,
+      "candidate_unchanged": null,
+      "original_verdict_preserved": null,
+      "reason": null
+    },
+    {
+      "name": "text-api-v2-64k-off-exploratory-growth-2",
+      "status": "completed",
+      "passed": false,
+      "source_sha256": "9cd8556bfb2ef70c2493f460e0632fafa451b13164b76f1f65437b1f7d4053a0",
+      "extension": {
+        "status": "waiting",
+        "steps": 0,
+        "seconds": 17.67
+      },
+      "new_feature_passed": false,
+      "regressions_passed": null,
+      "protected_unchanged": false,
+      "allowed_files_only": false,
+      "public_passed": null,
+      "retained_feature_passed": true,
+      "ready_for_restart": false,
+      "restart": null,
+      "audit_json": null,
+      "audit_log": null,
+      "input_preserved": null,
+      "candidate_unchanged": null,
+      "original_verdict_preserved": null,
+      "reason": null
+    },
+    {
+      "name": "text-api-v2-64k-off-staged-growth-1",
+      "status": "completed",
+      "passed": false,
+      "source_sha256": "8f88ce5f3d92a06d5d0aa5725d648684754c2c6444fb7d5e005dfc2ad6a5875a",
+      "extension": {
+        "status": "waiting",
+        "steps": 41,
+        "seconds": 354.23
+      },
+      "new_feature_passed": true,
+      "regressions_passed": true,
+      "protected_unchanged": true,
+      "allowed_files_only": true,
+      "public_passed": true,
+      "retained_feature_passed": true,
+      "ready_for_restart": true,
+      "restart": {
+        "status": "completed",
+        "steps": 8,
+        "tools_used": [
+          "read_file",
+          "run_command",
+          "write_file",
+          "run_command",
+          "read_file",
+          "read_file",
+          "run_command"
+        ],
+        "same_task": true,
+        "seconds": 159.93
+      },
+      "audit_json": {
+        "path": "inputs/sample.txt",
+        "bytes": 19,
+        "characters": 16,
+        "lines": 2,
+        "words": 4
+      },
+      "audit_log": "BEGIN\r\nAUDIT COMPLETE\n",
+      "input_preserved": true,
+      "candidate_unchanged": null,
+      "original_verdict_preserved": null,
+      "reason": null
+    },
+    {
+      "name": "text-api-v2-64k-off-staged-growth-2",
+      "status": "completed",
+      "passed": false,
+      "source_sha256": "9cd8556bfb2ef70c2493f460e0632fafa451b13164b76f1f65437b1f7d4053a0",
+      "extension": {
+        "status": "waiting",
+        "steps": 25,
+        "seconds": 226.67
+      },
+      "new_feature_passed": false,
+      "regressions_passed": true,
+      "protected_unchanged": false,
+      "allowed_files_only": false,
+      "public_passed": null,
+      "retained_feature_passed": true,
+      "ready_for_restart": false,
+      "restart": null,
+      "audit_json": null,
+      "audit_log": null,
+      "input_preserved": null,
+      "candidate_unchanged": null,
+      "original_verdict_preserved": null,
+      "reason": null
+    }
+  ],
+  "strict_upgrade_acceptances": 11,
+  "fresh_upgrade_attempts": 32,
+  "direct_tool_usage": {
+    "status": "completed",
+    "source_sha256": "4ed624b9ec3b8c090d31c16fb514dd0c61f429b0a04e851d8fa31a3485d2a9e8",
+    "trials": [
+      {
+        "terminal": true,
+        "passed": false,
+        "status": "completed",
+        "steps": 5,
+        "seconds": 21.3,
+        "actions": [
+          "file_summary",
+          "write_file",
+          "append_text",
+          "read_file",
+          "read_file"
+        ],
+        "checks": [
+          {
+            "path": "audit.json",
+            "passed": true
+          },
+          {
+            "path": "audit.log",
+            "passed": false
+          },
+          {
+            "path": "inputs/sample.txt",
+            "passed": true
+          }
+        ],
+        "audit_json": {
+          "path": "inputs/sample.txt",
+          "bytes": 19,
+          "characters": 16,
+          "lines": 2,
+          "words": 4
+        },
+        "direct_tools_used": true
+      },
+      {
+        "terminal": false,
+        "passed": true,
+        "status": "completed",
+        "steps": 5,
+        "seconds": 17.46,
+        "actions": [
+          "file_summary",
+          "write_file",
+          "append_text",
+          "read_file",
+          "read_file"
+        ],
+        "checks": [
+          {
+            "path": "audit.json",
+            "passed": true
+          },
+          {
+            "path": "audit.log",
+            "passed": true
+          },
+          {
+            "path": "inputs/sample.txt",
+            "passed": true
+          }
+        ],
+        "audit_json": {
+          "path": "inputs/sample.txt",
+          "bytes": 19,
+          "characters": 16,
+          "lines": 2,
+          "words": 4
+        },
+        "direct_tools_used": true
+      }
+    ]
+  },
+  "notes": [
+    "Original verdicts remain unchanged; corrected fixture assessment and continuation are separate records.",
+    "Initial growth task contained conflicting completion instructions; later staged runs corrected this.",
+    "Prompt token totals include cached prompt tokens and are not uncached processing counts.",
+    "These are constrained file-tool tasks, not evidence of reliable arbitrary self-improvement."
+  ],
+  "final_starter_sha256": "bea9b0c7b10cccc08812816b070cce7283679326cdfac86f695afe9b8140b0d4",
+  "matches_tested_text_api_source": true,
+  "windows_regression_suite": {
+    "tests": 158,
+    "skipped": 16,
+    "passed": true,
+    "real_vm_opt_in": true
+  },
+  "final_grader_calibration": {
+    "passed": true,
+    "absent_tools_rejected": true,
+    "reference_tools_and_fresh_public_invocations_passed": true
+  }
+}
