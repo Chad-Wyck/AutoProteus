@@ -14,6 +14,7 @@ from controller.evaluation import run_task, tool_use
 from controller.isolation import Artifacts, IsolatedAgent
 from controller.providers import ModelClient, ProviderError, ERROR_MESSAGES, wire_messages
 from usage_budget import UsageBudget
+from run_budget import TokenBudgetMixin, BudgetModelClient
 
 CONTRACTS = {
     'line_count': 'line_count(path) reads UTF-8 text of at most 100000 Unicode characters without changing any bytes. Return path relative to the workspace and lines, exactly len(text.splitlines()). Empty input has zero lines.',
@@ -124,7 +125,7 @@ def public_check(navigation, store, source, name):
         agent.close()
 
 
-def reference(source, byte_limited=False):
+def reference(source, byte_limited=False, bypass_boundary=False):
     result = copy.deepcopy(source)
     implementation = '''        if tool in ("line_count", "json_keys", "text_counts"):
             import json
@@ -145,6 +146,11 @@ def reference(source, byte_limited=False):
             '            raw = path.read_bytes()\n'
             '            if len(raw) > 100000: raise ValueError("Too many bytes")\n'
             '            text = raw.decode("utf-8")\n')
+    if bypass_boundary:
+        implementation = implementation.replace('path = self.path(args["path"])', 'path = self.root / args["path"]')
+        implementation = implementation.replace('text = self.read_text(path)',
+            'text = path.read_bytes().decode("utf-8")\n'
+            '            if len(text) > 100000: raise ValueError("Too many characters")')
     for item in result:
         text = base64.b64decode(item['data']).decode()
         if item['path'] == 'autoproteus/tools.py':
@@ -163,10 +169,13 @@ def learning_records(events, source, review, session):
         event['data']['action'].get('arguments', {}).get('path') == 'experience/upgrade.md' for event in events)
     script_invoked = any(event.get('type') == 'action_result' and event.get('data', {}).get('ok') and
         'experience/inspect_workspace.py' in event['data'].get('action', {}).get('arguments', {}).get('command', '') for event in events)
+    smoke_invoked = any(event.get('type') == 'action_result' and event.get('data', {}).get('ok') and
+        'experience/invoke_tool.py' in event['data'].get('action', {}).get('arguments', {}).get('command', '') for event in events)
     return {'session': session, 'parent_seed_sha256': source, 'procedure': {
         'created_by': 'human', 'sha256': hashlib.sha256((ROOT / 'evaluations/upgrade-procedure.md').read_bytes()).hexdigest(),
         'loaded_through_file_tool': loaded, 'followed': 'unmeasured', 'general_effectiveness_verified': False},
         'inspection_program_observed_in_successful_command': script_invoked,
+        'development_invoker_observed_in_successful_command': smoke_invoked,
         'capability': {'created': bool(review.get('runtime_changed')), 'loaded_by_independent_checker': bool(review.get('public', {}).get('passed')),
             'used_by_independent_checker': bool(review.get('public', {}).get('passed')), 'task_agent_routes': tool_use(events),
             'independent_behavior_passed': bool(review.get('feature', {}).get('passed')), 'upgrade_accepted': bool(review.get('accepted')),
@@ -174,12 +183,16 @@ def learning_records(events, source, review, session):
         'verification_scope': 'This task and recorded checks only; model claims are separate.'}
 
 
+class BudgetUsageClient(TokenBudgetMixin, UsageClient):
+    pass
+
+
 class ExperienceSuite:
     def __init__(self, navigation):
         self.navigation = navigation
 
-    def client(self, config, cell, observer):
-        return (UsageClient if cell['variant'] == 'usage' else ModelClient)(config, observer=observer)
+    def client(self, config, cell, observer, budget):
+        return (BudgetUsageClient if cell['variant'] == 'usage' else BudgetModelClient)(config, observer=observer, token_budget=budget)
 
     def events_for_trial(self, plan, events):
         # Keep scripted setup reads out of model navigation/learning metrics;
@@ -193,6 +206,7 @@ class ExperienceSuite:
             hint = ''
             if cell['variant'] == 'procedure':
                 fixtures['experience/upgrade.md'] = plan['procedure']
+                fixtures['experience/invoke_tool.py'] = plan['invoke_tool']
                 hint = '\nAn optional concise procedure is in experience/upgrade.md. Read it if useful.'
             return {'name': cell['task'], 'task': 'Add exactly one new public tool. ' + plan['contracts'][cell['task']] +
                     self.navigation.study.RECIPE + hint, 'fixtures': fixtures, 'checks': []}

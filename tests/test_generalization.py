@@ -15,6 +15,16 @@ spec.loader.exec_module(study)
 
 
 class GeneralizationTests(unittest.TestCase):
+    def test_independent_development_invoker_counts_as_use_but_not_native_routing(self):
+        import json
+        event = {'type': 'action_result', 'data': {'ok': True,
+            'action': {'tool': 'run_command', 'arguments': {'command': 'python3 experience/invoke_tool.py format_json \'{"path":"sample.txt"}\''}},
+            'result': {'exit_code': 0, 'output': json.dumps({'check': 'development tool invocation', 'passed': True, 'tool': 'format_json'})}}}
+        use = study.tool_use([event])
+        self.assertEqual(use, {'direct': [], 'development': ['format_json']})
+        event['data']['result']['exit_code'] = 1
+        self.assertEqual(study.tool_use([event])['development'], [])
+
     def test_growth_usage_excludes_development_before_the_last_activation(self):
         events = [{'type': 'run_started'}, {'type': 'action_result', 'data': {'ok': True,
                    'action': {'tool': 'old_tool'}}}, {'type': 'run_started'},

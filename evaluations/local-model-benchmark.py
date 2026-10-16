@@ -41,8 +41,8 @@ class ScriptedClient:
 
 class DiagnosticClient(ModelClient):
     """Keep incomplete local generations as private evidence, never as actions."""
-    def __init__(self, config, directory, trial):
-        super().__init__(config)
+    def __init__(self, config, directory, trial, observer=None):
+        super().__init__(config, observer=observer)
         self.directory, self.trial = directory, trial
         self.interfaces = set()
 
@@ -144,7 +144,10 @@ def assess(store,starter,result,feature,directory,feature_check=None,public_chec
         else:review['feature']={'passed':False,'reason':'Requested unchanged execution loop or existing tests were modified'}
     else:
         review['feature']={'passed':False,'reason':'No runtime source edit'}
-    review['accepted']=all([review['completed'],review['runtime_changed'],bool(new_tests),protected_unchanged,allowed,review.get('regressions',{}).get('passed'),review.get('feature',{}).get('passed'),review.get('public',{}).get('passed')])
+    review['verified_upgrade']=all([review['runtime_changed'],bool(new_tests),protected_unchanged,allowed,review.get('regressions',{}).get('passed'),review.get('feature',{}).get('passed'),review.get('public',{}).get('passed')])
+    review['autonomously_completed']=bool(review['verified_upgrade'] and review['completed'])
+    # Compatibility name retains the historic full-workflow meaning.
+    review['accepted']=review['autonomously_completed']
     atomic_json(directory/'review.json',review)
     return review
 

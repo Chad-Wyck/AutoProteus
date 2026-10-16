@@ -20,6 +20,7 @@ class ProviderError(Exception):
 
 
 ERROR_MESSAGES = {
+    'budget': 'The experiment exhausted its generated-token allowance. Saved work can still be independently checked.',
     'connection': 'The model service could not be reached. Check the connection and retry.',
     'timeout': 'The model response timed out. Retry or choose a smaller model.',
     'cutoff': 'The model response was cut short. Increase the response budget or retry; no partial action ran.',

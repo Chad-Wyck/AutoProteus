@@ -13,6 +13,8 @@ from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / 'evaluations'))
+from run_budget import TokenBudgetMixin, GeneratedTokenBudget, DEFAULT_OUTPUT_TOKENS, DEFAULT_TASK_SECONDS
 from controller.config import DEFAULTS
 from controller.evaluation import (candidate_source, freeze_source, growth_scores, run_task,
                                    source_identity, tool_use)
@@ -25,6 +27,8 @@ from controller.compatibility import model_identity
 spec = importlib.util.spec_from_file_location('benchmark', ROOT / 'evaluations/local-model-benchmark.py')
 benchmark = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(benchmark)
+class BudgetDiagnosticClient(TokenBudgetMixin, benchmark.DiagnosticClient):
+    pass
 PROBE = (ROOT / 'evaluations/generalization-probe.py').read_text(encoding='utf-8')
 
 CONTRACTS = {
@@ -102,7 +106,7 @@ def verify_feature(store, source, name):
         result = run_task(agent, store, settings.values, {'name': 'independent-' + name, 'task': 'Run the independent checks.',
             'fixtures': {'heldout_probe.py': PROBE}, 'checks': [{'path': 'heldout-result.json'}]}, source, 120)
         probe = benchmark.read_artifact(store, store.get(result['session']), 'heldout-result.json')
-        return {'passed': bool(result['passed'] and probe.get('passed')), 'probe': probe}
+        return {'passed': bool(result['passed'] and probe.get('passed')), 'probe': probe, 'run': result}
     finally:
         agent.close()
 
@@ -118,7 +122,7 @@ def verify_public(store, source, name):
         events = journal(store, store.get(result['session']))
         value = next((e['data']['result'] for e in events if e['type'] == 'action_result' and
                       e['data']['action']['tool'] == name and e['data']['ok']), {})
-        return {'passed': result['passed'] and all(value.get(key) == item for key, item in expected.items())}
+        return {'passed': result['passed'] and all(value.get(key) == item for key, item in expected.items()), 'run': result}
     finally:
         agent.close()
 
@@ -166,6 +170,26 @@ def self_check(output, source):
         atomic_json(output / 'calibration.json', report)
         if negative['passed'] or not control['passed'] or not public['passed']:
             raise RuntimeError('Independent grader calibration failed: ' + name)
+    escaping = json.loads(json.dumps(positive))
+    for item in escaping:
+        if item['path'] == 'autoproteus/tools.py':
+            text = base64.b64decode(item['data']).decode()
+            # Deliberately bypass only the reference feature's path helpers;
+            # the original tools and protected regressions are untouched.
+            faulty = REFERENCE.replace('path = self.path(args["path"])', 'path = self.root / args["path"]')
+            faulty = faulty.replace('self.read_text(path)', 'path.read_bytes().decode("utf-8")')
+            faulty = faulty.replace('return self.write_text(path, text)',
+                'path.write_bytes(text.encode("utf-8"))\n'
+                '            return {"path": str(path.relative_to(self.root)), "bytes": len(text.encode("utf-8"))}')
+            text = text.replace(REFERENCE, faulty)
+            item['data'] = base64.b64encode(text.encode()).decode()
+    faulty_source = freeze_source(store, escaping, 'Faulty path-bypass control')
+    rejected = verify_feature(store, faulty_source, 'format_json')
+    report['format_json_path_bypass_negative'] = rejected
+    atomic_json(output / 'calibration.json', report)
+    checks = rejected.get('probe', {}).get('checks', {})
+    if rejected['passed'] or any(checks.get(key) is not False for key in ('reject_path_../outside-heldout.txt', 'reject_path_escape')):
+        raise RuntimeError('The formatting grader did not reject both path-bypass controls')
 
 
 def clone_checkpoint(store, original, label):
@@ -282,6 +306,8 @@ def main(args):
     fingerprint = source_identity(source)
     profiles = profile_configs()
     plan = {'started': now(), 'source_sha256': fingerprint, 'repeats': args.repeats,
+            'timeout': args.timeout, 'output_token_budget': args.output_token_budget,
+            'budget_scope': 'Per fresh feature task; per VM stage in the legacy forked-growth experiment. All stage budgets are recorded.',
             'profiles': {name: profiles[name] for name in args.profiles}, 'contracts': CONTRACTS,
             'terminal_note': 'Terminal is explicitly enabled for all upgrade trials; saved app preferences are untouched.',
             'choice': 'Model selects the first of two independently specified capabilities needed for a concrete audit.',
@@ -293,7 +319,7 @@ def main(args):
     plan['trusted_sha256'] = {}
     for name in ('evaluations/generalization.py', 'evaluations/generalization-probe.py', 'evaluations/local-model-benchmark.py',
                  'controller/evaluation.py', 'controller/isolation.py', 'controller/providers.py', 'guest/worker.py',
-                 'controller/runtime-lock.json', 'controller/managed-runtime-lock.json', 'tests/test_seed.py', 'tests/test_text_helpers.py'):
+                 'controller/runtime-lock.json', 'controller/managed-runtime-lock.json', 'evaluations/run_budget.py', 'tests/test_seed.py', 'tests/test_text_helpers.py'):
         path = output / 'trusted-runner' / name
         path.parent.mkdir(parents=True, exist_ok=True)
         data = (ROOT / name).read_bytes()
@@ -320,8 +346,12 @@ def main(args):
             rows = []
             report['profiles'][profile] = {'identity': identity, 'config': config, 'trials': rows,
                                             'qualification': 'not_established'}
-            agent = IsolatedAgent(ROOT, store, settings, lambda cfg: benchmark.DiagnosticClient(
-                cfg, output / profile / 'provider-errors', {'profile': profile}))
+            budgets = []
+            def factory(cfg):
+                budget = GeneratedTokenBudget(args.output_token_budget)
+                budgets.append(budget)
+                return BudgetDiagnosticClient(cfg, output / profile / 'provider-errors', {'profile': profile}, token_budget=budget)
+            agent = IsolatedAgent(ROOT, store, settings, factory)
             try:
                 for repeat in range(1, args.repeats + 1):
                     for name, contract in CONTRACTS.items():
@@ -331,12 +361,14 @@ def main(args):
                         trial = benchmark.enrich(store, run_task(agent, store, config, {
                             'name': name, 'task': 'Add exactly one new public tool. ' + contract + RECIPE, 'checks': []}, frozen, args.timeout))
                         review = assess(store, source, trial, name, output / profile / ('trial-' + str(repeat)) / name)
+                        trial['token_budget'] = budgets[-1].summary()
                         rows.append({'name': name, 'repeat': repeat, 'run': trial, 'review': review})
                         atomic_json(output / 'results.json', report)
                         print('HELDOUT RESULT', profile, name, review['accepted'], flush=True)
                 growth_dir = output / profile / 'choice'
                 growth_dir.mkdir(parents=True)
                 growth = choice_growth(store, settings, agent, frozen, source, growth_dir, args.timeout)
+                growth['stage_token_budgets'] = [budget.summary() for budget in budgets[len(rows):]]
                 report['profiles'][profile]['growth'] = growth
                 if args.repeats >= 3 and all(row['review']['accepted'] for row in rows) and len(growth['branches']) == 2 and all(
                         branch.get('scores', {}).get('functional_growth') for branch in growth['branches']):
@@ -362,7 +394,8 @@ if __name__ == '__main__':
     parser.add_argument('--output', required=True)
     parser.add_argument('--profiles', nargs='+', choices=['default', 'qwen9b'], default=['default', 'qwen9b'])
     parser.add_argument('--repeats', type=int, choices=range(1, 6), default=3)
-    parser.add_argument('--timeout', type=int, default=900)
+    parser.add_argument('--timeout', type=int, default=DEFAULT_TASK_SECONDS)
+    parser.add_argument('--output-token-budget', type=int, default=DEFAULT_OUTPUT_TOKENS)
     parser.add_argument('--prepare-only', action='store_true')
     parser.add_argument('--self-check', action='store_true')
     main(parser.parse_args())

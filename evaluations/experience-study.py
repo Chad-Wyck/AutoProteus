@@ -22,7 +22,7 @@ GROUPS = {'procedure': ('procedure', list(CONTRACTS)), 'history': ('retrieval', 
           'context': ('usage', list(CONTRACTS)), 'programs': ('program', ['inspect_files'])}
 EXTRA_TRUSTED = ('evaluations/experience-study.py', 'evaluations/experience.py', 'evaluations/experience_probe.py',
     'evaluations/experience_calibration.py', 'evaluations/journal_tools.py', 'evaluations/usage_budget.py',
-    'evaluations/inspect_workspace.py', 'evaluations/upgrade-procedure.md')
+    'evaluations/inspect_workspace.py', 'evaluations/invoke_tool.py', 'evaluations/upgrade-procedure.md')
 
 
 class Suite(ExperienceSuite):
@@ -75,6 +75,13 @@ class Suite(ExperienceSuite):
             atomic_json(directory / 'calibration.json', record)
             if faulty_result['passed'] or not boundary or boundary['passed']:
                 raise RuntimeError('The JSON grader did not reject the faulty byte-limited control at the Unicode boundary')
+            escaping = freeze_source(store, reference(sources['baseline'], bypass_boundary=True), 'Faulty path-bypass control')
+            boundary_result = feature_check(navigation, store, escaping, 'json_keys')
+            record['path_bypass_json_negative'] = boundary_result
+            path_checks = {item['name']: item['passed'] for item in boundary_result['probe']['checks']}
+            atomic_json(directory / 'calibration.json', record)
+            if boundary_result['passed'] or any(path_checks.get(key) is not False for key in ('../outside.txt', 'escaping-link')):
+                raise RuntimeError('The JSON grader did not reject both path-bypass controls')
         elif plan['experiment'] == 'programs':
             cell = plan['schedule'][1]
             task = self.task(plan, cell)
@@ -138,7 +145,8 @@ def prepare(args):
     output.mkdir(parents=True, exist_ok=False)
     # Rebuild the navigation plan because trusted host instrumentation evolved.
     # Its source packs, settings and 18 comparison cells retain the same design.
-    navigation.prepare(SimpleNamespace(output=str(output / 'navigation'), repeats=args.repeats, timeout=args.timeout))
+    navigation.prepare(SimpleNamespace(output=str(output / 'navigation'), repeats=args.repeats, timeout=args.timeout,
+        output_token_budget=getattr(args, 'output_token_budget', navigation.DEFAULT_OUTPUT_TOKENS)))
     template = json.loads((output / 'navigation/plan.json').read_text())
     baseline = seed_files(ROOT)
     for group, (name, tasks) in GROUPS.items():
@@ -147,6 +155,7 @@ def prepare(args):
         sources = {'baseline': baseline, name: variant(baseline, name)}
         plan = {**template, 'experiment': group, 'created': now(), 'contracts': CONTRACTS,
             'procedure': (ROOT / 'evaluations/upgrade-procedure.md').read_text(),
+            'invoke_tool': (ROOT / 'evaluations/invoke_tool.py').read_text(),
             'program': (ROOT / 'evaluations/inspect_workspace.py').read_text(),
             'sources': {key: source_identity(value) for key, value in sources.items()}, 'schedule': [],
             'trusted_sha256': dict(template['trusted_sha256']),
@@ -172,7 +181,7 @@ def prepare(args):
     (output / 'READY.md').write_text('Prepared opt-in comparisons. No live trials have started.\n\n'
         'Open Start tests.cmd, then select one study. All use cached Qwen3.5 9B and isolated VMs.\n'
         'Navigation 18, procedure 18, history 6, context 18 and programs 6 attempts at three repeats.\n'
-        'Navigation alone is recommended: 18 attempts, up to 4.5 hours of task ceilings plus calibration and grading.\n'
+        f'Navigation alone: 18 attempts at three repeats; {args.timeout}-second and {template["output_token_budget"]}-generated-token ceilings per attempt.\n'
         'Other studies are separate opt-in runs. Full costs, failures and interrupted attempts remain recorded.\n'
         'Saved app preferences and normal seed are unchanged. Run check-only before model trials.\n', encoding='utf-8')
     print('Prepared experiment menu; no model inference started:', output)
@@ -215,7 +224,8 @@ if __name__ == '__main__':
     p = commands.add_parser('prepare')
     p.add_argument('--output', required=True)
     p.add_argument('--repeats', type=int, choices=range(1, 6), default=3)
-    p.add_argument('--timeout', type=int, default=900)
+    p.add_argument('--timeout', type=int, default=navigation.DEFAULT_TASK_SECONDS)
+    p.add_argument('--output-token-budget', type=int, default=navigation.DEFAULT_OUTPUT_TOKENS)
     for command in ('run', 'menu'):
         p = commands.add_parser(command)
         p.add_argument('--input', required=True)

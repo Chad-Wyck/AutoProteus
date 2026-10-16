@@ -578,7 +578,7 @@ def run(root, store, settings, client_factory, session, message=None):
             source = seed_files(ROOT)
             config = {**self.settings.values, 'configured': True, 'provider': 'hosted', 'protocol': 'json'}
             cell = {'id': 'fixture-baseline', 'task': 'sha256_file', 'repeat': 1, 'variant': 'baseline'}
-            plan = {'config': config, 'sources': {'baseline': navigation.source_identity(source)},
+            plan = {'config': config, 'output_token_budget': 65536, 'sources': {'baseline': navigation.source_identity(source)},
                     'trusted_sha256': {}, 'schedule': [cell], 'contracts': navigation.study.CONTRACTS, 'timeout': 90}
             engine = Mock()
             engine.ensure_service.return_value = server.url

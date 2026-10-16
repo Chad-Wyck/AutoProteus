@@ -51,15 +51,19 @@ def tool_use(events):
                             value.args and isinstance(value.args[0], ast.Constant) and isinstance(value.args[0].value, str)):
                         development.add(value.args[0].value)
                 continue
-            if (len(args) != 7 or args[:4] != ['python3', 'harness/seed.py', 'check', '--tool'] or
-                    args[5] != '--arguments'):
+            helper = len(args) == 4 and args[:2] == ['python3', 'experience/invoke_tool.py']
+            checker = (len(args) == 7 and args[:4] == ['python3', 'harness/seed.py', 'check', '--tool'] and
+                       args[5] == '--arguments')
+            if not (helper or checker):
                 continue
+            expected_check = 'development tool invocation' if helper else 'candidate tool invocation'
+            expected_tool = args[2] if helper else args[4]
             for line in data['result'].get('output', '').splitlines():
                 try:
                     record = json.loads(line)
-                    if (isinstance(record, dict) and record.get('check') == 'candidate tool invocation' and
-                            record.get('passed') is True and record.get('tool') == args[4]):
-                        development.add(args[4])
+                    if (isinstance(record, dict) and record.get('check') == expected_check and
+                            record.get('passed') is True and record.get('tool') == expected_tool):
+                        development.add(expected_tool)
                 except ValueError:
                     pass
         except (ValueError, TypeError, SyntaxError):

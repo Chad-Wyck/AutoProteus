@@ -34,8 +34,10 @@ and time limits. No new weights are downloaded and app preferences are unchanged
 
 At three repeats, navigation has 18 attempts, procedure 18, history 6, context
 18 and programs 6. Running all 66 attempts can exceed one night. Navigation alone
-is recommended for the first night: 18 attempts, up to 4.5 hours of task ceilings
-at the default 900-second limit, plus calibration and independent grading.
+is one option: 18 attempts, up to nine hours of task ceilings
+at the new default 1,800-second limit, plus calibration and independent grading.
+Each attempt also has a 65,536-generated-token allowance; both ceilings are
+recorded in its frozen plan and configurable at preparation. Select one study.
 The menu shows the selected plan's count and task ceiling. Procedure and the
 other studies remain separate opt-in runs; there is no chained-study shortcut.
 Ctrl+C stops and preserves launched attempts; reopening resumes unlaunched cells.
@@ -63,11 +65,20 @@ characters and rejects valid JSON above that boundary without changing bytes.
 Calibration includes a deliberately byte-limited implementation that must fail
 the valid Unicode boundary case, alongside the absent-tool negative and correct
 reference. A parser error on malformed oversized JSON cannot satisfy this check.
+Both traversal and symlink checks now target existing valid external JSON.
+A separate boundary-bypassing reference must fail both checks. External bytes
+must remain unchanged. The formatting grader uses the same valid-fixture rule.
 
 The procedure is ordinary task data in `experience/upgrade.md`. Its complete
 reading and prompt costs count. It summarizes lessons from checked v0.0.11 work
 and can be ignored by the model. This measures help from a fixed recipe; it does
 not establish autonomous learning or justify automatic procedure extraction.
+The updated treatment supplies `experience/invoke_tool.py` for an early tiny
+smoke test independent of the test suite. The procedure asks the model to read
+the actual file back and compare exact expected contents before repairing
+elaborate tests. Successful invocation alone is not feature verification.
+This study measures that procedure/helper bundle; the separate growth study
+supplies the same helper to both arms to isolate the procedure's contribution.
 
 History exposes only the current task's live guest journal and a bounded inert
 archive of its earlier records. The fixture first creates a real earlier tool

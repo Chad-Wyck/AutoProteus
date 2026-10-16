@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'evaluations'))
 from observations import CallRecorder, call_metrics, navigation_metrics, read_events
+from run_budget import BudgetModelClient, GeneratedTokenBudget, DEFAULT_OUTPUT_TOKENS, DEFAULT_TASK_SECONDS
 from controller.evaluation import freeze_source, run_regressions, run_task, source_identity
 from controller.isolation import IsolatedAgent, seed_files
 from controller.providers import ModelClient, request_json
@@ -62,12 +63,16 @@ def navigation_variant(source):
 
 
 def prepare(args):
+    GeneratedTokenBudget(getattr(args, 'output_token_budget', DEFAULT_OUTPUT_TOKENS))
+    if args.timeout < 1:
+        raise ValueError('Task deadline must be positive')
     output = private_path(args.output)
     output.mkdir(parents=True, exist_ok=False)
     baseline = seed_files(ROOT)
     sources = {'baseline': baseline, 'outline': navigation_variant(baseline)}
     plan = {'status': 'prepared', 'created': now(), 'config': study.profile_configs()['qwen9b'],
-            'repeats': args.repeats, 'timeout': args.timeout, 'contracts': study.CONTRACTS,
+            'repeats': args.repeats, 'timeout': args.timeout,
+            'output_token_budget': getattr(args, 'output_token_budget', DEFAULT_OUTPUT_TOKENS), 'contracts': study.CONTRACTS,
             'primary': 'Full accepted upgrades; independent behavior and candidate tests reported separately.',
             'efficiency': 'Costs on matched accepted task/repeat pairs, plus costs for all launched attempts.',
             'scope': 'Development comparison on previously tested contracts; any winner needs fresh validation tasks.',
@@ -85,7 +90,7 @@ def prepare(args):
         'controller/compatibility.py', 'controller/execution.py', 'controller/runtime-lock.json',
         'controller/managed-runtime-lock.json', 'guest/worker.py', 'tests/test_seed.py', 'tests/test_text_helpers.py',
         'evaluations/navigation-study.py', 'evaluations/navigation_probe.py', 'evaluations/source_navigation.py',
-        'evaluations/observations.py', 'evaluations/generalization.py', 'evaluations/generalization-probe.py',
+        'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/generalization.py', 'evaluations/generalization-probe.py',
         'evaluations/local-model-benchmark.py')
     for name in trusted:
         raw = (ROOT / name).read_bytes()
@@ -167,6 +172,8 @@ def comparison_summary(rows):
         graded = [row for row in launched if 'review' in row]
         summary['variants'][name] = {'launched': len(launched), 'graded': len(graded),
             'accepted': sum(row['review']['accepted'] for row in graded),
+            'verified_upgrades': sum(row['review'].get('verified_upgrade', row['review']['accepted']) for row in graded),
+            'budget_stops': sum(row.get('run', {}).get('failure_kind') == 'budget' or row.get('run', {}).get('timed_out', False) for row in launched),
             'all_launched_wire_requests': sum(row.get('calls', {}).get('wire_requests', 0) for row in launched),
             'all_model_task_seconds': round(sum(row.get('model_task_seconds', row.get('run', {}).get('seconds', 0)) for row in launched), 2),
             'capture_complete_trials': sum(bool(row.get('capture', {}).get('complete')) for row in launched),
@@ -247,8 +254,9 @@ def run(args, suite=None):
             store = Store(trial / 'sessions')
             recorder = CallRecorder(trial / 'provider-calls.jsonl', labels={**cell, 'source_sha256': plan['sources'][cell['variant']]})
             clients = []
+            budget = GeneratedTokenBudget(plan['output_token_budget'])
             def factory(config):
-                client = suite.client(config, cell, recorder) if suite else ModelClient(config, observer=recorder)
+                client = suite.client(config, cell, recorder, budget) if suite else BudgetModelClient(config, observer=recorder, token_budget=budget)
                 clients.append(client)
                 return client
             active_agent = IsolatedAgent(ROOT, store, settings, factory)
@@ -284,6 +292,7 @@ def run(args, suite=None):
                 row.setdefault('model_task_seconds', round(time.monotonic() - trial_started, 3))
                 row['total_trial_seconds'] = round(time.monotonic() - trial_started, 3)
                 row['calls'] = call_metrics(read_events(recorder.path))
+                row['token_budget'] = budget.summary()
                 row['capture'] = recorder.summary()
                 row['capture']['observer_failed'] = any(client.observation_failed for client in clients)
                 row['capture']['complete'] = bool(row['capture']['complete'] and not row['capture']['observer_failed'] and
@@ -336,7 +345,8 @@ if __name__ == '__main__':
     p = commands.add_parser('prepare')
     p.add_argument('--output', required=True)
     p.add_argument('--repeats', type=int, choices=range(1, 6), default=3)
-    p.add_argument('--timeout', type=int, default=900)
+    p.add_argument('--timeout', type=int, default=DEFAULT_TASK_SECONDS)
+    p.add_argument('--output-token-budget', type=int, default=DEFAULT_OUTPUT_TOKENS)
     p = commands.add_parser('run')
     p.add_argument('--input', required=True)
     p.add_argument('--check-only', action='store_true')

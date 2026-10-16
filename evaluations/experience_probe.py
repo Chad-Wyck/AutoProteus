@@ -51,12 +51,16 @@ reject('probe.txt', 'invalid-utf8')
 (root / 'probe.txt').write_text('x' * 100001)
 reject('probe.txt', 'oversized')
 (root / 'probe.txt').write_text('preserved')
+outside = root.parent / 'outside.txt'
+# The escaped target must be valid input, so parsing cannot impersonate a
+# workspace-boundary rejection. Create it before traversal AND symlink checks.
+outside_raw = b'{"outside":1}'
+outside.write_bytes(outside_raw)
 for path in ('missing.txt', '.', '../outside.txt', '/etc/passwd'):
     reject(path, path)
-outside = root.parent / 'outside.txt'
-outside.write_text('outside')
 (root / 'escape.txt').symlink_to(outside)
 reject('escape.txt', 'escaping-link')
+checks.append({'name': 'outside-preserved', 'passed': outside.read_bytes() == outside_raw})
 if name == 'json_keys':
     # Both cases are valid JSON. Invalid JSON above the limit could be rejected
     # by parsing alone and would not exercise the character bound.

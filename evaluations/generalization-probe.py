@@ -97,11 +97,12 @@ else:
 
 (root / 'directory').mkdir(exist_ok=True)
 outside = root.parent / 'outside-heldout.txt'
-outside.write_bytes(b'preserve')
+outside_raw = b'{"outside":1}'
+outside.write_bytes(outside_raw)
 (root / 'escape').symlink_to(outside)
 for name in ('directory', 'missing', '../outside-heldout.txt', 'escape'):
     check('reject_path_' + name, lambda name=name: rejects(lambda: call(name)))
-check('outside_preserved', lambda: outside.read_bytes() == b'preserve')
+check('outside_preserved', lambda: outside.read_bytes() == outside_raw)
 suite = subprocess.run([sys.executable, 'harness/seed.py', 'check'], capture_output=True, text=True, timeout=60)
 report = {'feature': feature, 'checks': checks, 'errors': errors,
           'suite': {'exit_code': suite.returncode, 'output': (suite.stdout + suite.stderr)[-6000:]}}
