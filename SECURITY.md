@@ -58,7 +58,7 @@ File imports copy bounded bytes into the same quarantine and manifest system. Th
 | Guest user processes / open files | 128 / 256 |
 | Wall time / startup handshake | 1 hour / 90 seconds |
 | Frame / cumulative guest output | 4 MiB / 100 MiB |
-| Model requests | configured steps + two repairs, maximum 202 |
+| Model requests | `(min(configured steps, 200) + 1) × 3`: two repairs per response, including the free final response; maximum 603 |
 | Model history | 400 messages / 1.5 MB serialized per request |
 | Export file / count / checkpoint | 2 MiB / 500 / 32 MiB |
 | Exported bytes per run | 32 MiB |

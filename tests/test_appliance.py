@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import tarfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import PropertyMock, patch
 
 from controller.appliance import Appliance, build_initrd
 from controller.errors import IsolationError
@@ -57,15 +57,28 @@ class ApplianceBuildTests(unittest.TestCase):
                 self.assertFalse((root / 'output/initrd.gz').exists())
 
     def test_empty_cache_download_rejects_wrong_hash_before_installation(self):
-        with temporary_directory() as directory:
-            root = self.fixture(directory)
-            (root / 'controller/runtime-lock.json').write_text(json.dumps({'sources': [
-                {'name': 'rootfs.tar.gz', 'url': 'https://example.invalid/pinned', 'sha256': '0' * 64}]}))
-            appliance = Appliance(root)
-            with patch('controller.appliance.urllib.request.urlopen', return_value=io.BytesIO(b'wrong bytes')):
-                with self.assertRaisesRegex(IsolationError, 'integrity check'):
-                    appliance.install()
-            self.assertFalse((appliance.cache / 'rootfs.tar.gz').exists())
+        for linux in (False, True):
+            with self.subTest(linux=linux), temporary_directory() as directory:
+                root = self.fixture(directory)
+                (root / 'controller/runtime-lock.json').write_text(json.dumps({'sources': [
+                    {'name': 'rootfs.tar.gz', 'url': 'https://example.invalid/pinned', 'sha256': '0' * 64}]}))
+                appliance = Appliance(root)
+                # This unit test targets checksum rejection, independent of the
+                # runner's QEMU installation or operating system.
+                with patch.object(Appliance, 'linux', new_callable=PropertyMock, return_value=linux), \
+                        patch.object(appliance, 'binary', return_value=root / 'qemu-fixture') as binary, \
+                        patch('controller.appliance.urllib.request.urlopen', return_value=io.BytesIO(b'wrong bytes')) as download, \
+                        patch('controller.appliance.build_initrd') as build, \
+                        patch.object(appliance, '_install_windows') as install_windows:
+                    with self.assertRaisesRegex(IsolationError, 'integrity check'):
+                        appliance.install()
+                    download.assert_called_once_with('https://example.invalid/pinned', timeout=60)
+                    self.assertEqual(binary.call_count, int(linux))
+                    build.assert_not_called()
+                    install_windows.assert_not_called()
+                    self.assertFalse(appliance.record_path.exists())
+                self.assertFalse((appliance.cache / 'rootfs.tar.gz').exists())
+                self.assertFalse((appliance.cache / 'rootfs.tar.download').exists())
 
     def test_release_lock_has_no_unused_index_or_mutable_netboot_kernel(self):
         root = Path(__file__).resolve().parents[1]

@@ -1,0 +1,83 @@
+{
+  "version": "0.0.12",
+  "live_model_trials_started": false,
+  "platform_tests": {
+    "windows": {
+      "run": 198,
+      "skipped": 16,
+      "passed": true,
+      "real_vm_checks_passed": 18
+    },
+    "linux": {
+      "run": 198,
+      "skipped": 21,
+      "passed": true,
+      "environment": "Existing Ubuntu WSL, ordinary tests; no KVM boot test"
+    }
+  },
+  "baseline_seed_sha256": "419c5bf59734066c86c40fbe81206aa20a068226b14eb86b1524dbb832cc37a9",
+  "probe_sha256": "5fdd1317c3677bcd1e9e2c905363cf9e1fc80afb827e5575fec5af8f61ed3228",
+  "observations_sha256": "adcd1824c1e3d657bac041d7bd78f6c6845f67243ba90fdcaaa294386cb4c93f",
+  "studies": {
+    "navigation": {
+      "attempts": 18,
+      "sources": {
+        "baseline": "419c5bf59734066c86c40fbe81206aa20a068226b14eb86b1524dbb832cc37a9",
+        "outline": "d4a177a5a22561d4e81e3b818550d14f897d6589ee46f099046d7d4dcc39b12d"
+      },
+      "scripted_vm_calibration_passed": true,
+      "plan_sha256": "f2f360e8fd1f96431377bbf4b1e837c6a40028a6dcf02dc0b5a8a1aa96ff28e1"
+    },
+    "procedure": {
+      "attempts": 18,
+      "sources": {
+        "baseline": "419c5bf59734066c86c40fbe81206aa20a068226b14eb86b1524dbb832cc37a9",
+        "procedure": "419c5bf59734066c86c40fbe81206aa20a068226b14eb86b1524dbb832cc37a9"
+      },
+      "scripted_vm_calibration_passed": true,
+      "plan_sha256": "e89715cb5d49f8b2e68b1bd5cc071ba79eb1b25deac5fb2df172b546cda38ff7",
+      "json_character_boundary": {
+        "unicode-character-bound": true,
+        "unicode-character-over-bound": true
+      },
+      "byte_limited_negative_rejected": true
+    },
+    "history": {
+      "attempts": 6,
+      "sources": {
+        "baseline": "419c5bf59734066c86c40fbe81206aa20a068226b14eb86b1524dbb832cc37a9",
+        "retrieval": "cce6cead1f6a31666c4239aa70e98083bec3148089cf2dc2c7981ee397c54ecc"
+      },
+      "scripted_vm_calibration_passed": true,
+      "plan_sha256": "62bfe8380e257edcd16298e7765ebc2a2879ca2a98c407da428d8224e287ddb0"
+    },
+    "context": {
+      "attempts": 18,
+      "sources": {
+        "baseline": "419c5bf59734066c86c40fbe81206aa20a068226b14eb86b1524dbb832cc37a9",
+        "usage": "e960bb20c838d51a4fca225a55040780ba6cef125a3c9b601a2e57b8fae10343"
+      },
+      "scripted_vm_calibration_passed": true,
+      "plan_sha256": "e4808134f2fefd77b4a86ba8fee5d072f24fc60d177fccc4e9f9f3f6ca544dc1",
+      "json_character_boundary": {
+        "unicode-character-bound": true,
+        "unicode-character-over-bound": true
+      },
+      "byte_limited_negative_rejected": true
+    },
+    "programs": {
+      "attempts": 6,
+      "sources": {
+        "baseline": "419c5bf59734066c86c40fbe81206aa20a068226b14eb86b1524dbb832cc37a9",
+        "program": "419c5bf59734066c86c40fbe81206aa20a068226b14eb86b1524dbb832cc37a9"
+      },
+      "scripted_vm_calibration_passed": true,
+      "plan_sha256": "6ae4559585ca5612b8ddeca84c31be816bed88a025e28e2b75ba7643a81d2125"
+    }
+  },
+  "recommended_study": "navigation",
+  "recommended_attempts": 18,
+  "recommended_task_ceiling_hours": 4.5,
+  "timing_scope": "Task ceiling excludes calibration and independent grading.",
+  "scope": "Scripted preparation and test validation only; no claim of improved model performance."
+}

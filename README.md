@@ -150,6 +150,10 @@ The saved local-model benchmark accepts `--upgrade-steps` (default 128), `--resp
 
 The controlled [generalization study](evaluations/generalization.py) freezes the starter and trusted graders before testing binary hashing, CSV preview and JSON formatting. It compares the default inference settings with an experimental Qwen3.5 9B profile; terminal access is explicitly enabled for both. `python evaluations/generalization.py --output .data/generalization --repeats 3` uses already cached models and a prepared VM. A one-repeat pilot cannot qualify a profile. Independent positive and negative controls run before inference. Candidate code runs only in the guest, and no accepted candidate replaces the starter automatically.
 
+The optional [navigation comparison](evaluations/navigation-study.md) prepares an 18-attempt Qwen3.5 9B baseline/outline study for later execution. It adds host-only provider traces and overlapping-read metrics without changing the normal seed or saved preferences. Preparation and scripted VM checks do not start model trials; the prepared folder contains a separate Start file for that purpose.
+
+The optional [experience experiments](evaluations/experience-study.md) provide one launch menu for navigation, a reusable upgrade procedure, bounded task-history retrieval, usage-based context budgeting and guest-side inspection programs. Each comparison runs separately with frozen inputs and independent checks. These options are for evaluation; normal app behavior and VM permissions stay the same.
+
 A further inventory-audit task lets the model choose which of two specified missing capabilities to add first, then asks it to reuse that capability and add the other. An accepted first checkpoint is forked into full-history and concise-context continuations. This experimental option changes only inference context: the complete journal stays on disk, and original human instructions, activation state and subsequent results are retained. Ordinary activation keeps full history. Results score verified functional growth separately from direct tool routing; recognized command-based invocation can demonstrate growth without satisfying the direct-route score.
 
 See [SECURITY.md](SECURITY.md) for the threat model and limits. Virtualization provides an operating-system boundary, but cannot guarantee immunity to hypervisor or host OS vulnerabilities.
@@ -161,6 +165,8 @@ The [v0.6 local findings](evaluations/seed-v0.6-local-findings.md) compare the c
 The [v0.0.10 local findings](evaluations/seed-v0.0.10-local-findings.md) record 32 fresh Qwen3.5 9B feature attempts, checkpoint fixes, shared text helpers and further growth trials. Some extensions now pass independent checks, but consistent autonomous improvement remains unproven.
 
 The [v0.0.11 findings](evaluations/seed-v0.0.11-findings.md) cover retry accounting, empty-cache installation, separate growth/routing scores and the frozen-seed generalization pilot. Neither inference profile is yet qualified for repeatable autonomous seed improvement.
+
+The [v0.0.12 preparation](evaluations/seed-v0.0.12-findings.md) adds opt-in frozen comparisons, verifies the JSON character boundary against a faulty byte-limit control, separates trace completeness from cost coverage, and fixes the Linux CI test fixture. Navigation alone is recommended for the first run; no live-model improvement is claimed by these preparation checks.
 
 ## Runtime sources
 

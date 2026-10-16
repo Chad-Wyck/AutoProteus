@@ -5,6 +5,7 @@ import json
 import queue
 import threading
 import time
+import uuid
 import urllib.error
 import urllib.request
 
@@ -120,37 +121,92 @@ def request_json(url, data=None, headers=None, timeout=10):
 
 
 class ModelClient:
-    def __init__(self, config, key=""):
+    def __init__(self, config, key="", observer=None):
         self.config = dict(config)
         self.key = key
+        self.observer = observer
+        self.observation_context = None
+        self.observation_failed = False
+
+    def check_context(self, messages, tools):
+        """Protected default; experimental host clients may supply another estimator."""
+        return validate_context(messages, tools, self.config)
 
     def complete(self, messages, cancel, progress=None, tools=None):
         # Polling a worker lets Stop return promptly even during model loading.
         # A late result is discarded; it cannot run an action in a stopped session.
         result = queue.Queue(maxsize=1)
+        call_id, started = uuid.uuid4().hex, time.monotonic()
+
+        def record(kind, data):
+            if self.observer is None:
+                return
+            def clean(value):
+                if isinstance(value, str) and self.key:
+                    return value.replace(self.key, '[REDACTED]').replace(
+                        json.dumps(self.key, ensure_ascii=False)[1:-1], '[REDACTED]')
+                if isinstance(value, list):
+                    return [clean(item) for item in value]
+                if isinstance(value, dict):
+                    return {clean(name): clean(item) for name, item in value.items()}
+                return value
+            try:
+                # A detached snapshot prevents a collector changing the request.
+                snapshot = json.loads(json.dumps(data, ensure_ascii=False))
+                self.observer({'type': kind, 'call_id': call_id, 'time': time.time(),
+                               'elapsed_seconds': time.monotonic() - started, 'data': clean(snapshot)})
+            except Exception:
+                # Diagnostics never change inference or release a partial action.
+                self.observation_failed = True
+
+        if self.observer is not None:
+            try:
+                context = self.observation_context(messages) if self.observation_context else {}
+                record('call_start', {'context': context, 'provider': self.config['provider'],
+                                     'model': self.config['model'], 'protocol': self.config.get('protocol', 'native')})
+            except Exception:
+                self.observation_failed = True
 
         def work():
             try:
-                result.put((True, self._complete(messages, cancel, progress, tools)))
+                answer = (self._complete(messages, cancel, progress, tools, observe=record)
+                          if self.observer is not None else self._complete(messages, cancel, progress, tools))
+                outcome = (True, answer)
             except Exception as error:
-                result.put((False, error))
+                outcome = (False, error)
+            record('transport_end', {'finished': True})
+            result.put(outcome)
 
+        if cancel.is_set():
+            record('transport_end', {'finished': True, 'not_started': True})
+            record('call_end', {'status': 'cancelled'})
+            raise Cancelled()
         threading.Thread(target=work, daemon=True).start()
         deadline = time.monotonic() + self.config.get("request_timeout", 180)
-        while True:
-            if cancel.is_set():
-                raise Cancelled()
-            if time.monotonic() > deadline:
-                raise ProviderError(ERROR_MESSAGES['timeout'], category='timeout')
-            try:
-                ok, value = result.get(timeout=0.1)
-            except queue.Empty:
-                continue
-            if not ok:
-                raise value
-            return value
+        try:
+            while True:
+                if cancel.is_set():
+                    raise Cancelled()
+                if time.monotonic() > deadline:
+                    raise ProviderError(ERROR_MESSAGES['timeout'], category='timeout')
+                try:
+                    ok, value = result.get(timeout=0.1)
+                except queue.Empty:
+                    continue
+                if not ok:
+                    raise value
+                record('call_end', {'status': 'returned', 'content': value.get('content'),
+                       'normalization_error': value.get('normalization_error'), 'usage': value.get('usage', {})})
+                return value
+        except Cancelled:
+            record('call_end', {'status': 'cancelled'})
+            raise
+        except Exception as error:
+            usage = error.response.get('usage', {}) if isinstance(error, ProviderError) and isinstance(error.response, dict) else {}
+            record('call_end', {'status': 'error', 'category': error.category if isinstance(error, ProviderError) else 'internal', 'usage': usage})
+            raise
 
-    def _complete(self, messages, cancel, progress, tools=None):
+    def _complete(self, messages, cancel, progress, tools=None, observe=None):
         config = self.config
         native = config.get('protocol', 'native') == 'native'
         if native and tools is None:
@@ -158,7 +214,7 @@ class ModelClient:
         wire = wire_messages(messages, config['provider'] == 'ollama') if native else messages
         # Older editable seeds may forward journal provenance unchanged.
         wire = [{key: value for key, value in item.items() if key != 'origin'} for item in wire]
-        validate_context(wire, tools if native else [], config)
+        self.check_context(wire, tools if native else [])
         base = config["base_url"].rstrip("/")
         if config["provider"] == "ollama":
             payload = {"model": config["model"], "messages": wire, "stream": True,
@@ -172,7 +228,10 @@ class ModelClient:
                 payload["think"] = config["thinking"]
             request = urllib.request.Request(base + "/api/chat", data=json.dumps(payload).encode(),
                                              headers={"Content-Type": "application/json"})
+            if observe:
+                observe('provider_request', {'payload': payload})
             text, thinking, done, metrics, calls = "", "", False, {}, []
+            frames, recorded = [], False
             received = 0
             try:
                 with urllib.request.urlopen(request, timeout=config.get("request_timeout", 180)) as response:
@@ -188,6 +247,8 @@ class ModelClient:
                         if cancel.is_set():
                             raise Cancelled()
                         item = json.loads(raw)
+                        if observe:
+                            frames.append(item)
                         if item.get("error"):
                             raise ProviderError(str(item["error"]))
                         text += item.get("message", {}).get("content", "")
@@ -203,6 +264,9 @@ class ModelClient:
                             done = True
                             metrics = {key: item.get(key) for key in ("prompt_eval_count", "eval_count", "done_reason", "total_duration")}
                             break
+                if observe:
+                    observe('provider_response', {'frames': frames, 'stream': True, 'complete': done})
+                    recorded = True
                 if not done or metrics.get("done_reason") == "length":
                     raise ProviderError("The model response was cut short. No action was executed. Increase the response budget or retry.",
                                         {'raw_content':text, 'thinking':thinking, 'tool_calls':calls, 'usage':metrics, 'incomplete':True}, category='cutoff')
@@ -212,6 +276,9 @@ class ModelClient:
             except (urllib.error.URLError, TimeoutError, OSError) as error:
                 raise ProviderError(f"The local model connection was interrupted: {error}. No partial action was executed.",
                                     {'raw_content':text, 'thinking':thinking, 'tool_calls':calls, 'incomplete':True}) from None
+            finally:
+                if observe and not recorded:
+                    observe('provider_response', {'frames': frames, 'stream': True, 'complete': done})
         payload = {"model": config["model"], "messages": wire, "stream": False,
                    "max_tokens": config["response_tokens"], "temperature": config["temperature"]}
         if native:
@@ -219,7 +286,11 @@ class ModelClient:
         if config.get("json_mode") and not native:
             payload["response_format"] = {"type": "json_object"}
         headers = {"Authorization": "Bearer " + self.key} if self.key else {}
+        if observe:
+            observe('provider_request', {'payload': payload})
         data = request_json(base + "/chat/completions", payload, headers, config.get("request_timeout", 180))
+        if observe:
+            observe('provider_response', {'payload': data, 'stream': False, 'complete': True})
         try:
             choice = data["choices"][0]
             if choice.get("finish_reason") not in ("stop", "tool_calls", None):

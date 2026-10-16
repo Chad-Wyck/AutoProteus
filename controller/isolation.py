@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import base64
+from collections import Counter
 import hashlib
 import json
 import os
@@ -356,6 +357,21 @@ class Broker:
         self.request_limit = (min(config['max_steps'], 200) + 1) * (RESPONSE_RETRIES + 1)
         self.finished = False
         self.last_status = 'running'
+        if isinstance(client, ModelClient) and client.observer is not None:
+            client.observation_context = self.inference_context
+
+    def inference_context(self, messages):
+        """Host snapshot comparisons describe omissions, not the seed's reasons."""
+        def signature(item):
+            return json.dumps({key: item[key] for key in ('role', 'content')}, ensure_ascii=False, sort_keys=True)
+        history = Counter(signature(item) for item in self.session.get('messages', []))
+        selected = Counter(signature(item) for item in messages)
+        return {'session': self.session['id'], 'seed_sha256': self.session.get('seed_sha256'),
+                'seed_version': self.session.get('seed_version'), 'request_index': self.requests,
+                'host_history_messages': sum(history.values()),
+                'host_history_messages_omitted': sum((history - selected).values()),
+                'neutral_message_count': len(messages), 'neutral_messages_sha256':
+                    hashlib.sha256(json.dumps(messages, sort_keys=True, ensure_ascii=False).encode()).hexdigest()}
 
     def handle(self, frame):
         if self.cancel.is_set():

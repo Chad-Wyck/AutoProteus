@@ -563,6 +563,92 @@ def run(root, store, settings, client_factory, session, message=None):
         self.assertEqual(session['model_requests'], 0)
         self.assertEqual(session.get('artifacts', {}), {})
 
+    def test_navigation_runner_collects_a_scripted_provider_call_without_loading_a_model(self):
+        import importlib.util
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        from test_providers import FakeModelServer
+        spec = importlib.util.spec_from_file_location('navigation_smoke', ROOT / 'evaluations/navigation-study.py')
+        navigation = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(navigation)
+        directory = self.data / 'navigation-runner-smoke'
+        directory.mkdir()
+        server = FakeModelServer(hosted=True)
+        try:
+            source = seed_files(ROOT)
+            config = {**self.settings.values, 'configured': True, 'provider': 'hosted', 'protocol': 'json'}
+            cell = {'id': 'fixture-baseline', 'task': 'sha256_file', 'repeat': 1, 'variant': 'baseline'}
+            plan = {'config': config, 'sources': {'baseline': navigation.source_identity(source)},
+                    'trusted_sha256': {}, 'schedule': [cell], 'contracts': navigation.study.CONTRACTS, 'timeout': 90}
+            engine = Mock()
+            engine.ensure_service.return_value = server.url
+            with patch.object(navigation, 'private_path', return_value=directory), \
+                    patch.object(navigation, 'load_plan', return_value=(plan, {'baseline': source})), \
+                    patch.object(navigation, 'calibrate'), patch.object(navigation, 'LocalRuntime', return_value=engine), \
+                    patch.object(navigation, 'model_identity', return_value={'digest': 'scripted-fixture', 'engine_version': 'fixture'}), \
+                    patch.object(navigation, 'request_json'):
+                navigation.run(SimpleNamespace(input='fixture', check_only=False))
+            result = json.loads((directory / 'results.json').read_text())
+            self.assertEqual(result['status'], 'completed')
+            trial = result['trials'][0]
+            self.assertEqual(trial['run']['status'], 'completed')
+            self.assertFalse(trial['review']['accepted'])  # The fixture intentionally edits no source.
+            self.assertTrue(trial['capture']['complete'])
+            self.assertEqual(trial['calls']['wire_requests'], 1)
+            engine.close.assert_called_once()
+        finally:
+            server.close()
+
+    def test_usage_variant_anchors_guest_and_host_to_scripted_provider_usage(self):
+        import sys
+        sys.path.insert(0, str(ROOT / 'evaluations'))
+        from experience import UsageClient, variant
+        from controller.evaluation import freeze_source
+        payloads = []
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *_):
+                pass
+            def do_POST(self):
+                payloads.append(json.loads(self.rfile.read(int(self.headers['Content-Length']))))
+                function = ({'name': 'read_file', 'arguments': {'path': 'sample.txt'}} if len(payloads) == 1 else
+                            {'name': 'finish', 'arguments': {'message': 'Verified', 'status': 'completed'}})
+                body = {'choices': [{'message': {'content': '', 'tool_calls': [{'function': function}]},
+                                    'finish_reason': 'tool_calls'}],
+                        'usage': {'prompt_tokens': 500, 'completion_tokens': 20}}
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(body).encode())
+        server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        clients = []
+        def factory(config):
+            client = UsageClient(config)
+            clients.append(client)
+            return client
+        try:
+            self.settings.values.update(base_url=f'http://127.0.0.1:{server.server_port}', protocol='native',
+                                        context_tokens=65536, response_tokens=4096)
+            agent = IsolatedAgent(ROOT, self.store, self.settings, factory)
+            self.agents.append(agent)
+            session = self.store.create('Read sample.txt, verify its content and finish.', 'hosted', 'usage fixture')
+            Path(session['workspace'], 'sample.txt').write_text('safe text ' * 400)
+            source = freeze_source(self.store, variant(seed_files(ROOT), 'usage'), 'Usage test source')
+            agent.start(session, candidate=source)
+            self.assertEqual(self.wait(agent, session), 'completed', session['feed'][-2:])
+            self.assertEqual(len(payloads), 2)
+            self.assertEqual(payloads[-1]['max_tokens'], 4096)
+            self.assertEqual(clients[0].budget.decisions[-1]['mode'], 'provider_anchor')
+            events = [json.loads(line) for line in (self.store.directory(session['id']) / 'events.jsonl').read_text().splitlines()]
+            decisions = [event['data'] for event in events if event['type'] == 'context_budget']
+            self.assertEqual([item['mode'] for item in decisions], ['conservative_fallback', 'provider_anchor'])
+            self.assertEqual(Artifacts(self.store, session).read('sample.txt'), b'safe text ' * 400)
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join()
+
 
 if __name__ == '__main__':
     unittest.main()
