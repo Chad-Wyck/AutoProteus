@@ -16,7 +16,7 @@ from types import SimpleNamespace
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from controller.config import DEFAULTS
-from controller.evaluation import candidate_source, freeze_source, run_task, source_identity
+from controller.evaluation import candidate_source, freeze_source, run_task, source_identity, growth_scores, tool_use
 from controller.isolation import Artifacts, IsolatedAgent
 from controller.providers import request_json
 from controller.runtime import LocalRuntime
@@ -47,7 +47,7 @@ def main(args):
     settings = SimpleNamespace(values=config, key=lambda: '')
     engine, agent = LocalRuntime(ROOT, settings), None
     report = {'started': now(), 'status': 'running', 'source_sha256': source_identity(source),
-              'method': config, 'candidate_promotion': False, 'operator_code_repair': False}
+              'method': config, 'handoff': args.handoff, 'candidate_promotion': False, 'operator_code_repair': False}
     trusted = [Path(__file__), ROOT / 'evaluations/local-model-benchmark.py',
                ROOT / 'evaluations/local-feature-probe.py', ROOT / 'evaluations/local-upgrade-tasks.json',
                ROOT / 'controller/isolation.py', ROOT / 'controller/evaluation.py',
@@ -127,7 +127,7 @@ def main(args):
             print('GROWTH: independent checks passed; activating the same checkpoint', flush=True)
             started = time.monotonic()
             before = session['steps']
-            agent.restart_seed(session)
+            agent.restart_seed(session, handoff=args.handoff)
             worker = agent.workers[session['id']][1]
             while worker.is_alive():
                 worker.join(timeout=.2)
@@ -148,9 +148,11 @@ def main(args):
             report['restart'] = {'status': session['status'], 'steps': session['steps'] - before,
                                  'tools_used': used, 'same_task': session['task'] == task['task'],
                                  'seconds': round(time.monotonic() - started, 2)}
-            report['passed'] = bool(session['status'] == 'completed' and report.get('audit_json') == expected and
-                                    report.get('audit_log') == 'BEGIN\r\nAUDIT COMPLETE\n' and
-                                    report.get('input_preserved') and {'file_summary', 'append_text'}.issubset(used))
+            report['tool_usage'] = tool_use(events[boundary:])
+            report['scores'] = growth_scores(True, True, session['status'] == 'completed',
+                report.get('audit_json') == expected and report.get('audit_log') == 'BEGIN\r\nAUDIT COMPLETE\n' and
+                report.get('input_preserved'), report['tool_usage'], ['file_summary', 'append_text'])
+            report['passed'] = report['scores']['functional_growth']
         else:
             report['passed'] = False
         report.update(status='completed', finished=now())
@@ -178,4 +180,5 @@ if __name__ == '__main__':
     parser.add_argument('--context-tokens', type=int, default=32768)
     parser.add_argument('--response-tokens', type=int, default=8192)
     parser.add_argument('--timeout', type=int, default=1800)
+    parser.add_argument('--handoff', choices=['full', 'concise'], default='full')
     main(parser.parse_args())

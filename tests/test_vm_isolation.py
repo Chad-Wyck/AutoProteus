@@ -29,6 +29,82 @@ class ScriptedClient:
 
 @unittest.skipUnless(os.environ.get('AUTOPROTEUS_VM_TESTS') == '1', 'Real VM checks require explicit opt in')
 class RealVMTests(unittest.TestCase):
+    def test_concise_activation_preserves_humans_files_journal_and_new_results(self):
+        prompts = [[], [], []]
+        phases = [
+            [{'message': 'OLD DEVELOPMENT EXPLANATION', 'action': {'tool': 'write_file', 'arguments': {'path': 'old.txt', 'content': 'keep'}}},
+             {'status': 'needs_input'}],
+            [{'action': {'tool': 'write_file', 'arguments': {'path': 'new.txt', 'content': 'new result'}}}, {'status': 'completed'}],
+            [{'status': 'completed'}]]
+        made = []
+        def factory(config):
+            index = len(made)
+            client = ScriptedClient(phases[index])
+            class Capture:
+                def complete(self, messages, cancel):
+                    prompts[index].append(messages)
+                    return client.complete(messages, cancel)
+            made.append(client)
+            return Capture()
+        agent = IsolatedAgent(ROOT, self.store, self.settings, factory)
+        self.agents.append(agent)
+        task = 'Original user requirements must survive.'
+        session = self.store.create(task, 'hosted', 'handoff fixture')
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session), 'waiting')
+        for text, origin in [('Keep this human correction.', 'human'), ('Preserve this legacy user constraint.', None)]:
+            item = {'role': 'user', 'content': text}
+            if origin:
+                item['origin'] = origin
+            session['messages'].append(item)
+            self.store.feed(session, 'user', text)
+        agent.restart_seed(session, handoff='concise')
+        self.assertEqual(self.wait(agent, session), 'completed', session['feed'][-3:])
+        for prompt in prompts[1]:
+            content = '\n'.join(item['content'] for item in prompt)
+            for expected in (task, 'Keep this human correction.', 'Preserve this legacy user constraint.'):
+                self.assertIn(expected, content)
+            self.assertNotIn('OLD DEVELOPMENT EXPLANATION', content)
+        self.assertIn('new result', '\n'.join(item['content'] for item in prompts[1][-1]))
+        self.assertEqual(Artifacts(self.store, session).read('old.txt'), b'keep')
+        self.assertTrue(any('OLD DEVELOPMENT EXPLANATION' in item['content'] for item in session['messages']))
+        events = (self.store.directory(session['id']) / 'events.jsonl').read_text(encoding='utf-8')
+        self.assertIn('OLD DEVELOPMENT EXPLANATION', events)
+        self.assertIn('context_handoff', events)
+        # Ordinary Resume keeps its original full-history behavior.
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session), 'completed')
+        self.assertIn('OLD DEVELOPMENT EXPLANATION', '\n'.join(item['content'] for item in prompts[2][0]))
+
+    def test_interleaved_cutoffs_preserve_actions_and_the_free_final_response(self):
+        from controller.providers import ProviderError
+        for retries in (1, 2):
+            with self.subTest(retries=retries):
+                self.settings.values['max_steps'] = 3
+                replies = []
+                for index in range(4):
+                    replies += [None] * retries
+                    replies.append({'action': {'tool': 'write_file', 'arguments': {
+                        'path': str(index) + '.txt', 'content': 'saved'}}} if index < 3 else {'status': 'completed'})
+                class Client:
+                    calls = 0
+                    def complete(client, *args):
+                        value = replies[client.calls]
+                        client.calls += 1
+                        if value is None:
+                            raise ProviderError('incomplete', category='cutoff')
+                        return {'content': json.dumps(value)}
+                client = Client()
+                agent = IsolatedAgent(ROOT, self.store, self.settings, lambda _: client)
+                self.agents.append(agent)
+                session = self.store.create('Save all three files and finish after repaired responses.', 'hosted', 'fixture')
+                agent.start(session)
+                self.assertEqual(self.wait(agent, session, 120), 'completed', session['feed'][-2:])
+                self.assertEqual(client.calls, 4 * (retries + 1))
+                self.assertEqual(session['steps'], 3)
+                for index in range(3):
+                    self.assertEqual(Artifacts(self.store, session).read(str(index) + '.txt'), b'saved')
+
     def test_long_history_uses_bounded_deltas_and_keeps_every_result(self):
         self.settings.values['max_steps'] = 105
         text = 'x' * 6000

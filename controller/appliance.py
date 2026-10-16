@@ -54,7 +54,12 @@ exec /usr/bin/python3 -u /guest.py >/dev/null 2>/dev/null
 
 def build_initrd(root, cache, destination):
     entries = {}
-    for path in [cache / 'rootfs.tar.gz', *sorted(cache.glob('*.apk'))]:
+    manifest = json.loads((root / 'controller/runtime-lock.json').read_text(encoding='utf-8'))
+    sources = [item for item in manifest['sources'] if item['name'] == 'rootfs.tar.gz' or item['name'].endswith('.apk')]
+    for item in sources:
+        path = cache / item['name']
+        if digest(path) != item['sha256']:
+            raise IsolationError('Guest archive failed its integrity check: ' + item['name'])
         raw = gzip.decompress(path.read_bytes())
         with tarfile.open(fileobj=io.BytesIO(raw), mode='r:', ignore_zeros=True) as archive:
             links = []
@@ -81,8 +86,9 @@ def build_initrd(root, cache, destination):
     entries['init'] = (stat.S_IFREG | 0o755, INIT)
     entries['guest.py'] = (stat.S_IFREG | 0o644, (root / 'guest/worker.py').read_bytes())
     # Use the exact kernel corresponding to the bundled modules.
-    if 'boot/vmlinuz-virt' in entries:
-        (destination.parent / 'vmlinuz').write_bytes(entries['boot/vmlinuz-virt'][1])
+    if 'boot/vmlinuz-virt' not in entries:
+        raise IsolationError('The pinned Linux package did not provide its kernel')
+    (destination.parent / 'vmlinuz').write_bytes(entries['boot/vmlinuz-virt'][1])
     destination.write_bytes(gzip.compress(cpio(entries), compresslevel=6, mtime=0))
 
 
@@ -218,7 +224,6 @@ class Appliance:
         flags = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
         if not self.linux:
             self._install_windows(seven, qemu, flags)
-        (self.directory / 'vmlinuz').write_bytes((self.cache / 'vmlinuz-virt').read_bytes())
         build_initrd(self.root, self.cache, self.directory / 'initrd.gz')
         files = [self.directory / 'vmlinuz', self.directory / 'initrd.gz']
         if not self.linux:

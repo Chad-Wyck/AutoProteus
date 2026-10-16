@@ -1,0 +1,107 @@
+{
+  "version": "0.0.11",
+  "empty_cache_install": {
+    "platform": "Windows/WHPX",
+    "initial_attempt": {
+      "passed": false,
+      "error": "HTTPError: HTTP Error 404: Not Found"
+    },
+    "verified_attempt": {
+      "started": "2026-10-16T00:51:21.677212+00:00",
+      "status": "completed",
+      "empty_cache": true,
+      "boot_requested": true,
+      "lock_sha256": "1c9250abb0fe1d7e172348749b2ec474e9537c6007c216d1b91165f7ebcf2b88",
+      "downloads": {
+        "7zr.exe": "256feca8e274e5da655e2a284fabafd9f554365eb164862089dacd4e8276d282",
+        "7z-x64.exe": "d54bf805f9f3704d1e8db2fa3498ae7ef2df0312b40b558e7c71c734430a665d",
+        "qemu.exe": "f98a8aeb5f7faea9765b6dee28316c266cd179d80354a2fed8e50176f9a2e59f",
+        "rootfs.tar.gz": "c5ca053cfe1d85c5b96dff8b9bc57045f7f184a30ffb6b65776409ca90388677",
+        "python3.apk": "802caff00b3398c01bb227cd925c8f9e33585ff19f58f0f25295a761ff2509cd",
+        "zlib.apk": "63aeea03c15a2f9018f81805cfc8aa926bdf5cd68921f22149c2fbb5d0ee9f47",
+        "musl.apk": "573712e2f49c15bfc20a2699f204acdfc74c772722b15e7353d768057fae0e71",
+        "libssl3.apk": "05e3393fb95aa5751ca2f9d242f659f6cff82c1cc7767cc2df4a086f7ad01877",
+        "libcrypto3.apk": "6632d758d8f5e9ea3b650fe966f23bbf9a202f8b8dceecac93da135dec5e3689",
+        "sqlite-libs.apk": "a8a216e53d22faa3f04d2e3650c1991af66f8d0b42fadff5afcdb9afb60b19e5",
+        "readline.apk": "766911ecb986a6c5cf0841a6b556cd1e9dbbf22b3559726de32416486cd15c81",
+        "libncursesw.apk": "cf8caa8a88bc4ce9d9e395567fefaf9ef7fbd55c50ae6155b35c1b58f3755023",
+        "ncurses-terminfo-base.apk": "ce83be6d0bd10584a53c3a5868cc1595ce5f0f8e0b621f8f7f70b6144e521fc9",
+        "libpanelw.apk": "057be8b1b788580f4cb72c382a6dcc03467d15bd69700f32192bd709e7a57a12",
+        "mpdecimal.apk": "1278f374bbc8b4aad674244458cca5fc63e0780a921138eef400d5db64381a31",
+        "libstdc++.apk": "14c987b556f5385a5db18376e788c75f37d85321b8dc1920d926ea7daac1d6f6",
+        "libgcc.apk": "393dcd32629f06d7d85409c272d142d0c082772d10b87ef55ee82f47de3be637",
+        "xz-libs.apk": "ab362dd515ead04c31a6c302163248da7aa4813e283c971e6dd3f789b453a1d9",
+        "gdbm.apk": "3278ccba30b241168ca4ab93c919be805411b918fdc062f06d3684d12dc33ae3",
+        "libffi.apk": "6da1a19313a40c56cac756fb11e2c4d5267831e1c22fc8323f24c943c94da6e0",
+        "libexpat.apk": "2e56946bc495cbed9eb1ad70859a79cba9db6420016453e065a0628848b32c7e",
+        "libbz2.apk": "2737e2b23ed08d4911ee62cd0163b5f4bf0379cacf4dc35b23a00209584c98fd",
+        "linux-virt.apk": "755deb045cfeb8c2bcaa2b2febe01ab2101d747921e64d4cd54d0312321e8d5d"
+      },
+      "build_passed": true,
+      "boot_passed": true,
+      "passed": true,
+      "finished": "2026-10-16T00:52:06.670241+00:00"
+    },
+    "verified_appliance": {
+      "guest_sha256": "59b283ce6eafe14b7db8cfb3e56278beeb58fa7e7f43bb3f3fd217e681f697a4",
+      "files": {
+        "vmlinuz": "dc99c86bb8e58cb4eda5f01eac44c4d972105945a46dfe76a9e86e8529915c72",
+        "initrd.gz": "e2f47b70a0c28556ea75788000ccfd3fa07abf1c263585fc4fc6054668a29dd5"
+      }
+    }
+  },
+  "kernel_pin_review": {
+    "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/main/x86_64/linux-virt-6.18.56-r0.apk",
+    "sha256": "755deb045cfeb8c2bcaa2b2febe01ab2101d747921e64d4cd54d0312321e8d5d",
+    "size": 44501430,
+    "gzip_members": [
+      {
+        "names": [
+          ".SIGN.RSA.alpine-devel@lists.alpinelinux.org-6165ee59.rsa.pub"
+        ],
+        "compressed_sha1": "Q1a6ShFiT6OcxOkf9E7EhUo8dvYi0="
+      },
+      {
+        "names": [
+          ".PKGINFO"
+        ],
+        "compressed_sha1": "Q16XinmLIAhevItaYx0leL07/tRV4="
+      },
+      {
+        "names": [
+          "boot",
+          "boot/System.map-6.18.56-0-virt",
+          "boot/config-6.18.56-0-virt",
+          "boot/vmlinuz-virt",
+          "lib"
+        ],
+        "compressed_sha1": "Q1a+K5J6JSIZdKIbUCL4mgh++XaCc="
+      }
+    ],
+    "payload_sha256_matches_control": true,
+    "control_checksum_matches_official_index": true,
+    "rsa_signature_verified": true,
+    "verifier": "OpenSSL, pinned rootfs Alpine RSA public key, exact APK control gzip member"
+  },
+  "full_suite": {
+    "tests": 172,
+    "passed_tests": 156,
+    "skipped": 16,
+    "real_vm_checks": 16,
+    "passed": true,
+    "seconds": 176.227,
+    "platform": "Windows/WHPX",
+    "log_sha256": "0c1a353bc4d8fe4e8a91f33c32661b0a32f908250d9513296974cf2c00ab824a"
+  },
+  "calibration": {
+    "initial_reference_description_overflow": true,
+    "corrected_reference_passed": true,
+    "model_candidate_repairs": false
+  },
+  "study_integrity": {
+    "starter_unchanged": true,
+    "trusted_runner_files_unchanged": true,
+    "candidate_promotions": 0,
+    "operator_candidate_repairs": 0
+  }
+}

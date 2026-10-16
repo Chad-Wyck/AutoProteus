@@ -89,7 +89,7 @@ class SeedRevisionTests(unittest.TestCase):
         store = Store(self.workspace / 'sessions')
         session = store.create('Quota check', 'demo', 'fixture')
         broker = Broker(store, session, None, {**restored.values, 'max_steps': 1}, threading.Event())
-        self.assertEqual(broker.request_limit, 4)  # one tool, finish, two repairs
+        self.assertEqual(broker.request_limit, 6)  # one tool and finish, each with two repairs
 
 
 if __name__ == '__main__':

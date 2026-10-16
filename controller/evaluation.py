@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import base64
+import ast
 import difflib
 import hashlib
 import json
+import shlex
 from pathlib import Path
 import threading
 import time
@@ -15,6 +17,65 @@ from .errors import Cancelled, IsolationError
 from .isolation import Artifacts, IsolatedAgent, SEED_TESTS, relative_name, safe_path, seed_files
 from .storage import Store, atomic_json, now
 from .compatibility import model_identity
+
+
+def tool_use(events):
+    """Observed invocation routes, not a security proof about hostile candidates."""
+    native, development = set(), set()
+    for event in events:
+        data = event.get('data', {})
+        if event.get('type') != 'action_result' or not isinstance(data, dict) or not data.get('ok'):
+            continue
+        action = data.get('action', {})
+        name = action.get('tool')
+        if name != 'run_command':
+            native.add(name)
+            continue
+        try:
+            args = shlex.split(action.get('arguments', {}).get('command', ''))
+            if data.get('result', {}).get('exit_code') != 0:
+                continue
+            # Recognize the other observed development route without executing
+            # submitted Python on the host. Only unconditional top-level calls
+            # through the imported Workspace class count as diagnostic evidence.
+            if len(args) == 3 and args[:2] == ['python3', '-c']:
+                tree = ast.parse(args[2])
+                imported = any(isinstance(node, ast.ImportFrom) and node.module == 'autoproteus.tools' and
+                               any(alias.name == 'Workspace' and not alias.asname for alias in node.names)
+                               for node in tree.body)
+                for node in tree.body if imported else []:
+                    value = node.value if isinstance(node, (ast.Assign, ast.Expr)) else None
+                    if (isinstance(value, ast.Call) and isinstance(value.func, ast.Attribute) and
+                            value.func.attr == 'execute' and isinstance(value.func.value, ast.Call) and
+                            isinstance(value.func.value.func, ast.Name) and value.func.value.func.id == 'Workspace' and
+                            value.args and isinstance(value.args[0], ast.Constant) and isinstance(value.args[0].value, str)):
+                        development.add(value.args[0].value)
+                continue
+            if (len(args) != 7 or args[:4] != ['python3', 'harness/seed.py', 'check', '--tool'] or
+                    args[5] != '--arguments'):
+                continue
+            for line in data['result'].get('output', '').splitlines():
+                try:
+                    record = json.loads(line)
+                    if (isinstance(record, dict) and record.get('check') == 'candidate tool invocation' and
+                            record.get('passed') is True and record.get('tool') == args[4]):
+                        development.add(args[4])
+                except ValueError:
+                    pass
+        except (ValueError, TypeError, SyntaxError):
+            continue
+    return {'direct': sorted(name for name in native if isinstance(name, str)),
+            'development': sorted(development)}
+
+
+def growth_scores(extension_verified, prior_preserved, completed, artifacts_correct, usage, required):
+    direct = set(required).issubset(usage['direct'])
+    used = set(required).issubset(set(usage['direct']) | set(usage['development']))
+    functional = bool(extension_verified and prior_preserved and completed and artifacts_correct and used)
+    return {'capability_added': bool(extension_verified), 'earlier_behavior_preserved': bool(prior_preserved),
+            'task_completed_correctly': bool(completed and artifacts_correct), 'capabilities_used': used,
+            'functional_growth': functional, 'direct_tool_use': direct,
+            'strict_route_success': functional and direct}
 
 
 def source_identity(source):

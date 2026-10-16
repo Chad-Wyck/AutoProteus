@@ -28,6 +28,7 @@ MAX_WIRE = 100 * 1024 * 1024
 MAX_JOURNAL = 64 * 1024 * 1024
 MAX_SECONDS = 3600
 SEED_TESTS = ('tests/test_seed.py', 'tests/test_text_helpers.py')
+RESPONSE_RETRIES = 2
 
 
 class VMLease:
@@ -350,8 +351,9 @@ class Broker:
         self.store, self.session, self.client, self.cancel = store, session, client, cancel
         self.artifacts = Artifacts(store, session)
         self.requests, self.frames = 0, 0
-        # Allow a final status after the last tool action and two format repairs.
-        self.request_limit = min(config['max_steps'] + 3, 203)
+        # Each action response and the free final response can need two repairs.
+        # This ceiling stays host-owned even if an edited seed ignores its policy.
+        self.request_limit = (min(config['max_steps'], 200) + 1) * (RESPONSE_RETRIES + 1)
         self.finished = False
         self.last_status = 'running'
 
@@ -475,7 +477,9 @@ class IsolatedAgent:
         self.workers, self.vms = {}, {}
         self.lock = threading.RLock()
 
-    def start(self, session, message=None, candidate=None, verification=False):
+    def start(self, session, message=None, candidate=None, verification=False, handoff='full'):
+        if handoff not in ('full', 'concise'):
+            raise ValueError('Choose full or concise activation context')
         with self.lock:
             if any(thread.is_alive() for _, thread in self.workers.values()):
                 raise IsolationError('Stop the current task before starting another isolated run')
@@ -498,8 +502,10 @@ class IsolatedAgent:
                     source.append({'path': '__verify__/' + Path(name).name, 'data': base64.b64encode(
                         (self.root / name).read_bytes()).decode()})
             guest_config = {key: value for key, value in config.items() if key not in ('base_url', 'api_key')}
+            guest_config['response_retries'] = RESPONSE_RETRIES
             boot = {'op': 'boot', 'seed': source, 'files': inputs, 'session': dict(session),
-                    'config': guest_config, 'message': message, 'seed_activated': candidate is session}
+                    'config': guest_config, 'message': message, 'seed_activated': candidate is session,
+                    'handoff': handoff}
             boot['verification'] = bool(verification)
             if isinstance(verification, dict):
                 boot['behavior_rules'] = verification['rules']
@@ -526,13 +532,13 @@ class IsolatedAgent:
             self.workers[session['id']] = cancel, thread
             thread.start()
 
-    def restart_seed(self, session):
+    def restart_seed(self, session, handoff='full'):
         """Explicit controller action: activate this checkpoint in the same task."""
         with self.lock:
             previous = session.get('candidate_from')
             session['candidate_from'] = session['id']
             try:
-                self.start(session, candidate=session)
+                self.start(session, candidate=session, handoff=handoff)
             except Exception:
                 if previous is None:
                     session.pop('candidate_from', None)

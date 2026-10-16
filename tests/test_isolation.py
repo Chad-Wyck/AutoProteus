@@ -129,6 +129,14 @@ class BoundaryTests(unittest.TestCase):
             self.broker.handle(frame)
         self.assertEqual(self.client.complete.call_count, 1)
 
+    def test_request_ceiling_accounts_for_each_response_repair_and_is_host_owned(self):
+        broker = Broker(self.store, self.session, self.client,
+                        {**self.settings.values, 'max_steps': 3, 'response_retries': 999}, self.cancel)
+        self.assertEqual(broker.request_limit, 12)
+        broker = Broker(self.store, self.session, self.client,
+                        {**self.settings.values, 'max_steps': 999, 'response_retries': 999}, self.cancel)
+        self.assertEqual(broker.request_limit, 603)
+
     def test_host_identity_and_policy_cannot_be_changed_by_guest_state(self):
         original = {key: self.session[key] for key in ('id', 'workspace', 'provider', 'task')}
         state = dict(self.session, workspace='C:/', id='f'*32, provider='hosted', task='changed',

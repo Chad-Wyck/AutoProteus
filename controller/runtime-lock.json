@@ -23,16 +23,6 @@
       "sha256": "c5ca053cfe1d85c5b96dff8b9bc57045f7f184a30ffb6b65776409ca90388677"
     },
     {
-      "name": "vmlinuz-virt",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/x86_64/netboot/vmlinuz-virt",
-      "sha256": "40f620bc8c93d952e57dd8dfc0f94fca1759d192a4fc4a260705d50ca378559c"
-    },
-    {
-      "name": "APKINDEX.tar.gz",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/main/x86_64/APKINDEX.tar.gz",
-      "sha256": "24fc2ccb08f3125429a38b31bd6c76a7b394c6236df0975760dc8259e50dfbd5"
-    },
-    {
       "name": "python3.apk",
       "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/main/x86_64/python3-3.14.8-r0.apk",
       "sha256": "802caff00b3398c01bb227cd925c8f9e33585ff19f58f0f25295a761ff2509cd"
@@ -124,8 +114,8 @@
     },
     {
       "name": "linux-virt.apk",
-      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/main/x86_64/linux-virt-6.18.55-r0.apk",
-      "sha256": "a941c15fc5db26b6692fd0140fa0970da76cb12aadf3dc8306c419f21bd39c93"
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/main/x86_64/linux-virt-6.18.56-r0.apk",
+      "sha256": "755deb045cfeb8c2bcaa2b2febe01ab2101d747921e64d4cd54d0312321e8d5d"
     }
   ]
 }

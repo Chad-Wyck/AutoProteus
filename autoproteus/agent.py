@@ -286,7 +286,7 @@ class Agent:
                 except (ValueError, KeyError, TypeError) as error:
                     repairs += 1
                     self.store.event(session, "invalid_response", {"error": str(error)})
-                    if repairs > 2:
+                    if repairs > config.get('response_retries', 2):
                         raise ValueError("This model did not follow the action format after two retries. Try another model or adjust its settings.")
                     instruction = 'Use the supplied tools with valid arguments.' if config.get('protocol', 'native') == 'native' and config['provider'] != 'demo' else 'Return exactly one complete JSON object following the system instructions.'
                     session["messages"].append({"role": "user", "content": "Your response was not accepted: " + str(error) + '. ' + instruction + " No action was executed.", "origin": "internal"})

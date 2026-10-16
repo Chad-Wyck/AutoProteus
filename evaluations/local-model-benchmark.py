@@ -110,7 +110,7 @@ def verify_public(store,source,feature):
         return {'passed':passed,'run':result,'feature_result':feature_result}
     finally:agent.close()
 
-def assess(store,starter,result,feature,directory):
+def assess(store,starter,result,feature,directory,feature_check=None,public_check=None):
     session=store.get(result['session'])
     try:source=candidate_source(store,session)
     except Exception as error:return {'accepted':False,'reason':'No complete exported candidate: '+str(error)}
@@ -139,8 +139,8 @@ def assess(store,starter,result,feature,directory):
     if runtime_changed:
         review['regressions']=run_regressions(ROOT,store,frozen)
         if protected_unchanged:
-            review['feature']=verify_feature(store,frozen,feature)
-            review['public']=verify_public(store,frozen,feature)
+            review['feature']=(feature_check or verify_feature)(store,frozen,feature)
+            review['public']=(public_check or verify_public)(store,frozen,feature)
         else:review['feature']={'passed':False,'reason':'Requested unchanged execution loop or existing tests were modified'}
     else:
         review['feature']={'passed':False,'reason':'No runtime source edit'}

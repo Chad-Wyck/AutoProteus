@@ -4,7 +4,7 @@ A small, model-agnostic agent that grows its own harness inside a disposable Lin
 
 Development releases use **v0.0.x**, incrementing the final number with each release. **v1.0.0** is reserved for launch.
 
-Incomplete model responses never execute partial actions. An output-budget cutoff can use the seed's existing two response-repair retries to request a smaller action. Connection failures, timeouts and repeated invalid responses still stop the run with its checkpoint preserved.
+Incomplete model responses never execute partial actions. Each response, including the free final response, has two repair retries; a successful response resets that allowance. The controller reserves the same bounded request allowance, so interleaved cutoffs cannot consume the requests needed to finish. Connection failures, timeouts and repeated invalid responses still stop the run with its checkpoint preserved.
 
 VM isolation is the default. An explicitly acknowledged **Linux native mode** is available for disposable machines and environments isolated by their operator. The security claims below apply to VM mode unless stated otherwise.
 
@@ -130,6 +130,8 @@ Existing sessions and model downloads are preserved. Legacy files can be preview
 
 GitHub CI runs ordinary tests on Windows and Linux, plus interface syntax checks. The manual **Hardware VM checks** workflow uses a prepared self-hosted runner labelled `autoproteus-vm` and `linux` or `windows`. Review the selected revision before dispatching it: this lane runs trusted repository code with hardware access. It is never triggered automatically by pull requests. The runner needs Python 3.13, internet for pinned appliance setup, and working KVM or WHPX. It runs the real VM checks, including identical-byte file recreation and functional grading.
 
+Before releases, run the manual **Empty-cache release check** workflow on Windows and Linux. It downloads all pinned VM components into a separate empty cache and builds the appliance. Locally, `python evaluations/check-install.py --output .data/release-check --boot` also boots and verifies a fixture task when KVM or WHPX is available. The output directory must be new; the check preserves the app's existing cache and preferences. This detects upstream archives disappearing even when a development machine still has cached copies.
+
 `python -m unittest discover -s tests -v` runs regression and broker tests. Set `AUTOPROTEUS_VM_TESTS=1` on a prepared Windows/WHPX or Linux/KVM host to include real VM checks for host file visibility, networking, guest privilege, forged exports, Stop, restoration, and recovery. `tests/test_linux.py` also covers Linux runtime integrity and managed engine cleanup. Guest tests copied into `harness/tests/` run inside the VM; controller tests stay on the host.
 
 On Linux, `python3 -m unittest discover -s tests -p test_native.py -v` runs trusted, offline native-worker fixtures for consent, startup, broker exports, checkpoint restoration, functional regressions, Stop and ordinary parent-exit cleanup. These are not hostile-code isolation tests. To evaluate the demo without a VM:
@@ -146,6 +148,10 @@ The evaluator accepts the same launch flags for live/candidate trials. Reports i
 
 The saved local-model benchmark accepts `--upgrade-steps` (default 128), `--response-tokens` (8,192), `--context-tokens` (32,768), `--temperature` (0.6), `--thinking auto|on|off` and `--timeout` (2,700 seconds per upgrade). Ordinary tasks keep their 32-action comparison limit. Use separate data directories for different settings; resuming a batch refuses to mix them. Frozen source and task JSON can be supplied from `.data/` for controlled experiments. Reports retain source fingerprints, settings and independent results. Earlier published results retain their original 48-action/4,096-response-token settings.
 
+The controlled [generalization study](evaluations/generalization.py) freezes the starter and trusted graders before testing binary hashing, CSV preview and JSON formatting. It compares the default inference settings with an experimental Qwen3.5 9B profile; terminal access is explicitly enabled for both. `python evaluations/generalization.py --output .data/generalization --repeats 3` uses already cached models and a prepared VM. A one-repeat pilot cannot qualify a profile. Independent positive and negative controls run before inference. Candidate code runs only in the guest, and no accepted candidate replaces the starter automatically.
+
+A further inventory-audit task lets the model choose which of two specified missing capabilities to add first, then asks it to reuse that capability and add the other. An accepted first checkpoint is forked into full-history and concise-context continuations. This experimental option changes only inference context: the complete journal stays on disk, and original human instructions, activation state and subsequent results are retained. Ordinary activation keeps full history. Results score verified functional growth separately from direct tool routing; recognized command-based invocation can demonstrate growth without satisfying the direct-route score.
+
 See [SECURITY.md](SECURITY.md) for the threat model and limits. Virtualization provides an operating-system boundary, but cannot guarantee immunity to hypervisor or host OS vulnerabilities.
 
 The [v0.3 findings](evaluations/seed-v0.3-findings.md) record the seed reduction, local-model measurements, and rejected self-improvement attempts, including limitations of the comparison.
@@ -154,9 +160,13 @@ The [v0.6 local findings](evaluations/seed-v0.6-local-findings.md) compare the c
 
 The [v0.0.10 local findings](evaluations/seed-v0.0.10-local-findings.md) record 32 fresh Qwen3.5 9B feature attempts, checkpoint fixes, shared text helpers and further growth trials. Some extensions now pass independent checks, but consistent autonomous improvement remains unproven.
 
+The [v0.0.11 findings](evaluations/seed-v0.0.11-findings.md) cover retry accounting, empty-cache installation, separate growth/routing scores and the frozen-seed generalization pilot. Neither inference profile is yet qualified for repeatable autonomous seed improvement.
+
 ## Runtime sources
 
 VM downloads and SHA-256 hashes are pinned in `controller/runtime-lock.json`. Managed Python and Ollama versions, URLs and hashes are pinned in `controller/managed-runtime-lock.json`: Windows Python 3.13.12, Linux Python 3.13.16, and Ollama 0.40.4. Hashes are checked before extraction. Installed private runtimes are inventoried and verified before reuse, including libraries and added or missing files. An old unrecorded engine is replaced through verified setup while preserving model weights; damaged runtimes stop or require verified setup. Independently installed model services remain user-managed and are not covered by these private-runtime manifests.
+
+The guest builder consumes only the pinned root filesystem and package archives, rechecks their hashes, and extracts its kernel from the versioned Linux package. It ignores unrelated cached packages. A mutable package index and redundant netboot kernel are no longer installation prerequisites.
 
 Pin updates require reviewing official upstream metadata, changing the version/URL/hash together, synchronizing the Linux launcher's Python pin, and repeating launcher, integrity and hardware checks. Pins identify selected bytes; upstream suppliers and security updates still require review.
 

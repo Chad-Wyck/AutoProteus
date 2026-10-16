@@ -69,6 +69,8 @@ After enough inspection, make a small implementation, test it and repair concret
 failures. Re-reading the whole existing suite is not an upgrade requirement.
 Cut-off model responses execute no partial action. The seed shares its two format
 repair retries with output cutoffs; retry with a smaller action when asked.
+The two retries apply to each response and reset after an accepted response.
+The controller bounds total requests using that same policy, including finishing.
 
 ## Continue with the edited seed
 

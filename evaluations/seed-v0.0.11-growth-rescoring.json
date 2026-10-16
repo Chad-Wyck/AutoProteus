@@ -1,0 +1,61 @@
+{
+  "version": "0.0.11",
+  "kind": "Derived scoring supplement; no live rerun; original v0.0.10 reports unchanged",
+  "original_pooled_11_of_32_unchanged": true,
+  "scorer_sha256": "43e71fc52c3c496728accb62f359fbb883c2d25627f7b1d5a6f52c592359fe37",
+  "trials": [
+    {
+      "source_trial": "text-api-v2-64k-off-staged-growth-1",
+      "source_report_sha256": "61a1446915c60785190e2987419ba48da8edf166f6ec94716b62d30cdc8aef43",
+      "source_journal_sha256": "b98feea61531b3c5fb2147a765a6fab39075a92367850c028ae400a161cbf412",
+      "original_strict_verdict": false,
+      "tool_usage": {
+        "direct": [
+          "read_file",
+          "write_file"
+        ],
+        "development": [
+          "append_text",
+          "file_summary"
+        ]
+      },
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": false,
+        "strict_route_success": false
+      },
+      "operator_candidate_code_repair": false
+    },
+    {
+      "source_trial": "corrected-growth-continuation",
+      "source_report_sha256": "aa6637be2884b5a08963daa38585355cf36ebb8315f07eba831f18d206dc8c37",
+      "source_journal_sha256": "91398a9053076993c9cc140b542470b3ea6755a97fdbec1437fadf969ce94154",
+      "original_strict_verdict": false,
+      "tool_usage": {
+        "direct": [
+          "list_files",
+          "read_file",
+          "write_file"
+        ],
+        "development": [
+          "append_text",
+          "file_summary"
+        ]
+      },
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": false,
+        "strict_route_success": false
+      },
+      "operator_candidate_code_repair": false
+    }
+  ]
+}

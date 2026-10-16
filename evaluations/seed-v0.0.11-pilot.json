@@ -1,0 +1,503 @@
+{
+  "version": "0.0.11",
+  "kind": "One-repeat exploratory pilot, not profile qualification",
+  "status": "completed",
+  "started": "2026-10-16T01:06:29.355838+00:00",
+  "finished": "2026-10-16T02:05:59.178374+00:00",
+  "source_sha256": "45c8e95c7915eb294747946fdf0696cde09f1d51b4ab2c73db8b297ac09e58ba",
+  "source_unchanged": true,
+  "raw_report_sha256": "f40c89d317084c94da3d9b8390f71bd0ad953d954e702c3c3e62813a4ef7fe58",
+  "trusted_sha256": {
+    "evaluations/generalization.py": "f2d57f839ce49fb5ba2d446d82f5b2429a9a6bf114b9efd0a9ce7eb6091a383c",
+    "evaluations/generalization-probe.py": "7aaf69d0deade911440dfd63ce139ad9f98529b49e85709895ab31bb15b40b29",
+    "evaluations/local-model-benchmark.py": "12a1ff269da6389e1e68bb84243ae0db8bc636fff8a562d47c02931e649fc5e1",
+    "controller/evaluation.py": "43e71fc52c3c496728accb62f359fbb883c2d25627f7b1d5a6f52c592359fe37",
+    "controller/isolation.py": "5412693a07d227403d3fdf30b1551b58a68eb524f4213d7df39f868fac9c296d",
+    "controller/providers.py": "ceed5a1202b9f0baee2662cc15bcf7c751f59f4425fc09165c5cc5b739c9158c",
+    "guest/worker.py": "59b283ce6eafe14b7db8cfb3e56278beeb58fa7e7f43bb3f3fd217e681f697a4",
+    "controller/runtime-lock.json": "1c9250abb0fe1d7e172348749b2ec474e9537c6007c216d1b91165f7ebcf2b88",
+    "controller/managed-runtime-lock.json": "4dcbd55128f50a1cb8f756e0141f9dfaf7b36964dfc005d11bc49e1cd95139be",
+    "tests/test_seed.py": "9619332133a947549aa89fc7916e9617b21ca7ec3496bd9b3b2a29330ee5ff5b",
+    "tests/test_text_helpers.py": "db76c2c7e785bacd54c80bbec6559ae5b0bb2da510e48bb4d1e5dc4ef457a17c"
+  },
+  "hardware": "Windows/WHPX, GTX 1080 Ti 11 GiB; observed GPU inference",
+  "terminal_note": "Terminal is explicitly enabled for all upgrade trials; saved app preferences are untouched.",
+  "repeats": 1,
+  "qualification_rule": "At least three repeats, all nine feature upgrades accepted and both growth branches functional. A one-repeat pilot cannot qualify a profile; routing scores are reported separately.",
+  "operator_candidate_repairs": [],
+  "profiles": {
+    "default": {
+      "identity": {
+        "provider": "ollama",
+        "model": "qwen3:4b-instruct",
+        "engine_version": "0.40.4",
+        "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+        "size": 2497293803,
+        "details": {
+          "family": "qwen3",
+          "parameter_size": "4.0B",
+          "quantization_level": "Q4_K_M"
+        }
+      },
+      "config": {
+        "configured": true,
+        "provider": "ollama",
+        "base_url": "http://127.0.0.1:11435",
+        "model": "qwen3:4b-instruct",
+        "context_tokens": 32768,
+        "response_tokens": 8192,
+        "temperature": 0.2,
+        "max_steps": 128,
+        "request_timeout": 300,
+        "command_timeout": 60,
+        "terminal": true,
+        "json_mode": false,
+        "thinking": null,
+        "protocol": "native"
+      },
+      "qualification": "not_established",
+      "trials": [
+        {
+          "name": "sha256_file",
+          "repeat": 1,
+          "run": {
+            "status": "completed",
+            "steps": 12,
+            "seconds": 138.86,
+            "model_requests": 13,
+            "timed_out": false,
+            "failure_kind": null,
+            "detail": "",
+            "format_repairs": 0,
+            "action_errors": 0,
+            "provider_error_category": null,
+            "last_notices": null
+          },
+          "review": {
+            "accepted": false,
+            "source_sha256": "804395c493b72ed5413e57bfa7955080e33965f1635736849035d27c212647ba",
+            "runtime_changed": true,
+            "new_test_files": [],
+            "protected_unchanged": true,
+            "allowed_files_only": true,
+            "activation_ready": false,
+            "protected_regressions": {
+              "passed": true,
+              "tests": 49
+            },
+            "independent_checks": {
+              "passed": 11,
+              "total": 11,
+              "failed": [],
+              "errors": {},
+              "probe_error": null
+            },
+            "candidate_suite": {
+              "exit_code": 0,
+              "output": "Expected SHA-256: 6b0befa538fcd8f39e020686696bfa92b7132e959ad454c9d9d74d81d260af7b\n{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 49, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+            },
+            "fresh_public_invocation": true,
+            "model_explanation": "Successfully implemented and verified the sha256_file tool as requested. The tool reads binary files up to 1048576 bytes, returns the SHA-256 hash as a lowercase hexadecimal string, and is properly registered in the tool suite with appropriate tests.",
+            "reason": null
+          }
+        },
+        {
+          "name": "csv_preview",
+          "repeat": 1,
+          "run": {
+            "status": "completed",
+            "steps": 15,
+            "seconds": 242.23,
+            "model_requests": 16,
+            "timed_out": false,
+            "failure_kind": null,
+            "detail": "",
+            "format_repairs": 0,
+            "action_errors": 2,
+            "provider_error_category": null,
+            "last_notices": null
+          },
+          "review": {
+            "accepted": false,
+            "source_sha256": "3ea0a706c435e2a8dadf2ec078dcf83e969de0a608cd81c8594448b624b83c43",
+            "runtime_changed": true,
+            "new_test_files": [
+              "tests/test_csv_preview.py"
+            ],
+            "protected_unchanged": true,
+            "allowed_files_only": true,
+            "activation_ready": false,
+            "protected_regressions": {
+              "passed": true,
+              "tests": 49
+            },
+            "independent_checks": {
+              "passed": 22,
+              "total": 27,
+              "failed": [
+                "empty_1",
+                "empty_5",
+                "empty_20",
+                "invalid_limit_True",
+                "reject_large"
+              ],
+              "errors": {
+                "empty_1": "ValueError: Error reading CSV file: cannot access local variable 'i' where it is not associated with a value",
+                "empty_5": "ValueError: Error reading CSV file: cannot access local variable 'i' where it is not associated with a value",
+                "empty_20": "ValueError: Error reading CSV file: cannot access local variable 'i' where it is not associated with a value"
+              },
+              "probe_error": null
+            },
+            "candidate_suite": {
+              "exit_code": 0,
+              "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 49, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+            },
+            "fresh_public_invocation": true,
+            "model_explanation": "Successfully implemented and verified the csv_preview tool. The tool reads UTF-8 CSV files and returns a preview with at most the specified number of rows and a truncation flag. All tests pass successfully.",
+            "reason": null
+          }
+        },
+        {
+          "name": "format_json",
+          "repeat": 1,
+          "run": {
+            "status": "paused",
+            "steps": 22,
+            "seconds": 900.07,
+            "model_requests": 25,
+            "timed_out": true,
+            "failure_kind": "timeout",
+            "detail": "Stopped. The last saved checkpoint is ready to resume.",
+            "format_repairs": 2,
+            "action_errors": 5,
+            "provider_error_category": null,
+            "last_notices": null
+          },
+          "review": {
+            "accepted": false,
+            "source_sha256": "0a5ce1c2f11b31985e6e0ae995ebfc4eb6dacbc5492ea8089757855c0fac4c3b",
+            "runtime_changed": true,
+            "new_test_files": [
+              "tests/test_format_json.py"
+            ],
+            "protected_unchanged": true,
+            "allowed_files_only": true,
+            "activation_ready": false,
+            "protected_regressions": {
+              "passed": true,
+              "tests": 49
+            },
+            "independent_checks": {
+              "passed": 7,
+              "total": 18,
+              "failed": [
+                "object",
+                "object_idempotent",
+                "array",
+                "array_idempotent",
+                "scalar",
+                "scalar_idempotent",
+                "preserve_utf8",
+                "preserve_large",
+                "preserve_expanded",
+                "reject_path_directory",
+                "reject_path_missing"
+              ],
+              "errors": {
+                "preserve_utf8": "UnboundLocalError: cannot access local variable 'json' where it is not associated with a value",
+                "preserve_large": "UnboundLocalError: cannot access local variable 'json' where it is not associated with a value",
+                "reject_path_directory": "UnboundLocalError: cannot access local variable 'json' where it is not associated with a value",
+                "reject_path_missing": "UnboundLocalError: cannot access local variable 'json' where it is not associated with a value"
+              },
+              "probe_error": null
+            },
+            "candidate_suite": {
+              "exit_code": 1,
+              "output": "{\"check\": \"candidate tests\", \"passed\": false, \"tests\": 53, \"failures\": 3, \"errors\": 0, \"skipped\": 0}\ntest_invalid_json (test_format_json.TestFormatJson.test_invalid_json)\nTraceback (most recent call last):\n  File \"/work/task/harness/tests/test_format_json.py\", line 41, in test_invalid_json\n    with self.assertRaises(ValueError) as context:\n         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\ntest_large_file (test_format_json.TestFormatJson.test_large_file)\nTraceback (most recent call last):\n  File \"/work/task/harness/tests/test_format_json.py\", line 68, in test_large_file\n    self.assertEqual(content, expected)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nAssertionError: '\"{\\\\\"name\\\\\": \\\\\"John\\\\\", \\\\\"age\\\\\": 30, \\\\\"city\\\\\": \\\\\"New York\\\\\"}\"\\n' != '{\\n  \"age\": 30,\\n  \"city\": \"New York\",\\n  \"name\": \"John\"\\n}'\n- \"{\\\"name\\\": \\\"John\\\", \\\"age\\\": 30, \\\"city\\\": \\\"New York\\\"}\"\n- \n+ {\n+   \"age\": 30,\n+   \"city\": \"New York\",\n+   \"name\": \"John\"\n+ }\n\n\ntest_valid_json (test_format_json.TestFormatJson.test_valid_json)\nTraceback (most recent call last):\n  File \"/work/task/harness/tests/test_format_json.py\", line 34, in test_valid_json\n    self.assertEqual(content, expected)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nAssertionError: '\"{\\\\\"name\\\\\": \\\\\"John\\\\\", \\\\\"age\\\\\": 30, \\\\\"city\\\\\": \\\\\"New York\\\\\"}\"\\n' != '{\\n  \"age\": 30,\\n  \"city\": \"New York\",\\n  \"name\": \"John\"\\n}'\n- \"{\\\"name\\\": \\\"John\\\", \\\"age\\\": 30, \\\"city\\\": \\\"New York\\\"}\"\n- \n+ {\n+   \"age\": 30,\n+   \"city\": \"New York\",\n+   \"name\": \"John\"\n+ }\n\n\n"
+            },
+            "fresh_public_invocation": false,
+            "model_explanation": "I see that I'm making repeated changes to the same test file. Let me create a more efficient version that properly handles the error messages and validates the output without repeating the same code multiple times. I'll create a concise test file that properly handles these issues:\n\nI need to verify that the implementation works by running the check command to ensure all the tests pass. I'll run the seed check command to validate the new tool implementation:\n\n",
+            "reason": null
+          }
+        }
+      ],
+      "growth": {
+        "first": {
+          "status": "waiting",
+          "steps": 6,
+          "seconds": 25.13,
+          "model_requests": 7,
+          "timed_out": false,
+          "failure_kind": null,
+          "detail": "Waiting for your reply",
+          "format_repairs": 0,
+          "action_errors": 1,
+          "provider_error_category": null,
+          "last_notices": null
+        },
+        "selected": "sha256_file",
+        "first_review": {
+          "accepted": false,
+          "source_sha256": "45c8e95c7915eb294747946fdf0696cde09f1d51b4ab2c73db8b297ac09e58ba",
+          "runtime_changed": false,
+          "new_test_files": [],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "activation_ready": false,
+          "protected_regressions": {
+            "passed": null,
+            "tests": null
+          },
+          "independent_checks": {
+            "passed": 0,
+            "total": 0,
+            "failed": [],
+            "errors": {},
+            "probe_error": null
+          },
+          "candidate_suite": {},
+          "fresh_public_invocation": null,
+          "model_explanation": "Implemented choice.json with selection of sha256_file capability. Requesting activation to proceed with implementing the sha256_file capability.",
+          "reason": "No runtime source edit"
+        },
+        "selection_error": null,
+        "stage_order_violation": false,
+        "branches": []
+      }
+    },
+    "qwen9b": {
+      "identity": {
+        "provider": "ollama",
+        "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+        "engine_version": "0.40.4",
+        "digest": "446dc6a1b5effc9a3cd831c7c33a7dc245493ca3f48a6c745bab10d25c5f615b",
+        "size": 7087508415,
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "9.2B",
+          "quantization_level": "Q4_K_M"
+        }
+      },
+      "config": {
+        "configured": true,
+        "provider": "ollama",
+        "base_url": "http://127.0.0.1:11435",
+        "model": "hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M",
+        "context_tokens": 65536,
+        "response_tokens": 4096,
+        "temperature": 0.6,
+        "max_steps": 128,
+        "request_timeout": 300,
+        "command_timeout": 60,
+        "terminal": true,
+        "json_mode": false,
+        "thinking": false,
+        "protocol": "native"
+      },
+      "qualification": "not_established",
+      "trials": [
+        {
+          "name": "sha256_file",
+          "repeat": 1,
+          "run": {
+            "status": "paused",
+            "steps": 128,
+            "seconds": 497.24,
+            "model_requests": 129,
+            "timed_out": false,
+            "failure_kind": null,
+            "detail": "Action allowance reached",
+            "format_repairs": 0,
+            "action_errors": 5,
+            "provider_error_category": null,
+            "last_notices": null
+          },
+          "review": {
+            "accepted": false,
+            "source_sha256": "c92c835805bd3c2956add43d68d5727e8e70882d01220b7849d5bf7526a91cde",
+            "runtime_changed": true,
+            "new_test_files": [
+              "tests/test_sha256_file.py"
+            ],
+            "protected_unchanged": true,
+            "allowed_files_only": true,
+            "activation_ready": true,
+            "protected_regressions": {
+              "passed": true,
+              "tests": 49
+            },
+            "independent_checks": {
+              "passed": 11,
+              "total": 11,
+              "failed": [],
+              "errors": {},
+              "probe_error": null
+            },
+            "candidate_suite": {
+              "exit_code": 0,
+              "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 58, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+            },
+            "fresh_public_invocation": true,
+            "model_explanation": "Now let me read the relevant section around line 2150 where the tool execution happens:\n\n",
+            "reason": null
+          }
+        },
+        {
+          "name": "csv_preview",
+          "repeat": 1,
+          "run": {
+            "status": "completed",
+            "steps": 128,
+            "seconds": 483.82,
+            "model_requests": 129,
+            "timed_out": false,
+            "failure_kind": null,
+            "detail": "",
+            "format_repairs": 0,
+            "action_errors": 7,
+            "provider_error_category": null,
+            "last_notices": null
+          },
+          "review": {
+            "accepted": false,
+            "source_sha256": "3ec0e4f1c5e0cd7c5101b80ddb0e0cb6b1eab09e7e43ec62df83f3e7727c4750",
+            "runtime_changed": true,
+            "new_test_files": [
+              "tests/test_csv_preview.py"
+            ],
+            "protected_unchanged": true,
+            "allowed_files_only": true,
+            "activation_ready": false,
+            "protected_regressions": {
+              "passed": true,
+              "tests": 49
+            },
+            "independent_checks": {
+              "passed": 27,
+              "total": 27,
+              "failed": [],
+              "errors": {},
+              "probe_error": null
+            },
+            "candidate_suite": {
+              "exit_code": 1,
+              "output": "{\"check\": \"candidate tests\", \"passed\": false, \"tests\": 68, \"failures\": 2, \"errors\": 0, \"skipped\": 0}\ntest_directory_path_rejected (test_csv_preview.CsvPreviewTests.test_directory_path_rejected)\nValueError: Path must be an ordinary file, not a directory\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/work/task/harness/tests/test_csv_preview.py\", line 126, in test_directory_path_rejected\n    with self.assertRaisesRegex(ValueError, 'outside'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"outside\" does not match \"Path must be an ordinary file, not a directory\"\n\ntest_missing_file (test_csv_preview.CsvPreviewTests.test_missing_file)\nValueError: Path must be an ordinary file, not a directory\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/work/task/harness/tests/test_csv_preview.py\", line 120, in test_missing_file\n    with self.assertRaisesRegex(ValueError, 'File not found'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"File not found\" does not match \"Path must be an ordinary file, not a directory\"\n\n"
+            },
+            "fresh_public_invocation": true,
+            "model_explanation": "The csv_preview tool has been implemented with the following changes:\n\n1. **tools.py**: Added `csv_preview` tool handler that:\n   - Validates `limit` is an integer from 1-20 (excluding bool)\n   - Validates path is a file (not directory) within workspace\n   - Reads UTF-8 content, rejecting invalid UTF-8 or oversized input (>100k chars)\n   - Uses Python's csv.reader to parse CSV, preserving quoted commas, Unicode, and CRLF\n   - Returns rows (up to limit) and truncated flag\n\n2. **providers.py**: Added tool spec with description and argument validation\n\n3. **tests/test_csv_preview.py**: Created comprehensive tests covering:\n   - Empty CSV, simple CSV, truncated rows\n   - Quoted fields with commas, Unicode, CRLF\n   - Limit boundaries (1 and 20)\n   - Invalid limit values (0, negative, too high, bool, float)\n   - Missing files, directories, paths outside workspace\n   - Oversized input rejection\n   - Exact byte preservation\n\nRun `python3 harness/seed.py check` to verify all tests pass.",
+            "reason": null
+          }
+        },
+        {
+          "name": "format_json",
+          "repeat": 1,
+          "run": {
+            "status": "completed",
+            "steps": 92,
+            "seconds": 641.01,
+            "model_requests": 93,
+            "timed_out": false,
+            "failure_kind": null,
+            "detail": "",
+            "format_repairs": 0,
+            "action_errors": 11,
+            "provider_error_category": null,
+            "last_notices": null
+          },
+          "review": {
+            "accepted": true,
+            "source_sha256": "4104cc3e59c925d38a4b63689bb4f9c368aec923285a759e695ba834807070cf",
+            "runtime_changed": true,
+            "new_test_files": [
+              "tests/test_format_json.py"
+            ],
+            "protected_unchanged": true,
+            "allowed_files_only": true,
+            "activation_ready": true,
+            "protected_regressions": {
+              "passed": true,
+              "tests": 49
+            },
+            "independent_checks": {
+              "passed": 18,
+              "total": 18,
+              "failed": [],
+              "errors": {},
+              "probe_error": null
+            },
+            "candidate_suite": {
+              "exit_code": 0,
+              "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 64, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+            },
+            "fresh_public_invocation": true,
+            "model_explanation": "Successfully implemented the format_json tool. Added import json to tools.py, implemented the format_json tool that reads UTF-8 JSON, validates input/output sizes, and formats with json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2) + \"\\n\". Added tool spec to providers.py. Created test_format_json.py with 14 focused tests. All 64 tests pass.",
+            "reason": null
+          }
+        }
+      ],
+      "growth": {
+        "first": {
+          "status": "paused",
+          "steps": 128,
+          "seconds": 458.53,
+          "model_requests": 129,
+          "timed_out": false,
+          "failure_kind": null,
+          "detail": "Action allowance reached",
+          "format_repairs": 0,
+          "action_errors": 2,
+          "provider_error_category": null,
+          "last_notices": null
+        },
+        "selected": "format_json",
+        "first_review": {
+          "accepted": false,
+          "source_sha256": "05d10e86d8a3933f212c90d63a400627b364fb7837815d38f31c9b5dabba3250",
+          "runtime_changed": true,
+          "new_test_files": [],
+          "protected_unchanged": true,
+          "allowed_files_only": true,
+          "activation_ready": false,
+          "protected_regressions": {
+            "passed": true,
+            "tests": 49
+          },
+          "independent_checks": {
+            "passed": 10,
+            "total": 18,
+            "failed": [
+              "registered",
+              "schema",
+              "object",
+              "object_idempotent",
+              "array",
+              "array_idempotent",
+              "scalar",
+              "scalar_idempotent"
+            ],
+            "errors": {
+              "schema": "KeyError: 'format_json'",
+              "object": "ValueError: Unknown tool: format_json",
+              "object_idempotent": "ValueError: Unknown tool: format_json",
+              "array": "ValueError: Unknown tool: format_json",
+              "array_idempotent": "ValueError: Unknown tool: format_json",
+              "scalar": "ValueError: Unknown tool: format_json",
+              "scalar_idempotent": "ValueError: Unknown tool: format_json"
+            },
+            "probe_error": null
+          },
+          "candidate_suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 49, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "fresh_public_invocation": false,
+          "model_explanation": "Let me read the exact text at the end of edit_file:\n\n",
+          "reason": null
+        },
+        "selection_error": null,
+        "stage_order_violation": false,
+        "branches": []
+      }
+    }
+  }
+}

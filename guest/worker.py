@@ -185,10 +185,30 @@ def main(native_root=None):
     from autoproteus.storage import Store
     from autoproteus.providers import ProviderError
     from types import SimpleNamespace
+    activation_notice = None
+    human_messages = []
+    human_texts = {item['text'] for item in boot['session'].get('feed', []) if item.get('kind') == 'user'}
+    for item in boot['session']['messages']:
+        if item['role'] == 'user' and (item.get('origin') == 'human' or
+                ('origin' not in item and (item['content'] in human_texts or not item['content'].startswith((
+                    'ACTION RESULT\n', 'Your response was not accepted:', 'Resume this task. Inspect current files',
+                    'Your finish call was deferred', 'A large prior action was omitted.', 'Your edited seed is now active.'))))):
+            human_messages.append({'role': 'user', 'content': item['content']})
+    if not any(item['content'] == boot['session']['task'] for item in human_messages):
+        human_messages.insert(0, {'role': 'user', 'content': boot['session']['task']})
 
     class Client:
         def complete(self, messages, cancel, progress=None):
             try:
+                if boot.get('handoff') == 'concise' and activation_notice:
+                    before = len(messages)
+                    boundary = next((index for index in range(len(messages) - 1, -1, -1)
+                                     if messages[index]['content'] == activation_notice), None)
+                    if boundary is not None:
+                        messages = ([item for item in messages[:boundary] if item['role'] == 'system'] +
+                                    human_messages + messages[boundary:])
+                    call({'op': 'event', 'type': 'context_handoff', 'data': {'mode': 'concise',
+                          'applied': boundary is not None, 'messages_before': before, 'messages_after': len(messages)}})
                 request = {'op': 'infer', 'messages': messages}
                 if config['provider'] != 'demo' and config.get('protocol', 'native') == 'native':
                     from autoproteus.providers import tool_definitions
@@ -267,6 +287,7 @@ def main(native_root=None):
                   'Call the appropriate supplied tools directly to continue the original task after inspecting saved files. '
                   'The --tool command was for development checks; the activated tools can now be called directly. '
                   'Request another activation only if you make further seed edits.')
+        activation_notice = notice
         session['messages'].append({'role': 'user', 'content': notice, 'origin': 'internal'})
         store.feed(session, 'notice', notice)
     settings = SimpleNamespace(values=config, key=lambda: '')
