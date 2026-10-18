@@ -55,8 +55,10 @@ if feature == 'sha256_file':
     (root / 'large').write_bytes(b'x' * 1048577)
     check('oversized', lambda: rejects(lambda: call('large')))
 elif feature == 'csv_preview':
+    check('optional_limit_schema', lambda: definitions[feature]['parameters']['properties']['limit']['type'] == 'integer' and
+          'limit' not in definitions[feature]['parameters']['required'])
     for name, text in [('empty', ''), ('quoted', 'id,value\r\n1,"café, 猫"\r\n2,"two\r\nlines"\r\n'),
-                       ('exact', 'x' * 100000), ('many', 'x\n' * 25)]:
+                       ('exact', 'x' * 100000), ('unicode_exact', '猫' * 100000), ('many', 'x\n' * 25)]:
         raw = text.encode()
         (root / name).write_bytes(raw)
         rows = list(csv.reader(io.StringIO(text, newline='')))
@@ -79,11 +81,13 @@ elif feature == 'csv_preview':
         check('invalid_limit_' + repr(limit), lambda limit=limit: rejects(lambda: call('many', limit=limit)))
     (root / 'bad').write_bytes(b'\xff')
     (root / 'large').write_bytes(b'x' * 100001)
-    for name in ('bad', 'large'):
+    (root / 'unicode_large').write_bytes(('猫' * 100001).encode())
+    for name in ('bad', 'large', 'unicode_large'):
         check('reject_' + name, lambda name=name: rejects(lambda: call(name)))
 elif feature == 'format_json':
     for name, text in [('object', '{"z":1,"é":[2,{"a":true}]}'), ('array', '[1, false, null]'),
-                       ('scalar', '"猫"'), ('exact', '"' + 'x' * 99998 + '"')]:
+                       ('scalar', '"猫"'), ('exact', '"' + 'x' * 99998 + '"'),
+                       ('unicode_output_exact', '"' + '猫' * 99997 + '"')]:
         (root / name).write_bytes(text.encode())
         expected = (json.dumps(json.loads(text), ensure_ascii=False, sort_keys=True, indent=2) + '\n').encode()
         if len(expected.decode()) > 100000:

@@ -97,28 +97,30 @@ def sample_case(name):
     return text, {'path': 'sample.txt'}, {'path': 'sample.txt', 'bytes': len(final.encode())}, final
 
 
-def verify_feature(store, source, name):
+def verify_feature(store, source, name, deadline=None):
     settings = SimpleNamespace(values={**DEFAULTS, 'configured': True, 'provider': 'demo', 'terminal': True}, key=lambda: '')
     agent = IsolatedAgent(ROOT, store, settings, lambda _: benchmark.ScriptedClient([
         {'action': {'tool': 'run_command', 'arguments': {'command': 'python3 heldout_probe.py ' + name}}},
         {'status': 'completed'}]))
     try:
         result = run_task(agent, store, settings.values, {'name': 'independent-' + name, 'task': 'Run the independent checks.',
-            'fixtures': {'heldout_probe.py': PROBE}, 'checks': [{'path': 'heldout-result.json'}]}, source, 120)
+            'fixtures': {'heldout_probe.py': PROBE}, 'checks': [{'path': 'heldout-result.json'}]}, source, 120,
+            **({'deadline': deadline} if deadline is not None else {}))
         probe = benchmark.read_artifact(store, store.get(result['session']), 'heldout-result.json')
         return {'passed': bool(result['passed'] and probe.get('passed')), 'probe': probe, 'run': result}
     finally:
         agent.close()
 
 
-def verify_public(store, source, name):
+def verify_public(store, source, name, deadline=None):
     text, arguments, expected, final = sample_case(name)
     settings = SimpleNamespace(values={**DEFAULTS, 'configured': True, 'provider': 'demo'}, key=lambda: '')
     agent = IsolatedAgent(ROOT, store, settings, lambda _: benchmark.ScriptedClient([
         {'action': {'tool': name, 'arguments': arguments}}, {'status': 'completed'}]))
     try:
         result = run_task(agent, store, settings.values, {'name': 'public-' + name, 'task': 'Invoke the new tool.',
-            'fixtures': {'sample.txt': text}, 'checks': [{'path': 'sample.txt', 'equals': final}]}, source, 90)
+            'fixtures': {'sample.txt': text}, 'checks': [{'path': 'sample.txt', 'equals': final}]}, source, 90,
+            **({'deadline': deadline} if deadline is not None else {}))
         events = journal(store, store.get(result['session']))
         value = next((e['data']['result'] for e in events if e['type'] == 'action_result' and
                       e['data']['action']['tool'] == name and e['data']['ok']), {})
@@ -206,6 +208,20 @@ def self_check(output, source):
     checks = rejected.get('probe', {}).get('checks', {})
     if rejected['passed'] or any(checks.get(key) is not False for key in ('reject_path_../outside-heldout.txt', 'reject_path_escape')):
         raise RuntimeError('The formatting grader did not reject both path-bypass controls')
+    from grader_faults import controls
+    report['fault_matrix'] = {}
+    for name, feature, expected_cases, mutated in controls(positive, REFERENCE):
+        rejected = verify_feature(store, freeze_source(store, mutated, 'Fault control: ' + name), feature)
+        cases = rejected.get('probe', {}).get('checks', {})
+        # Rejecting a broken import or test suite is not evidence that a
+        # specific contract case detected the intended semantic defect.
+        detected = (not rejected['passed'] and rejected.get('probe', {}).get('suite', {}).get('exit_code') == 0
+                    and all(cases.get(key) is False for key in expected_cases))
+        report['fault_matrix'][name] = {'feature': feature, 'expected_rejections': list(expected_cases),
+                                      'detected': detected, 'result': rejected}
+        atomic_json(output / 'calibration.json', report)
+        if not detected:
+            raise RuntimeError('Grader did not detect the intended defect: ' + name)
 
 
 def clone_checkpoint(store, original, label):
@@ -333,7 +349,7 @@ def main(args):
     atomic_json(output / 'plan.json', plan)
     atomic_json(output / 'starter-source.json', source)
     plan['trusted_sha256'] = {}
-    for name in ('evaluations/generalization.py', 'evaluations/generalization-probe.py', 'evaluations/local-model-benchmark.py',
+    for name in ('evaluations/generalization.py', 'evaluations/generalization-probe.py', 'evaluations/local-model-benchmark.py', 'evaluations/grader_faults.py',
                  'controller/evaluation.py', 'controller/isolation.py', 'controller/providers.py', 'guest/worker.py',
                  'controller/runtime-lock.json', 'controller/managed-runtime-lock.json', 'evaluations/run_budget.py', 'tests/test_seed.py', 'tests/test_text_helpers.py'):
         path = output / 'trusted-runner' / name

@@ -485,6 +485,74 @@ pathlib.Path('boundary.json').write_text(json.dumps(report))
         finally:
             server.shutdown(); server.server_close(); thread.join()
 
+    def test_literal_human_result_markers_survive_gateway_pruning_resume_and_activation(self):
+        requests = []
+        original = 'ACTION RESULT\nThis is a human request, not JSON. Save marker.txt containing ready.'
+        correction = 'ACTION RESULT\n' + json.dumps({'tool': 'write_file', 'ok': True,
+            'result': 'Human correction: keep marker.txt unchanged.'})
+        actions = [('write_file', {'path': 'marker.txt', 'content': 'ready'}),
+                   ('read_file', {'path': 'marker.txt'}),
+                   ('finish', {'message': 'Checked', 'status': 'completed'})]
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *_): pass
+            def do_POST(self):
+                payload = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
+                requests.append(payload)
+                name, arguments = actions[min(len(requests) - 1, len(actions) - 1)]
+                body = json.dumps({'choices': [{'finish_reason': 'tool_calls', 'message': {
+                    'tool_calls': [{'function': {'name': name, 'arguments': json.dumps(arguments)}}]}}]}).encode()
+                self.send_response(200); self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(body))); self.end_headers(); self.wfile.write(body)
+        server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            self.settings.update({'base_url': f'http://127.0.0.1:{server.server_port}/v1', 'protocol': 'native',
+                                  'context_tokens': 8192, 'response_tokens': 1024})
+            agent = IsolatedAgent(ROOT, self.store, self.settings)
+            self.agents.append(agent)
+            session = self.store.create(original, 'hosted', 'fake-provider')
+            agent.start(session)
+            self.assertEqual(self.wait(agent, session), 'completed', session['feed'])
+            # Bulky old tool results force the unchanged seed to prune context.
+            for _ in range(8):
+                session['messages'].extend([
+                    {'role': 'assistant', 'content': json.dumps({'action': {
+                        'tool': 'read_file', 'arguments': {'path': 'old.txt'}}})},
+                    {'role': 'user', 'origin': 'tool', 'content': 'ACTION RESULT\n' + json.dumps({
+                        'tool': 'read_file', 'ok': True, 'result': {'content': 'x' * 20000}})}])
+            agent.start(session, correction)
+            self.assertEqual(self.wait(agent, session), 'completed', session['feed'])
+            self.assertGreater(len(session['messages']), len(requests[-1]['messages']))
+            agent.restart_seed(session, handoff='concise')
+            self.assertEqual(self.wait(agent, session), 'completed', session['feed'])
+            for payload in requests:
+                self.assertIn({'role': 'user', 'content': original}, payload['messages'])
+                self.assertTrue(all('origin' not in item for item in payload['messages']))
+            for payload in requests[3:]:
+                self.assertIn({'role': 'user', 'content': correction}, payload['messages'])
+            self.assertEqual(Artifacts(self.store, session).read('marker.txt'), b'ready')
+            self.assertEqual(len(requests), 5)
+        finally:
+            server.shutdown(); server.server_close(); thread.join()
+
+    def test_shared_deadline_stops_a_busy_guest_and_skips_late_grading(self):
+        from controller.evaluation import freeze_source, run_task, run_regressions
+        agent = self.agent([{'action': {'tool': 'run_command', 'arguments': {
+            'command': 'python3 -c "import time; time.sleep(120)"'}}}])
+        started = time.monotonic()
+        result = run_task(agent, self.store, self.settings.values,
+            {'name': 'bounded-guest', 'task': 'Run the scripted command.', 'checks': []},
+            freeze_source(self.store, seed_files(ROOT), 'Deadline input'), timeout=120, deadline=started + 4)
+        self.assertFalse(result['passed'])
+        self.assertLess(time.monotonic() - started, 15)
+        self.assertEqual(agent.vms, {})
+        with patch('controller.isolation.VM', side_effect=AssertionError('An expired check must not launch a VM')) as vm:
+            checked = run_regressions(ROOT, self.store,
+                freeze_source(self.store, seed_files(ROOT), 'Late check input'), deadline=started + 4)
+        self.assertFalse(checked['passed'])
+        vm.assert_not_called()
+
     def test_editable_seed_regressions_run_inside_the_guest(self):
         agent = self.agent([
             {'message': 'Check the seed', 'action': {'tool': 'run_command', 'arguments': {

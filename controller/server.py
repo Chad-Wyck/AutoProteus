@@ -224,8 +224,9 @@ def handler_for(app):
                 if path in ("/api/session", "/api/files", "/api/file", "/api/export", "/api/download"):
                     session = app.store.get(query.get("id", [""])[0])
                     if path == "/api/session":
-                        return self.send(app.store.view(session['id'], int(query.get('after', ['0'])[0]),
-                            int(query['revision'][0]) if 'revision' in query else None))
+                        view = app.store.view(session['id'], int(query.get('after', ['0'])[0]),
+                            int(query['revision'][0]) if 'revision' in query else None)
+                        return self.send({**view, 'verification': app.evaluations.status_for(session)})
                     if path == "/api/files":
                         return self.send(app.files(session))
                     if path in ("/api/file", "/api/download"):

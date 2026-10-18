@@ -91,6 +91,7 @@ def prepare(args):
         'controller/managed-runtime-lock.json', 'guest/worker.py', 'tests/test_seed.py', 'tests/test_text_helpers.py',
         'evaluations/navigation-study.py', 'evaluations/navigation_probe.py', 'evaluations/source_navigation.py',
         'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/generalization.py', 'evaluations/generalization-probe.py',
+        'evaluations/grader_faults.py',
         'evaluations/local-model-benchmark.py')
     for name in trusted:
         raw = (ROOT / name).read_bytes()

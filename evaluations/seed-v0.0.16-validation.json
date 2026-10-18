@@ -1,0 +1,175 @@
+{
+  "version": "0.0.16",
+  "created": "2026-10-18T05:55:01.408014+00:00",
+  "base_commit": "7142f0d96641a49f594217a3273124ab6742481b",
+  "source_sha256": "e7bb33ec062bd0e3d90b74434000200438aff7a5740f2e92d29edba28baf78a0",
+  "trusted_sha256": {
+    "controller/appliance.py": "c3dd7aaffb6b7d496c5a412bd686ae9b67288d762b2e7b965e02d5eafdbde869",
+    "controller/compatibility.py": "e12a1deac8470e9ea1ccaaa8766d3740931ea8d962f858d79516cd5655c3a8ed",
+    "controller/config.py": "b898057e79c73557e8bba4dfe9783e4777d26cd4719e19add1fb95b8db603c8f",
+    "controller/errors.py": "1cc92d249a079cc6fda748d82b046d6fb93d46be17307ce5af84464f540e8fb7",
+    "controller/evaluation.py": "fad555821b72dfa23b28cbd2adbfe1d6947d3e4faa2ed14652288c6523521c3a",
+    "controller/execution.py": "e60c6d07f59f9c6ff977bd721f978615c0efb6b5f072678842f79d817dc318bf",
+    "controller/integrity.py": "4471967490cfbd54c76409727327b8113007e47fd78acda596f1367cd6f13ba4",
+    "controller/isolation.py": "1e2a790568ba21ec7d66736d5aabcef7d7ada90688f0def134c886d17572351a",
+    "controller/linux_process.py": "b321bf5b1001f75021ae56fdd604a2845c397278e3cdfa5292904eb826d0cf7a",
+    "controller/native.py": "fedaa3cf35a4206f6535142ef9c8494a557bdb86c329552809c0c4171f7f3fdf",
+    "controller/providers.py": "c52e325f84eacdaf660662bbfdc52aeaa4e2ae4aeae1d64db4aacc00bb633068",
+    "controller/runtime.py": "481d1b2b6bd4f159b27740c3cd5bd79937b5cb9f6b770efd409bc21cfc4a9926",
+    "controller/server.py": "2d9f09a6ae1fa7b5340f59c9dd29e0656c8d28926863521ef0e3673b0262b3bc",
+    "controller/storage.py": "08b5b8bdc83c35f1989f1bdbfc7ca1f38e194d4874aaa71f3fbbf6cec41b8e82",
+    "controller/windows_job.py": "68d67a3ad0c613f383cddfc3d217e33d104901eeda7e872bb22d1ea7138bbc2b",
+    "controller/__init__.py": "3bd61154b2b01e5f526b3b8c7024d801573620381b64c41b15f9e34bb654d0d5",
+    "guest/worker.py": "59b283ce6eafe14b7db8cfb3e56278beeb58fa7e7f43bb3f3fd217e681f697a4",
+    "controller/runtime-lock.json": "1c9250abb0fe1d7e172348749b2ec474e9537c6007c216d1b91165f7ebcf2b88",
+    "controller/managed-runtime-lock.json": "4dcbd55128f50a1cb8f756e0141f9dfaf7b36964dfc005d11bc49e1cd95139be",
+    "tests/test_seed.py": "b3732442922a0710f2b8fcd77b284307eca2242f52489d44153e7d062acbcf62",
+    "tests/test_text_helpers.py": "db76c2c7e785bacd54c80bbec6559ae5b0bb2da510e48bb4d1e5dc4ef457a17c",
+    "evaluations/model_study.py": "0b9c59bdf484e7ef777ba10ea002cbef2352fb211606162d4fe0be1ea5bd65e9",
+    "evaluations/study_support.py": "52e90c499db3805a150c979989aa845df6e6335bf4a646d7bb844674e76a3a77",
+    "evaluations/generalization.py": "212f505c42918611d73593e25801e5a4e42cbc663c6d72d9f13f5b1b5776895e",
+    "evaluations/grader_faults.py": "47c64140487741496851e6d7e26c9efbfae56193c741368edebddb41df4e6061",
+    "evaluations/workflow_variants.py": "a7a3e1991e871ec9a5b6002f416f8309a2dd86f37d742a1cce5d8fd130ccf91f",
+    "evaluations/workflow_support.py": "2c2fc11879df90e97f0f528712681ee4b0995b25cb06595015c3ae7ad1775108",
+    "evaluations/generalization-probe.py": "51f4fecd1f4d5dd55f4e9023d3b4acb62abd00fcc8f9835ddca517dcbee525e3",
+    "evaluations/local-model-benchmark.py": "24a5e3ceff761a02311a0a582c133c305c53c253ccfdc9b12fbcd5d0469c883d",
+    "evaluations/local-feature-probe.py": "a69b25ba23eac7d2446ef871fde47fb22dea38c01dba91eed5c4e0f0780a18f4",
+    "evaluations/local-upgrade-tasks.json": "f685d2f992373d1cda9c16903c478d3bd67a236807529b0905db30f9a612556f",
+    "evaluations/observations.py": "6f655408e1fd8378348177cf4849e1841e307f4b0d09d0a31bfd24b4c8af9e98",
+    "evaluations/run_budget.py": "bb3272034344b1074e2ab033eeaab335ba903436d1cf79517eafff15b344314c",
+    "evaluations/invoke_tool.py": "d2eeca9f4f20b579fd5d35789fd6de13207cf2f49b83234dd4084cb4614b14e1",
+    "evaluations/tasks.json": "b64343913ff104e27c70f0c7b5bd7c6a55e8fd53abc3c130f0d7109a33015f9e"
+  },
+  "full_vm_suite_before_final_bookkeeping": {
+    "total": 248,
+    "passed": 232,
+    "skipped": 16,
+    "seconds": 356.833,
+    "real_vm_test_methods": 25,
+    "log": ".data/v0016-full-tests.log",
+    "log_sha256": "25ee9a3daf4366528581a836f6f96bbca2c83f1d3e50014662fb623880401650"
+  },
+  "final_ordinary_suite": {
+    "total": 251,
+    "passed": 210,
+    "skipped": 41,
+    "seconds": 28.875,
+    "real_vm_test_methods": 0,
+    "log": ".data/v0016-final-ordinary.log",
+    "log_sha256": "3d6007baeba2390a559c9f33e7b301b7056e35ef27554862cc052aa79de7e6fb"
+  },
+  "final_focused_suite": {
+    "total": 17,
+    "passed": 17,
+    "skipped": 0,
+    "seconds": 16.739,
+    "real_vm_test_methods": 1,
+    "log": ".data/v0016-final-workflow.log",
+    "log_sha256": "2c6307ade1c5e178194bcfad92c5305f219fe9c92de09371ff8851d475f17b19"
+  },
+  "fault_matrix": {
+    "missing_default": {
+      "feature": "csv_preview",
+      "expected_rejections": [
+        "default_limit"
+      ],
+      "detected": true
+    },
+    "boolean_integer": {
+      "feature": "csv_preview",
+      "expected_rejections": [
+        "invalid_limit_True"
+      ],
+      "detected": true
+    },
+    "exact_hash_limit": {
+      "feature": "sha256_file",
+      "expected_rejections": [
+        "exact"
+      ],
+      "detected": true
+    },
+    "byte_character_limit": {
+      "feature": "csv_preview",
+      "expected_rejections": [
+        "unicode_exact_5"
+      ],
+      "detected": true
+    },
+    "false_write_success": {
+      "feature": "format_json",
+      "expected_rejections": [
+        "object",
+        "unicode_output_exact"
+      ],
+      "detected": true
+    },
+    "damage_rejected_input": {
+      "feature": "format_json",
+      "expected_rejections": [
+        "preserve_invalid",
+        "preserve_expanded"
+      ],
+      "detected": true
+    },
+    "exact_output_limit": {
+      "feature": "format_json",
+      "expected_rejections": [
+        "unicode_output_exact"
+      ],
+      "detected": true
+    },
+    "required_default_schema": {
+      "feature": "csv_preview",
+      "expected_rejections": [
+        "optional_limit_schema"
+      ],
+      "detected": true
+    }
+  },
+  "plans": {
+    "navigation": {
+      "folder": ".data/v0016-workflow-prepared-20261017/navigation",
+      "plan_sha256": "6fac67d7a3266f7516b2068fa2d88f189bc9c7a1a05f9fddb04d360dda6aef1b",
+      "scripted_calibration_passed": true,
+      "live_model_trials": 0
+    },
+    "edit-feedback": {
+      "folder": ".data/v0016-workflow-prepared-20261017/edit-feedback",
+      "plan_sha256": "6d848fd62436c222863d16aaa3caf5152697513baee191ecabf8e0a72794b2aa",
+      "scripted_calibration_passed": true,
+      "live_model_trials": 0
+    },
+    "syntax-feedback": {
+      "folder": ".data/v0016-workflow-prepared-20261017/syntax-feedback",
+      "plan_sha256": "d82168ab8d5fad3124dc65a6bb270f07ebe5a8eb3573c746fd082bc2a75c4b94",
+      "scripted_calibration_passed": true,
+      "live_model_trials": 0
+    },
+    "masked-history": {
+      "folder": ".data/v0016-workflow-prepared-20261017/masked-history",
+      "plan_sha256": "5a6d0af3affafbbffa7b8ea7299d5b8bf16142060937a5f6856c9e49f01f28cc",
+      "scripted_calibration_passed": true,
+      "live_model_trials": 0
+    },
+    "phase-growth": {
+      "folder": ".data/v0016-workflow-prepared-20261017/phase-growth",
+      "plan_sha256": "c25a095cd258c54495afd5691975e5526bf27541bfe1b6bdb1a8cc75d887f9e2",
+      "scripted_calibration_passed": true,
+      "live_model_trials": 0,
+      "supplied_parent_sha256": "4ef3edbff61acadb90d4ace6b51c3199582e790d490ff89f9d4d0d585600f40a",
+      "first_upgrade_credit": false
+    },
+    "phase-reuse": {
+      "folder": ".data/v0016-workflow-prepared-20261017/phase-reuse",
+      "plan_sha256": "051d52a67db8b49d2820458fa787bbd8b5b2ab41d23187da6fda751af4ec511e",
+      "scripted_calibration_passed": true,
+      "live_model_trials": 0,
+      "supplied_parent_sha256": "b7ae28263ba1a8a25ccbc9614b7c610f840f301a2494be512673c6f821464d4b",
+      "first_upgrade_credit": false
+    }
+  },
+  "model_trials_started": 0,
+  "candidate_promotions": 0,
+  "scope": "Human-authored opt-in experiment preparation and scripted regression/calibration only. No improvement in model upgrade success or speed has been measured. Historical supplied parents are not accepted autonomous first-pass upgrades. Default seed logic, model preferences and isolation permissions remain unchanged; version advanced."
+}

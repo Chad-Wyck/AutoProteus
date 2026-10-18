@@ -1,0 +1,186 @@
+{
+  "version": "0.1.0",
+  "controller_version": "0.1.0",
+  "created": "2026-10-18T21:17:22.305613+00:00",
+  "source_sha256": "8d1748faf710b4f190e8ab2f1b78034b2dcdea6db34bb9cabb082b8f9c92a541",
+  "base_commit": "7142f0d96641a49f594217a3273124ab6742481b",
+  "trusted_sha256": {
+    "controller/appliance.py": "c3dd7aaffb6b7d496c5a412bd686ae9b67288d762b2e7b965e02d5eafdbde869",
+    "controller/compatibility.py": "e12a1deac8470e9ea1ccaaa8766d3740931ea8d962f858d79516cd5655c3a8ed",
+    "controller/config.py": "b898057e79c73557e8bba4dfe9783e4777d26cd4719e19add1fb95b8db603c8f",
+    "controller/errors.py": "1cc92d249a079cc6fda748d82b046d6fb93d46be17307ce5af84464f540e8fb7",
+    "controller/evaluation.py": "9ae5fa2ea3d24ca7118995087519c902d3d40a0e9c4a5e469eec96e268e330ad",
+    "controller/execution.py": "e60c6d07f59f9c6ff977bd721f978615c0efb6b5f072678842f79d817dc318bf",
+    "controller/integrity.py": "4471967490cfbd54c76409727327b8113007e47fd78acda596f1367cd6f13ba4",
+    "controller/isolation.py": "09efc12f37712a8a655c4349e115b5241cc86fdda2870567f6236c223036b27d",
+    "controller/linux_process.py": "b321bf5b1001f75021ae56fdd604a2845c397278e3cdfa5292904eb826d0cf7a",
+    "controller/native.py": "fedaa3cf35a4206f6535142ef9c8494a557bdb86c329552809c0c4171f7f3fdf",
+    "controller/providers.py": "867e091eb121558c86c679e073ab360691428029f564d33731b27945d78af380",
+    "controller/runtime.py": "481d1b2b6bd4f159b27740c3cd5bd79937b5cb9f6b770efd409bc21cfc4a9926",
+    "controller/server.py": "2d9f09a6ae1fa7b5340f59c9dd29e0656c8d28926863521ef0e3673b0262b3bc",
+    "controller/storage.py": "08b5b8bdc83c35f1989f1bdbfc7ca1f38e194d4874aaa71f3fbbf6cec41b8e82",
+    "controller/windows_job.py": "68d67a3ad0c613f383cddfc3d217e33d104901eeda7e872bb22d1ea7138bbc2b",
+    "controller/__init__.py": "64257f9dabd6b1cba6e1952ee2d401fd6b5c9e55e7395c19f889c498945c9d58",
+    "guest/worker.py": "59b283ce6eafe14b7db8cfb3e56278beeb58fa7e7f43bb3f3fd217e681f697a4",
+    "controller/runtime-lock.json": "1c9250abb0fe1d7e172348749b2ec474e9537c6007c216d1b91165f7ebcf2b88",
+    "controller/managed-runtime-lock.json": "4dcbd55128f50a1cb8f756e0141f9dfaf7b36964dfc005d11bc49e1cd95139be",
+    "tests/test_seed.py": "b3732442922a0710f2b8fcd77b284307eca2242f52489d44153e7d062acbcf62",
+    "tests/test_text_helpers.py": "db76c2c7e785bacd54c80bbec6559ae5b0bb2da510e48bb4d1e5dc4ef457a17c",
+    "evaluations/model_study.py": "154af8105371267029dcee542dd047cde0b4ff7f98e221c31d5c6ec998a0b8e8",
+    "evaluations/study_support.py": "52e90c499db3805a150c979989aa845df6e6335bf4a646d7bb844674e76a3a77",
+    "evaluations/generalization.py": "2d3122e1cc03646a5e6b4dd0e017b513a091646fb8fb46822892ec0547efa0c7",
+    "evaluations/grader_faults.py": "47c64140487741496851e6d7e26c9efbfae56193c741368edebddb41df4e6061",
+    "evaluations/workflow_variants.py": "6e89893f8c3f75648849f8e94fdf26e1044485e8c30613b0df028d79231b21b2",
+    "evaluations/workflow_support.py": "2c2fc11879df90e97f0f528712681ee4b0995b25cb06595015c3ae7ad1775108",
+    "evaluations/generalization-probe.py": "51f4fecd1f4d5dd55f4e9023d3b4acb62abd00fcc8f9835ddca517dcbee525e3",
+    "evaluations/local-model-benchmark.py": "24a5e3ceff761a02311a0a582c133c305c53c253ccfdc9b12fbcd5d0469c883d",
+    "evaluations/local-feature-probe.py": "a69b25ba23eac7d2446ef871fde47fb22dea38c01dba91eed5c4e0f0780a18f4",
+    "evaluations/local-upgrade-tasks.json": "f685d2f992373d1cda9c16903c478d3bd67a236807529b0905db30f9a612556f",
+    "evaluations/observations.py": "6f655408e1fd8378348177cf4849e1841e307f4b0d09d0a31bfd24b4c8af9e98",
+    "evaluations/run_budget.py": "bb3272034344b1074e2ab033eeaab335ba903436d1cf79517eafff15b344314c",
+    "evaluations/invoke_tool.py": "d2eeca9f4f20b579fd5d35789fd6de13207cf2f49b83234dd4084cb4614b14e1",
+    "evaluations/tasks.json": "b64343913ff104e27c70f0c7b5bd7c6a55e8fd53abc3c130f0d7109a33015f9e"
+  },
+  "full_vm_suite_before_final_reporting_adjustments": {
+    "total": 268,
+    "passed": 252,
+    "skipped": 16,
+    "seconds": 393.796,
+    "log": ".data/v010-full-vm-tests.log",
+    "log_sha256": "119e41fff0dffaf1c52d7b45c869a42216df1233c31d07d80379b4156bcc7461"
+  },
+  "final_ordinary_suite": {
+    "total": 268,
+    "passed": 225,
+    "skipped": 43,
+    "seconds": 36.41,
+    "log": ".data/v010-release-ordinary-tests.log",
+    "log_sha256": "21a08171a59fd58c1bfef780411190cfea561748707cd82a6037230b9481db96"
+  },
+  "final_targeted_vm_suite": {
+    "total": 6,
+    "passed": 6,
+    "skipped": 0,
+    "seconds": 49.875,
+    "log": ".data/v010-final-targeted-vm-tests.log",
+    "log_sha256": "3811a6861323991f6ff3f7e42a37ae4972b196cfda662b1df0a3cfb3cc1c2378"
+  },
+  "validation_order": "Full VM suite ran before final neutral-history hash normalization, controller version synchronization and deadline-review receipt synchronization. Final ordinary and targeted VM suites checked the resulting files. Frozen plans and their calibration use these final files. The UI version label was then bound to the host version and checked for JavaScript syntax.",
+  "ui_validation": {
+    "javascript_syntax_passed": true,
+    "dynamic_host_version_label_checked": true,
+    "files_sha256": {
+      "web/app.js": "9b7c609869cecf9f1ed4910ce3569f7d8ddfac80895c1550b90fdc620527427e",
+      "web/index.html": "3ca70d16483421938db0a7b1e3274e942db77d2afa432e2ba404d2e8bbb5b76e"
+    }
+  },
+  "prepared_plans": {
+    "folder": ".data/v010-workflow-prepared-20261018-final",
+    "count": 8,
+    "plans": [
+      "qwen35-9b-q4-128k-phase-reuse",
+      "qwen35-9b-q4-128k-phase-growth",
+      "qwen35-9b-q4-128k-edit-feedback",
+      "qwen35-9b-q4-128k-syntax-feedback",
+      "qwen35-9b-q4-128k-masked-history",
+      "oxcoder-9b-q6_k-128k-phase-reuse",
+      "oxcoder-9b-q6_k-128k-phase-growth",
+      "navigation"
+    ],
+    "calibration_passed": true,
+    "requirements": {
+      "qwen35-9b-q4-128k-phase-reuse": {
+        "checks": {
+          "experiment": "phases",
+          "mode": "reuse",
+          "parent_tool": "sha256_file",
+          "required_existing_tools": [
+            "format_json",
+            "sha256_file"
+          ],
+          "required_absent_tool": null
+        },
+        "cache_hit": false
+      },
+      "qwen35-9b-q4-128k-phase-growth": {
+        "checks": {
+          "experiment": "phases",
+          "mode": "growth",
+          "parent_tool": "sha256_file",
+          "required_existing_tools": [
+            "sha256_file"
+          ],
+          "required_absent_tool": "format_json"
+        },
+        "cache_hit": false
+      },
+      "qwen35-9b-q4-128k-edit-feedback": {
+        "checks": {
+          "experiment": "edit-feedback",
+          "mode": "growth",
+          "parent_tool": null,
+          "required_existing_tools": [],
+          "required_absent_tool": null
+        },
+        "cache_hit": false
+      },
+      "qwen35-9b-q4-128k-syntax-feedback": {
+        "checks": {
+          "experiment": "syntax-feedback",
+          "mode": "growth",
+          "parent_tool": null,
+          "required_existing_tools": [],
+          "required_absent_tool": null
+        },
+        "cache_hit": false
+      },
+      "qwen35-9b-q4-128k-masked-history": {
+        "checks": {
+          "experiment": "masked-history",
+          "mode": "growth",
+          "parent_tool": null,
+          "required_existing_tools": [],
+          "required_absent_tool": null
+        },
+        "cache_hit": false
+      },
+      "oxcoder-9b-q6_k-128k-phase-reuse": {
+        "checks": {
+          "experiment": "phases",
+          "mode": "reuse",
+          "parent_tool": "sha256_file",
+          "required_existing_tools": [
+            "format_json",
+            "sha256_file"
+          ],
+          "required_absent_tool": null
+        },
+        "cache_hit": true
+      },
+      "oxcoder-9b-q6_k-128k-phase-growth": {
+        "checks": {
+          "experiment": "phases",
+          "mode": "growth",
+          "parent_tool": "sha256_file",
+          "required_existing_tools": [
+            "sha256_file"
+          ],
+          "required_absent_tool": "format_json"
+        },
+        "cache_hit": true
+      }
+    },
+    "live_attempts": 0,
+    "validation_sha256": "45ab0b7191be6c68cc995b875d0ca5567d642866d266d1aef92ccd2c40029b04"
+  },
+  "fixed_review_issues": [
+    "workflow calibration identities include the exact check requirements",
+    "shared absolute deadlines reach grading and activation workers; expired checks do not launch",
+    "human provenance is recovered at the actual seed/broker/provider boundary"
+  ],
+  "live_model_trials_started": false,
+  "candidate_promotions": 0,
+  "seed_interface_changes": false,
+  "inference_frame_schema_changes": false,
+  "scope": "Regression and preparation evidence only. New model performance remains unmeasured. Old versions and experimental evidence remain historical."
+}

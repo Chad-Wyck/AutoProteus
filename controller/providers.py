@@ -43,9 +43,13 @@ def model_service_error(detail, native):
     return ProviderError(detail)
 
 
+def context_bytes(messages, tools):
+    return len(json.dumps({'messages': messages, 'tools': tools or []}, ensure_ascii=False).encode('utf-8'))
+
+
 def validate_context(messages, tools, config):
     """A model-agnostic upper bound on our estimate, not an exact tokenizer."""
-    size = len(json.dumps({'messages': messages, 'tools': tools or []}, ensure_ascii=False).encode('utf-8'))
+    size = context_bytes(messages, tools)
     allowance = max(0, config['context_tokens'] - config['response_tokens'] - 128) * 2
     if size > allowance:
         raise ProviderError(ERROR_MESSAGES['context'], category='context')
@@ -69,16 +73,19 @@ def wire_messages(messages, ollama):
                 output.append({'role': 'assistant', 'content': decision.get('message', ''), 'tool_calls': [call]})
             else:
                 output.append({'role': 'assistant', 'content': decision.get('message', '')})
-        elif message['role'] == 'user' and content.startswith('ACTION RESULT\n'):
-            result = json.loads(content.split('\n', 1)[1])
+        elif message['role'] == 'user' and message.get('origin') != 'human' and content.startswith('ACTION RESULT\n'):
             if last_id is None:
                 # A pruned orphan result is useful context, but not a valid API tool response.
                 output.append(message)
             else:
+                result = json.loads(content.split('\n', 1)[1])
                 item = {'role': 'tool', 'content': json.dumps(result, ensure_ascii=False)}
                 item.update({'tool_name': result['tool']} if ollama else {'tool_call_id': last_id})
                 output.append(item); last_id = None
         else:
+            # A human follow-up interrupts any pending action/result pairing.
+            if message['role'] == 'user':
+                last_id = None
             output.append(message)
     return output
 
@@ -146,6 +153,53 @@ class ModelClient:
     def check_context(self, messages, tools):
         """Protected default; experimental host clients may supply another estimator."""
         return validate_context(messages, tools, self.config)
+
+    def prepare_messages(self, messages, tools, observe=None):
+        """Budget the actual provider representation without editing the journal.
+
+        Native envelopes can exceed the seed's neutral estimate. Remove only
+        oldest complete tool exchanges, retaining all system/user messages and
+        the newest exchange. An irreducible request still fails before transport.
+        """
+        native = self.config.get('protocol', 'native') == 'native'
+        ollama = self.config['provider'] == 'ollama'
+        wire = wire_messages(messages, ollama) if native else messages
+        wire = [{key: value for key, value in item.items() if key != 'origin'} for item in wire]
+        schemas = tools if native else []
+        pairs = []
+        if native:
+            for index, (call, result) in enumerate(zip(wire, wire[1:])):
+                calls = call.get('tool_calls', [])
+                if call['role'] != 'assistant' or len(calls) != 1 or result['role'] != 'tool':
+                    continue
+                matches = (result.get('tool_name') == calls[0]['function']['name'] if ollama else
+                           result.get('tool_call_id') == calls[0].get('id'))
+                if matches:
+                    pairs.append(index)
+        # Keep the newest exact observation available for the next decision.
+        removable = iter(pairs[:-1])
+        removed, before = 0, None
+        while True:
+            try:
+                self.check_context(wire, schemas)
+                break
+            except ProviderError as error:
+                index = next(removable, None) if error.category == 'context' else None
+                if index is None:
+                    raise
+                if before is None:
+                    before = context_bytes(wire, schemas)
+                index -= removed * 2
+                del wire[index:index + 2]
+                removed += 1
+        adjustment = None
+        if removed:
+            adjustment = {'reason': 'native_wire_context_limit', 'removed_tool_exchanges': removed,
+                'messages_before': len(messages), 'messages_after': len(wire),
+                'input_bytes_before': before, 'input_bytes_after': context_bytes(wire, schemas)}
+            if observe:
+                observe('context_trimmed', adjustment)
+        return wire, adjustment
 
     def complete(self, messages, cancel, progress=None, tools=None):
         # Polling a worker lets Stop return promptly even during model loading.
@@ -230,10 +284,8 @@ class ModelClient:
         native = config.get('protocol', 'native') == 'native'
         if native and tools is None:
             raise ProviderError('Native inference requires tool definitions supplied by the seed')
-        wire = wire_messages(messages, config['provider'] == 'ollama') if native else messages
-        # Older editable seeds may forward journal provenance unchanged.
-        wire = [{key: value for key, value in item.items() if key != 'origin'} for item in wire]
-        self.check_context(wire, tools if native else [])
+        wire, adjustment = self.prepare_messages(messages, tools, observe)
+        context_metadata = {'context_adjustment': adjustment} if adjustment else {}
         base = config["base_url"].rstrip("/")
         if config["provider"] == "ollama":
             payload = {"model": config["model"], "messages": wire, "stream": True,
@@ -290,7 +342,7 @@ class ModelClient:
                 if not done or metrics.get("done_reason") == "length":
                     raise ProviderError("The model response was cut short. No action was executed. Increase the response budget or retry.",
                                         {'raw_content':text, 'thinking':thinking, 'tool_calls':calls, 'usage':metrics, 'incomplete':True}, category='cutoff')
-                return model_response(text, calls, native, thinking=thinking, usage=metrics)
+                return model_response(text, calls, native, thinking=thinking, usage=metrics, **context_metadata)
             except urllib.error.HTTPError as error:
                 raise model_service_error(f"Local model error (HTTP {error.code}): {error.read(2000).decode(errors='replace')}", native) from None
             except (urllib.error.URLError, TimeoutError, OSError) as error:
@@ -325,7 +377,7 @@ class ModelClient:
             if not isinstance(content, str):
                 raise ProviderError("The provider did not return a text response.")
             calls = choice['message'].get('tool_calls', [])
-            return model_response(content, calls, native, usage=data.get('usage', {}))
+            return model_response(content, calls, native, usage=data.get('usage', {}), **context_metadata)
         except (KeyError, IndexError, TypeError):
             raise ProviderError("The provider returned an unexpected response format.") from None
 

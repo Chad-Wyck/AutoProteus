@@ -38,7 +38,7 @@ def prepare(args):
         'invoke_tool': (ROOT / 'evaluations/invoke_tool.py').read_text(), 'schedule': [],
         'scope': 'Same frozen SHA seed, normal ModelClient, same helper in both arms; only optional procedure differs. No candidate repairs/promotions.',
         'trusted_sha256': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in (
-            'evaluations/growth-study.py', 'evaluations/generalization.py', 'evaluations/generalization-probe.py',
+            'evaluations/growth-study.py', 'evaluations/generalization.py', 'evaluations/generalization-probe.py', 'evaluations/grader_faults.py',
             'evaluations/local-model-benchmark.py', 'evaluations/run_budget.py', 'evaluations/upgrade-procedure.md',
             'evaluations/invoke_tool.py', 'controller/providers.py', 'controller/evaluation.py', 'controller/isolation.py',
             'controller/config.py', 'controller/runtime.py', 'guest/worker.py', 'tests/test_seed.py', 'tests/test_text_helpers.py')}}

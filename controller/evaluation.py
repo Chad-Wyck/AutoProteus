@@ -175,7 +175,7 @@ def freeze_source(store, source, label):
     return session
 
 
-def run_task(agent, store, config, task, source, timeout=180, cancel=None):
+def run_task(agent, store, config, task, source, timeout=180, cancel=None, deadline=None):
     cancel = cancel or threading.Event()
     if cancel.is_set():
         raise Cancelled()
@@ -191,9 +191,13 @@ def run_task(agent, store, config, task, source, timeout=180, cancel=None):
             raise ValueError('Generated fixture is too large')
         path.write_text(content, encoding='utf-8', newline='')
     started = time.monotonic()
+    stop_at = min(started + timeout, deadline) if deadline is not None else started + timeout
     timed_out = False
     try:
-        agent.start(session, candidate=source)
+        if time.monotonic() >= stop_at:
+            timed_out = True
+            raise TimeoutError('The shared task deadline expired before this check')
+        agent.start(session, candidate=source, **({'deadline': stop_at} if deadline is not None else {}))
         worker = agent.workers[session['id']][1]
         interrupted = False
         while worker.is_alive():
@@ -202,9 +206,13 @@ def run_task(agent, store, config, task, source, timeout=180, cancel=None):
                 agent.stop(session['id']); worker.join(timeout=10)
                 if worker.is_alive(): raise IsolationError('The interrupted task did not stop')
                 interrupted = True
-                agent.start(session, 'Continue from your saved checkpoint. Verify the current files before editing.')
+                if time.monotonic() >= stop_at:
+                    timed_out = True
+                    break
+                agent.start(session, 'Continue from your saved checkpoint. Verify the current files before editing.',
+                            **({'deadline': stop_at} if deadline is not None else {}))
                 worker = agent.workers[session['id']][1]
-            if cancel.is_set() or time.monotonic() - started > timeout:
+            if cancel.is_set() or time.monotonic() >= stop_at:
                 timed_out = not cancel.is_set()
                 agent.stop(session['id'])
                 worker.join(timeout=10)
@@ -214,22 +222,26 @@ def run_task(agent, store, config, task, source, timeout=180, cancel=None):
         for followup in task.get('followups', []) if not timed_out and session['status'] in ('completed', 'waiting', 'paused') else []:
             if cancel.is_set():
                 raise Cancelled()
+            if time.monotonic() >= stop_at:
+                timed_out = True
             if timed_out:
                 break
-            agent.start(session, followup)
+            agent.start(session, followup, **({'deadline': stop_at} if deadline is not None else {}))
             worker = agent.workers[session['id']][1]
             while worker.is_alive():
                 worker.join(timeout=.1)
-                if cancel.is_set() or time.monotonic() - started > timeout:
+                if cancel.is_set() or time.monotonic() >= stop_at:
                     agent.stop(session['id']); worker.join(timeout=10)
                     if worker.is_alive():
                         raise IsolationError('The evaluation VM did not terminate')
                     timed_out = not cancel.is_set(); break
         if cancel.is_set():
             raise Cancelled()
+        timed_out = timed_out or time.monotonic() >= stop_at
         artifacts = Artifacts(store, session)
         rules = [rule for rule in task['checks'] if 'python_function' in rule]
-        behavior = verify_behavior(agent, store, session, rules, cancel) if rules and not timed_out else {'passed': False}
+        behavior = verify_behavior(agent, store, session, rules, cancel,
+            **({'deadline': stop_at} if deadline is not None else {})) if rules and not timed_out else {'passed': False}
         checks = [{'path': rule['path'], 'passed': behavior['passed'] if 'python_function' in rule else artifact_check(artifacts, rule)} for rule in task['checks']]
         format_repairs, action_errors, reads, repeated_reads = 0, 0, 0, 0
         previous_read = None
@@ -266,7 +278,7 @@ def run_task(agent, store, config, task, source, timeout=180, cancel=None):
                 'timed_out': timed_out, 'format_repairs': 0, 'action_errors': 0, 'detail': str(error)[:1000]}
 
 
-def verify_behavior(agent, store, session, rules, cancel=None):
+def verify_behavior(agent, store, session, rules, cancel=None, deadline=None):
     """Copy only selected artifact bytes into another guest and check actual returns."""
     probe = store.create('Independently verify artifact behavior', 'demo', 'protected verifier')
     files = Artifacts(store, probe)
@@ -281,13 +293,15 @@ def verify_behavior(agent, store, session, rules, cancel=None):
     settings = SimpleNamespace(values={**DEFAULTS, 'configured': True, 'provider': 'demo'}, key=lambda: '')
     verifier = IsolatedAgent(agent.root, store, settings, execution=agent.execution)
     cancel = cancel or threading.Event()
+    stop_at = min(time.monotonic() + 90, deadline) if deadline is not None else time.monotonic() + 90
     try:
-        verifier.start(probe, verification={'rules': rules})
+        if time.monotonic() >= stop_at:
+            return {'passed': False, 'output': 'Shared deadline expired before behavior checks', 'timed_out': True}
+        verifier.start(probe, verification={'rules': rules}, **({'deadline': stop_at} if deadline is not None else {}))
         worker = verifier.workers[probe['id']][1]
-        deadline = time.monotonic() + 90
         while worker.is_alive():
             worker.join(timeout=.1)
-            if cancel.is_set() or time.monotonic() > deadline:
+            if cancel.is_set() or time.monotonic() >= stop_at:
                 verifier.stop(probe['id']); worker.join(timeout=10)
                 if cancel.is_set(): raise Cancelled()
                 return {'passed': False, 'output': 'Behavior check timed out'}
@@ -308,7 +322,7 @@ def summarize(results):
     return summary
 
 
-def run_regressions(root, store, source, cancel=None, execution=None):
+def run_regressions(root, store, source, cancel=None, execution=None, deadline=None):
     """A protected guest driver runs the unchanged starter tests, without inference."""
     from .config import DEFAULTS
     settings = SimpleNamespace(values={**DEFAULTS, 'configured': True, 'provider': 'demo',
@@ -316,13 +330,15 @@ def run_regressions(root, store, source, cancel=None, execution=None):
     agent = IsolatedAgent(root, store, settings, execution=execution)
     session = store.create('Run the protected seed regression suite', 'demo', 'guest regression driver')
     cancel = cancel or threading.Event()
+    stop_at = min(time.monotonic() + 120, deadline) if deadline is not None else time.monotonic() + 120
     try:
-        agent.start(session, candidate=source, verification=True)
+        if time.monotonic() >= stop_at:
+            raise IsolationError('The shared task deadline expired before regression checks')
+        agent.start(session, candidate=source, verification=True, **({'deadline': stop_at} if deadline is not None else {}))
         worker = agent.workers[session['id']][1]
-        deadline = time.monotonic() + 120
         while worker.is_alive():
             worker.join(timeout=.1)
-            if cancel.is_set() or time.monotonic() > deadline:
+            if cancel.is_set() or time.monotonic() >= stop_at:
                 agent.stop(session['id']); worker.join(timeout=10)
                 if cancel.is_set():
                     raise Cancelled()
@@ -376,6 +392,43 @@ class EvaluationService:
         if value['status'] == 'running' and (not self.report or value['id'] != self.report['id']):
             value.update(status='interrupted', message='The checks were interrupted. Run them again to complete the comparison.')
         return value
+
+    def status_for(self, session):
+        """Describe host-owned evidence without certifying ordinary saved outputs."""
+        value = {'state': 'unchecked', 'label': 'Saved outputs have not been independently checked.',
+                 'scope': 'Seed comparisons cover their frozen source and listed tasks, not every file in this session.'}
+        report_id = session.get('evaluation_check')
+        if not report_id:
+            return value
+        try:
+            report = self.public() if self.report and self.report['id'] == report_id else self.load(report_id)
+            if report.get('session') != session['id']:
+                return value
+            value['report_id'] = report_id
+            if 'artifacts' in session:
+                # The manifest hashes are host-computed at checkpoint ingestion.
+                # Avoid rereading all saved files on every UI poll.
+                hashes = sorted((name[8:], item['sha256']) for name, item in session['artifacts'].items() if name.startswith('harness/'))
+                current = hashlib.sha256(json.dumps(hashes, separators=(',', ':')).encode()).hexdigest()
+            else:
+                current = source_identity(candidate_source(self.task_agent.store, session))
+            if current != report['edited_sha256']:
+                return {**value, 'state': 'stale', 'label': 'Seed source changed since these checks. Run them again.'}
+            edited = [row for row in report.get('results', []) if row.get('version') == 'edited']
+            complete = report.get('status') == 'completed' and len(edited) > 0 and len(edited) * 2 == report.get('total', -1)
+            passed = complete and report.get('regressions', {}).get('edited', {}).get('passed') is True and all(row.get('passed') is True for row in edited)
+            protected = report.get('checks_protected') is True and report.get('execution_mode') == 'vm'
+            passed_label = ('Independent seed checks passed for the listed tasks.' if protected else
+                            'Native functional seed checks passed; results are unprotected.' if report.get('execution_mode') == 'native' else
+                            'Seed checks passed; protected execution is unconfirmed.')
+            value.update(state='passed' if passed else 'running' if report['status'] == 'running' else 'incomplete_or_failed',
+                label=passed_label if passed else
+                      'Seed checks are running.' if report['status'] == 'running' else 'Seed checks are incomplete or include failures.',
+                checked_tasks=len(edited), passed_tasks=sum(row.get('passed') is True for row in edited),
+                checks_protected=protected)
+            return value
+        except (OSError, ValueError, KeyError, TypeError):
+            return {**value, 'state': 'unavailable', 'label': 'The saved seed check report is unavailable.'}
 
     def start(self, session, repeats=2):
         with self.gate:

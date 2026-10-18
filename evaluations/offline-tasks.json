@@ -1,0 +1,36 @@
+[
+  {
+    "name": "reconcile-orders",
+    "task": "Reconcile orders.csv with refunds.json. Sum original order cents, subtract each refund once by order id, and save totals.json with keys gross_cents, refunded_cents, net_cents and orders. Preserve both inputs exactly. Read the output back and finish.",
+    "fixtures": {"orders.csv": "id,cents\na,1250\nb,990\nc,760\n", "refunds.json": "{\"b\":490,\"c\":760}"},
+    "checks": [
+      {"path": "totals.json", "json": {"gross_cents": 3000, "refunded_cents": 1250, "net_cents": 1750, "orders": 3}},
+      {"path": "orders.csv", "equals": "id,cents\na,1250\nb,990\nc,760\n"},
+      {"path": "refunds.json", "equals": "{\"b\":490,\"c\":760}"}
+    ]
+  },
+  {
+    "name": "correct-grounded-report",
+    "task": "Use the two source files to write report.txt as exactly 'Shipped: 12\nPending: 5\nTotal: 17\n'. Preserve the sources. Verify and finish.",
+    "fixtures": {"sources/warehouse.txt": "Shipped: 12\n", "sources/queue.txt": "Pending: 5\n"},
+    "followups": ["Correction: sources/queue.txt includes two cancelled orders. Keep that source unchanged, but revise report.txt to exactly 'Shipped: 12\nPending: 3\nTotal: 15\n'. Verify the corrected file and finish."],
+    "checks": [
+      {"path": "report.txt", "equals": "Shipped: 12\nPending: 3\nTotal: 15\n"},
+      {"path": "sources/warehouse.txt", "equals": "Shipped: 12\n"},
+      {"path": "sources/queue.txt", "equals": "Pending: 5\n"}
+    ]
+  },
+  {
+    "name": "recover-multifile-transform",
+    "task": "Copy inputs/a.txt to outputs/a.txt and inputs/b.txt to outputs/b.txt, converting letters to uppercase while preserving line endings. Preserve both inputs. You may be interrupted: inspect existing outputs before continuing, and do not append duplicate content. After checking both exact files, write receipt.json with {\"files\":[\"outputs/a.txt\",\"outputs/b.txt\"],\"complete\":true} and finish.",
+    "fixtures": {"inputs/a.txt": "café\r\n猫\r\n", "inputs/b.txt": "second\n"},
+    "interrupt_after_steps": 2,
+    "checks": [
+      {"path": "outputs/a.txt", "equals": "CAFÉ\r\n猫\r\n"},
+      {"path": "outputs/b.txt", "equals": "SECOND\n"},
+      {"path": "inputs/a.txt", "equals": "café\r\n猫\r\n"},
+      {"path": "inputs/b.txt", "equals": "second\n"},
+      {"path": "receipt.json", "json": {"files": ["outputs/a.txt", "outputs/b.txt"], "complete": true}}
+    ]
+  }
+]

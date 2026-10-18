@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from controller.evaluation import run_task, tool_use
 from controller.isolation import Artifacts, IsolatedAgent
-from controller.providers import ModelClient, ProviderError, ERROR_MESSAGES, wire_messages
+from controller.providers import ModelClient, ProviderError, ERROR_MESSAGES
 from usage_budget import UsageBudget
 from run_budget import TokenBudgetMixin, BudgetModelClient
 
@@ -80,16 +80,20 @@ class UsageClient(ModelClient):
             raise ProviderError(ERROR_MESSAGES['context'], category='context')
         return {'estimated_input_tokens': estimate, 'allowance_tokens': allowance}
 
+    def prepare_messages(self, messages, tools, observe=None):
+        wire, adjustment = super().prepare_messages(messages, tools, observe)
+        self.accepted_wire = wire
+        return wire, adjustment
+
     def complete(self, messages, cancel, progress=None, tools=None):
+        self.accepted_wire = None
         try:
             answer = super().complete(messages, cancel, progress, tools)
         except BaseException:
             self.budget.anchor = None
             raise
         native = self.config.get('protocol', 'native') == 'native'
-        wire = wire_messages(messages, self.config['provider'] == 'ollama') if native else messages
-        wire = [{key: value for key, value in item.items() if key != 'origin'} for item in wire]
-        self.budget.observe(wire, tools if native else [], self.config, answer.get('usage', {}))
+        self.budget.observe(self.accepted_wire, tools if native else [], self.config, answer.get('usage', {}))
         return answer
 
 

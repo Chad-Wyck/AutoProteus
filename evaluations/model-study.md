@@ -1,5 +1,9 @@
 # Faster local model comparisons
 
+Optional paired [workflow experiments](workflow-experiments.md) add edit feedback,
+advisory syntax diagnostics, observation masking and focused phase comparisons.
+They require explicit selection and leave the default seed behavior unchanged.
+
 This opt-in host runner leaves the editable seed, app preferences, isolation and
 acceptance rules alone. Start a local inference service using a verified engine
 and checkpoint, then prepare one frozen queue. No downloads or inference happen

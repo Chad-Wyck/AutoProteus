@@ -348,7 +348,7 @@ class VM(WorkerTransport):
 
 
 class Broker:
-    def __init__(self, store, session, client, config, cancel, activation_context=''):
+    def __init__(self, store, session, client, config, cancel, activation_context='', human_message=None):
         self.store, self.session, self.client, self.cancel = store, session, client, cancel
         self.artifacts = Artifacts(store, session)
         self.requests, self.frames = 0, 0
@@ -358,6 +358,15 @@ class Broker:
         self.finished = False
         self.last_status = 'running'
         self.activation_context, self.context_config = activation_context, config
+        # Snapshot before accepting guest state. The seed's neutral transport
+        # intentionally omits origin; recover it here, never as provider fields
+        # or as authority to change host policy. Include legacy human records.
+        self.human_texts = {session['task']}
+        self.human_texts.update(item['text'] for item in session.get('feed', []) if item.get('kind') == 'user')
+        self.human_texts.update(item['content'] for item in session.get('messages', [])
+                                if item.get('role') == 'user' and item.get('origin') == 'human')
+        if human_message:
+            self.human_texts.add(human_message)
         if isinstance(client, ModelClient) and client.observer is not None:
             client.observation_context = self.inference_context
 
@@ -372,7 +381,8 @@ class Broker:
                 'host_history_messages': sum(history.values()),
                 'host_history_messages_omitted': sum((history - selected).values()),
                 'neutral_message_count': len(messages), 'neutral_messages_sha256':
-                    hashlib.sha256(json.dumps(messages, sort_keys=True, ensure_ascii=False).encode()).hexdigest()}
+                    hashlib.sha256(json.dumps([{key: item[key] for key in ('role', 'content')} for item in messages],
+                                              sort_keys=True, ensure_ascii=False).encode()).hexdigest()}
 
     def handle(self, frame):
         if self.cancel.is_set():
@@ -412,7 +422,9 @@ class Broker:
             try:
                 if isinstance(self.client, ModelClient):
                     # Schemas are data for the model, never host-executable capabilities.
-                    return self.client.complete(messages, self.cancel, tools=tools)
+                    forwarded = [{**item, **({'origin': 'human'} if item['role'] == 'user' and
+                        item['content'] in self.human_texts else {})} for item in messages]
+                    return self.client.complete(forwarded, self.cancel, tools=tools)
                 return self.client.complete(messages, self.cancel)
             except Cancelled:
                 raise
@@ -511,10 +523,12 @@ class IsolatedAgent:
         self.workers, self.vms = {}, {}
         self.lock = threading.RLock()
 
-    def start(self, session, message=None, candidate=None, verification=False, handoff='full'):
+    def start(self, session, message=None, candidate=None, verification=False, handoff='full', deadline=None):
         if handoff not in ('full', 'concise'):
             raise ValueError('Choose full or concise activation context')
         with self.lock:
+            if deadline is not None and time.monotonic() >= deadline:
+                raise IsolationError('The shared task deadline expired before VM startup')
             if any(thread.is_alive() for _, thread in self.workers.values()):
                 raise IsolationError('Stop the current task before starting another isolated run')
             self.appliance.verify()
@@ -571,17 +585,17 @@ class IsolatedAgent:
             self.store.save(session)
             self.store.event(session, 'execution_started', self.execution.public())
             cancel = threading.Event()
-            thread = threading.Thread(target=self._run, args=(session, boot, client, config, cancel), daemon=True)
+            thread = threading.Thread(target=self._run, args=(session, boot, client, config, cancel, deadline), daemon=True)
             self.workers[session['id']] = cancel, thread
             thread.start()
 
-    def restart_seed(self, session, handoff='full'):
+    def restart_seed(self, session, handoff='full', deadline=None):
         """Explicit controller action: activate this checkpoint in the same task."""
         with self.lock:
             previous = session.get('candidate_from')
             session['candidate_from'] = session['id']
             try:
-                self.start(session, candidate=session, handoff=handoff)
+                self.start(session, candidate=session, handoff=handoff, **({'deadline': deadline} if deadline is not None else {}))
             except Exception:
                 if previous is None:
                     session.pop('candidate_from', None)
@@ -589,14 +603,18 @@ class IsolatedAgent:
                     session['candidate_from'] = previous
                 raise
 
-    def _run(self, session, boot, client, config, cancel):
-        vm, broker = None, Broker(self.store, session, client, config, cancel, boot['config'].get('activation_context', ''))
+    def _run(self, session, boot, client, config, cancel, run_deadline=None):
+        vm, broker = None, Broker(self.store, session, client, config, cancel, boot['config'].get('activation_context', ''), boot.get('message'))
         lease = None
         # Host deadline covers boot, inference, commands and all guest code.
         deadline = time.monotonic() + MAX_SECONDS
+        if run_deadline is not None:
+            deadline = min(deadline, run_deadline)
         try:
             lease = VMLease(self.appliance.directory)
             lease.acquire(cancel, deadline)
+            if time.monotonic() >= deadline:
+                raise IsolationError('The shared task deadline expired before worker startup')
             if self.execution.mode == 'native':
                 from .native import NativeWorker
                 vm = NativeWorker(self.root, self.execution)

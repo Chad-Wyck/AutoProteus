@@ -24,6 +24,7 @@ function saveBlob(blob, name) { const a = document.createElement('a'); a.href = 
 
 function renderApp() {
   const app = state.app, config = app.settings;
+  text('app-version', 'v' + app.version);
   const active = app.active;
   visible('active-work', !!active);
   if (active) text('active-work-label', `${active.title} · ${active.activity}`);
@@ -186,8 +187,9 @@ function renderSession() {
   text('elapsed', active ? Math.floor((Date.now() - state.started) / 1000) + 's' : '');
   visible('stop', active); visible('send', !active); $('stop').disabled = session.status === 'stopping';
   $('task').disabled = active; $('task').placeholder = active ? 'AutoProteus is working. You can stop and resume at any time.' : 'Add a reply, clarify the task, or request a change…';
-  const labels = { running: 'Working', stopping: 'Stopping', completed: 'Finished', waiting: 'Your input needed', paused: 'Paused', interrupted: 'Interrupted', error: 'Needs attention', ready: 'Ready' };
+  const labels = { running: 'Working', stopping: 'Stopping', completed: session.provider === 'demo' ? 'Demo finished' : 'Agent reported completion', waiting: 'Your input needed', paused: 'Paused', interrupted: 'Interrupted', error: 'Needs attention', ready: 'Ready' };
   text('status-label', labels[session.status] || session.status); $('status-dot').className = 'status-dot ' + session.status;
+  renderVerification();
   text('step-count', `${session.steps} step${session.steps === 1 ? '' : 's'} · ${session.provider === 'demo' ? 'Scripted demo' : session.model}`);
   const previouslyNative = session.execution_history?.some(run => run.mode === 'native');
   text('execution-label', session.execution_mode === 'native' ? 'Ran without AutoProteus VM protection' : session.execution_mode === 'vm' ? 'VM execution' + (previouslyNative ? ' · previously ran without VM protection' : '') : 'Execution mode not recorded');
@@ -209,6 +211,14 @@ function renderSession() {
   text('archive-session', session.archived ? 'Unarchive' : 'Archive');
   ['rename-session', 'archive-session', 'delete-session', 'import-session'].forEach(id => $(id).disabled = active || !!state.app.evaluation?.busy);
 }
+
+function renderVerification() {
+  const evidence = state.session?.verification;
+  text('output-verification', evidence?.label || 'Saved outputs have not been independently checked.');
+  text('verification-scope', evidence?.scope || 'Review the saved files to check the requested outcome.');
+  visible('view-verification', !!evidence?.report_id);
+}
+$('view-verification').onclick = () => openChecks();
 
 async function refreshFiles() {
   const id = state.id; if (!id) return;
@@ -493,6 +503,8 @@ async function poll() {
         const previous = state.session?.feed || [];
         const feed = update.reset || update.feed_start === 0 ? update.feed : [...previous.slice(0, update.feed_start), ...update.feed];
         state.session = {...update, feed}; renderSession(); await refreshFiles();
+      } else if (state.id === id && state.session) {
+        state.session.verification = update.verification; renderVerification();
       }
     }
   } catch (e) { if (!poll.warned) { toast('The app disconnected. Reopen AutoProteus or refresh this page.'); poll.warned = true; } }

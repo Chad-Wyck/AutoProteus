@@ -7,6 +7,7 @@ Connect already prepared local inference services. This runner downloads nothing
 changes no app preferences and executes candidates only in disposable VMs.
 """
 import argparse
+import copy
 import hashlib
 import json
 import platform
@@ -30,6 +31,7 @@ from controller.storage import Store, atomic_json, now
 from observations import CallRecorder, call_metrics, latency_metrics, navigation_metrics, read_events
 from run_budget import BudgetModelClient, GeneratedTokenBudget, DEFAULT_OUTPUT_TOKENS, DEFAULT_TASK_SECONDS
 from study_support import ResultCache, StudyQueue, Timings, file_identity, identity
+from workflow_variants import TREATMENTS, variant, DEVELOPMENT_FOCUS, USE_FOCUS
 import generalization as study
 
 
@@ -45,6 +47,7 @@ def trusted_files():
     paths += [ROOT / name for name in ('guest/worker.py', 'controller/runtime-lock.json',
         'controller/managed-runtime-lock.json', 'tests/test_seed.py', 'tests/test_text_helpers.py',
         'evaluations/model_study.py', 'evaluations/study_support.py', 'evaluations/generalization.py',
+        'evaluations/grader_faults.py', 'evaluations/workflow_variants.py', 'evaluations/workflow_support.py',
         'evaluations/generalization-probe.py', 'evaluations/local-model-benchmark.py',
         'evaluations/local-feature-probe.py', 'evaluations/local-upgrade-tasks.json',
         'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/invoke_tool.py', 'evaluations/tasks.json')]
@@ -97,6 +100,49 @@ def prepare(args):
             'scope': 'Screens select profiles for qualification; incomplete screens are not model rankings. '
                      'Each accepted first upgrade receives one fresh second-extension task. '
                      'Retries, untested cells, cached checks and infrastructure failures are recorded separately.'}
+    experiment = getattr(args, 'experiment', None)
+    if experiment:
+        if args.mode != 'full':
+            raise ValueError('Paired workflow experiments require full mode')
+        plan['experiment'] = experiment
+        plan['mask_settings'] = {'keep': getattr(args, 'mask_keep', 8), 'threshold': getattr(args, 'mask_threshold', 512)}
+        plan['variants'] = {name: variant(source, name, **plan['mask_settings']) for name in ('baseline', experiment)}
+        plan['scope'] += ' Paired opt-in treatment; original default seed remains unchanged. Success and matched-success costs are separate.'
+        parent_path = getattr(args, 'parent_source', None)
+        parent_tool = getattr(args, 'parent_tool', None)
+        if bool(parent_path) != bool(parent_tool):
+            raise ValueError('Provide both --parent-source and --parent-tool')
+        if parent_path:
+            if experiment != 'phases' or parent_tool not in study.CONTRACTS:
+                raise ValueError('A supplied parent is supported only for the phase comparison')
+            parent = json.loads(Path(parent_path).read_text(encoding='utf-8'))
+            # Inert bytes only; actual regression/feature/public checks precede inference.
+            source_identity(parent)
+            plan['parent'] = {'source': parent, 'tool': parent_tool, 'sha256': source_identity(parent),
+                              'provenance': str(Path(parent_path).resolve()), 'supplied_parent': True}
+        elif experiment == 'phases':
+            raise ValueError('Phase comparison requires one exact supplied parent and --parent-tool; it is independently checked before trials')
+        reuse_path = getattr(args, 'reuse_task', None)
+        if reuse_path:
+            if not plan.get('parent'):
+                raise ValueError('--reuse-task requires the phase comparison and a supplied parent')
+            task = json.loads(Path(reuse_path).read_text(encoding='utf-8'))
+            required = task.get('required_tools')
+            if (not isinstance(required, list) or not required or any(name not in study.CONTRACTS for name in required)
+                    or not isinstance(task.get('checks'), list) or not task['checks'] or not isinstance(task.get('task'), str)):
+                raise ValueError('Reuse task needs a task, nonempty checks and required_tools from the known contracts')
+            plan['reuse_task'] = task
+    elif any(getattr(args, name, None) for name in ('parent_source', 'parent_tool', 'reuse_task')):
+        raise ValueError('Parent/reuse options require --experiment phases')
+    task_pack = getattr(args, 'task_pack', None)
+    if task_pack:
+        tasks = json.loads(Path(task_pack).read_text(encoding='utf-8'))
+        if (not isinstance(tasks, list) or not tasks or any(not isinstance(task.get('name'), str) or
+                not task.get('task') or not task.get('checks') for task in tasks) or
+                len({task['name'] for task in tasks}) != len(tasks)):
+            raise ValueError('Task pack needs uniquely named tasks with instructions and independent checks')
+        plan['tasks'], plan['ordinary_tasks'] = tasks, [task['name'] for task in tasks]
+        plan['task_pack'] = {'path': str(Path(task_pack).resolve()), 'sha256': file_identity(task_pack)}
     if plan['repeats'] < 1 or args.timeout < 1 or args.output_token_budget < 1:
         raise ValueError('Repeat and budget values must be positive')
     output.mkdir(parents=True)
@@ -117,28 +163,42 @@ def check(plan):
 
 
 class Checks:
-    def __init__(self, folder, plan):
+    def __init__(self, folder, plan, deadline=None):
         # Candidate observations can be reused inside one attempt only. A fresh
         # inference repetition still gets fresh independent VM executions.
         self.cache = ResultCache(folder / 'scripted-check-cache')
         self.base = {'trusted': plan['trusted_sha256'], 'environment': plan['environment']}
         self.receipts = []
+        self.deadline = deadline
 
     def run(self, store, frozen, kind, execute, feature=None):
+        if self.deadline is not None and time.monotonic() >= self.deadline:
+            self.receipts.append({'kind': kind, 'feature': feature, 'skipped': 'shared_deadline'})
+            return {'passed': False, 'timed_out': True, 'reason': 'Shared task deadline expired; check not launched.'}
         key = {**self.base, 'source': source_identity(candidate_source(store, frozen)),
                'kind': kind, 'feature': feature}
-        value, receipt = self.cache.run(key, execute, lambda row: row.get('passed') is True)
+        def bounded():
+            if self.deadline is not None and time.monotonic() >= self.deadline:
+                return {'passed': False, 'timed_out': True, 'reason': 'Shared deadline expired; check not launched.'}
+            return execute()
+        value, receipt = self.cache.run(key, bounded, lambda row: row.get('passed') is True and
+            (self.deadline is None or time.monotonic() < self.deadline))
         self.receipts.append({'kind': kind, 'feature': feature, **receipt})
+        if self.deadline is not None and time.monotonic() >= self.deadline:
+            value = {**value, 'passed': False, 'timed_out': True, 'reason': 'Check did not finish within the shared task deadline.'}
         return value
 
     def feature(self, store, frozen, name):
-        return self.run(store, frozen, 'feature', lambda: study.verify_feature(store, frozen, name), name)
+        return self.run(store, frozen, 'feature', lambda: study.verify_feature(store, frozen, name,
+            **({'deadline': self.deadline} if self.deadline is not None else {})), name)
 
     def public(self, store, frozen, name):
-        return self.run(store, frozen, 'fresh-worker-public', lambda: study.verify_public(store, frozen, name), name)
+        return self.run(store, frozen, 'fresh-worker-public', lambda: study.verify_public(store, frozen, name,
+            **({'deadline': self.deadline} if self.deadline is not None else {})), name)
 
     def regressions(self, root, store, frozen):
-        return self.run(store, frozen, 'regressions', lambda: run_regressions(root, store, frozen))
+        return self.run(store, frozen, 'regressions', lambda: run_regressions(root, store, frozen,
+            **({'deadline': self.deadline} if self.deadline is not None else {})))
 
     def assess(self, store, source, result, name, output):
         output.mkdir(parents=True)
@@ -181,9 +241,17 @@ def benchmark(folder, config, plan):
 
 
 def trial(folder, task, source, config, plan, feature=None, earlier=None):
+    task = copy.deepcopy(task)
+    original_task = copy.deepcopy(task)
+    reuse_only = not feature and bool(plan.get('reuse_task')) and task['name'] == plan['reuse_task']['name']
+    focused = plan.get('treatment') == 'phases' and earlier is not None
+    if focused:
+        task['task'] += DEVELOPMENT_FOCUS
+    elif plan.get('treatment') == 'phases' and reuse_only:
+        task['task'] += USE_FOCUS
     store = Store(folder / 'sessions')
     recorder = CallRecorder(folder / 'provider-calls.jsonl')
-    budget = GeneratedTokenBudget(plan['generated_tokens'] if feature else plan['ordinary_generated_tokens'])
+    budget = GeneratedTokenBudget(plan['generated_tokens'] if feature or reuse_only else plan['ordinary_generated_tokens'])
     clients = []
     def factory(values):
         client = BudgetModelClient(values, token_budget=budget, observer=recorder)
@@ -193,17 +261,31 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
     agent = IsolatedAgent(ROOT, store, settings, factory)
     if agent.execution.mode != 'vm':
         raise ValueError('Disposable VMs are required')
-    checks = Checks(folder, plan)
-    timings = Timings()
-    row = {'task': task['name'], 'earlier': earlier, 'added': feature, 'operator_candidate_repairs': []}
-    atomic_json(folder / 'task.json', task)
     started = time.monotonic()
+    deadline = started + (plan['deadline'] if feature or reuse_only else plan['ordinary_deadline'])
+    checks = Checks(folder, plan, deadline=deadline)
+    timings = Timings()
+    row = {'task': task['name'], 'earlier': earlier, 'added': feature, 'operator_candidate_repairs': [],
+           'treatment': plan.get('treatment', 'baseline'), 'stages': {'activated': False},
+           'experimental_instructions': [DEVELOPMENT_FOCUS, USE_FOCUS] if focused else
+                                       [USE_FOCUS] if reuse_only and plan.get('treatment') == 'phases' else []}
+    atomic_json(folder / 'original-task.json', original_task)
+    atomic_json(folder / 'task.json', task)
     try:
         with timings.measure('development_or_basic'):
             row['run'] = run_task(agent, store, config, task, freeze_source(store, source, 'Frozen input'),
-                                  plan['deadline'] if feature else plan['ordinary_deadline'])
+                                  max(0, deadline - time.monotonic()), deadline=deadline)
         session = store.get(row['run']['session'])
+        row['stages']['submitted'] = session['status'] in ('completed', 'waiting') and not row['run']['timed_out']
+        row['stages']['activation_requested'] = session['status'] == 'waiting'
         row['navigation'] = navigation_metrics(study.journal(store, session))
+        if reuse_only:
+            usage = tool_use(study.journal(store, session))
+            unchanged = source_identity(candidate_source(store, session)) == source_identity(source)
+            row['reuse'] = {'source_unchanged': unchanged, 'usage': usage,
+                'passed': bool(row['run']['passed'] and unchanged and set(plan['reuse_task']['required_tools']).issubset(
+                    set(usage['direct']) | set(usage['development']))),
+                'scope': 'Reuse of supplied verified capabilities; no new upgrade credit.'}
         if feature:
             with timings.measure('independent_grading'):
                 row['review'] = checks.assess(store, source, row['run'], feature, folder / 'review')
@@ -214,18 +296,32 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
                     row['retained'] = checks.feature(store, frozen, earlier)
                     row['retained_public'] = checks.public(store, frozen, earlier)
                 row['verified_extension'] = study.verified(row['review'])
+                row['stages']['independently_verified'] = row['verified_extension']
+                row['stages']['submitted_source_sha256'] = source_identity(edited)
                 artifact = 'sample.txt' if earlier == 'csv_preview' else 'inventory.json'
                 try:
                     row['stage_order_preserved'] = Artifacts(store, session).read(artifact) == task['fixtures'][artifact].encode()
                 except (OSError, ValueError):
                     row['stage_order_preserved'] = False
                 retained = row['retained']['passed'] and row['retained_public']['passed']
-                remaining = plan['deadline'] - (time.monotonic() - started)
+                remaining = deadline - time.monotonic()
+                remaining_actions = max(0, config['max_steps'] - session['steps'])
                 if (row['verified_extension'] and retained and row['stage_order_preserved'] and remaining > 0 and
-                        session['status'] in ('completed', 'waiting') and not row['run']['timed_out'] and not budget.summary()['exhausted']):
+                        session['status'] in ('completed', 'waiting') and not row['run']['timed_out'] and not budget.summary()['exhausted'] and
+                        (not plan.get('experiment') or remaining_actions > 0)):
                     with timings.measure('activation_and_final_use'):
-                        agent.restart_seed(session, handoff='concise')
-                        row['final'] = study.wait(agent, session, remaining)
+                        if plan.get('experiment'):
+                            # Both sides of the paired experiment share action,
+                            # wall and generated-token allowances across stages.
+                            settings.values = {**config, 'max_steps': remaining_actions}
+                        if focused:
+                            session['candidate_from'] = session['id']
+                            agent.start(session, USE_FOCUS, candidate=session, handoff='concise', deadline=deadline)
+                        else:
+                            agent.restart_seed(session, handoff='concise', deadline=deadline)
+                        row['stages']['activated'] = True
+                        # Synchronous activation/setup consumes wall time too.
+                        row['final'] = study.wait(agent, session, max(0, deadline - time.monotonic()))
                     row['final_source_unchanged'] = source_identity(candidate_source(store, session)) == source_identity(edited)
                     expected = task['fixtures'][artifact] if earlier == 'csv_preview' else json.dumps(
                         json.loads(task['fixtures'][artifact]), ensure_ascii=False, sort_keys=True, indent=2) + '\n'
@@ -242,25 +338,43 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
                         correct = False
                     row['final_usage'] = tool_use(study.latest_run(study.journal(store, session)))
                     row['final_artifacts_correct'] = correct
+                    row['stages'].update(correct_final_use=correct, explicit_finish=session['status'] == 'completed')
                     row['scores'] = growth_scores(row['final_source_unchanged'], retained,
                         session['status'] == 'completed' and not row['final']['timed_out'], correct,
                         row['final_usage'], [earlier, feature])
     finally:
-        agent.close()
+        work_finished = time.monotonic()
+        with timings.measure('cleanup'):
+            agent.close()
+        row['wall_budget'] = {'allowance_seconds': deadline - started,
+            'work_seconds': round(work_finished - started, 6), 'deadline_reached': work_finished >= deadline,
+            'deadline_overrun_seconds': round(max(0, work_finished - deadline), 6),
+            'cleanup_seconds': timings.seconds['cleanup'],
+            'scope': 'One deadline for development, grading, retention and final use. No new check starts after expiry. '
+                     'Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately.'}
+        if work_finished >= deadline and row.get('review', {}).get('accepted'):
+            row['review'].update(accepted=False, autonomously_completed=False, deadline_exhausted=True)
+            review_path = folder / 'review/review.json'
+            if review_path.exists():
+                atomic_json(review_path, row['review'])
         row.update(token_budget=budget.summary(), timings=timings.seconds, check_cache=checks.receipts,
                    total_seconds=round(time.monotonic() - started, 3), **metrics(folder, recorder, clients))
         # This residual includes VM startup, guest tools and orchestration. It is
         # not a separately measured VM boot time or a true time-to-first-token.
         measured = row['calls']['measurements']['call_seconds']
         row['timings']['vm_tools_and_orchestration_seconds'] = (round(max(0, row['total_seconds'] -
-            sum(timings.seconds.get(key, 0) for key in ('independent_grading', 'retention_grading')) - measured['known_sum']), 6)
+            sum(timings.seconds.get(key, 0) for key in ('independent_grading', 'retention_grading', 'cleanup')) - measured['known_sum']), 6)
             if measured['complete'] else None)
         atomic_json(folder / 'result.json', row)
     return row
 
 
+def growth_feature(parent):
+    return 'sha256_file' if parent in ('format_json', 'csv_preview') else 'format_json'
+
+
 def growth_task(parent, plan):
-    added = 'sha256_file' if parent == 'format_json' or parent == 'csv_preview' else 'format_json'
+    added = growth_feature(parent)
     sample, arguments, _, _ = study.sample_case(parent)
     fixtures = {'sample.txt': sample, 'inventory.json': '{"z":[2,false],"a":"café 猫"}',
                 'experience/invoke_tool.py': plan['invoke_tool']}
@@ -290,16 +404,95 @@ def summarize(queue, plan):
                     for row in attempts if row['attempt'] > 0]
         first = [row['result'] for row in rows if row['cell'][len(prefix):].startswith('first_')]
         growth = [row['result'] for row in rows if row['cell'][len(prefix):].startswith('growth_')]
+        reuse = [row['result'] for row in rows if row['cell'][len(prefix):].startswith('reuse_')]
         speed = [row['result'] for row in rows if row['cell'][len(prefix):].startswith('benchmark_')]
         profiles[profile['id']] = {'benchmarks': speed,
-            'scheduled_first_tasks': len(plan['upgrade_tasks']) * plan['repeats'],
+            'scheduled_first_tasks': 0 if plan.get('parent') else len(plan['upgrade_tasks']) * plan['repeats'] * len(plan.get('variants', {'baseline': []})),
             'first_attempts': sum(row['cell'][len(prefix):].startswith('first_') for row in all_rows), 'first_finished': len(first),
             'first_verified': sum(study.verified(row.get('review', {})) for row in first),
             'first_accepted': sum(bool(row.get('review', {}).get('accepted')) for row in first),
             'second_attempts': sum(row['cell'][len(prefix):].startswith('growth_') for row in all_rows), 'second_finished': len(growth),
             'second_verified': sum(bool(row.get('verified_extension')) for row in growth),
-            'complete_growth': sum(bool(row.get('scores', {}).get('functional_growth')) for row in growth)}
-    return {'mode': plan['mode'], 'scope': plan['scope'], 'queue': queue.summary(), 'profiles': profiles}
+            'complete_growth': sum(bool(row.get('scores', {}).get('functional_growth')) for row in growth),
+            'reuse_attempts': sum(row['cell'][len(prefix):].startswith('reuse_') for row in all_rows),
+            'reuse_finished': len(reuse), 'reuse_passed': sum(bool(row.get('reuse', {}).get('passed')) for row in reuse)}
+    report = {'mode': plan['mode'], 'scope': plan['scope'], 'queue': queue.summary(), 'profiles': profiles}
+    if plan.get('experiment'):
+        report['comparison'] = comparison(queue, plan)
+    return report
+
+
+def comparison(queue, plan):
+    """Never rank a treatment using partial costs or excluding failed attempts."""
+    groups, pairs = {}, {}
+    for cell, attempts in queue.data['cells'].items():
+        if not any(kind in cell for kind in ('_first_', '_growth_', '_reuse_')):
+            continue
+        for attempt in attempts:
+            name = next((v for v in plan['variants'] if cell.endswith('_' + v)), None)
+            if name is None or attempt['attempt'] == 0:
+                continue
+            group = groups.setdefault(name, {'launched': 0, 'finished': 0, 'successes': 0, 'attempt_costs': []})
+            group['launched'] += 1
+            row = attempt.get('result', {})
+            if not row and attempt.get('folder'):
+                try:
+                    saved = json.loads((Path(attempt['folder']) / 'result.json').read_text(encoding='utf-8'))
+                    if isinstance(saved, dict): row = saved
+                except (OSError, ValueError):
+                    pass
+            # Record incomplete attempts as unknown costs; never zero.
+            captured = row.get('capture', {}).get('complete') and not row.get('capture', {}).get('observer_failed')
+            costs = {key: {**row.get('calls', {}).get('measurements', {}).get(key, {}),
+                           'complete': bool(captured and row.get('calls', {}).get('measurements', {}).get(key, {}).get('complete'))}
+                     for key in ('input_tokens', 'output_tokens', 'call_seconds')}
+            for value in costs.values():
+                value['status'] = 'complete' if value['complete'] else 'partial' if value.get('known_sum') is not None else 'unavailable'
+            group['attempt_costs'].append(costs)
+            if attempt['state'] != 'completed':
+                continue
+            success = bool(row.get('reuse', {}).get('passed') if '_reuse_' in cell else
+                           row.get('scores', {}).get('functional_growth') if '_growth_' in cell else row.get('review', {}).get('accepted'))
+            group['finished'] += 1
+            group['successes'] += success
+            # Explicit retries remain in totals but do not replace an original
+            # attempt in a matched pair or select the best of several responses.
+            if attempt['attempt'] == 1:
+                pairs.setdefault(cell[:-len(name)-1], {})[name] = (success, row, costs)
+    matched = []
+    for cell, rows in pairs.items():
+        if set(rows) != set(plan['variants']) or not all(value[0] for value in rows.values()):
+            continue
+        costs = {name: cost for name, (_, row, cost) in rows.items()}
+        matched.append({'cell': cell, 'costs': costs, 'comparable': {
+            key: all(value.get(key, {}).get('complete') is True for value in costs.values())
+            for key in ('input_tokens', 'output_tokens', 'call_seconds')},
+            'task_seconds': {name: row['total_seconds'] for name, (_, row, _) in rows.items()}})
+    for group in groups.values():
+        costs = group.pop('attempt_costs')
+        group['measurements'] = {}
+        for key in ('input_tokens', 'output_tokens', 'call_seconds'):
+            values = [row[key]['known_sum'] for row in costs if row[key].get('known_sum') is not None]
+            complete = bool(costs and all(row[key]['complete'] for row in costs))
+            group['measurements'][key] = {'known_sum': sum(values) if values else None, 'complete': complete,
+                'status': 'complete' if complete else 'partial' if values else 'unavailable',
+                'expected_attempts': len(costs), 'complete_attempts': sum(row[key]['complete'] for row in costs)}
+    return {'variants': groups, 'matched_original_successes': matched,
+            'expense_scope': 'All attempts retained with full costs in queue/trials, including failed and interrupted work; matched pairs use original attempts only.',
+            'supplied_parent': bool(plan.get('parent')),
+            'kind': 'unchanged_capability_reuse' if plan.get('reuse_task') else 'supplied_parent_growth' if plan.get('parent') else 'first_and_second_upgrades'}
+
+
+def workflow_requirements(plan):
+    """One description drives both cache identity and the checks it represents."""
+    parent = plan.get('parent', {}).get('tool')
+    reuse = bool(plan.get('reuse_task'))
+    required = set(plan.get('reuse_task', {}).get('required_tools', []))
+    if parent:
+        required.add(parent)
+    return {'experiment': plan['experiment'], 'mode': 'reuse' if reuse else 'growth',
+            'parent_tool': parent, 'required_existing_tools': sorted(required),
+            'required_absent_tool': growth_feature(parent) if parent and not reuse else None}
 
 
 def run(args):
@@ -350,6 +543,50 @@ def _run(args):
                                     'environment': plan['environment'], 'kind': 'generalization-calibration'},
                                    calibration, valid_calibration)
         atomic_json(output / 'calibration-receipt.json', {'cache': receipt, 'result': value})
+    if plan.get('experiment'):
+        # This calibration is tied to the exact copied input, never to a model's
+        # claim of readiness. A supplied parent earns no first-upgrade credit.
+        requirements = workflow_requirements(plan)
+        inputs = {'source': plan.get('parent', {}).get('sha256', plan['source_sha256']),
+                  'variants': {key: source_identity(value) for key, value in plan['variants'].items()},
+                  'trusted': plan['trusted_sha256'], 'environment': plan['environment'], 'kind': 'workflow-inputs',
+                  'requirements': requirements}
+        def calibrate_inputs():
+            store = Store(output / 'input-calibration/sessions')
+            results = {}
+            for name, source in plan['variants'].items():
+                source = plan['parent']['source'] if plan.get('parent') else source
+                frozen = freeze_source(store, source, 'Exact workflow input ' + name)
+                results[name] = {'regressions': run_regressions(ROOT, store, frozen)}
+                if plan.get('parent'):
+                    for feature in requirements['required_existing_tools']:
+                        results[name].update({feature: study.verify_feature(store, frozen, feature),
+                                             feature + '_public': study.verify_public(store, frozen, feature)})
+                    added = requirements['required_absent_tool']
+                    if added:
+                        absent = study.verify_feature(store, frozen, added)
+                        cases = absent.get('probe', {}).get('checks', {})
+                        results[name]['new_tool_absent'] = {'passed': not absent['passed'] and cases.get('registered') is False,
+                                                           'evidence': absent}
+                atomic_json(output / 'input-calibration.json', results)
+                if not all(row['passed'] for row in results[name].values()):
+                    raise ValueError('Workflow input failed independent checks: ' + name)
+            return {'passed': True, 'requirements': requirements, 'results': results, 'evidence': str(output / 'input-calibration.json'),
+                    'report_sha256': file_identity(output / 'input-calibration.json')}
+        def valid_inputs(row):
+            try:
+                return (row.get('passed') is True and row.get('requirements') == requirements and
+                        file_identity(row['evidence']) == row['report_sha256'])
+            except (OSError, TypeError, KeyError):
+                return False
+        value, receipt = cache.run(inputs, calibrate_inputs, valid_inputs)
+        atomic_json(output / 'input-calibration-receipt.json', {'result': value, 'cache': receipt})
+    if getattr(args, 'check_only', False):
+        check(plan)
+        atomic_json(output / 'check-only.json', {'passed': True, 'plan_sha256': identity(plan), 'finished': now(),
+            'scope': 'Frozen inputs and scripted calibration only; no model inference or capability result.'})
+        print('Scripted calibration passed. No model inference started.', flush=True)
+        return
     try:
         for profile in plan['profiles']:
             config = profile['config']
@@ -393,24 +630,48 @@ def _run(args):
                     queue.skip(profile['id'] + '_basic_' + name, 'Inference screen did not qualify; not run')
             gate = speed.get('passed') and sum(row.get('run', {}).get('passed', False) for row in ordinary) >= len(names) - 1
             for repeat in range(1, plan['repeats'] + 1):
+                if plan.get('parent'):
+                    parent = plan['parent']
+                    added, task = growth_task(parent['tool'], plan)
+                    if plan.get('reuse_task'):
+                        task = plan['reuse_task']
+                    order = list(plan['variants'])
+                    if repeat % 2 == 0:
+                        order.reverse()
+                    for treatment in order:
+                        suffix = ('reuse' if plan.get('reuse_task') else 'growth') + '_%02d_%s_%s' % (repeat, parent['tool'], treatment)
+                        if gate:
+                            cell(suffix, lambda folder, treatment=treatment: trial(folder, task, parent['source'], config,
+                                {**plan, 'treatment': treatment}, None if plan.get('reuse_task') else added,
+                                None if plan.get('reuse_task') else parent['tool']))
+                        else:
+                            queue.skip(profile['id'] + '_' + suffix, 'Basic gate did not qualify; supplied-parent growth untested')
+                    continue
                 features = plan['upgrade_tasks']
                 features = features[(repeat - 1) % len(features):] + features[:(repeat - 1) % len(features)]
-                for feature in features:
-                    first_id = 'first_%02d_%s' % (repeat, feature)
-                    growth_id = 'growth_%02d_%s' % (repeat, feature)
-                    if not gate:
-                        for suffix in (first_id, growth_id):
-                            queue.skip(profile['id'] + '_' + suffix, 'Protocol/basic gate did not qualify; not an upgrade failure')
-                        continue
-                    task = {'name': feature, 'task': 'Add exactly one new public tool. ' + plan['contracts'][feature] + plan['recipe'], 'checks': []}
-                    first = cell(first_id, lambda folder: trial(folder, task, plan['source'], config, plan, feature))
-                    if first.get('review', {}).get('accepted'):
-                        saved = queue.latest(profile['id'] + '_' + first_id)
-                        source = json.loads((Path(saved['folder']) / 'review/candidate-source.json').read_text())
-                        added, task = growth_task(feature, plan)
-                        cell(growth_id, lambda folder: trial(folder, task, source, config, plan, added, feature))
-                    else:
-                        queue.skip(profile['id'] + '_' + growth_id, 'First upgrade not fully accepted; no accepted parent exists')
+                for index, feature in enumerate(features):
+                    order = list(plan.get('variants', {'baseline': plan['source']}))
+                    if plan.get('experiment') and (repeat + index) % 2 == 0:
+                        order.reverse()
+                    for treatment in order:
+                        suffix = '_' + treatment if plan.get('experiment') else ''
+                        first_id = 'first_%02d_%s%s' % (repeat, feature, suffix)
+                        growth_id = 'growth_%02d_%s%s' % (repeat, feature, suffix)
+                        if not gate:
+                            for name in (first_id, growth_id):
+                                queue.skip(profile['id'] + '_' + name, 'Protocol/basic gate did not qualify; not an upgrade failure')
+                            continue
+                        input_source = plan.get('variants', {}).get(treatment, plan['source'])
+                        inputs = {**plan, 'treatment': treatment}
+                        task = {'name': feature, 'task': 'Add exactly one new public tool. ' + plan['contracts'][feature] + plan['recipe'], 'checks': []}
+                        first = cell(first_id, lambda folder: trial(folder, task, input_source, config, inputs, feature))
+                        if first.get('review', {}).get('accepted'):
+                            saved = queue.latest(profile['id'] + '_' + first_id)
+                            source = json.loads((Path(saved['folder']) / 'review/candidate-source.json').read_text())
+                            added, task = growth_task(feature, plan)
+                            cell(growth_id, lambda folder: trial(folder, task, source, config, inputs, added, feature))
+                        else:
+                            queue.skip(profile['id'] + '_' + growth_id, 'First upgrade not fully accepted; no accepted parent exists')
         summary = summarize(queue, plan)
         summary['status'] = 'needs_attention' if summary['queue']['unresolved_cells'] else 'completed'
         atomic_json(output / 'summary.json', summary)
@@ -429,8 +690,16 @@ if __name__ == '__main__':
     p.add_argument('--repeats', type=int)
     p.add_argument('--timeout', type=int, default=DEFAULT_TASK_SECONDS)
     p.add_argument('--output-token-budget', type=int, default=DEFAULT_OUTPUT_TOKENS)
+    p.add_argument('--experiment', choices=TREATMENTS, help='Pair the frozen default with one opt-in treatment')
+    p.add_argument('--mask-keep', type=int, default=8)
+    p.add_argument('--mask-threshold', type=int, default=512)
+    p.add_argument('--parent-source', help='Inert exported candidate-source.json for a controlled phase comparison')
+    p.add_argument('--parent-tool', choices=tuple(study.CONTRACTS))
+    p.add_argument('--reuse-task', help='JSON task with required_tools and exact artifact checks; reuse only, no upgrade credit')
+    p.add_argument('--task-pack', help='Optional independently checked offline tasks replacing the basic-task pack')
     p = commands.add_parser('run')
     p.add_argument('--input', required=True)
+    p.add_argument('--check-only', action='store_true', help='Verify frozen inputs and scripted graders without contacting inference')
     p.add_argument('--retry', action='append', default=[], metavar='CELL_ID', help='Explicit new attempt after interruption/error; preserves the original')
     args = parser.parse_args()
     {'prepare': prepare, 'run': run}[args.command](args)

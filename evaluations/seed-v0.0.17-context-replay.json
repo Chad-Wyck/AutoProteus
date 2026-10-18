@@ -1,0 +1,50 @@
+{
+  "scope": "Offline replay of saved requests only; zero model calls, zero candidate execution. Historical verdicts and evidence were not changed.",
+  "passed": true,
+  "requests": [
+    {
+      "profile": "qwen35-4b-q4-128k",
+      "cell": "qwen35-4b-q4-128k_first_01_csv_preview",
+      "journal_sha256": "98fe1f53d71e00ea0c7626ada362f87ad61ee7b6d3c41ae9fd130a46a70d8517",
+      "neutral_bytes": 248011,
+      "old_wire_bytes": 254066,
+      "allowance_bytes": 253696,
+      "prepared_wire_bytes": 247010,
+      "adjustment": {
+        "reason": "native_wire_context_limit",
+        "removed_tool_exchanges": 1,
+        "messages_before": 248,
+        "messages_after": 246,
+        "input_bytes_before": 254066,
+        "input_bytes_after": 247010
+      },
+      "original_request_rejected": true,
+      "prepared_request_fits": true,
+      "system_and_user_messages_preserved": true,
+      "newest_exchange_preserved": true,
+      "input_journal_unchanged": true
+    },
+    {
+      "profile": "oxcoder-9b-q6_k-128k",
+      "cell": "oxcoder-9b-q6_k-128k_first_01_csv_preview",
+      "journal_sha256": "611e4ebfea5efd384b418abea4e5d696c6e77013bd3d693b07f03e82e92cec1b",
+      "neutral_bytes": 250768,
+      "old_wire_bytes": 257834,
+      "allowance_bytes": 253696,
+      "prepared_wire_bytes": 247332,
+      "adjustment": {
+        "reason": "native_wire_context_limit",
+        "removed_tool_exchanges": 1,
+        "messages_before": 233,
+        "messages_after": 231,
+        "input_bytes_before": 257834,
+        "input_bytes_after": 247332
+      },
+      "original_request_rejected": true,
+      "prepared_request_fits": true,
+      "system_and_user_messages_preserved": true,
+      "newest_exchange_preserved": true,
+      "input_journal_unchanged": true
+    }
+  ]
+}
