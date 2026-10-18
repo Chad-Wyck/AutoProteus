@@ -170,6 +170,22 @@ def self_check(output, source):
         atomic_json(output / 'calibration.json', report)
         if negative['passed'] or not control['passed'] or not public['passed']:
             raise RuntimeError('Independent grader calibration failed: ' + name)
+    off_by_one = copy.deepcopy(positive)
+    for item in off_by_one:
+        if item['path'] == 'autoproteus/tools.py':
+            text = base64.b64decode(item['data']).decode()
+            faulty = REFERENCE.replace('len(rows) > limit}', 'len(rows) > limit + 1}')
+            if faulty == REFERENCE:
+                raise RuntimeError('CSV negative control was not constructed')
+            item['data'] = base64.b64encode(text.replace(REFERENCE, faulty).encode()).decode()
+    rejected = verify_feature(store, freeze_source(store, off_by_one, 'Faulty CSV truncation control'), 'csv_preview')
+    report['csv_one_extra_negative'] = rejected
+    atomic_json(output / 'calibration.json', report)
+    checks = rejected.get('probe', {}).get('checks', {})
+    expected = {'one_extra_' + str(limit) for limit in (1, 5, 20)}
+    if (rejected['passed'] or not rejected.get('probe', {}).get('suite', {}).get('exit_code') == 0 or
+            {key for key, value in checks.items() if value is not True} != expected):
+        raise RuntimeError('The CSV grader did not isolate the one-extra-row defect')
     escaping = json.loads(json.dumps(positive))
     for item in escaping:
         if item['path'] == 'autoproteus/tools.py':

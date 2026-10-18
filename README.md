@@ -4,7 +4,7 @@ A small, model-agnostic agent that grows its own harness inside a disposable Lin
 
 Development releases use **v0.0.x**, incrementing the final number with each release. **v1.0.0** is reserved for launch.
 
-Incomplete model responses never execute partial actions. Each response, including the free final response, has two repair retries; a successful response resets that allowance. The controller reserves the same bounded request allowance, so interleaved cutoffs cannot consume the requests needed to finish. Connection failures, timeouts and repeated invalid responses still stop the run with its checkpoint preserved.
+Incomplete model responses never execute partial actions. Each response, including the free final response, has two repair retries; a successful response resets that allowance. Recognized malformed native arguments and oversized tool batches use the same repair allowance, with the entire rejected response discarded. The controller reserves the same bounded request allowance, so interleaved repairs cannot consume the requests needed to finish. Connection failures, timeouts and repeated invalid responses still stop the run with its checkpoint preserved.
 
 VM isolation is the default. An explicitly acknowledged **Linux native mode** is available for disposable machines and environments isolated by their operator. The security claims below apply to VM mode unless stated otherwise.
 
@@ -171,6 +171,12 @@ The [v0.0.11 findings](evaluations/seed-v0.0.11-findings.md) cover retry account
 The [v0.0.12 preparation](evaluations/seed-v0.0.12-findings.md) adds opt-in frozen comparisons, verifies the JSON character boundary against a faulty byte-limit control, separates trace completeness from cost coverage, and fixes the Linux CI test fixture. Navigation alone is recommended for the first run; no live-model improvement is claimed by these preparation checks.
 
 ## Runtime sources
+
+Opt-in [local model comparisons](evaluations/model-study.md) now support a small
+inference benchmark, quick screening and full first/second-pass qualification.
+Frozen queues resume completed work, preserve interrupted attempts, reuse matching
+grader calibration and report timing/usage coverage. These research tools leave
+the normal seed interface and saved model settings unchanged.
 
 VM downloads and SHA-256 hashes are pinned in `controller/runtime-lock.json`. Managed Python and Ollama versions, URLs and hashes are pinned in `controller/managed-runtime-lock.json`: Windows Python 3.13.12, Linux Python 3.13.16, and Ollama 0.40.4. Hashes are checked before extraction. Installed private runtimes are inventoried and verified before reuse, including libraries and added or missing files. An old unrecorded engine is replaced through verified setup while preserving model weights; damaged runtimes stop or require verified setup. Independently installed model services remain user-managed and are not covered by these private-runtime manifests.
 

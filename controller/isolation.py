@@ -17,7 +17,7 @@ import time
 from .appliance import Appliance
 from .errors import Cancelled, IsolationError
 from .execution import ExecutionPolicy, NativeEnvironment
-from .providers import DemoClient, ModelClient, ProviderError, ERROR_MESSAGES
+from .providers import DemoClient, ModelClient, ProviderError, ERROR_MESSAGES, PROTOCOL_HINTS, validate_context
 from .storage import atomic_json
 
 PREFIX = b'AP1 '
@@ -348,7 +348,7 @@ class VM(WorkerTransport):
 
 
 class Broker:
-    def __init__(self, store, session, client, config, cancel):
+    def __init__(self, store, session, client, config, cancel, activation_context=''):
         self.store, self.session, self.client, self.cancel = store, session, client, cancel
         self.artifacts = Artifacts(store, session)
         self.requests, self.frames = 0, 0
@@ -357,6 +357,7 @@ class Broker:
         self.request_limit = (min(config['max_steps'], 200) + 1) * (RESPONSE_RETRIES + 1)
         self.finished = False
         self.last_status = 'running'
+        self.activation_context, self.context_config = activation_context, config
         if isinstance(client, ModelClient) and client.observer is not None:
             client.observation_context = self.inference_context
 
@@ -397,6 +398,17 @@ class Broker:
                                or not re.fullmatch(r'[A-Za-z0-9_-]{1,64}', str(t['function'].get('name', '')))
                                or not isinstance(t['function'].get('parameters'), dict) for t in tools)):
                     raise IsolationError('Invalid guest tool descriptions')
+            if self.activation_context and messages[-1] != {'role': 'user', 'content': self.activation_context}:
+                extended = messages + [{'role': 'user', 'content': self.activation_context}]
+                try:
+                    validate_context(extended, tools, self.context_config)
+                    fits = len(extended) <= 400 and len(json.dumps(extended).encode()) <= 1500000
+                except ProviderError:
+                    fits = False
+                if fits:
+                    messages = extended
+                else:
+                    self.store.event(self.session, 'activation_context_omitted', {'reason': 'input_budget'})
             try:
                 if isinstance(self.client, ModelClient):
                     # Schemas are data for the model, never host-executable capabilities.
@@ -410,6 +422,12 @@ class Broker:
                     # boundary; the seed can spend its bounded format retries.
                     self.store.event(self.session, 'provider_cutoff', {'partial_action_executed': False})
                     return {'content': '', 'provider_error': 'cutoff'}
+                if error.category == 'protocol':
+                    reason = error.response.get('protocol_reason') if isinstance(error.response, dict) else None
+                    hint = PROTOCOL_HINTS.get(reason, 'Use the supplied tools with valid JSON arguments. Prefer one tool call at a time.')
+                    self.store.event(self.session, 'provider_protocol_error', {'reason': reason if reason in PROTOCOL_HINTS else 'unspecified',
+                                                                             'partial_action_executed': False})
+                    return {'content': '', 'provider_error': 'protocol', 'normalization_error': hint}
                 self.session['error_category'] = error.category
                 raise IsolationError(ERROR_MESSAGES[error.category]) from None
             except Exception:
@@ -519,6 +537,15 @@ class IsolatedAgent:
                         (self.root / name).read_bytes()).decode()})
             guest_config = {key: value for key, value in config.items() if key not in ('base_url', 'api_key')}
             guest_config['response_retries'] = RESPONSE_RETRIES
+            guest_config.pop('activation_context', None)
+            if candidate is session or session.get('candidate_from') == session['id']:
+                bundle_hash = hashlib.sha256(json.dumps(source, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+                guest_config['activation_context'] = (
+                    'CURRENT ACTIVATION STATE\nRunning seed bundle SHA-256: ' + bundle_hash + '.\n'
+                    'This version is already active; its earlier activation request is fulfilled. '
+                    'Continue the remaining user task using the active tools. Do not repeat development checks solely '
+                    'to request activation of this same version. Further source edits require another activation. '
+                    'All original human requirements still apply.')
             boot = {'op': 'boot', 'seed': source, 'files': inputs, 'session': dict(session),
                     'config': guest_config, 'message': message, 'seed_activated': candidate is session,
                     'handoff': handoff}
@@ -563,7 +590,7 @@ class IsolatedAgent:
                 raise
 
     def _run(self, session, boot, client, config, cancel):
-        vm, broker = None, Broker(self.store, session, client, config, cancel)
+        vm, broker = None, Broker(self.store, session, client, config, cancel, boot['config'].get('activation_context', ''))
         lease = None
         # Host deadline covers boot, inference, commands and all guest code.
         deadline = time.monotonic() + MAX_SECONDS

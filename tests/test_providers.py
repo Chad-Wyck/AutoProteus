@@ -2,18 +2,23 @@ import json, threading, unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from controller.config import DEFAULTS
 from controller.providers import ModelClient, ProviderError, model_response, normalize_tool_response, wire_messages
+from unittest.mock import patch
 from autoproteus.agent import parse_action
 from autoproteus.providers import tool_definitions
 
 
 class FakeModelServer:
-    def __init__(self, cut_short=False, hosted=False, native=False, diagnostic=False):
+    def __init__(self, cut_short=False, hosted=False, native=False, diagnostic=False, frames=None):
         self.payloads = []; parent = self
         class Handler(BaseHTTPRequestHandler):
             def log_message(self, *_): pass
             def do_POST(self):
                 parent.payloads.append(json.loads(self.rfile.read(int(self.headers['Content-Length']))))
                 self.send_response(200); self.send_header('Content-Type', 'application/json'); self.end_headers()
+                if frames is not None:
+                    for frame in frames:
+                        self.wfile.write((json.dumps(frame) + '\n').encode())
+                    return
                 content = json.dumps({'message': 'Ready', 'status': 'completed'})
                 calls = [{'function': {'name': 'write_file', 'arguments': {'path': 'sample.txt', 'content': 'sample'}}}]
                 if diagnostic:
@@ -47,6 +52,45 @@ class FakeModelServer:
 
 
 class HostProviderTests(unittest.TestCase):
+    def test_bad_native_arguments_and_oversized_batches_are_repairable_protocol_errors(self):
+        call = {'function': {'name': 'write_file', 'arguments': {'path': 'partial.txt', 'content': 'must not run'}}}
+        fixtures = [([{'message': {'tool_calls': [call] * 33}}], 'tool_batch'),
+                    ([{'error': 'llama-server returned invalid tool call arguments for edit_file: invalid JSON'}], 'tool_arguments')]
+        for frames, reason in fixtures:
+            server = FakeModelServer(frames=frames)
+            events = []
+            try:
+                config = {**DEFAULTS, 'provider': 'ollama', 'base_url': server.url}
+                with self.assertRaises(ProviderError) as caught:
+                    ModelClient(config, observer=events.append).complete([{'role':'user','content':'test'}],
+                        threading.Event(), tools=tool_definitions())
+                self.assertEqual(caught.exception.category, 'protocol')
+                self.assertEqual(caught.exception.response, {'protocol_reason': reason})
+                self.assertNotIn('content', caught.exception.response)
+                self.assertTrue(any(e['type'] == 'provider_response' for e in events))
+            finally:
+                server.close()
+
+    def test_protocol_classification_is_narrow_and_error_details_are_redacted_before_truncation(self):
+        secret = 'private-test-provider-key'
+        events = []
+        config = {**DEFAULTS, 'provider':'hosted'}
+        error = ProviderError('invalid tool call arguments ' + secret + 'x' * 3000)
+        with patch('controller.providers.request_json', side_effect=error), self.assertRaises(ProviderError) as caught:
+            ModelClient(config, secret, events.append).complete([{'role':'user','content':'test'}],
+                threading.Event(), tools=tool_definitions())
+        self.assertEqual(caught.exception.category, 'protocol')
+        self.assertNotIn(secret, json.dumps(events))
+        detail = next(e['data']['error_detail'] for e in events if e['type'] == 'call_end')
+        self.assertIn('[REDACTED]', detail)
+        self.assertLessEqual(len(detail), 2000)
+        for protocol in ('json', 'native'):
+            for text in ('service unavailable', 'authentication rejected', 'invalid tool call arguments' if protocol == 'json' else 'unknown backend error'):
+                with patch('controller.providers.request_json', side_effect=ProviderError(text)), self.assertRaises(ProviderError) as caught:
+                    ModelClient({**config,'protocol':protocol}).complete([{'role':'user','content':'test'}],
+                        threading.Event(), tools=tool_definitions())
+                self.assertEqual(caught.exception.category, 'connection')
+
     def test_journal_provenance_is_not_sent_to_either_model_protocol(self):
         for native in (False, True):
             server = FakeModelServer(hosted=True, native=native)

@@ -28,6 +28,20 @@ ERROR_MESSAGES = {
     'context': 'The input exceeds the configured context estimate. Shorten the task or increase the context window in Settings.',
 }
 
+# Only these fixed explanations cross the broker for a repairable provider
+# error. Raw server errors can contain secrets and remain host diagnostics.
+PROTOCOL_HINTS = {
+    'tool_arguments': 'Tool arguments were not valid JSON. Send a complete call with valid JSON arguments; escape newlines inside strings.',
+    'tool_batch': 'A response may contain at most 32 tool calls. Send one tool call, inspect its result, then continue.',
+}
+
+
+def model_service_error(detail, native):
+    text = detail.lower()
+    if native and any(marker in text for marker in ('invalid tool call arguments', 'failed to parse tool call')):
+        return ProviderError(detail, {'protocol_reason': 'tool_arguments'}, category='protocol')
+    return ProviderError(detail)
+
 
 def validate_context(messages, tools, config):
     """A model-agnostic upper bound on our estimate, not an exact tokenizer."""
@@ -154,8 +168,11 @@ class ModelClient:
             try:
                 # A detached snapshot prevents a collector changing the request.
                 snapshot = json.loads(json.dumps(data, ensure_ascii=False))
+                snapshot = clean(snapshot)
+                if kind == 'call_end' and 'error_detail' in snapshot:
+                    snapshot['error_detail'] = snapshot['error_detail'][:2000]
                 self.observer({'type': kind, 'call_id': call_id, 'time': time.time(),
-                               'elapsed_seconds': time.monotonic() - started, 'data': clean(snapshot)})
+                               'elapsed_seconds': time.monotonic() - started, 'data': snapshot})
             except Exception:
                 # Diagnostics never change inference or release a partial action.
                 self.observation_failed = True
@@ -204,7 +221,8 @@ class ModelClient:
             raise
         except Exception as error:
             usage = error.response.get('usage', {}) if isinstance(error, ProviderError) and isinstance(error.response, dict) else {}
-            record('call_end', {'status': 'error', 'category': error.category if isinstance(error, ProviderError) else 'internal', 'usage': usage})
+            record('call_end', {'status': 'error', 'category': error.category if isinstance(error, ProviderError) else 'internal',
+                               'usage': usage, 'error_detail': str(error)})
             raise
 
     def _complete(self, messages, cancel, progress, tools=None, observe=None):
@@ -251,12 +269,13 @@ class ModelClient:
                         if observe:
                             frames.append(item)
                         if item.get("error"):
-                            raise ProviderError(str(item["error"]))
+                            raise model_service_error(str(item["error"]), native)
                         text += item.get("message", {}).get("content", "")
                         thinking += item.get("message", {}).get("thinking", "")
                         calls.extend(item.get('message', {}).get('tool_calls', []))
                         if len(calls) > 32:
-                            raise ProviderError('The model returned too many tool calls')
+                            raise ProviderError('The model returned too many tool calls',
+                                                {'protocol_reason': 'tool_batch'}, category='protocol')
                         if progress:
                             progress(len(text))
                         if len(text) + len(thinking) > 300000:
@@ -273,7 +292,7 @@ class ModelClient:
                                         {'raw_content':text, 'thinking':thinking, 'tool_calls':calls, 'usage':metrics, 'incomplete':True}, category='cutoff')
                 return model_response(text, calls, native, thinking=thinking, usage=metrics)
             except urllib.error.HTTPError as error:
-                raise ProviderError(f"Local model error (HTTP {error.code}): {error.read(2000).decode(errors='replace')}") from None
+                raise model_service_error(f"Local model error (HTTP {error.code}): {error.read(2000).decode(errors='replace')}", native) from None
             except (urllib.error.URLError, TimeoutError, OSError) as error:
                 raise ProviderError(f"The local model connection was interrupted: {error}. No partial action was executed.",
                                     {'raw_content':text, 'thinking':thinking, 'tool_calls':calls, 'incomplete':True}) from None
@@ -289,7 +308,12 @@ class ModelClient:
         headers = {"Authorization": "Bearer " + self.key} if self.key else {}
         if observe:
             observe('provider_request', {'payload': payload})
-        data = request_json(base + "/chat/completions", payload, headers, config.get("request_timeout", 180))
+        try:
+            data = request_json(base + "/chat/completions", payload, headers, config.get("request_timeout", 180))
+        except ProviderError as error:
+            if error.category == 'connection':
+                raise model_service_error(str(error), native) from None
+            raise
         if observe:
             observe('provider_response', {'payload': data, 'stream': False, 'complete': True})
         try:

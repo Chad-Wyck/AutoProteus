@@ -22,6 +22,8 @@ Source map:
    `self.path` for workspace paths. Add its description, argument types and
    required arguments to `TOOL_SPECS` in `autoproteus/providers.py`. Both action
    formats use this table. A new tool normally needs no agent-loop changes.
+   An argument with a requested default is optional: leave it out of `required`
+   and apply the default in the implementation when the argument is omitted.
    Reuse the existing text helpers for file capabilities:
 
    - `self.read_text(path, missing_ok=False)` returns UTF-8 text up to
@@ -38,6 +40,10 @@ Source map:
 3. Add focused tests and preserve existing behavior and tests. For file tools,
    cover empty text, Unicode versus byte counts, CRLF, exact limits, invalid
    inputs and failed writes preserving the original bytes.
+   Test the smallest valid call from the user's contract, omitting optional
+   arguments, then explicit defaults and invalid values. Check against that
+   contract, not only your new schema; a schema and implementation can share
+   the same mistake.
    New `tests/test_*.py` files can import `unittest`, `Path` from `pathlib`,
    `Workspace` from `autoproteus.tools`, and `temporary_directory` from
    `test_seed`. Inside `with temporary_directory() as directory:`, construct
@@ -80,6 +86,9 @@ the current copy and starts a new worker with the same task, saved files and
 history. In VM mode it starts a fresh VM under the same policy. Resume keeps
 that activated version. After further edits, use the same control again to
 activate the next version. Starter recovery remains a controller operation.
+After activation, use the now-active tools to finish the remaining user task.
+The activation request for that version is already fulfilled. Repeat development
+or request another activation only when further changes are needed.
 
 ## File navigation and allowances
 

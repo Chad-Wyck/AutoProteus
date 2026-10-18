@@ -65,6 +65,11 @@ class RealVMTests(unittest.TestCase):
             for expected in (task, 'Keep this human correction.', 'Preserve this legacy user constraint.'):
                 self.assertIn(expected, content)
             self.assertNotIn('OLD DEVELOPMENT EXPLANATION', content)
+            self.assertTrue(prompt[-1]['content'].startswith('CURRENT ACTIVATION STATE\nRunning seed bundle SHA-256:'))
+            self.assertIn('earlier activation request is fulfilled', prompt[-1]['content'])
+        phase = prompts[1][0][-1]
+        self.assertEqual(phase, prompts[1][-1][-1])
+        self.assertFalse(any(item['content'].startswith('CURRENT ACTIVATION STATE') for item in prompts[0][0]))
         self.assertIn('new result', '\n'.join(item['content'] for item in prompts[1][-1]))
         self.assertEqual(Artifacts(self.store, session).read('old.txt'), b'keep')
         self.assertTrue(any('OLD DEVELOPMENT EXPLANATION' in item['content'] for item in session['messages']))
@@ -75,6 +80,33 @@ class RealVMTests(unittest.TestCase):
         agent.start(session)
         self.assertEqual(self.wait(agent, session), 'completed')
         self.assertIn('OLD DEVELOPMENT EXPLANATION', '\n'.join(item['content'] for item in prompts[2][0]))
+        self.assertEqual(prompts[2][0][-1], phase)
+
+    def test_protocol_repairs_are_bounded_and_rejected_calls_never_execute(self):
+        from controller.providers import ProviderError
+        for recover in (False, True):
+            class Client:
+                calls = 0
+                def complete(client, messages, cancel):
+                    client.calls += 1
+                    if client.calls == 1 or not recover:
+                        raise ProviderError('private-provider-detail', {'protocol_reason':'tool_batch', 'tool_calls':[
+                            {'function':{'name':'write_file','arguments':{'path':'partial.txt','content':'unsafe'}}}]}, category='protocol')
+                    if client.calls == 2:
+                        return {'content':json.dumps({'action':{'tool':'write_file','arguments':{'path':'safe.txt','content':'recovered'}}})}
+                    return {'content':json.dumps({'status':'completed'})}
+            client = Client()
+            agent = IsolatedAgent(ROOT, self.store, self.settings, lambda _: client)
+            self.agents.append(agent)
+            session = self.store.create('Recover only through a valid new response.', 'hosted', 'protocol fixture')
+            agent.start(session)
+            self.assertEqual(self.wait(agent, session), 'completed' if recover else 'error')
+            self.assertEqual(client.calls, 3)
+            self.assertEqual(session['steps'], 1 if recover else 0)
+            self.assertNotIn('partial.txt', session.get('artifacts', {}))
+            self.assertNotIn('private-provider-detail', json.dumps(session))
+            if recover:
+                self.assertEqual(Artifacts(self.store, session).read('safe.txt'), b'recovered')
 
     def test_interleaved_cutoffs_preserve_actions_and_the_free_final_response(self):
         from controller.providers import ProviderError

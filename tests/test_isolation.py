@@ -18,6 +18,39 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class BoundaryTests(unittest.TestCase):
+    def test_protocol_repairs_discard_raw_provider_data_and_keep_the_host_request_quota(self):
+        from controller.providers import ProviderError
+        client = Mock()
+        client.complete.side_effect = ProviderError('private-host-key', {
+            'protocol_reason':'tool_arguments', 'tool_calls':[{'unsafe':'private-host-key'}]}, category='protocol')
+        broker = Broker(self.store, self.session, client, self.settings.values, threading.Event())
+        marker = broker.handle({'op':'infer','messages':[{'role':'user','content':'test'}]})
+        self.assertEqual(marker['provider_error'], 'protocol')
+        self.assertEqual(marker['content'], '')
+        self.assertNotIn('private-host-key', json.dumps(marker))
+        self.assertNotIn('tool_calls', marker)
+        self.assertIn('valid JSON', marker['normalization_error'])
+        broker.requests = broker.request_limit
+        with self.assertRaisesRegex(IsolationError, 'request quota'):
+            broker.handle({'op':'infer','messages':[{'role':'user','content':'test'}]})
+
+    def test_host_activation_state_is_last_without_replacing_human_requirements(self):
+        client = Mock()
+        client.complete.return_value = {'content':'{}'}
+        phase = 'CURRENT ACTIVATION STATE\nRunning seed is active.'
+        broker = Broker(self.store, self.session, client, self.settings.values, threading.Event(), phase)
+        messages = [{'role':'user','content':'Keep the original human constraint.'}]
+        broker.handle({'op':'infer','messages':messages})
+        forwarded = client.complete.call_args.args[0]
+        self.assertEqual(forwarded[0], messages[0])
+        self.assertEqual(forwarded[-1]['content'], phase)
+        self.assertEqual(messages, [{'role':'user','content':'Keep the original human constraint.'}])
+        broker.handle({'op':'infer','messages':forwarded})
+        self.assertEqual(client.complete.call_args.args[0], forwarded)
+        broker.context_config = {**self.settings.values,'context_tokens':self.settings.values['response_tokens']+128}
+        broker.handle({'op':'infer','messages':messages})
+        self.assertEqual(client.complete.call_args.args[0], messages)
+
     def test_failed_restart_preserves_the_previous_candidate_selection(self):
         session = self.store.create('Keep the previous version.', 'demo', 'fixture')
         agent = IsolatedAgent(ROOT, self.store, self.settings)

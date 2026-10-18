@@ -1,0 +1,1724 @@
+{
+  "version": "0.0.14",
+  "base_commit": "4edc8ad1bc568c40f62fd3532300f88c9ca1ad92",
+  "working_tree": "Local changes; not committed or pushed.",
+  "source_sha256": "4c5dbd99eeac318475bab5d4fe92ac5ffdb6f0b17bd418bd9533d306aacd0224",
+  "final_patch_sha256": "eb7809817dc0b37cb3460251c6cda41b068d1ffd7cf020ac97da0039be98d614",
+  "validation": {
+    "total": 216,
+    "passed": 200,
+    "skipped": 16,
+    "real_vm_tests": 23
+  },
+  "profile": {
+    "config": {
+      "configured": true,
+      "provider": "ollama",
+      "base_url": "http://127.0.0.1:11435",
+      "model": "autoproteus-round-qwen35-9b:experimental",
+      "context_tokens": 131072,
+      "response_tokens": 4096,
+      "temperature": 0.6,
+      "max_steps": 128,
+      "request_timeout": 300,
+      "command_timeout": 60,
+      "terminal": true,
+      "json_mode": false,
+      "thinking": false,
+      "protocol": "native"
+    },
+    "identity": {
+      "provider": "ollama",
+      "model": "autoproteus-round-qwen35-9b:experimental",
+      "engine_version": "0.40.4",
+      "digest": "0112df9770b432004365c707072651fec304f185ea434c49bb1cfde9034bbab7",
+      "size": 7087508164,
+      "details": {
+        "family": "qwen35",
+        "parameter_size": "9.2B",
+        "quantization_level": "Q4_K_M"
+      }
+    },
+    "engine_env": {
+      "OLLAMA_KV_CACHE_TYPE": "q8_0",
+      "OLLAMA_FLASH_ATTENTION": "1"
+    },
+    "placement": {
+      "models": [
+        {
+          "name": "autoproteus-round-qwen35-9b:experimental",
+          "model": "autoproteus-round-qwen35-9b:experimental",
+          "size": 8660734442,
+          "digest": "0112df9770b432004365c707072651fec304f185ea434c49bb1cfde9034bbab7",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen35",
+            "families": [
+              "qwen35"
+            ],
+            "parameter_size": "9.2B",
+            "quantization_level": "unknown"
+          },
+          "expires_at": "2026-10-17T11:34:39.8081673-06:00",
+          "size_vram": 8660734442,
+          "context_length": 131072,
+          "runner": "llamacpp"
+        }
+      ]
+    }
+  },
+  "scores": {
+    "basic": 5,
+    "first_verified": 2,
+    "first_accepted": 2,
+    "second_verified": 2,
+    "second_completed": 1,
+    "second_attempted": 2
+  },
+  "previous_batch_scores": {
+    "basic": 5,
+    "first_verified": 2,
+    "first_accepted": 2,
+    "second_verified": 2,
+    "second_completed": 1,
+    "second_attempted": 2
+  },
+  "upgrades": [
+    {
+      "task": "sha256_file",
+      "run": {
+        "task": "sha256_file",
+        "session": "22ef3ff99e2b421e943f5507eb1fba89",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 31,
+        "seconds": 208.28,
+        "model_requests": 32,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 5,
+        "read_actions": 10,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 4285,
+        "reported_output_tokens": 4285,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 32,
+        "wire_requests": 32,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 408712,
+            "measured_calls": 32,
+            "expected_calls": 32,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 4285,
+            "measured_calls": 32,
+            "expected_calls": 32,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 185.619,
+            "measured_calls": 32,
+            "expected_calls": 32,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 185.61,
+            "measured_calls": 32,
+            "expected_calls": 32,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "trace_read_errors": 0,
+        "finished_calls": 32,
+        "transport_finished_calls": 32,
+        "provider_responses": 32,
+        "statuses": {
+          "returned": 32
+        },
+        "error_categories": {},
+        "token_usage_measured_calls": 32,
+        "output_token_usage_measured_calls": 32,
+        "input_tokens": 408712,
+        "output_tokens": 4285,
+        "call_seconds": 185.619,
+        "transport_seconds": 185.61,
+        "host_history_omissions": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "capture": {
+        "records": 160,
+        "bytes": 1984035,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "review": {
+        "accepted": true,
+        "verified_upgrade": true,
+        "source_sha256": "ef55b7e5cf460075ebd80d280179cc3f337e23711b98fb8561067498741bb9d8",
+        "protected_unchanged": true,
+        "allowed_files_only": true
+      },
+      "original_feature_checks": {
+        "registered": true,
+        "schema": true,
+        "empty": true,
+        "binary": true,
+        "exact": true,
+        "oversized": true,
+        "reject_path_directory": true,
+        "reject_path_missing": true,
+        "reject_path_../outside-heldout.txt": true,
+        "reject_path_escape": true,
+        "outside_preserved": true
+      },
+      "public_passed": true
+    },
+    {
+      "task": "csv_preview",
+      "run": {
+        "task": "csv_preview",
+        "session": "5e696cb3eb1d462bb9bf0dfa4b3c0b18",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 70,
+        "seconds": 449.08,
+        "model_requests": 71,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 9,
+        "read_actions": 38,
+        "repeated_reads": 4,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 11587,
+        "reported_output_tokens": 11587,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 71,
+        "wire_requests": 71,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 1061064,
+            "measured_calls": 71,
+            "expected_calls": 71,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 11587,
+            "measured_calls": 71,
+            "expected_calls": 71,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 415.723,
+            "measured_calls": 71,
+            "expected_calls": 71,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 415.705,
+            "measured_calls": 71,
+            "expected_calls": 71,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "trace_read_errors": 0,
+        "finished_calls": 71,
+        "transport_finished_calls": 71,
+        "provider_responses": 71,
+        "statuses": {
+          "returned": 71
+        },
+        "error_categories": {},
+        "token_usage_measured_calls": 71,
+        "output_token_usage_measured_calls": 71,
+        "input_tokens": 1061064,
+        "output_tokens": 11587,
+        "call_seconds": 415.723,
+        "transport_seconds": 415.705,
+        "host_history_omissions": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "capture": {
+        "records": 355,
+        "bytes": 4642503,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "review": {
+        "accepted": false,
+        "verified_upgrade": false,
+        "source_sha256": "70d4b66deb18c8d4e5dd4d54d015448151e441a861f52e6dfec2fbacc1122dc1",
+        "protected_unchanged": true,
+        "allowed_files_only": true
+      },
+      "original_feature_checks": {
+        "registered": true,
+        "schema": true,
+        "empty_1": true,
+        "empty_5": true,
+        "empty_20": true,
+        "quoted_1": true,
+        "quoted_5": true,
+        "quoted_20": true,
+        "exact_1": true,
+        "exact_5": true,
+        "exact_20": true,
+        "many_1": true,
+        "many_5": true,
+        "many_20": true,
+        "default_limit": false,
+        "invalid_limit_0": true,
+        "invalid_limit_21": true,
+        "invalid_limit_True": true,
+        "invalid_limit_'5'": true,
+        "invalid_limit_None": true,
+        "reject_bad": true,
+        "reject_large": true,
+        "reject_path_directory": true,
+        "reject_path_missing": true,
+        "reject_path_../outside-heldout.txt": true,
+        "reject_path_escape": true,
+        "outside_preserved": true
+      },
+      "public_passed": false
+    },
+    {
+      "task": "format_json",
+      "run": {
+        "task": "format_json",
+        "session": "86ce3a713e814772aaf76929e968bc8c",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 128,
+        "seconds": 598.29,
+        "model_requests": 129,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 10,
+        "read_actions": 95,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 13830,
+        "reported_output_tokens": 13830,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 129,
+        "wire_requests": 129,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 3281544,
+            "measured_calls": 129,
+            "expected_calls": 129,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 13830,
+            "measured_calls": 129,
+            "expected_calls": 129,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 551.06,
+            "measured_calls": 129,
+            "expected_calls": 129,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 551.028,
+            "measured_calls": 129,
+            "expected_calls": 129,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "trace_read_errors": 0,
+        "finished_calls": 129,
+        "transport_finished_calls": 129,
+        "provider_responses": 129,
+        "statuses": {
+          "returned": 129
+        },
+        "error_categories": {},
+        "token_usage_measured_calls": 129,
+        "output_token_usage_measured_calls": 129,
+        "input_tokens": 3281544,
+        "output_tokens": 13830,
+        "call_seconds": 551.06,
+        "transport_seconds": 551.028,
+        "host_history_omissions": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "capture": {
+        "records": 645,
+        "bytes": 13801036,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "review": {
+        "accepted": true,
+        "verified_upgrade": true,
+        "source_sha256": "a02d1ca6cd06c55bfc54472d28da4e75361fa06444c8dcdbad2de9a5a45ada12",
+        "protected_unchanged": true,
+        "allowed_files_only": true
+      },
+      "original_feature_checks": {
+        "registered": true,
+        "schema": true,
+        "object": true,
+        "object_idempotent": true,
+        "array": true,
+        "array_idempotent": true,
+        "scalar": true,
+        "scalar_idempotent": true,
+        "exact_output_limit": true,
+        "preserve_invalid": true,
+        "preserve_utf8": true,
+        "preserve_large": true,
+        "preserve_expanded": true,
+        "reject_path_directory": true,
+        "reject_path_missing": true,
+        "reject_path_../outside-heldout.txt": true,
+        "reject_path_escape": true,
+        "outside_preserved": true
+      },
+      "public_passed": true
+    }
+  ],
+  "growth": [
+    {
+      "earlier": "sha256_file",
+      "added": "format_json",
+      "parent_sha256": "ef55b7e5cf460075ebd80d280179cc3f337e23711b98fb8561067498741bb9d8",
+      "development": {
+        "task": "second-extension-audit",
+        "session": "b8f53a1bfd334e908a25a43a7d1b4611",
+        "status": "waiting",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": false,
+        "checks": [],
+        "steps": 48,
+        "seconds": 536.35,
+        "model_requests": 49,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 16,
+        "read_actions": 11,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": "Waiting for your reply"
+      },
+      "final": {
+        "session": "b8f53a1bfd334e908a25a43a7d1b4611",
+        "status": "paused",
+        "timed_out": false,
+        "steps": 176,
+        "provider_error_category": null,
+        "last_notices": [
+          "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, run_command, sha256_file, format_json. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+          "Session resumed. Checking the current workspace before continuing.",
+          "The run used its action allowance. Your work is saved; Resume gives a fresh allowance in the same workspace."
+        ]
+      },
+      "verified_extension": true,
+      "stage_order_preserved": true,
+      "final_source_unchanged": true,
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": false,
+        "capabilities_used": true,
+        "functional_growth": false,
+        "direct_tool_use": true,
+        "strict_route_success": false
+      },
+      "final_usage": {
+        "direct": [
+          "format_json",
+          "list_files",
+          "read_file",
+          "sha256_file",
+          "write_file"
+        ],
+        "development": []
+      },
+      "fresh_reuse_diagnostic": {
+        "task": "fresh-reuse",
+        "started": "2026-10-17T18:04:07.378167+00:00",
+        "operator_candidate_repairs": [],
+        "run": {
+          "task": "fresh-reuse",
+          "session": "1cd43048e4374c4595b5ef5d4c4109d0",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "fresh.json",
+              "passed": true
+            },
+            {
+              "path": "audit.json",
+              "passed": true
+            }
+          ],
+          "steps": 8,
+          "seconds": 27.55,
+          "model_requests": 8,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 4,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        },
+        "navigation": {
+          "read_actions": 4,
+          "search_actions": 0,
+          "outline_actions": 0,
+          "returned_context_bytes": 641,
+          "read_characters": 264,
+          "overlapping_read_characters": 87,
+          "new_read_characters": 177,
+          "first_runtime_source_edit_seconds": null,
+          "runtime_source_edits": 0,
+          "first_green_development_check_seconds": null,
+          "last_green_development_check_seconds": null,
+          "actions_after_last_green_check": 0,
+          "reads_after_last_green_check": 0,
+          "runtime_edits_after_last_green_check": 0,
+          "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+        },
+        "token_budget": {
+          "limit": 8192,
+          "charged_output_tokens": 783,
+          "reported_output_tokens": 783,
+          "unmeasured_sent_calls": 0,
+          "usage_complete": true,
+          "exhausted": false
+        },
+        "calls": {
+          "calls": 8,
+          "wire_requests": 8,
+          "trace_complete": true,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 17999,
+              "measured_calls": 8,
+              "expected_calls": 8,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 783,
+              "measured_calls": 8,
+              "expected_calls": 8,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 22.989,
+              "measured_calls": 8,
+              "expected_calls": 8,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 22.987,
+              "measured_calls": 8,
+              "expected_calls": 8,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "trace_read_errors": 0,
+          "finished_calls": 8,
+          "transport_finished_calls": 8,
+          "provider_responses": 8,
+          "statuses": {
+            "returned": 8
+          },
+          "error_categories": {},
+          "token_usage_measured_calls": 8,
+          "output_token_usage_measured_calls": 8,
+          "input_tokens": 17999,
+          "output_tokens": 783,
+          "call_seconds": 22.989,
+          "transport_seconds": 22.987,
+          "host_history_omissions": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "capture": {
+          "records": 40,
+          "bytes": 142027,
+          "dropped": 0,
+          "error": null,
+          "complete": true,
+          "observer_failed": false
+        },
+        "finished": "2026-10-17T18:04:34.993636+00:00",
+        "total_seconds": 27.615,
+        "usage": {
+          "direct": [
+            "format_json",
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "source_unchanged": true,
+        "scores": {
+          "capability_added": true,
+          "earlier_behavior_preserved": true,
+          "task_completed_correctly": true,
+          "capabilities_used": true,
+          "functional_growth": true,
+          "direct_tool_use": true,
+          "strict_route_success": true
+        },
+        "scope": "Separate fresh-task diagnostic, not recovery or rescoring of the staged growth attempt."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 24883,
+        "reported_output_tokens": 24883,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 178,
+        "wire_requests": 178,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 2466017,
+            "measured_calls": 178,
+            "expected_calls": 178,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 24883,
+            "measured_calls": 178,
+            "expected_calls": 178,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 975.285,
+            "measured_calls": 178,
+            "expected_calls": 178,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 975.238,
+            "measured_calls": 178,
+            "expected_calls": 178,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "trace_read_errors": 0,
+        "finished_calls": 178,
+        "transport_finished_calls": 178,
+        "provider_responses": 178,
+        "statuses": {
+          "returned": 178
+        },
+        "error_categories": {},
+        "token_usage_measured_calls": 178,
+        "output_token_usage_measured_calls": 178,
+        "input_tokens": 2466017,
+        "output_tokens": 24883,
+        "call_seconds": 975.285,
+        "transport_seconds": 975.238,
+        "host_history_omissions": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97,
+          97
+        ]
+      },
+      "capture": {
+        "records": 890,
+        "bytes": 12235146,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "combined_source_sha256": "e828b923329efd8a92a39f61d3363e9a8771870c33566af07c49209178d378e7"
+    },
+    {
+      "earlier": "format_json",
+      "added": "sha256_file",
+      "parent_sha256": "a02d1ca6cd06c55bfc54472d28da4e75361fa06444c8dcdbad2de9a5a45ada12",
+      "development": {
+        "task": "second-extension-audit",
+        "session": "539324bc049e44f593d5e74f41200192",
+        "status": "waiting",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": false,
+        "checks": [],
+        "steps": 23,
+        "seconds": 207.6,
+        "model_requests": 24,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 5,
+        "read_actions": 5,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": "Waiting for your reply"
+      },
+      "final": {
+        "session": "539324bc049e44f593d5e74f41200192",
+        "status": "completed",
+        "timed_out": false,
+        "steps": 54,
+        "provider_error_category": null,
+        "last_notices": [
+          "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, run_command, format_json, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+          "Session resumed. Checking the current workspace before continuing.",
+          "The same unchanged material is being read repeatedly. The agent received a progress hint."
+        ]
+      },
+      "verified_extension": true,
+      "stage_order_preserved": true,
+      "final_source_unchanged": true,
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "final_usage": {
+        "direct": [
+          "format_json",
+          "list_files",
+          "read_file",
+          "sha256_file",
+          "write_file"
+        ],
+        "development": []
+      },
+      "fresh_reuse_diagnostic": null,
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 10966,
+        "reported_output_tokens": 10966,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 56,
+        "wire_requests": 56,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 546838,
+            "measured_calls": 56,
+            "expected_calls": 56,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 10966,
+            "measured_calls": 56,
+            "expected_calls": 56,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 395.908,
+            "measured_calls": 56,
+            "expected_calls": 56,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 395.893,
+            "measured_calls": 56,
+            "expected_calls": 56,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "trace_read_errors": 0,
+        "finished_calls": 56,
+        "transport_finished_calls": 56,
+        "provider_responses": 56,
+        "statuses": {
+          "returned": 56
+        },
+        "error_categories": {},
+        "token_usage_measured_calls": 56,
+        "output_token_usage_measured_calls": 56,
+        "input_tokens": 546838,
+        "output_tokens": 10966,
+        "call_seconds": 395.908,
+        "transport_seconds": 395.893,
+        "host_history_omissions": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47
+        ]
+      },
+      "capture": {
+        "records": 280,
+        "bytes": 3239636,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "combined_source_sha256": "7b8a770ef7da114258d693baa9fb1fac584df73c888a73ed3c1430bb575e1d0c"
+    }
+  ],
+  "regrading": {
+    "started": "2026-10-17T18:20:48.279468+00:00",
+    "scope": "Regrading saved candidates with the strengthened CSV probe; no new model attempts or repairs.",
+    "current_graders": {
+      "evaluations/generalization.py": "ac944a509e9743ebd765b8260ecdd00bc3c7526cbc8485fc482686dac070c9a0",
+      "evaluations/generalization-probe.py": "8518f1efeb78244df4c0cacc28412d04c09513c6f1b5865ab6db7cf39b05f84d"
+    },
+    "candidates": [
+      {
+        "id": "sha256_file",
+        "source_sha256": "ef55b7e5cf460075ebd80d280179cc3f337e23711b98fb8561067498741bb9d8",
+        "original_accepted": true,
+        "accepted": true,
+        "verified_upgrade": true,
+        "behavior_checks": {
+          "registered": true,
+          "schema": true,
+          "empty": true,
+          "binary": true,
+          "exact": true,
+          "oversized": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "public": true
+      },
+      {
+        "id": "csv_preview",
+        "source_sha256": "70d4b66deb18c8d4e5dd4d54d015448151e441a861f52e6dfec2fbacc1122dc1",
+        "original_accepted": false,
+        "accepted": false,
+        "verified_upgrade": false,
+        "behavior_checks": {
+          "registered": true,
+          "schema": true,
+          "empty_1": true,
+          "empty_5": true,
+          "empty_20": true,
+          "quoted_1": true,
+          "quoted_5": true,
+          "quoted_20": true,
+          "exact_1": true,
+          "exact_5": true,
+          "exact_20": true,
+          "many_1": true,
+          "many_5": true,
+          "many_20": true,
+          "default_limit": false,
+          "one_extra_1": false,
+          "one_extra_5": false,
+          "one_extra_20": false,
+          "invalid_limit_0": true,
+          "invalid_limit_21": true,
+          "invalid_limit_True": true,
+          "invalid_limit_'5'": true,
+          "invalid_limit_None": true,
+          "reject_bad": true,
+          "reject_large": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "public": false
+      },
+      {
+        "id": "format_json",
+        "source_sha256": "a02d1ca6cd06c55bfc54472d28da4e75361fa06444c8dcdbad2de9a5a45ada12",
+        "original_accepted": true,
+        "accepted": true,
+        "verified_upgrade": true,
+        "behavior_checks": {
+          "registered": true,
+          "schema": true,
+          "object": true,
+          "object_idempotent": true,
+          "array": true,
+          "array_idempotent": true,
+          "scalar": true,
+          "scalar_idempotent": true,
+          "exact_output_limit": true,
+          "preserve_invalid": true,
+          "preserve_utf8": true,
+          "preserve_large": true,
+          "preserve_expanded": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "public": true
+      },
+      {
+        "id": "sha256_file-growth",
+        "source_sha256": "e828b923329efd8a92a39f61d3363e9a8771870c33566af07c49209178d378e7",
+        "verified_upgrade": true,
+        "retained": true,
+        "retained_public": true
+      },
+      {
+        "id": "format_json-growth",
+        "source_sha256": "7b8a770ef7da114258d693baa9fb1fac584df73c888a73ed3c1430bb575e1d0c",
+        "verified_upgrade": true,
+        "retained": true,
+        "retained_public": true
+      }
+    ],
+    "final_artifact_audit": [
+      {
+        "id": "sha256_file-growth",
+        "artifacts_correct": true,
+        "session_status": "paused",
+        "active_state_model_requests": 129,
+        "protocol_repairs": 0,
+        "usage": {
+          "direct": [
+            "format_json",
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "source_unchanged": true
+      },
+      {
+        "id": "format_json-growth",
+        "artifacts_correct": true,
+        "session_status": "completed",
+        "active_state_model_requests": 32,
+        "protocol_repairs": 0,
+        "usage": {
+          "direct": [
+            "format_json",
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "source_unchanged": true
+      }
+    ],
+    "finished": "2026-10-17T18:22:22.413222+00:00"
+  },
+  "extra_csv_audit": {
+    "scope": "Additional independent limit+1 audit; original frozen study verdicts and grader unchanged.",
+    "human-reference": {
+      "run": {
+        "task": "csv-limit-plus-one",
+        "session": "72d23ac9dc504b428662b971b524b8b7",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [
+          {
+            "path": "edge-result.json",
+            "passed": true
+          }
+        ],
+        "steps": 1,
+        "seconds": 3.74,
+        "model_requests": 2,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 0,
+        "read_actions": 0,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "checks": {
+        "1": {
+          "rows": [
+            [
+              "x"
+            ]
+          ],
+          "truncated": true,
+          "passed": true
+        },
+        "5": {
+          "rows": [
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ]
+          ],
+          "truncated": true,
+          "passed": true
+        },
+        "20": {
+          "rows": [
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ]
+          ],
+          "truncated": true,
+          "passed": true
+        }
+      }
+    },
+    "model-candidate": {
+      "run": {
+        "task": "csv-limit-plus-one",
+        "session": "7f4223c42d74488db555367b93ceba9d",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [
+          {
+            "path": "edge-result.json",
+            "passed": true
+          }
+        ],
+        "steps": 1,
+        "seconds": 3.92,
+        "model_requests": 2,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 0,
+        "read_actions": 0,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "checks": {
+        "1": {
+          "rows": [
+            [
+              "x"
+            ]
+          ],
+          "truncated": false,
+          "passed": false
+        },
+        "5": {
+          "rows": [
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ]
+          ],
+          "truncated": false,
+          "passed": false
+        },
+        "20": {
+          "rows": [
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ],
+            [
+              "x"
+            ]
+          ],
+          "truncated": false,
+          "passed": false
+        }
+      }
+    }
+  },
+  "probe_repair": "The first separate CSV edge probe failed to produce its result. Its guest import path was corrected; both the human reference and unchanged candidate were rerun. Original failed probe evidence is retained. No model trial was repeated.",
+  "scope": "One fresh Qwen batch; no deterministic sampling seed, operator candidate edits, promotions or threshold relaxation. Frozen original inference graders and later strengthened regrading are recorded separately."
+}

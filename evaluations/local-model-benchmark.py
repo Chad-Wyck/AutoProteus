@@ -110,7 +110,7 @@ def verify_public(store,source,feature):
         return {'passed':passed,'run':result,'feature_result':feature_result}
     finally:agent.close()
 
-def assess(store,starter,result,feature,directory,feature_check=None,public_check=None):
+def assess(store,starter,result,feature,directory,feature_check=None,public_check=None,regression_check=None):
     session=store.get(result['session'])
     try:source=candidate_source(store,session)
     except Exception as error:return {'accepted':False,'reason':'No complete exported candidate: '+str(error)}
@@ -137,7 +137,7 @@ def assess(store,starter,result,feature,directory,feature_check=None,public_chec
     frozen=freeze_source(store,source,'Candidate '+feature)
     # Runtime edits get checked even when the author prematurely stops or claims failure.
     if runtime_changed:
-        review['regressions']=run_regressions(ROOT,store,frozen)
+        review['regressions']=(regression_check or run_regressions)(ROOT,store,frozen)
         if protected_unchanged:
             review['feature']=(feature_check or verify_feature)(store,frozen,feature)
             review['public']=(public_check or verify_public)(store,frozen,feature)

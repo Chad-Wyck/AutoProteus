@@ -1,0 +1,104 @@
+# Faster local model comparisons
+
+This opt-in host runner leaves the editable seed, app preferences, isolation and
+acceptance rules alone. Start a local inference service using a verified engine
+and checkpoint, then prepare one frozen queue. No downloads or inference happen
+during preparation. All candidate execution and grading use disposable VMs.
+
+Supply a JSON list of profiles. Each profile has a unique lowercase `id`, a
+`config` dictionary using the normal provider settings, and optionally an `assets`
+dictionary mapping model/runtime file paths to expected SHA-256 values. Use
+`provider: "ollama"` for its API, or `provider: "hosted"` for an OpenAI-compatible
+local endpoint such as `http://127.0.0.1:8080/v1`. The latter name describes the
+wire format; this runner accepts loopback endpoints only. Configure sampling
+parameters not exposed by the production adapter on the inference server and
+retain its command/configuration as evidence. Never enable a separate server-side
+agent/tool execution loop.
+
+Example profile (replace the model with an already installed checkpoint):
+
+```json
+[
+  {
+    "id": "local-9b",
+    "config": {
+      "provider": "ollama",
+      "base_url": "http://127.0.0.1:11435",
+      "model": "your-local-model",
+      "protocol": "native",
+      "context_tokens": 65536,
+      "response_tokens": 4096,
+      "temperature": 0.6,
+      "thinking": false,
+      "max_steps": 128,
+      "request_timeout": 300
+    }
+  }
+]
+```
+
+Run with Python from the project directory (on Windows the bundled executable is
+`.runtime/python/python.exe`):
+
+```text
+python evaluations/model_study.py prepare --profiles profiles.json --output .data/model-study --mode full --repeats 1
+python evaluations/model_study.py run --input .data/model-study
+```
+
+Modes:
+
+| Mode | Work | Meaning |
+| --- | --- | --- |
+| `benchmark` | Short and longer-prompt inference requests with bounded output | Compare runtime configurations cheaply; no tool executes and no VM is needed. Not a capability qualification. |
+| `screen` | Benchmark, three basic tasks, hashing and JSON-formatting extensions, then growth from accepted parents | Select promising profiles. CSV remains untested. One repeat by default. |
+| `full` | Benchmark, five basic tasks, all three extensions, then growth from every accepted parent | Full exploratory qualification. Three repeats by default; explicitly select one for a bounded pilot. |
+
+The basic gate is at least four of five passes in full mode, or two of three in
+screen mode. The inference gate checks protocol behaviour, not a minimum speed:
+a slow but compatible CPU model is not rejected for low throughput. Basic tasks
+allow 240 seconds / 8,192 generated tokens. Upgrade tasks retain 30 minutes /
+65,536 generated tokens by default, with the profile's action/response settings.
+Second-pass development and activation share one allowance. Grading time is
+reported separately, and is subtracted from the remaining second-pass wall time.
+The three feature tasks rotate order across repeats. Models stay grouped to
+avoid unnecessary reloads. Larger balanced repetitions are a separate explicit
+full run; screening decisions and untested tasks must remain visible.
+
+Rerun the same `run` command after an interruption. Completed cells are reused
+from their saved results. Launched unfinished cells are recorded as interrupted
+and are never automatically retried. For an explicit additional attempt use
+`--retry CELL_ID`. This adds an attempt directory and preserves the old attempt;
+it does not replace a completed failure or select the best response. A new
+independent repeat requires a fresh plan. An unlaunched dependent cell can start
+after its interrupted prerequisite is explicitly retried successfully.
+
+Frozen plans include source snapshots, prompts, fixtures, tools, runner hashes
+and the VM inventory. Root and reported model identities are checked before and
+after each executed cell, including the final cell. A change during an attempt
+leaves an error record and cannot earn completed-study credit. Changing these
+inputs or the environment requires a new plan.
+Model assets are fully verified at preparation and each launch. Ollama identity
+includes its digest/version when available; compatible endpoints often expose
+only a model name. Without independent asset/server receipts, their live identity
+is weaker and no automatic immutable-runtime claim is made.
+
+Calibration results are reused only with matching seed, trusted files and
+environment after actual appliance integrity verification. Candidate check reuse
+is limited to identical successful scripted checks within one attempt; fresh
+model repetitions receive fresh independent executions. Every cache hit retains
+its original provenance and is not a new test execution. Failures/exceptions are
+not cached as successful checks. Guest state is never shared between attempts.
+
+Reports distinguish attempted, interrupted, untested, verified and fully accepted
+upgrades. All launched attempts, including explicit retries, remain in the queue.
+Provider token/timing coverage remains explicit: partial sums cannot be treated
+as complete costs. Server-reported loading, prompt-processing and generation
+times are extracted when available. VM, guest-tool and orchestration overhead is
+a combined residual, not a measured VM boot time. Nonstreaming APIs do not expose
+true time to first token. Cache reuse is reported only when explicitly measured
+by the provider, never inferred from prompt token totals. Benchmark calls are
+labelled by prompt length; cold/warm cache state is not controlled by this runner.
+
+The endpoint's owner controls service lifecycle. The runner does not stop a
+running app's model server. Keep one GPU model active on memory-constrained
+hardware; lightweight report preparation can proceed while inference runs.

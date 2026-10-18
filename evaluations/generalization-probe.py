@@ -67,6 +67,14 @@ elif feature == 'csv_preview':
                         value['truncated'] is (len(rows) > limit) and (root / name).read_bytes() == raw)
             check(name + '_' + str(limit), verify)
     check('default_limit', lambda: call('many')['rows'] == [['x']] * 5)
+    for limit in (1, 5, 20):
+        raw = b'x\n' * (limit + 1)
+        (root / 'one-extra').write_bytes(raw)
+        def verify_extra(limit=limit, raw=raw):
+            value = call('one-extra', limit=limit)
+            return (value['path'] == 'one-extra' and value['rows'] == [['x']] * limit and
+                    value['truncated'] is True and (root / 'one-extra').read_bytes() == raw)
+        check('one_extra_' + str(limit), verify_extra)
     for limit in (0, 21, True, '5', None):
         check('invalid_limit_' + repr(limit), lambda limit=limit: rejects(lambda: call('many', limit=limit)))
     (root / 'bad').write_bytes(b'\xff')

@@ -282,6 +282,22 @@ def model_response(content, calls, native):
 
 
 class AgentTests(unittest.TestCase):
+    def test_activation_context_uses_runtime_budget_and_preserves_the_prompt_prefix_and_user(self):
+        agent = Agent(ROOT, self.store, self.settings, lambda _: None)
+        try:
+            session = self.store.create('Keep this full original requirement.', 'ollama', 'fixture')
+            config = {**self.settings.values, 'provider':'ollama'}
+            initial = agent.messages(session, config)
+            phase = 'CURRENT ACTIVATION STATE\nThe running version is active.'
+            active = agent.messages(session, {**config,'activation_context':phase})
+            self.assertEqual(active[0], initial[0])
+            self.assertEqual(active[-1]['content'], phase)
+            bounded = agent.messages(session, {**config,'activation_context':'x' * 1000000})
+            self.assertIn(session['task'], [item['content'] for item in bounded])
+            self.assertNotIn('x' * 1000000, [item['content'] for item in bounded])
+        finally:
+            agent.close()
+
     def test_cutoff_retries_a_smaller_action_without_executing_partial_content(self):
         for protocol in ('native', 'json'):
             with self.subTest(protocol=protocol):

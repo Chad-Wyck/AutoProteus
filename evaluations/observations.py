@@ -198,3 +198,50 @@ def call_metrics(events):
             **{name: value['known_sum'] for name, value in metrics.items()},
             'host_history_omissions': [item['data'].get('context', {}).get('host_history_messages_omitted')
                                       for item in events if item['type'] == 'call_start']}
+
+
+def latency_metrics(events):
+    """Extract server timings, never infer cache hits from total input tokens.
+
+    Ollama reports nanoseconds; llama-server reports milliseconds. Missing fields
+    remain partial measurements. Nonstreaming transport cannot measure true TTFT.
+    """
+    calls = call_metrics(events)
+    names = ('model_load_seconds', 'prompt_processing_seconds', 'generation_seconds', 'cached_input_tokens')
+    values = {name: [] for name in names}
+    seen = set()
+    for event in events:
+        key = event.get('call_id')
+        if event['type'] != 'provider_response' or not isinstance(key, str) or key in seen:
+            continue
+        seen.add(key)
+        data = event.get('data', {})
+        frames = data.get('frames', [])
+        payload = next((frame for frame in reversed(frames) if isinstance(frame, dict) and frame.get('done')),
+                       data.get('payload', {}))
+        if not isinstance(payload, dict):
+            continue
+        timing = payload.get('timings') or {}
+        usage = payload.get('usage') or {}
+        details = usage.get('prompt_tokens_details') or {} if isinstance(usage, dict) else {}
+        for name, raw in (('model_load_seconds', payload.get('load_duration')),
+                          ('prompt_processing_seconds', payload.get('prompt_eval_duration')),
+                          ('generation_seconds', payload.get('eval_duration'))):
+            if type(raw) in (int, float) and math.isfinite(raw) and raw >= 0:
+                values[name].append(raw / 1e9)
+        for name, key_ms in (('prompt_processing_seconds', 'prompt_ms'), ('generation_seconds', 'predicted_ms')):
+            # Prefer a provider's native nanosecond field if both exist.
+            native = 'prompt_eval_duration' if name == 'prompt_processing_seconds' else 'eval_duration'
+            raw = timing.get(key_ms) if isinstance(timing, dict) else None
+            if payload.get(native) is None and type(raw) in (int, float) and math.isfinite(raw) and raw >= 0:
+                values[name].append(raw / 1000)
+        cached = details.get('cached_tokens') if isinstance(details, dict) else None
+        if type(cached) is int and cached >= 0:
+            values['cached_input_tokens'].append(cached)
+    metrics = {name: measurement(items, calls['wire_requests'], calls['trace_complete'])
+               for name, items in values.items()}
+    for name in names[:-1]:
+        if metrics[name]['known_sum'] is not None:
+            metrics[name]['known_sum'] = round(metrics[name]['known_sum'], 6)
+    return {'measurements': metrics, 'time_to_first_token': None,
+            'scope': 'Provider-reported phases only; unknown timings and cache hits are not zero.'}

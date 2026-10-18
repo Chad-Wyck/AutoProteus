@@ -15,6 +15,7 @@ GUIDANCE = '''Search for the relevant code, then read useful surrounding section
 Use read_file for small files; read_section positions and lengths count characters. Stop reading when you have enough context.
 For seed upgrades, follow harness/README.md: one implementation, one tool definition, focused tests and a concise explanation.
 Reuse Workspace.read_text and Workspace.write_text for UTF-8 file capabilities. TEXT_CHARACTER_LIMIT counts Unicode characters, not encoded bytes.
+Check requested defaults by omitting optional arguments; the tool schema and implementation must match the user's contract.
 Use todo.txt only when a checklist helps. With terminal access, python3 harness/seed.py check tests the edited copy;
 --tool and --arguments exercise an edited tool. The controller can restart this task with the edited seed and saved checkpoint.
 '''
@@ -175,6 +176,8 @@ class Agent:
                             'Runtime notice: The tool action allowance is exhausted. Finishing or asking for input uses no tool action. '
                             'Finish only if verified; further tool requests pause saved work for Resume. '
                             'Resume keeps the files and gives a fresh allowance; do not rush unverified changes.'})
+        if config.get('activation_context'):
+            runtime.append({'role': 'user', 'content': config['activation_context']})
         original = {"role": "user", "content": session["task"]}
         history = [dict(item) for item in session["messages"]]
         human_texts = {item['text'] for item in session.get('feed', []) if item.get('kind') == 'user'}
