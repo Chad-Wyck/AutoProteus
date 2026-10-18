@@ -103,3 +103,26 @@ class Store:
                 return json.loads(json.dumps(self.get(session_id)))
             return [{key: session[key] for key in ("id", "title", "updated", "status", "provider", "model")}
                     for session in sorted(self.sessions.values(), key=lambda item: item["updated"], reverse=True)]
+
+
+def snapshot_seed(root, session, version):
+    """Copy the starter source once; subsequent edits stay in the workspace."""
+    import hashlib
+    import shutil
+    target = Path(session["workspace"]) / "harness"
+    if target.exists():
+        return
+    target.mkdir()
+    digest = hashlib.sha256()
+    for name in ("autoproteus", "tests", "seed.py", "README.md"):
+        path = Path(root) / name
+        if path.is_dir():
+            shutil.copytree(path, target / name, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        elif path.exists():
+            shutil.copy2(path, target / name)
+    for path in sorted(target.rglob("*")):
+        if path.is_file():
+            digest.update(path.relative_to(target).as_posix().encode())
+            digest.update(path.read_bytes())
+    session["seed_version"] = version
+    session["seed_sha256"] = digest.hexdigest()

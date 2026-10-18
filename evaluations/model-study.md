@@ -1,8 +1,14 @@
 # Faster local model comparisons
 
 Optional paired [workflow experiments](workflow-experiments.md) add edit feedback,
-advisory syntax diagnostics, observation masking and focused phase comparisons.
+advisory syntax diagnostics, observation masking, focused phases and optional
+withheld final inputs.
 They require explicit selection and leave the default seed behavior unchanged.
+
+`model_plan.py` owns preparation, fingerprints and scripted input calibration;
+`model_study.py` owns trial execution, deadlines, queues and reporting. Frozen
+plans include both modules in their trusted inventory. Prepare new plans after
+this refactor; old results and cache receipts remain historical evidence.
 
 This opt-in host runner leaves the editable seed, app preferences, isolation and
 acceptance rules alone. Start a local inference service using a verified engine

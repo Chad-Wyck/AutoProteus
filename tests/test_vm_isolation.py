@@ -325,6 +325,31 @@ class ExtensionTests(unittest.TestCase):
         self.assertGreater(records[0]['tests'], 30)
         self.assertEqual(records[1]['result'], {'edited_copy': True, 'text': 'edited copy'})
 
+    def test_invocation_with_arguments_file_runs_despite_broken_candidate_tests(self):
+        from controller.evaluation import freeze_source, run_task
+        source = seed_files(ROOT)
+        source.append({'path': 'tests/test_deliberately_broken.py', 'data': base64.b64encode(
+            b'raise RuntimeError("Deliberately failing development suite")\n').decode()})
+        probe = '''import json, subprocess
+from pathlib import Path
+Path('arguments.json').write_text(json.dumps({'path':'result.txt','content':'猫\\r\\né'}))
+invoked = subprocess.run(['python3','harness/seed.py','invoke','--tool','write_file','--arguments-file','arguments.json'], capture_output=True, text=True)
+assert invoked.returncode == 0, invoked.stdout + invoked.stderr
+assert json.loads(invoked.stdout)['result']['written'] is True
+assert Path('result.txt').read_bytes() == '猫\\r\\né'.encode()
+checked = subprocess.run(['python3','harness/seed.py','check'], capture_output=True, text=True)
+assert checked.returncode == 1, checked.stdout + checked.stderr
+assert 'Deliberately failing development suite' in checked.stdout
+Path('proof.json').write_text(json.dumps({'invoked':True,'tests_passed':False}))
+'''
+        agent = self.agent([{'action': {'tool': 'run_command', 'arguments': {'command': 'python3 probe.py'}}},
+                            {'status': 'completed'}])
+        result = run_task(agent, self.store, self.settings.values, {'name': 'invoke-broken-suite', 'task': 'Run the scripted guest probe.',
+            'fixtures': {'probe.py': probe}, 'checks': [{'path': 'proof.json', 'json': {'invoked': True, 'tests_passed': False}},
+                                                     {'path': 'result.txt', 'equals': '猫\r\né'}]},
+            freeze_source(self.store, source, 'Hand-written broken-suite fixture'), 90)
+        self.assertTrue(result['passed'], result)
+
     def test_deleted_file_recreated_with_identical_bytes_survives_checkpoint_and_resume(self):
         agent = self.agent([
             {'action': {'tool': 'write_file', 'arguments': {'path': 'lifecycle.txt', 'content': 'same\n'}}},

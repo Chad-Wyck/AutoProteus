@@ -7,11 +7,13 @@ Linux native mode has the account's access and relies on external protection.
 
 Source map:
 
-- `seed.py`: entry point and development-check command.
-- `autoproteus/tools.py`: workspace validation and tool implementations.
+- `seed.py`: entry point, development tests and edited-tool invocation.
+- `autoproteus/tools.py`: workspace validation, shared text helpers and tool dispatch.
+- `autoproteus/file_ops.py`: existing section reading and exact-edit mechanics.
 - `autoproteus/providers.py`: the shared `TOOL_SPECS` definition table.
 - `autoproteus/search.py`, `terminal.py`: existing search and command helpers.
-- `autoproteus/agent.py`, `storage.py`: the running loop and saved state.
+- `autoproteus/agent.py`: the running loop; `storage.py`: saved state and snapshots.
+- `autoproteus/protocol.py`: prompts and action parsing; `context.py`: conversation budgeting.
 - `tests/`: existing regressions and your focused new tests.
 
 ## Add a capability
@@ -50,17 +52,26 @@ Source map:
    `Workspace(Path(directory))`. You do not need to read the full existing
    test suite to use this helper. Generate large fixtures with short expressions
    such as `'猫' * 100000`, rather than writing repeated literal text.
-4. From the task workspace, run:
+4. Try the edited implementation on a disposable example before running the
+   suite. From the task workspace, replace the tool and arguments as needed:
+
+       python3 harness/seed.py invoke --tool read_file --arguments '{"path":"sample.txt"}'
+
+   To avoid shell quoting, write a UTF-8 `arguments.json` containing
+   `{"path":"sample.txt"}` with `write_file`, then run:
+
+       python3 harness/seed.py invoke --tool read_file --arguments-file arguments.json
+
+   `invoke` does not run tests, so it also works while a test needs repair. It
+   allows registered file tools only and keeps workspace path restrictions.
+   Inspect returned values and actual resulting file contents against a simple
+   exact expected example; successful return values alone do not prove a write.
+   Then run the separate suite and repair concrete failures:
 
        python3 harness/seed.py check
 
-   Inspect failures and repair them. With a disposable `sample.txt`, exercise
-   the edited implementation in a new process, replacing the name and arguments
-   with those of your new tool:
-
-       python3 harness/seed.py check --tool read_file --arguments '{"path":"sample.txt"}'
-
-   Inspect the returned values against the expected result. These editable
+   The older `check --tool NAME --arguments JSON` still runs tests first and
+   invokes the tool only if they pass. These editable
    development checks do not replace independent controller checks. Terminal
    access must be enabled to run commands. The check already bounds its output;
    run it directly so a shell pipeline cannot hide its failure status.

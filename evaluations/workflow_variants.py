@@ -4,7 +4,7 @@ import copy
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-TREATMENTS = ('edit-feedback', 'syntax-feedback', 'masked-history', 'phases')
+TREATMENTS = ('edit-feedback', 'syntax-feedback', 'masked-history', 'phases', 'staged-inputs')
 
 
 def replace_once(text, anchor, replacement):
@@ -17,25 +17,25 @@ def variant(source, treatment, keep=8, threshold=512):
     if treatment not in ('baseline', *TREATMENTS):
         raise ValueError('Unknown workflow treatment')
     result = copy.deepcopy(source)
-    if treatment in ('baseline', 'phases'):
+    if treatment in ('baseline', 'phases', 'staged-inputs'):
         return result
     # Validate even when only preparing inert source packs.
     if type(keep) is not int or keep < 1 or type(threshold) is not int or threshold < 1:
         raise ValueError('Mask settings must be positive integers')
     changed = False
     for item in result:
-        if item['path'] == 'autoproteus/tools.py' and treatment in ('edit-feedback', 'syntax-feedback'):
+        if item['path'] == 'autoproteus/file_ops.py' and treatment in ('edit-feedback', 'syntax-feedback'):
             text = base64.b64decode(item['data']).decode('utf-8')
-            anchor = '            return {"path": str(path.relative_to(self.root)), "bytes": len(updated.encode("utf-8")), "replacements": 1}'
-            text = replace_once(text, anchor, '            from .workflow_support import edit_feedback\n'
-                '            return edit_feedback({"path": str(path.relative_to(self.root)), "bytes": len(updated.encode("utf-8")), "replacements": 1},\n'
-                '                                 path, updated, start, len(new), ' + repr(treatment) + ')')
+            anchor = '    return {"path": str(path.relative_to(self.root)), "bytes": len(updated.encode("utf-8")), "replacements": 1}'
+            text = replace_once(text, anchor, '    from .workflow_support import edit_feedback\n'
+                '    return edit_feedback({"path": str(path.relative_to(self.root)), "bytes": len(updated.encode("utf-8")), "replacements": 1},\n'
+                '                         path, updated, start, len(new), ' + repr(treatment) + ')')
             changed = True
-        elif item['path'] == 'autoproteus/agent.py' and treatment == 'masked-history':
+        elif item['path'] == 'autoproteus/context.py' and treatment == 'masked-history':
             text = base64.b64decode(item['data']).decode('utf-8')
-            anchor = '        followup = next((item for item in reversed(history) if human(item)), None)'
-            text = replace_once(text, anchor, '        from .workflow_support import mask_observations\n'
-                f'        history = mask_observations(history, keep={keep}, threshold={threshold}, is_human=human)\n' + anchor)
+            anchor = '    followup = next((item for item in reversed(history) if human(item)), None)'
+            text = replace_once(text, anchor, '    from .workflow_support import mask_observations\n'
+                f'    history = mask_observations(history, keep={keep}, threshold={threshold}, is_human=human)\n' + anchor)
             changed = True
         else:
             continue

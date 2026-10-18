@@ -116,7 +116,7 @@ class ExperienceTests(unittest.TestCase):
                 if item['path'].endswith('.py'):
                     ast.parse(base64.b64decode(item['data']))  # Parse only; never import a candidate.
         usage = {item['path']: base64.b64decode(item['data']).decode() for item in variant(baseline, 'usage')}
-        self.assertIn('budgeter.estimate(plain(items), schemas, config)', usage['autoproteus/agent.py'])
+        self.assertIn('budgeter.estimate(items, schemas, config)', usage['autoproteus/agent.py'])
         self.assertIn('.observe(messages, schemas, config', usage['autoproteus/agent.py'])
 
     def test_inspection_program_parses_without_executing_and_rejects_escape(self):

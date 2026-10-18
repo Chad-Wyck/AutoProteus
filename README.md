@@ -2,7 +2,7 @@
 
 A small, model-agnostic agent that grows its own harness inside a disposable Linux VM. A separate host controller keeps model connections, credentials, the browser interface, safety policy, and recovery outside the editable seed.
 
-Development releases use **v0.x.y**: increase `x` for a feature release and `y` for bug fixes, resetting `y` to zero when `x` increases. Each number can have multiple digits. The current release is **v0.1.0**; a following bug fix would be `v0.1.1`, and the next feature release `v0.2.0`. **v1.0.0** is reserved for launch. See [release notes](CHANGELOG.md).
+Development releases use **v0.x.y**: increase `x` for a feature release and `y` for bug fixes, resetting `y` to zero when `x` increases. Each number can have multiple digits. The current release is **v0.2.0**; a following bug fix would be `v0.2.1`, and the next feature release `v0.3.0`. **v1.0.0** is reserved for launch. See [release notes](CHANGELOG.md).
 
 Incomplete model responses never execute partial actions. Each response, including the free final response, has two repair retries; a successful response resets that allowance. Recognized malformed native arguments and oversized tool batches use the same repair allowance, with the entire rejected response discarded. The controller reserves the same bounded request allowance, so interleaved repairs cannot consume the requests needed to finish. Connection failures, timeouts and repeated invalid responses still stop the run with its checkpoint preserved.
 
@@ -194,6 +194,13 @@ The [v0.1.0 preparation](evaluations/seed-v0.1.0-preparation.md) supersedes thos
 plans with exact calibration requirements, one deadline through all grading
 stages, and complete-path protection for human messages that resemble tool
 results. Qwen and OxCoder live trials remain deferred.
+
+The [v0.2.0 preparation](evaluations/seed-v0.2.0-preparation.md) separates trying
+an edited tool from running its tests, adds JSON argument files and splits the
+core source into modules that fit a whole-file read. An optional workflow study
+withholds final inputs until verified activation; its results remain distinct
+from the strict preservation baseline. Fresh plans supersede earlier preparation;
+the 9B model trials remain deferred.
 
 VM downloads and SHA-256 hashes are pinned in `controller/runtime-lock.json`. Managed Python and Ollama versions, URLs and hashes are pinned in `controller/managed-runtime-lock.json`: Windows Python 3.13.12, Linux Python 3.13.16, and Ollama 0.40.4. Hashes are checked before extraction. Installed private runtimes are inventoried and verified before reuse, including libraries and added or missing files. An old unrecorded engine is replaced through verified setup while preserving model weights; damaged runtimes stop or require verified setup. Independently installed model services remain user-managed and are not covered by these private-runtime manifests.
 

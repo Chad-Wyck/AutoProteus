@@ -22,7 +22,7 @@ class SeedRevisionTests(unittest.TestCase):
         (self.seed / 'autoproteus').mkdir(parents=True)
         (self.seed / 'tests').mkdir()
         shutil.copyfile(ROOT / 'seed.py', self.seed / 'seed.py')
-        for name in ('__init__.py', 'providers.py', 'tools.py', 'search.py', 'terminal.py'):
+        for name in ('__init__.py', 'providers.py', 'tools.py', 'search.py', 'terminal.py', 'file_ops.py'):
             shutil.copyfile(ROOT / 'autoproteus' / name, self.seed / 'autoproteus' / name)
         self.test_file = self.seed / 'tests/test_example.py'
         self.test_file.write_text('import unittest\nclass Example(unittest.TestCase):\n def test_example(self): self.assertTrue(True)\n', encoding='utf-8')
@@ -30,12 +30,37 @@ class SeedRevisionTests(unittest.TestCase):
     def tearDown(self):
         self.temp.cleanup()
 
-    def check(self, *arguments):
-        return subprocess.run([sys.executable, '-B', '-X', 'utf8', str(self.seed / 'seed.py'), 'check', *arguments],
+    def command(self, command, *arguments):
+        return subprocess.run([sys.executable, '-B', '-X', 'utf8', str(self.seed / 'seed.py'), command, *arguments],
                               cwd=self.workspace, stdin=subprocess.DEVNULL, capture_output=True,
                               text=True, encoding='utf-8', timeout=20,
                               env=dict(os.environ, PYTHONDONTWRITEBYTECODE='1'),
                               creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
+
+    def check(self, *arguments):
+        return self.command('check', *arguments)
+
+    def test_invoke_accepts_a_workspace_arguments_file_despite_failing_tests(self):
+        self.test_file.write_text('raise RuntimeError("deliberately broken tests")\n', encoding='utf-8')
+        (self.workspace / 'arguments.json').write_text(json.dumps({'path': 'result.txt', 'content': '猫\r\né'}), encoding='utf-8')
+        result = self.command('invoke', '--tool', 'write_file', '--arguments-file', 'arguments.json')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual((self.workspace / 'result.txt').read_bytes(), '猫\r\né'.encode())
+        self.assertEqual(len(result.stdout.splitlines()), 1)
+        self.assertEqual(self.check().returncode, 1)
+
+    def test_invocation_rejects_escaping_files_invalid_objects_and_terminal_access(self):
+        (self.workspace / 'invalid.json').write_text('[]', encoding='utf-8')
+        (self.workspace / 'large.json').write_text(' ' * 100001, encoding='utf-8')
+        for arguments in [('--arguments-file', '../outside.json'), ('--arguments-file', 'invalid.json'),
+                          ('--arguments-file', 'large.json'), ('--arguments', 'null'),
+                          ('--arguments', '{}', '--arguments-file', 'invalid.json')]:
+            with self.subTest(arguments=arguments):
+                result = self.command('invoke', '--tool', 'write_file', *arguments)
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        result = self.command('invoke', '--tool', 'run_command', '--arguments', '{"command":"echo forbidden"}')
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('TOOL_SPECS', result.stdout)
 
     def test_check_reports_tests_and_invokes_the_edited_registered_tool(self):
         # Deliberately add a tool to the fixture copy, not to the starter modules.

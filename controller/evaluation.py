@@ -52,8 +52,9 @@ def tool_use(events):
                         development.add(value.args[0].value)
                 continue
             helper = len(args) == 4 and args[:2] == ['python3', 'experience/invoke_tool.py']
-            checker = (len(args) == 7 and args[:4] == ['python3', 'harness/seed.py', 'check', '--tool'] and
-                       args[5] == '--arguments')
+            checker = (len(args) == 7 and args[:2] == ['python3', 'harness/seed.py'] and
+                       args[2] in ('check', 'invoke') and args[3] == '--tool' and
+                       args[5] in ('--arguments', '--arguments-file'))
             if not (helper or checker):
                 continue
             expected_check = 'development tool invocation' if helper else 'candidate tool invocation'

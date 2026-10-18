@@ -118,7 +118,7 @@ class WorkflowTests(unittest.TestCase):
             changed = variant(source, name)
             before, after = ({row['path']: row['data'] for row in pack} for pack in (source, changed))
             self.assertTrue(all(after[key] == value for key, value in before.items() if key.startswith('tests/')))
-            if name == 'phases': self.assertEqual(changed, source)
+            if name in ('phases', 'staged-inputs'): self.assertEqual(changed, source)
             else: self.assertIn('autoproteus/workflow_support.py', after)
         self.assertEqual(source_identity(seed_files(ROOT)), fingerprint)
         self.assertEqual(source_identity(source), fingerprint)

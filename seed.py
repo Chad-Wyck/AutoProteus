@@ -6,6 +6,30 @@ def run(root, store, settings, client_factory, session, message=None):
     return agent
 
 
+def invoke(tool, arguments):
+    """Try an edited tool without requiring its development tests to pass."""
+    import json
+    from pathlib import Path
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from autoproteus.providers import tool_definitions, tool_instructions
+    from autoproteus.tools import Workspace
+    try:
+        definitions = {item['function']['name']: item['function'] for item in tool_definitions(False)}
+        if tool == 'finish' or tool not in definitions or tool + ':' not in tool_instructions(False):
+            raise ValueError('The requested workspace tool must be registered in TOOL_SPECS for both protocols')
+        required = definitions[tool]['parameters']['required']
+        if not isinstance(arguments, dict) or any(key not in arguments for key in required):
+            raise ValueError('Supply a JSON argument object containing the required tool arguments')
+        value = Workspace(Path.cwd()).execute(tool, arguments)
+        print(json.dumps({'check': 'candidate tool invocation', 'passed': True, 'tool': tool, 'result': value}, ensure_ascii=True))
+        return 0
+    except Exception as error:
+        print(json.dumps({'check': 'candidate tool invocation', 'passed': False, 'tool': tool,
+                          'error': type(error).__name__ + ': ' + str(error)}, ensure_ascii=True))
+        return 1
+
+
 def check(tool=None, arguments=None):
     """Development feedback from the editable copy, executed only where invoked."""
     import io
@@ -16,8 +40,6 @@ def check(tool=None, arguments=None):
 
     root = Path(__file__).resolve().parent
     sys.path.insert(0, str(root))
-    from autoproteus.providers import tool_definitions, tool_instructions
-    from autoproteus.tools import Workspace
     log = io.StringIO()
     suite = unittest.defaultTestLoader.discover(str(root / 'tests'))
     result = unittest.TextTestRunner(stream=log, verbosity=1, buffer=True).run(suite)
@@ -32,18 +54,7 @@ def check(tool=None, arguments=None):
             print('No tests were discovered. Add tests/test_*.py with unittest test methods.')
         return 1
     if tool:
-        try:
-            definitions = {item['function']['name']: item['function'] for item in tool_definitions(False)}
-            if tool == 'finish' or tool not in definitions or tool + ':' not in tool_instructions(False):
-                raise ValueError('The requested workspace tool must be registered in TOOL_SPECS for both protocols')
-            required = definitions[tool]['parameters']['required']
-            if not isinstance(arguments, dict) or any(key not in arguments for key in required):
-                raise ValueError('Supply a JSON argument object containing the required tool arguments')
-            value = Workspace(Path.cwd()).execute(tool, arguments)
-            print(json.dumps({'check': 'candidate tool invocation', 'passed': True, 'tool': tool, 'result': value}, ensure_ascii=True))
-        except Exception as error:
-            print(json.dumps({'check': 'candidate tool invocation', 'passed': False, 'tool': tool,
-                              'error': type(error).__name__ + ': ' + str(error)}, ensure_ascii=True))
+        if invoke(tool, arguments):
             return 1
     print('These are development checks, not independent upgrade approval. Inspect the result and test boundary cases.')
     return 0
@@ -52,11 +63,26 @@ def check(tool=None, arguments=None):
 if __name__ == '__main__':
     import argparse
     import json
-    parser = argparse.ArgumentParser(description='Check the edited seed in its current environment.')
-    parser.add_argument('command', choices=['check'])
-    parser.add_argument('--tool', help='Also invoke one registered file tool from this edited copy, in the current workspace')
-    parser.add_argument('--arguments', type=json.loads, help='JSON object for --tool; use a disposable test file')
+    parser = argparse.ArgumentParser(description='Test or invoke the edited seed in its current environment.')
+    parser.add_argument('command', choices=['check', 'invoke'])
+    parser.add_argument('--tool', help='Registered file tool from this edited copy, in the current workspace')
+    arguments = parser.add_mutually_exclusive_group()
+    arguments.add_argument('--arguments', type=json.loads, help='JSON object for --tool; use a disposable test file')
+    arguments.add_argument('--arguments-file', help='Workspace UTF-8 JSON argument object, at most 100000 characters')
     args = parser.parse_args()
+    if args.arguments_file:
+        from pathlib import Path
+        import sys
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from autoproteus.tools import Workspace
+        try:
+            args.arguments = json.loads(Workspace(Path.cwd()).read_text(args.arguments_file))
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
     if bool(args.tool) != (args.arguments is not None):
-        parser.error('--tool and --arguments must be supplied together')
-    raise SystemExit(check(args.tool, args.arguments))
+        parser.error('--tool and either --arguments or --arguments-file must be supplied together')
+    if args.command == 'invoke' and not args.tool:
+        parser.error('invoke requires --tool and arguments')
+    if args.tool and not isinstance(args.arguments, dict):
+        parser.error('Tool arguments must be a JSON object')
+    raise SystemExit(invoke(args.tool, args.arguments) if args.command == 'invoke' else check(args.tool, args.arguments))

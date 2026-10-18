@@ -7,6 +7,7 @@ Connect already prepared local inference services. This runner downloads nothing
 changes no app preferences and executes candidates only in disposable VMs.
 """
 import argparse
+import base64
 import copy
 import hashlib
 import json
@@ -35,131 +36,7 @@ from workflow_variants import TREATMENTS, variant, DEVELOPMENT_FOCUS, USE_FOCUS
 import generalization as study
 
 
-def private(path):
-    path = (ROOT / path).resolve()
-    if not path.is_relative_to((ROOT / '.data').resolve()):
-        raise ValueError('Study outputs must stay inside .data')
-    return path
-
-
-def trusted_files():
-    paths = list((ROOT / 'controller').glob('*.py'))
-    paths += [ROOT / name for name in ('guest/worker.py', 'controller/runtime-lock.json',
-        'controller/managed-runtime-lock.json', 'tests/test_seed.py', 'tests/test_text_helpers.py',
-        'evaluations/model_study.py', 'evaluations/study_support.py', 'evaluations/generalization.py',
-        'evaluations/grader_faults.py', 'evaluations/workflow_variants.py', 'evaluations/workflow_support.py',
-        'evaluations/generalization-probe.py', 'evaluations/local-model-benchmark.py',
-        'evaluations/local-feature-probe.py', 'evaluations/local-upgrade-tasks.json',
-        'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/invoke_tool.py', 'evaluations/tasks.json')]
-    return {p.relative_to(ROOT).as_posix(): file_identity(p) for p in paths}
-
-
-def environment():
-    # Appliance.verify checks the installed bytes against this complete inventory
-    # before any cached calibration can be reused.
-    record = ROOT / '.runtime/isolation/installed.json'
-    return {'platform': platform.platform(), 'machine': platform.machine(),
-            'python': platform.python_version(), 'root': str(ROOT),
-            'appliance_inventory_sha256': file_identity(record) if record.exists() else None}
-
-
-def prepare(args):
-    output = private(args.output)
-    if output.exists():
-        raise ValueError('Prepare into a new directory; existing evidence is preserved')
-    profiles = json.loads(Path(args.profiles).read_text(encoding='utf-8'))
-    if not isinstance(profiles, list) or not profiles:
-        raise ValueError('Supply a nonempty list of profiles')
-    seen = set()
-    for profile in profiles:
-        slug = profile['id']
-        if not isinstance(slug, str) or not slug or len(slug) > 60 or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789-_' for c in slug) or slug in seen:
-            raise ValueError('Profiles need unique lowercase IDs')
-        seen.add(slug)
-        config = profile['config'] = {**DEFAULTS, 'configured': True, 'terminal': True, **profile['config']}
-        if config['provider'] not in ('ollama', 'hosted') or urlparse(config['base_url']).hostname not in ('localhost', '127.0.0.1', '::1'):
-            raise ValueError('This runner accepts local inference endpoints only')
-        if config['response_tokens'] >= config['context_tokens']:
-            raise ValueError('Response allowance must be smaller than context')
-        for path, digest in profile.get('assets', {}).items():
-            if file_identity(path) != digest:
-                raise ValueError('Profile asset failed verification: ' + path)
-    source = seed_files(ROOT)
-    plan = {'created': now(), 'mode': args.mode, 'repeats': args.repeats if args.repeats is not None else (3 if args.mode == 'full' else 1),
-            'source': source, 'source_sha256': source_identity(source), 'profiles': profiles,
-            'trusted_sha256': trusted_files(), 'environment': environment(),
-            'contracts': study.CONTRACTS, 'recipe': study.RECIPE,
-            'tasks': json.loads((ROOT / 'evaluations/tasks.json').read_text(encoding='utf-8')),
-            'tools': tool_definitions(True),
-            'invoke_tool': (ROOT / 'evaluations/invoke_tool.py').read_text(encoding='utf-8'),
-            'deadline': args.timeout, 'generated_tokens': args.output_token_budget,
-            'ordinary_deadline': 240, 'ordinary_generated_tokens': 8192,
-            'ordinary_tasks': ['exact-file', 'precise-edit', 'recovery', 'unicode', 'bug-fix'],
-            'upgrade_tasks': (list(study.CONTRACTS) if args.mode == 'full' else
-                              ['sha256_file', 'format_json'] if args.mode == 'screen' else []),
-            'scope': 'Screens select profiles for qualification; incomplete screens are not model rankings. '
-                     'Each accepted first upgrade receives one fresh second-extension task. '
-                     'Retries, untested cells, cached checks and infrastructure failures are recorded separately.'}
-    experiment = getattr(args, 'experiment', None)
-    if experiment:
-        if args.mode != 'full':
-            raise ValueError('Paired workflow experiments require full mode')
-        plan['experiment'] = experiment
-        plan['mask_settings'] = {'keep': getattr(args, 'mask_keep', 8), 'threshold': getattr(args, 'mask_threshold', 512)}
-        plan['variants'] = {name: variant(source, name, **plan['mask_settings']) for name in ('baseline', experiment)}
-        plan['scope'] += ' Paired opt-in treatment; original default seed remains unchanged. Success and matched-success costs are separate.'
-        parent_path = getattr(args, 'parent_source', None)
-        parent_tool = getattr(args, 'parent_tool', None)
-        if bool(parent_path) != bool(parent_tool):
-            raise ValueError('Provide both --parent-source and --parent-tool')
-        if parent_path:
-            if experiment != 'phases' or parent_tool not in study.CONTRACTS:
-                raise ValueError('A supplied parent is supported only for the phase comparison')
-            parent = json.loads(Path(parent_path).read_text(encoding='utf-8'))
-            # Inert bytes only; actual regression/feature/public checks precede inference.
-            source_identity(parent)
-            plan['parent'] = {'source': parent, 'tool': parent_tool, 'sha256': source_identity(parent),
-                              'provenance': str(Path(parent_path).resolve()), 'supplied_parent': True}
-        elif experiment == 'phases':
-            raise ValueError('Phase comparison requires one exact supplied parent and --parent-tool; it is independently checked before trials')
-        reuse_path = getattr(args, 'reuse_task', None)
-        if reuse_path:
-            if not plan.get('parent'):
-                raise ValueError('--reuse-task requires the phase comparison and a supplied parent')
-            task = json.loads(Path(reuse_path).read_text(encoding='utf-8'))
-            required = task.get('required_tools')
-            if (not isinstance(required, list) or not required or any(name not in study.CONTRACTS for name in required)
-                    or not isinstance(task.get('checks'), list) or not task['checks'] or not isinstance(task.get('task'), str)):
-                raise ValueError('Reuse task needs a task, nonempty checks and required_tools from the known contracts')
-            plan['reuse_task'] = task
-    elif any(getattr(args, name, None) for name in ('parent_source', 'parent_tool', 'reuse_task')):
-        raise ValueError('Parent/reuse options require --experiment phases')
-    task_pack = getattr(args, 'task_pack', None)
-    if task_pack:
-        tasks = json.loads(Path(task_pack).read_text(encoding='utf-8'))
-        if (not isinstance(tasks, list) or not tasks or any(not isinstance(task.get('name'), str) or
-                not task.get('task') or not task.get('checks') for task in tasks) or
-                len({task['name'] for task in tasks}) != len(tasks)):
-            raise ValueError('Task pack needs uniquely named tasks with instructions and independent checks')
-        plan['tasks'], plan['ordinary_tasks'] = tasks, [task['name'] for task in tasks]
-        plan['task_pack'] = {'path': str(Path(task_pack).resolve()), 'sha256': file_identity(task_pack)}
-    if plan['repeats'] < 1 or args.timeout < 1 or args.output_token_budget < 1:
-        raise ValueError('Repeat and budget values must be positive')
-    output.mkdir(parents=True)
-    atomic_json(output / 'plan.json', plan)
-    (output / 'plan.sha256').write_text(identity(plan), encoding='ascii')
-    for name in plan['trusted_sha256']:
-        target = output / 'trusted-runner' / name
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes((ROOT / name).read_bytes())
-    print('Prepared', args.mode, 'with', len(profiles), 'profiles and', plan['repeats'], 'repeat(s). No inference started.', flush=True)
-
-
-def check(plan):
-    if source_identity(seed_files(ROOT)) != plan['source_sha256'] or trusted_files() != plan['trusted_sha256']:
-        raise ValueError('Seed or trusted runner changed; prepare a new plan')
-    if environment() != plan['environment']:
-        raise ValueError('Execution environment changed; prepare a new plan')
+from model_plan import private, trusted_files, environment, prepare, check, workflow_requirements, growth_feature, calibrate
 
 
 class Checks:
@@ -243,6 +120,17 @@ def benchmark(folder, config, plan):
 def trial(folder, task, source, config, plan, feature=None, earlier=None):
     task = copy.deepcopy(task)
     original_task = copy.deepcopy(task)
+    staged = plan.get('treatment') == 'staged-inputs'
+    final_input = 'inventory.json'
+    if staged:
+        if not feature or earlier not in ('sha256_file', 'format_json') or final_input not in task.get('fixtures', {}):
+            raise ValueError('Staged inputs require a supplied JSON/hash parent and a final inventory fixture')
+        del task['fixtures'][final_input]
+        task['fixtures']['development/example.json'] = '{"example":1,"note":"é"}'
+        task['task'] += ('\nThe controller is withholding inventory.json until independent verification and activation. '
+            'It is not available during development; do not create it or audit.json yet. '
+            'Use development/example.json and other disposable examples to try the edited tool, '
+            'inspect exact file contents, repair tests, then request activation. Final use remains required.')
     reuse_only = not feature and bool(plan.get('reuse_task')) and task['name'] == plan['reuse_task']['name']
     focused = plan.get('treatment') == 'phases' and earlier is not None
     if focused:
@@ -266,6 +154,7 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
     checks = Checks(folder, plan, deadline=deadline)
     timings = Timings()
     row = {'task': task['name'], 'earlier': earlier, 'added': feature, 'operator_candidate_repairs': [],
+           'input_protocol': 'withheld_final_input' if staged else 'strict_preserve_visible_input',
            'treatment': plan.get('treatment', 'baseline'), 'stages': {'activated': False},
            'experimental_instructions': [DEVELOPMENT_FOCUS, USE_FOCUS] if focused else
                                        [USE_FOCUS] if reuse_only and plan.get('treatment') == 'phases' else []}
@@ -299,10 +188,17 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
                 row['stages']['independently_verified'] = row['verified_extension']
                 row['stages']['submitted_source_sha256'] = source_identity(edited)
                 artifact = 'sample.txt' if earlier == 'csv_preview' else 'inventory.json'
-                try:
-                    row['stage_order_preserved'] = Artifacts(store, session).read(artifact) == task['fixtures'][artifact].encode()
-                except (OSError, ValueError):
-                    row['stage_order_preserved'] = False
+                files = Artifacts(store, session)
+                if staged:
+                    row['stage_order_preserved'] = not any(name in session.get('artifacts', {}) for name in (artifact, 'audit.json'))
+                    row['withheld_input'] = {'path': artifact, 'delivered': False,
+                        'sha256': hashlib.sha256(original_task['fixtures'][artifact].encode()).hexdigest(),
+                        'scope': 'Final bytes withheld; no credit for preserving a visible original input.'}
+                else:
+                    try:
+                        row['stage_order_preserved'] = files.read(artifact) == task['fixtures'][artifact].encode()
+                    except (OSError, ValueError):
+                        row['stage_order_preserved'] = False
                 retained = row['retained']['passed'] and row['retained_public']['passed']
                 remaining = deadline - time.monotonic()
                 remaining_actions = max(0, config['max_steps'] - session['steps'])
@@ -317,14 +213,22 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
                         if focused:
                             session['candidate_from'] = session['id']
                             agent.start(session, USE_FOCUS, candidate=session, handoff='concise', deadline=deadline)
+                        elif staged:
+                            files.put(artifact, base64.b64encode(original_task['fixtures'][artifact].encode()).decode())
+                            files.checkpoint([*session.get('artifacts', {}), artifact])
+                            row['withheld_input']['delivered'] = True
+                            session['candidate_from'] = session['id']
+                            agent.start(session, 'The final inventory.json is now available. Use the activated tools to complete '
+                                'the original task and verify inventory.json and audit.json before finishing.',
+                                candidate=session, handoff='concise', deadline=deadline)
                         else:
                             agent.restart_seed(session, handoff='concise', deadline=deadline)
                         row['stages']['activated'] = True
                         # Synchronous activation/setup consumes wall time too.
                         row['final'] = study.wait(agent, session, max(0, deadline - time.monotonic()))
                     row['final_source_unchanged'] = source_identity(candidate_source(store, session)) == source_identity(edited)
-                    expected = task['fixtures'][artifact] if earlier == 'csv_preview' else json.dumps(
-                        json.loads(task['fixtures'][artifact]), ensure_ascii=False, sort_keys=True, indent=2) + '\n'
+                    expected = original_task['fixtures'][artifact] if earlier == 'csv_preview' else json.dumps(
+                        json.loads(original_task['fixtures'][artifact]), ensure_ascii=False, sort_keys=True, indent=2) + '\n'
                     try:
                         raw = Artifacts(store, session).read(artifact)
                         receipt = json.loads(Artifacts(store, session).read('audit.json'))
@@ -367,10 +271,6 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
             if measured['complete'] else None)
         atomic_json(folder / 'result.json', row)
     return row
-
-
-def growth_feature(parent):
-    return 'sha256_file' if parent in ('format_json', 'csv_preview') else 'format_json'
 
 
 def growth_task(parent, plan):
@@ -478,21 +378,15 @@ def comparison(queue, plan):
                 'status': 'complete' if complete else 'partial' if values else 'unavailable',
                 'expected_attempts': len(costs), 'complete_attempts': sum(row[key]['complete'] for row in costs)}
     return {'variants': groups, 'matched_original_successes': matched,
+            'input_protocols': ({'baseline': 'strict_preserve_visible_input', 'staged-inputs': 'withheld_final_input'}
+                if plan.get('experiment') == 'staged-inputs' else {'all': 'strict_preserve_visible_input'}),
+            'interpretation': ('Withheld-input success does not establish compliance with preserving visible final inputs. '
+                'Report each protocol separately; this comparison includes input delivery instructions.'
+                if plan.get('experiment') == 'staged-inputs' else 'Shared input protocol; report independent successes before costs.'),
             'expense_scope': 'All attempts retained with full costs in queue/trials, including failed and interrupted work; matched pairs use original attempts only.',
             'supplied_parent': bool(plan.get('parent')),
             'kind': 'unchanged_capability_reuse' if plan.get('reuse_task') else 'supplied_parent_growth' if plan.get('parent') else 'first_and_second_upgrades'}
 
-
-def workflow_requirements(plan):
-    """One description drives both cache identity and the checks it represents."""
-    parent = plan.get('parent', {}).get('tool')
-    reuse = bool(plan.get('reuse_task'))
-    required = set(plan.get('reuse_task', {}).get('required_tools', []))
-    if parent:
-        required.add(parent)
-    return {'experiment': plan['experiment'], 'mode': 'reuse' if reuse else 'growth',
-            'parent_tool': parent, 'required_existing_tools': sorted(required),
-            'required_absent_tool': growth_feature(parent) if parent and not reuse else None}
 
 
 def run(args):
@@ -523,64 +417,7 @@ def _run(args):
         if not previous or previous['state'] not in ('interrupted', 'error'):
             raise ValueError('--retry requires an existing interrupted/error cell: ' + cell_id)
     cache = ResultCache(ROOT / '.data/study-cache/calibration')
-    def calibration():
-        folder = output / 'grader-calibration'
-        suffix = 1
-        while folder.exists():
-            suffix += 1
-            folder = output / ('grader-calibration-%03d' % suffix)
-        study.self_check(folder, plan['source'])
-        return {'passed': True, 'evidence': str(folder),
-                'report_sha256': file_identity(folder / 'calibration.json'),
-                'report': json.loads((folder / 'calibration.json').read_text(encoding='utf-8'))}
-    def valid_calibration(row):
-        try:
-            return row.get('passed') is True and file_identity(Path(row['evidence']) / 'calibration.json') == row['report_sha256']
-        except (OSError, KeyError, TypeError):
-            return False
-    if plan['mode'] != 'benchmark':
-        value, receipt = cache.run({'source': plan['source_sha256'], 'trusted': plan['trusted_sha256'],
-                                    'environment': plan['environment'], 'kind': 'generalization-calibration'},
-                                   calibration, valid_calibration)
-        atomic_json(output / 'calibration-receipt.json', {'cache': receipt, 'result': value})
-    if plan.get('experiment'):
-        # This calibration is tied to the exact copied input, never to a model's
-        # claim of readiness. A supplied parent earns no first-upgrade credit.
-        requirements = workflow_requirements(plan)
-        inputs = {'source': plan.get('parent', {}).get('sha256', plan['source_sha256']),
-                  'variants': {key: source_identity(value) for key, value in plan['variants'].items()},
-                  'trusted': plan['trusted_sha256'], 'environment': plan['environment'], 'kind': 'workflow-inputs',
-                  'requirements': requirements}
-        def calibrate_inputs():
-            store = Store(output / 'input-calibration/sessions')
-            results = {}
-            for name, source in plan['variants'].items():
-                source = plan['parent']['source'] if plan.get('parent') else source
-                frozen = freeze_source(store, source, 'Exact workflow input ' + name)
-                results[name] = {'regressions': run_regressions(ROOT, store, frozen)}
-                if plan.get('parent'):
-                    for feature in requirements['required_existing_tools']:
-                        results[name].update({feature: study.verify_feature(store, frozen, feature),
-                                             feature + '_public': study.verify_public(store, frozen, feature)})
-                    added = requirements['required_absent_tool']
-                    if added:
-                        absent = study.verify_feature(store, frozen, added)
-                        cases = absent.get('probe', {}).get('checks', {})
-                        results[name]['new_tool_absent'] = {'passed': not absent['passed'] and cases.get('registered') is False,
-                                                           'evidence': absent}
-                atomic_json(output / 'input-calibration.json', results)
-                if not all(row['passed'] for row in results[name].values()):
-                    raise ValueError('Workflow input failed independent checks: ' + name)
-            return {'passed': True, 'requirements': requirements, 'results': results, 'evidence': str(output / 'input-calibration.json'),
-                    'report_sha256': file_identity(output / 'input-calibration.json')}
-        def valid_inputs(row):
-            try:
-                return (row.get('passed') is True and row.get('requirements') == requirements and
-                        file_identity(row['evidence']) == row['report_sha256'])
-            except (OSError, TypeError, KeyError):
-                return False
-        value, receipt = cache.run(inputs, calibrate_inputs, valid_inputs)
-        atomic_json(output / 'input-calibration-receipt.json', {'result': value, 'cache': receipt})
+    calibrate(plan, output, cache, study, run_regressions)
     if getattr(args, 'check_only', False):
         check(plan)
         atomic_json(output / 'check-only.json', {'passed': True, 'plan_sha256': identity(plan), 'finished': now(),

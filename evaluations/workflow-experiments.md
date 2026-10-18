@@ -1,7 +1,7 @@
 # v0.0.16: optional interaction and completion experiments
 
-For current preparation and corrected calibration/deadline behavior, see
-[v0.1.0](seed-v0.1.0-preparation.md). Earlier plan receipts are historical; prepare
+For current preparation and the source refactor, see
+[v0.2.0](seed-v0.2.0-preparation.md). Earlier plan receipts are historical; prepare
 fresh plans against the current controller before live inference.
 
 These experiments are prepared for later testing. No live-model benefit is
@@ -108,6 +108,30 @@ tools. It is reported separately and never counted as an added capability.
 Then run the fresh second-extension comparison without `--reuse-task`.
 
 ## Verification and practical tasks
+
+### Optional withheld final inputs
+
+Select `--experiment staged-inputs --parent-source candidate-source.json
+--parent-tool sha256_file` (or `format_json`) to compare the strict visible-input
+baseline with a different input-delivery protocol. Both arms use the same exact
+independently checked supplied parent and shared budgets. Three repeats produce
+six second-extension attempts; supplied parents earn no first-upgrade credit.
+
+The treatment supplies a disposable `development/example.json`; final
+`inventory.json` bytes stay outside the guest. After implementation, regression,
+feature, public-call and retention checks pass, the controller checks that no
+final input or audit has been submitted prematurely. It copies the final input
+through the existing artifact boundary and activates the checked source in a
+fresh VM. Exact final bytes, receipt, explicit completion and actual use of both
+capabilities are still required. Failed checks or exhausted allowances prevent
+delivery and activation. No runtime permissions change.
+
+This measures whether separating development from final use helps completion.
+It includes input-delivery instructions and does **not** demonstrate compliance
+with preserving a visible input. Reports label the two input protocols separately;
+do not pool them as the same strict success rate. CSV parents and reuse-only
+tasks are rejected for this experiment. The phase, navigation and feedback studies
+remain separate comparisons. Do not launch all of them as one testing batch.
 
 The main grader calibration now includes an explicit fault matrix: omitted
 defaults, required optional schema arguments, booleans accepted as integers,

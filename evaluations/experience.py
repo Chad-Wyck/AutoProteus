@@ -49,11 +49,10 @@ def variant(source, name):
         else:
             if item['path'] == 'autoproteus/agent.py':
                 text = text.replace('        self.lock = threading.Lock()', '        self.lock = threading.Lock()\n        self.usage_budgets = {}')
-                text = text.replace("        allowance = max(0, config['context_tokens']", "        from .usage_budget import UsageBudget\n"
+                text = text.replace('        return build_messages(session, config, steps)',
+                    "        from .usage_budget import UsageBudget\n"
                     "        budgeter = self.usage_budgets.setdefault(session['id'], UsageBudget())\n"
-                    "        allowance = max(0, config['context_tokens']")
-                text = text.replace("            return len(json.dumps({'messages': plain(items), 'tools': schemas}, ensure_ascii=False).encode('utf-8'))",
-                    '            return budgeter.estimate(plain(items), schemas, config) * 2')
+                    "        return build_messages(session, config, steps, measure=lambda items, schemas: budgeter.estimate(items, schemas, config) * 2)")
                 text = text.replace('                if cancel.is_set():\n                    raise Cancelled()\n                self.store.event(session, "model_response", response)',
                     '                if cancel.is_set():\n                    raise Cancelled()\n'
                     '                schemas = tool_definitions(config["terminal"]) if config.get("protocol", "native") == "native" and config["provider"] != "demo" else []\n'
