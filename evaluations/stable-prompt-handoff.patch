@@ -1,0 +1,210 @@
+diff --git a/README.md b/README.md
+index b820fbe..31d2b67 100644
+--- a/README.md
++++ b/README.md
+@@ -91,7 +91,7 @@ The browser interface and `controller/` are maintained by the human developer. G
+ 
+ From the task workspace, `python3 harness/seed.py check` runs the edited copy's tests and returns a compact count and useful failure traces. Run it early and after changes. Add `--tool TOOL_NAME --arguments '{"path":"sample.txt"}'` with the actual tool's arguments to check registration in both descriptions and invoke the edited implementation on a disposable sample file. This runs in a new guest process; edited tools do not replace those in the running loop. Check returned values and Unicode/CRLF, exact-limit and rejected-write behavior. Editable development checks support repair during a task; protected regressions and independent feature checks still determine acceptance.
+ 
+-New installations default to **128 tool actions per run**, a **32,768-token context**, **8,192 response tokens**, and a 300-second model timeout. Saved preferences are preserved. In Settings, **Allow longer upgrades** selects these allowances; review and save to apply them to an existing installation. Limits remain individually adjustable. Compare 4,096 versus 8,192 response tokens at the same context and action allowance before attributing a gain to either limit. Larger supported contexts still need memory and performance measurements on the selected hardware. The model sees actions used and remaining before each request. Failed calls and each tool in a batch count; finishing is free, with one final opportunity to inspect the last result and report completion. A further tool request at zero pauses the saved task. Resume keeps its files and gives a fresh allowance. Host VM, time and request limits remain outside the editable seed.
++New installations default to **128 tool actions per run**, a **32,768-token context**, **8,192 response tokens**, and a 300-second model timeout. Saved preferences are preserved. In Settings, **Allow longer upgrades** selects these allowances; review and save to apply them to an existing installation. Limits remain individually adjustable. Compare 4,096 versus 8,192 response tokens at the same context and action allowance before attributing a gain to either limit. Larger supported contexts still need memory and performance measurements on the selected hardware. Opening instructions stay stable across actions; current checklist state and an exhaustion notice belong after the conversation history. This runtime context is included when it fits without displacing user instructions. Failed calls and each tool in a batch count; finishing is free, with one final opportunity to inspect the last result and report completion. A further tool request at zero pauses the saved task. Resume keeps its files and gives a fresh allowance. Host VM, time and request limits remain outside the editable seed.
+ 
+ The seed's `TOOL_SPECS` table supplies both native and JSON descriptions. To add a tool, implement its dispatch, add one table entry and focused tests, then follow the short recipe in the copied `harness/README.md`. Give a concise final explanation and update usage documentation where needed; a separate `feature.md` report is not required. Upgrade evaluators assemble filenames, diffs, fingerprints and recorded command results on the host. Guest commands remain diagnostic; protected regressions and independent feature checks remain required. The host forwards descriptions as data and never imports the editable modules.
+ 
+diff --git a/SEED.md b/SEED.md
+index e536520..b140749 100644
+--- a/SEED.md
++++ b/SEED.md
+@@ -65,6 +65,9 @@ paths, snippets and character positions.
+ up to three locations and a recovery hint without changing bytes. Writes and
+ edits are limited to 100,000 characters. Validate before writing.
+ 
+-The prompt shows the actions used and remaining. Failed calls and each tool in
+-a batch count; finishing is free. Resume preserves the checkpoint and grants a
+-fresh allowance. Report unfinished work honestly rather than rushing to finish.
++The seed enforces the action allowance and adds an exhaustion notice when it
++fits without displacing user instructions. Failed calls and each tool in a batch
++count; finishing is free.
++Resume preserves the checkpoint and grants a fresh allowance. Report unfinished
++work honestly rather than rushing to finish. Opening instructions stay stable;
++the current checklist, when present, appears after the conversation history.
+diff --git a/autoproteus/agent.py b/autoproteus/agent.py
+index ad5dfe4..1194aa0 100644
+--- a/autoproteus/agent.py
++++ b/autoproteus/agent.py
+@@ -166,11 +166,14 @@ class Agent:
+                        if session.get('execution_mode') == 'native' else
+                        "Commands run inside a disposable Linux VM. Host files, the controller and general network access are unavailable.")
+         system = prompt.replace("{tools}", tool_instructions(config['terminal'])).replace("{terminal}", terminal).replace('{environment}', environment).replace('{guidance}', GUIDANCE)
+-        remaining = max(0, config['max_steps'] - steps)
+-        system += (f"\nAction allowance this run: {steps}/{config['max_steps']} tool actions used; {remaining} remaining. "
+-                   "Each attempted tool call counts, including failed calls and each call in a batch. "
+-                   "Finishing or asking for input uses no tool action. At zero, finish only if verified; further tool requests pause saved work for Resume. "
+-                   "Resume keeps the files and gives a fresh allowance; do not rush unverified changes.")
++        # Keep the opening prefix stable so local runtimes can reuse its cache.
++        # _run still enforces the action cap, including failed calls.
++        runtime = []
++        if steps >= config['max_steps']:
++            runtime.append({'role': 'user', 'content':
++                            'Runtime notice: The tool action allowance is exhausted. Finishing or asking for input uses no tool action. '
++                            'Finish only if verified; further tool requests pause saved work for Resume. '
++                            'Resume keeps the files and gives a fresh allowance; do not rush unverified changes.'})
+         original = {"role": "user", "content": session["task"]}
+         history = [dict(item) for item in session["messages"]]
+         human_texts = {item['text'] for item in session.get('feed', []) if item.get('kind') == 'user'}
+@@ -201,21 +204,25 @@ class Agent:
+             return len(json.dumps({'messages': plain(items), 'tools': schemas}, ensure_ascii=False).encode('utf-8'))
+         fixed = [{"role": "system", "content": system}, original]
+         if config['provider'] == 'demo':
+-            return plain([{"role": "system", "content": system + ("\nCurrent todo.txt:\n" + todo if todo else '')}, original, *history])
++            todo_state = [{'role': 'user', 'content': 'Current todo.txt:\n' + todo}] if todo else []
++            return plain([*fixed, *history, *todo_state, *runtime])
+         if size([fixed[0], *required]) > allowance:
+             raise ValueError('The task, follow-up and tool instructions exceed the configured context estimate. Shorten the request or increase the context window in Settings.')
++        # A notice must not prevent the free finish request or displace user text.
++        if runtime and size([fixed[0], *required, *runtime]) > allowance:
++            runtime = []
+         if todo:
+-            with_todo = [{"role": "system", "content": system + "\nCurrent todo.txt:\n" + todo}, *required]
+-            if size(with_todo) <= allowance:
+-                fixed[0] = with_todo[0]
++            todo_state = {'role': 'user', 'content': 'Current todo.txt:\n' + todo}
++            if size([fixed[0], *required, todo_state, *runtime]) <= allowance:
++                runtime.insert(0, todo_state)
+         # Keep recent complete action/result groups. The full journal stays saved.
+-        budget = allowance - size([fixed[0], *required])
+-        while len(history) > 2 and size(fixed + history) > allowance:
++        budget = allowance - size([fixed[0], *required, *runtime])
++        while len(history) > 2 and size(fixed + history + runtime) > allowance:
+             index = 1 if history[0] == followup else 0
+             history.pop(index)
+             while len(history) > index and history[index] != followup and history[index]['role'] != 'assistant':
+                 history.pop(index)
+-        if history and size(fixed + history) > allowance:
++        if history and size(fixed + history + runtime) > allowance:
+             limit = max(1, budget // max(1, len(history)) // 2)
+             shortened = []
+             for item in history:
+@@ -239,12 +246,12 @@ class Agent:
+                 else:
+                     shortened.append({'role': 'user', 'content': 'A large prior action was omitted. Inspect current files before continuing.', 'origin': 'internal'})
+             history = shortened
+-        while history and size(fixed + history) > allowance:
++        while history and size(fixed + history + runtime) > allowance:
+             index = 1 if history[0] == followup else 0
+             history.pop(index)
+             if len(history) > index and history[index]['content'].startswith('ACTION RESULT\n'):
+                 history.pop(index)
+-        return plain([fixed[0], original, *history])
++        return plain([fixed[0], original, *history, *runtime])
+ 
+     def _run(self, session, config, client, cancel):
+         workspace = Workspace(Path(session["workspace"]), config["terminal"], cancel, config["command_timeout"])
+diff --git a/tests/test_seed.py b/tests/test_seed.py
+index cb90e7b..61b6bf5 100644
+--- a/tests/test_seed.py
++++ b/tests/test_seed.py
+@@ -340,14 +340,14 @@ class AgentTests(unittest.TestCase):
+         finally:
+             agent.close()
+ 
+-    def test_finish_after_last_action_is_free_and_budget_reaches_both_protocols(self):
++    def test_finish_after_last_action_is_free_with_stable_opening_in_both_protocols(self):
+         for protocol in ('native', 'json'):
+             with self.subTest(protocol=protocol):
+                 self.settings.update({'provider': 'ollama', 'protocol': protocol, 'max_steps': 1})
+                 prompts = []
+                 class Client:
+                     def complete(client, messages, cancel):
+-                        prompts.append(messages[0]['content'])
++                        prompts.append(messages)
+                         decision = ({'action': {'tool': 'write_file', 'arguments': {'path': 'last.txt', 'content': 'saved'}}}
+                                     if len(prompts) == 1 else {'status': 'completed'})
+                         return {'content': json.dumps(decision)}
+@@ -357,9 +357,10 @@ class AgentTests(unittest.TestCase):
+                     agent.start(session)
+                     self.assertEqual(wait_session(agent, session), 'completed')
+                     self.assertEqual(session['steps'], 1)
+-                    self.assertIn('0/1 tool actions used; 1 remaining', prompts[0])
+-                    self.assertIn('1/1 tool actions used; 0 remaining', prompts[1])
+-                    self.assertIn('Stop reading when you have enough context', prompts[0])
++                    self.assertEqual(prompts[0][0], prompts[1][0])
++                    self.assertFalse(any('allowance is exhausted' in item['content'] for item in prompts[0]))
++                    self.assertIn('allowance is exhausted', prompts[1][-1]['content'])
++                    self.assertIn('Stop reading when you have enough context', prompts[0][0]['content'])
+                 finally:
+                     agent.close()
+ 
+@@ -383,7 +384,8 @@ class AgentTests(unittest.TestCase):
+             agent.start(session)
+             self.assertEqual(wait_session(agent, session), 'completed')
+             self.assertEqual(session['steps'], 2)
+-            self.assertIn('0/1 tool actions used; 1 remaining', prompts[2])
++            self.assertEqual(prompts[0], prompts[2])
++            self.assertNotIn('tool actions used', prompts[2])
+             self.assertTrue((workspace / 'call-3.txt').exists())
+         finally:
+             agent.close()
+@@ -397,7 +399,8 @@ class AgentTests(unittest.TestCase):
+                 if client.calls == 1:
+                     return {'content': json.dumps({'actions': [
+                         {'tool': 'write_file', 'arguments': {'path': f'batch-{i}.txt', 'content': 'saved'}} for i in range(3)]})}
+-                self.assertIn('2/2 tool actions used; 0 remaining', messages[0]['content'])
++                self.assertIn('allowance is exhausted', messages[-1]['content'])
++                self.assertNotIn('allowance is exhausted', messages[0]['content'])
+                 return {'content': json.dumps({'status': 'completed'})}
+         agent = Agent(ROOT, self.store, self.settings, lambda _: Client())
+         try:
+@@ -469,6 +472,52 @@ class AgentTests(unittest.TestCase):
+         self.assertNotIn(session['task'], messages[0]['content'])
+         agent.close()
+ 
++    def test_todo_and_exhaustion_notice_follow_history_without_changing_opening(self):
++        agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
++        try:
++            session = self.store.create('Keep my task intact.', 'ollama', 'offline-test')
++            session['messages'] = [{'role': 'user', 'content': session['task'], 'origin': 'human'}]
++            config = {**self.settings.values, 'provider': 'ollama', 'protocol': 'native',
++                      'context_tokens': 8192, 'response_tokens': 2048, 'max_steps': 2}
++            first = agent.messages(session, config, 0)
++            todo = Path(session['workspace']) / 'todo.txt'
++            todo.write_text('[ ] Verify the edit', encoding='utf-8')
++            later = agent.messages(session, config, 1)
++            todo.write_text('[x] Verify the edit', encoding='utf-8')
++            final = agent.messages(session, config, 2)
++            self.assertEqual(first, later[:len(first)])
++            self.assertEqual(first, final[:len(first)])
++            self.assertIn('[ ] Verify the edit', later[-1]['content'])
++            self.assertIn('[x] Verify the edit', final[-2]['content'])
++            self.assertIn('allowance is exhausted', final[-1]['content'])
++            self.assertNotIn('Current todo.txt:', first[0]['content'])
++            limit = (config['context_tokens'] - config['response_tokens'] - 128) * 2
++            self.assertLessEqual(len(json.dumps({'messages': final, 'tools': tool_definitions(config['terminal'])}, ensure_ascii=False).encode('utf-8')), limit)
++            self.assertEqual(len(session['messages']), 1)
++        finally:
++            agent.close()
++
++    def test_exhaustion_notice_cannot_displace_a_full_user_request(self):
++        agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
++        try:
++            for protocol in ('native', 'json'):
++                with self.subTest(protocol=protocol):
++                    session = self.store.create('Preserve the complete request.', 'ollama', 'offline-test')
++                    config = {**self.settings.values, 'provider': 'ollama', 'protocol': protocol,
++                              'context_tokens': 8192, 'response_tokens': 2048, 'max_steps': 1}
++                    schemas = tool_definitions(config['terminal']) if protocol == 'native' else []
++                    def size(messages):
++                        return len(json.dumps({'messages': messages, 'tools': schemas}, ensure_ascii=False).encode('utf-8'))
++                    allowance = (config['context_tokens'] - config['response_tokens'] - 128) * 2
++                    session['task'] += 'x' * (allowance - size(agent.messages(session, config)))
++                    before = agent.messages(session, config, 0)
++                    exhausted = agent.messages(session, config, 1)
++                    self.assertEqual(size(before), allowance)
++                    self.assertEqual(before, exhausted)
++                    self.assertEqual(exhausted[1]['content'], session['task'])
++        finally:
++            agent.close()
++
+     def setUp(self):
+         self.guest_marker = patch.dict(os.environ, {'AUTOPROTEUS_GUEST': '1'})
+         self.guest_marker.start()

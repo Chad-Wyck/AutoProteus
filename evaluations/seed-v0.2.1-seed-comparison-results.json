@@ -1,0 +1,5268 @@
+{
+  "created": "2026-10-19T19:22:01.969041+00:00",
+  "finished": "2026-10-19T21:14:26.271094+00:00",
+  "protocol": {
+    "created": "2026-10-19T19:22:01.969041+00:00",
+    "root_sha256": "44ac04dd3eb74191ee46481899e2ccc9d9d606ca273699b03b7b53b447fa2e4c",
+    "sources": {
+      "old": "a085318b53b30d4e46a1dfcd2eab0113ed850eeab16fd6cde26d8772a6df0e7e",
+      "current": "44ac04dd3eb74191ee46481899e2ccc9d9d606ca273699b03b7b53b447fa2e4c"
+    },
+    "old_original_sha256": "e7bb33ec062bd0e3d90b74434000200438aff7a5740f2e92d29edba28baf78a0",
+    "saved_candidates": {
+      "oxcoder": {
+        "path": "D:\\AI_New\\AP\\.data\\overnight-v020-20261019\\studies\\oxcoder-9b-q6_k-screen\\trials\\oxcoder-9b-q6_k_growth_01_sha256_file\\attempt-001\\review\\candidate-source.json",
+        "original_sha256": "0d9ce7e61cec3e3b6f26a3baa8866d58fb9b61e270b58afa83ba156aecd45c9f",
+        "fixture_overlay_sha256": "748308be9717e5105cdb07fea2c10366e5e7b491ed96daece8ef37ed91cc5097",
+        "model_files_sha256": "958005609b254a45997517b5db351753d6d5a074640f356b1204f414faa81a3f",
+        "original_review": false
+      },
+      "qwen": {
+        "path": "D:\\AI_New\\AP\\.data\\overnight-v020-20261019\\studies\\qwen35-9b-q6_k-quality-followup\\trials\\qwen35-9b-q6_k_growth_01_format_json\\attempt-001\\review\\candidate-source.json",
+        "original_sha256": "a2b36980058e2fed814212d131b8b38f0f661dc988af583f2fb165be68b4d4a1",
+        "fixture_overlay_sha256": "c9501308320a5d9e010ca67b58b3fd617fd397a849a6a05585fa7a87c1cf5670",
+        "model_files_sha256": "4c9daf674bb150d8f345f2130f52c1823a7af1d585e41215d3b7964857184db2",
+        "original_review": false
+      }
+    },
+    "trusted_sha256": {
+      "controller/appliance.py": "c3dd7aaffb6b7d496c5a412bd686ae9b67288d762b2e7b965e02d5eafdbde869",
+      "controller/compatibility.py": "e12a1deac8470e9ea1ccaaa8766d3740931ea8d962f858d79516cd5655c3a8ed",
+      "controller/config.py": "b898057e79c73557e8bba4dfe9783e4777d26cd4719e19add1fb95b8db603c8f",
+      "controller/errors.py": "1cc92d249a079cc6fda748d82b046d6fb93d46be17307ce5af84464f540e8fb7",
+      "controller/evaluation.py": "a0a1f40952f08f98ebe269b9885ed9c870bc9c68e41b0b6dee88d53e33a69205",
+      "controller/execution.py": "e60c6d07f59f9c6ff977bd721f978615c0efb6b5f072678842f79d817dc318bf",
+      "controller/integrity.py": "4471967490cfbd54c76409727327b8113007e47fd78acda596f1367cd6f13ba4",
+      "controller/isolation.py": "09efc12f37712a8a655c4349e115b5241cc86fdda2870567f6236c223036b27d",
+      "controller/linux_process.py": "b321bf5b1001f75021ae56fdd604a2845c397278e3cdfa5292904eb826d0cf7a",
+      "controller/native.py": "fedaa3cf35a4206f6535142ef9c8494a557bdb86c329552809c0c4171f7f3fdf",
+      "controller/providers.py": "867e091eb121558c86c679e073ab360691428029f564d33731b27945d78af380",
+      "controller/runtime.py": "481d1b2b6bd4f159b27740c3cd5bd79937b5cb9f6b770efd409bc21cfc4a9926",
+      "controller/server.py": "2d9f09a6ae1fa7b5340f59c9dd29e0656c8d28926863521ef0e3673b0262b3bc",
+      "controller/storage.py": "08b5b8bdc83c35f1989f1bdbfc7ca1f38e194d4874aaa71f3fbbf6cec41b8e82",
+      "controller/windows_job.py": "68d67a3ad0c613f383cddfc3d217e33d104901eeda7e872bb22d1ea7138bbc2b",
+      "controller/__init__.py": "d149af0a2c668415271c0ce4c4add815ff32c0e76829bb01c0f967bdde91fc53",
+      "guest/worker.py": "59b283ce6eafe14b7db8cfb3e56278beeb58fa7e7f43bb3f3fd217e681f697a4",
+      "controller/runtime-lock.json": "1c9250abb0fe1d7e172348749b2ec474e9537c6007c216d1b91165f7ebcf2b88",
+      "controller/managed-runtime-lock.json": "4dcbd55128f50a1cb8f756e0141f9dfaf7b36964dfc005d11bc49e1cd95139be",
+      "tests/test_seed.py": "792d90e3300878a25190202af9bc741b99283c6da0353b01da34d6144435e40e",
+      "tests/test_text_helpers.py": "db76c2c7e785bacd54c80bbec6559ae5b0bb2da510e48bb4d1e5dc4ef457a17c",
+      "evaluations/model_study.py": "24ede95800532225e7872f4926e5209ec2491daabc730bcd6a48da76d9da1cbb",
+      "evaluations/model_plan.py": "cdd91c29adff27aa3afda8104cfd0fd5752273e01d624e71c13dbb83d0b4d1fb",
+      "evaluations/study_support.py": "52e90c499db3805a150c979989aa845df6e6335bf4a646d7bb844674e76a3a77",
+      "evaluations/generalization.py": "2d3122e1cc03646a5e6b4dd0e017b513a091646fb8fb46822892ec0547efa0c7",
+      "evaluations/grader_faults.py": "47c64140487741496851e6d7e26c9efbfae56193c741368edebddb41df4e6061",
+      "evaluations/workflow_variants.py": "bf98974065bea24264c8b635f47f09661f02f2cbb7d0334630d68d9b5d49b89b",
+      "evaluations/workflow_support.py": "2c2fc11879df90e97f0f528712681ee4b0995b25cb06595015c3ae7ad1775108",
+      "evaluations/generalization-probe.py": "51f4fecd1f4d5dd55f4e9023d3b4acb62abd00fcc8f9835ddca517dcbee525e3",
+      "evaluations/local-model-benchmark.py": "24a5e3ceff761a02311a0a582c133c305c53c253ccfdc9b12fbcd5d0469c883d",
+      "evaluations/local-feature-probe.py": "a69b25ba23eac7d2446ef871fde47fb22dea38c01dba91eed5c4e0f0780a18f4",
+      "evaluations/local-upgrade-tasks.json": "f685d2f992373d1cda9c16903c478d3bd67a236807529b0905db30f9a612556f",
+      "evaluations/observations.py": "6f655408e1fd8378348177cf4849e1841e307f4b0d09d0a31bfd24b4c8af9e98",
+      "evaluations/run_budget.py": "bb3272034344b1074e2ab033eeaab335ba903436d1cf79517eafff15b344314c",
+      "evaluations/invoke_tool.py": "d2eeca9f4f20b579fd5d35789fd6de13207cf2f49b83234dd4084cb4614b14e1",
+      "evaluations/tasks.json": "b64343913ff104e27c70f0c7b5bd7c6a55e8fd53abc3c130f0d7109a33015f9e"
+    },
+    "environment": {
+      "platform": "Windows-11-10.0.26200-SP0",
+      "machine": "AMD64",
+      "python": "3.13.12",
+      "root": "D:\\AI_New\\AP",
+      "appliance_inventory_sha256": "86610628d0c144bf48e69a2c8c64eb2dcaf54fbbcab7a89fdefa0d35b7ea0e65"
+    },
+    "driver_sha256": "dd02c3f7e4247200aabf1716aa1ebfa260bc546e6ae9ff9a9a4359bc7aec69be",
+    "runtime_assets": {
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-base.dll": "4b8dea6fc4083032304d4f9c4f698a3228195fda366d14d6b50f263b49449473",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-alderlake.dll": "9c00390ab75ea711d44cd97bf3ddf4b3ac12b47c92c7e979d5d694c626dd2118",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-cannonlake.dll": "1e26e50e52233db4eb3f3a6f710e3cdecd20068cac426b5c3900f05f1c53ac15",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-cascadelake.dll": "b0b2ffd364c9df0ad4da428fd21f6c4d09fe5aeca9196e32fb0c96d54aae0978",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-haswell.dll": "c32c97271fc9bc19c3df1fb22489325eaae88f9e64ca9ae7b904414f970229c6",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-icelake.dll": "c7dc3ae0bfa1470a9ef1ce1659b2ba6675dca4ec38912c9ef6e44dbac49febb3",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-sandybridge.dll": "95dcc72b4bffc52eed6d6f9980a080cf3da9c6a98b217ead586b2c9fdec1bf6b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-skylakex.dll": "56ddcf8ca415d3861a55c4df8fdf1d425c6d53f4bfc9c278a006481519f57d14",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-sse42.dll": "9a6605b9bb1b90054d829425c4616887f0094135615c9c9f41742e994b4c06e7",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-ssse3.dll": "f721d32210c313cf938eabdd3bc7d717e390f18e4d1e3e3b5340062d822223c8",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-x64.dll": "90a60c7c1ae2b5131dd2629a5929b1cd38466a0fc8bf71fce8d7a44c8995d71f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cuda.dll": "385ccf238798fb885ceca6d284b0368d244f92a3dd4be21d8300b3f3401a0c27",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-rpc-server.exe": "11b0c26f0b7635dac627c25ca7aca858bfc4ef1580fe685342bd911958e4f5e5",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-rpc.dll": "cb65808a2834bc8d5abf4b478b742e275b3ae606c1f1d2ff97e4275478be5b59",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml.dll": "407b6660136284bdbf13288c0b7a41d41ec6c90347ca80bffa29547c3e3edacc",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-batched-bench-impl.dll": "55407cea234f3c2ab6c7a5a37b3919e06a674de20339338d519c9a1d8fe465fe",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-batched-bench.exe": "744947e28b0d5d09d12c43e6ebb521a6d3a070d376b3a043fb1b8a960331b21d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-batched.exe": "f2d27f4957a3cad49d22d264bc2c38cdbe927541e9b0b9dc646c4899776753f6",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-bench-impl.dll": "a56f9991cfb3b1642d046b60a79376d31bb9fa7d09967df2f9cb80888b2a8070",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-bench.exe": "b5d123a14d14d2f72d1a91bbd495045bcea8ed4ea23036ce38785e3259bf51f0",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-cli-impl.dll": "e5e6e485983a44b7c33868c7bd7ab64227c9dee5ff8c21bbe8ea4e873654cb26",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-cli.exe": "8a2789d277ed9005b9cc528d3add48389e1dec68db235d65d9f6937fd5413885",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-common.dll": "8a575f0d66d0f3a774d26776cfe1cea9ee38ac55b1fdc1506d79881bf45f812b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-completion-impl.dll": "0a07fe66584ba63da12b3100daa6f33b9b6e544bdc7ba2bb4f47637190f3df74",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-completion.exe": "9bfc8ac145537b5fc2fce4d253a61e6b7281f0d9fb1c931451ddb27efb69609f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-debug.exe": "53ca92eeaae8ba9156ca6201b09e8d033733d6904a9548d6462270e16169952e",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-diffusion-cli.exe": "71b9685ffe69412cf8c0e62d496de3b409ef043511b46106d891b8f681f90a6b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-embedding.exe": "e7845976777a5d718214c2c0758a43a124c02f3de18c14eed940c40f267e0f50",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-eval-callback.exe": "8f8847263757648faf80c9a6d17d238e9861af9fbc212fd8d603e5107e1b641d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-finetune.exe": "631f8a0d9ac4a427074fcb075b488b44c179eed0adf78a39691208950381cbcc",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-fit-params-impl.dll": "fc32b33b1c0d71e16c3dd71c0fc37ec6ea4b4b71a1fe27ba6c936d09d5b48a6b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-fit-params.exe": "2629e7cd005f0612a330724f55ec4ed2a4d710b56c877f2d5cd383d095ce0b9e",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gemma3-cli.exe": "5f338aeb6f3e0acb6201c1be508ef597cafbff845f9ed7aa5c3db8deeea8f995",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gen-docs.exe": "ff5c462c7d9fc3a08b532f77c844c800c56198eb717a5a0bb01675631154a8bb",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gguf-hash.exe": "6d362d6cce991e454cf5344835a6aed102ae8512de62e6215c57b9643e1495a7",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gguf-split.exe": "ae66afaea8a036210e1631ede277b178891dc0b13692489fb9873e7d00404138",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gguf.exe": "57166ce495af2b01d7635f0c629d088ce1a1ac743de0884b7de62d4467f2039f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-idle.exe": "ba995103500564a627899c374f9699c9a1a9478693c0eaff2c185ab859203f9d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-imatrix.exe": "bc96b8534d1562afb74f572dc4ee986537001295064c640c31b9bbbd34d2cecb",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-kv-mean-center.exe": "4cf96d5171a76e0f1aac0d9abbc01cc2c5568a4c0aa23bdfab64c241982775f4",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-llava-cli.exe": "5f338aeb6f3e0acb6201c1be508ef597cafbff845f9ed7aa5c3db8deeea8f995",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookahead.exe": "67d75e12ef16c03dbb2b7c11a85118d208c34ffab117f5851b47280edc3c1572",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookup-create.exe": "40d18a7e10ebbd795c2bb3d2dd381f760e1c87ffbde7b2023ad196cc8aa23f12",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookup-merge.exe": "cb833d7ac420c5dedd3352b00c4290870acb90897eac595161261148bb192661",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookup-stats.exe": "fdf30d155da1ba3c78f9d80d487e84227195fe6919117d410e421599e12c040d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookup.exe": "861783f9d7c6d6905d92ca44df68034671e513103da58db724039a2a1e0e16fc",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-minicpmv-cli.exe": "5f338aeb6f3e0acb6201c1be508ef597cafbff845f9ed7aa5c3db8deeea8f995",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-mtmd-cli.exe": "9ad01231a98c5bf1e9ec08ed6c37604590b76426dcb796b34378b4cde17513e2",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-mtmd-debug.exe": "f754a27f25a371749701a9088293e799a1d54cbaed7e79b68351c0bd96c4192c",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-mtp-export.exe": "90f7aa68661d003158afcea27658c6f326bf229aecd3931935b8f641b70e2d21",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-parallel.exe": "15eb59b88776aaf11dda986edae20266acfb82bd731468c01b9286d4a3f1fd5f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-passkey.exe": "4faab3e6e67f51a751002f051178a5981de2ab5a38b917de3f0adfac621ee31d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-perplexity-impl.dll": "acac4834ad95320b451985d0d23ab37e0b6bbbf98a971d24bb7b8653b4265261",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-perplexity.exe": "96df778f8fbc685fbdffd47f852f53d6851728d2dc363035355508ce97504f5d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-quantize-impl.dll": "9de57a9f263c8b82bd2202360a86a3919db3601a94bba8fab56e9c4468264568",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-quantize.exe": "3786628113e05377a041a1a8b461f78aa3d847635ad124de7e2c3b0a4c731d45",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-qwen2vl-cli.exe": "5f338aeb6f3e0acb6201c1be508ef597cafbff845f9ed7aa5c3db8deeea8f995",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-results.exe": "2b6a37fe1718e16ddfd20aea8f8f59cce600e090a94a4b46b4d7ecfb0e581df2",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-retrieval.exe": "a1b24d33c942f3634ed35ad81f848740e155c63afd2e0df43438a35d5808f196",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-rs-rollback-multi.exe": "9a22e2c924b90ff8e985117e25df81837319dcb14fd77c03d9d7065790bb8041",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-rs-rollback.exe": "01e4ba14c069ff0e73a04dd5bca2fa7b7eb56fcf2bb9ad722f1992642dce4437",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-server-impl.dll": "74367a893c9e7682f635b17416d2cfc8b2a9fb3420957ff03d31e7bd16b98c7b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-server.exe": "e95c81a7f99b05b4e9c67eba3f6856d777987ff813e6c1f14069c6c599e029d7",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-simple-chat.exe": "860d5911a52579773603dfddee934ccba990c8c46585e61b8121533b09dfaf03",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-simple.exe": "e5c425eba58db58dc486e751330c099d588a8ddd4f9ec712695ac966345cf381",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-speculative-simple.exe": "35d0d08d3e87d5c3bcf738d6838a680adf1e10fe57aa11d951aa5cc85dd1ca41",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-speculative.exe": "dc8fb0b7450c4b1b3573c734732150654b14d397bbb79f1e5b14f4fa53f7a8be",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-tokenize.exe": "e9cf0797da15bd2194d860aff2a878f9cb7b8df2dea0695e3ddba6a4745ceacf",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-tts.exe": "5cd966ad4c3586e8a2dd233ebda863037a3d466de1e37974fb6b8b86734a9274",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama.dll": "0c4f1e9e4df371770938aa3e95c2b0c66b31567aa78d5a47a273aa6c51aee0df",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama.exe": "bee03536e47f116dd9d5bed66f435eda90bbdfb00e6d39604407816826b566ca",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\mtmd.dll": "eddaf1303f22e984e577dca58b71ac2ee2f105f13db3b567e33c55e79cbab9dc",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\cublas64_12.dll": "e40202fe4223c1cd2d2dce7beec59e1ed61c7801bd827309183be9b50e358f4c",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\cublasLt64_12.dll": "2a896460bef60ed57ef32b0875812f355a6984e671d638bb632f5e8c1d7a831f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\cudart64_12.dll": "d28e42265da7462162a54da6b7a99ea4fa2caf8139d862bb500db875d0b32dfc"
+    },
+    "contracts": {
+      "sha256_file": "sha256_file(path) reads ordinary binary files up to 1048576 bytes without changing them. Return path relative to the workspace, bytes, and sha256 as lowercase hexadecimal. Reject larger files, missing files, directories and escaping paths.",
+      "csv_preview": "csv_preview(path, limit=5) reads UTF-8 CSV of at most 100000 Unicode characters using Python csv.reader. Return path relative to the workspace, rows (a list of lists of strings, at most limit records), and truncated (whether additional records exist). Do not treat the first row as a special header. Preserve quoted commas, Unicode and CRLF inside quoted fields. Empty input has no rows. limit must be an integer from 1 to 20, excluding bool. Reject invalid UTF-8, oversized input, missing files, directories and escaping paths. Preserve every input byte.",
+      "format_json": "format_json(path) reads UTF-8 JSON of at most 100000 Unicode characters using Python json.loads. Replace it with json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2) followed by one LF newline. Return path relative to the workspace and bytes of the final UTF-8 file. The formatted output must also fit 100000 Unicode characters. Reject invalid JSON, invalid UTF-8, oversized input or output, missing files, directories and escaping paths before changing any bytes."
+    },
+    "recipe": "\nRead harness/README.md and relevant source. Implement and register exactly the requested capability. Change runtime code only in harness/autoproteus/tools.py and harness/autoproteus/providers.py. Preserve the loop and every existing test file exactly; add a separate focused tests/test_*.py file. Use the shared helpers where appropriate. Generate large test data with short expressions. Run python3 harness/seed.py check and exercise the edited tool on disposable inputs. Repair actual failures. Finish completed only after implementing and verifying the feature. There is no network or package installation. No separate report is required.",
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "list_files",
+          "description": "List a directory in the task workspace; path defaults to '.'.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "read_file",
+          "description": "Read a complete UTF-8 file of at most 12000 characters. Larger files require read_section; never returns a partial file.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "read_section",
+          "description": "Read a relevant section of a UTF-8 file. start is a character position (default 0), length is characters (default 1000, maximum 12000). Prefer useful sections to many tiny reads. next_start continues a whole-file read when needed; stop once you have enough context.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "default": 0
+              },
+              "length": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12000,
+                "default": 1000
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "write_file",
+          "description": "Create or replace a text file. Supply its complete content.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "edit_file",
+          "description": "Replace old_text exactly once in a UTF-8 file, preserving surrounding text. Use a small unique fragment from the current source. Missing or ambiguous matches return locations to inspect; never guess or rewrite the whole file to repair a match.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "old_text": {
+                "type": "string"
+              },
+              "new_text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "old_text",
+              "new_text"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "delete_file",
+          "description": "Delete one ordinary workspace file. Directories and links are rejected.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "search_files",
+          "description": "Find literal text in UTF-8 workspace files. Returns paths, line numbers, character start offsets for read_section, and short snippets. Bounded search; narrow the path if incomplete.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "query"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "finish",
+          "description": "Report verified completion, or ask the user for required information.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "completed",
+                  "needs_input"
+                ]
+              }
+            },
+            "required": [
+              "message",
+              "status"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "run_command",
+          "description": "Run a native shell command from the task workspace.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "command"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    ],
+    "invoke_tool": "\"\"\"Opt-in development invocation. Run only inside the guest, never on the host.\"\"\"\nimport json\nfrom pathlib import Path\nimport sys\n\n\ndef main():\n    sys.path.insert(0, str(Path('harness').resolve()))\n    from autoproteus.providers import tool_definitions\n    from autoproteus.tools import Workspace\n    tool, arguments = sys.argv[1], json.loads(sys.argv[2])\n    definitions = {entry['function']['name']: entry['function'] for entry in tool_definitions(False)}\n    if tool == 'finish' or tool not in definitions or not isinstance(arguments, dict):\n        raise ValueError('Use a registered workspace tool and a JSON argument object')\n    if any(key not in arguments for key in definitions[tool]['parameters']['required']):\n        raise ValueError('Missing required tool arguments')\n    result = Workspace(Path.cwd()).execute(tool, arguments)\n    print(json.dumps({'check': 'development tool invocation', 'passed': True, 'tool': tool, 'result': result}, ensure_ascii=True))\n    print('Invocation only. Read the resulting file and compare exact expected contents; run the full suite separately.')\n\n\nif __name__ == '__main__':\n    main()\n",
+    "deadline": 1800,
+    "generated_tokens": 65536,
+    "ordinary_deadline": 240,
+    "ordinary_generated_tokens": 8192,
+    "repeats": 3,
+    "order": [
+      [
+        "old",
+        "current"
+      ],
+      [
+        "current",
+        "old"
+      ],
+      [
+        "old",
+        "current"
+      ]
+    ],
+    "primary": "Completed hashing-to-formatting growth chains, including verified retention, activation, exact final artifacts and completion. First acceptance, verified extension, and direct native use remain separate.",
+    "selection_rule": "Provisional winner only with at least 2/3 completed chains and at least two more completed chains than the other arm. Exploratory selection, not statistical proof. Otherwise inconclusive; no automatic rollback.",
+    "confirmation": "If a provisional winner exists, two Qwen3.5 9B Q4_K_M chains on that arm; otherwise no claimed winner and confirmation remains deferred.",
+    "scope": "Same corrected protected fixtures in both arms; saved model-authored files unchanged during regrading. Standard adapter, cached identical OxCoder Q6, 128K, same tasks and allowances. No candidate repairs, hidden retries or production promotion."
+  },
+  "counts": {
+    "old": {
+      "first_accepted": [
+        3,
+        3
+      ],
+      "new_second_behavior": [
+        2,
+        3
+      ],
+      "verified_second": [
+        1,
+        3
+      ],
+      "completed_chains": [
+        0,
+        3
+      ],
+      "first_median_seconds": 397.288,
+      "first_median_actions": 53
+    },
+    "current": {
+      "first_accepted": [
+        3,
+        3
+      ],
+      "new_second_behavior": [
+        3,
+        3
+      ],
+      "verified_second": [
+        0,
+        3
+      ],
+      "completed_chains": [
+        0,
+        3
+      ],
+      "first_median_seconds": 395.64,
+      "first_median_actions": 52
+    }
+  },
+  "cells": {
+    "regrade-oxcoder": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\regrade-oxcoder\\attempt-001",
+      "started": "2026-10-19T19:22:29.846449+00:00",
+      "finished": "2026-10-19T19:22:57.876663+00:00",
+      "regrading": {
+        "runtime_files_sha256": "958005609b254a45997517b5db351753d6d5a074640f356b1204f414faa81a3f",
+        "source_sha256": "748308be9717e5105cdb07fea2c10366e5e7b491ed96daece8ef37ed91cc5097",
+        "scope": "New fixture-version assessment; original verdict is not rewritten",
+        "passed": true,
+        "regressions_passed": true,
+        "sha256_file": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 78, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-sha256_file",
+            "session": "2330a2cf2c9540ebad8d797d7118114a",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.34,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "sha256_file_public_passed": true,
+        "format_json": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": true,
+            "object_idempotent": true,
+            "array": true,
+            "array_idempotent": true,
+            "scalar": true,
+            "scalar_idempotent": true,
+            "exact_output_limit": true,
+            "unicode_output_exact": true,
+            "unicode_output_exact_idempotent": true,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 78, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-format_json",
+            "session": "4e4dd7cfb53a467eba86f1c1566b5f75",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.47,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "format_json_public_passed": true
+      }
+    },
+    "regrade-qwen": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\regrade-qwen\\attempt-001",
+      "started": "2026-10-19T19:22:57.913155+00:00",
+      "finished": "2026-10-19T19:23:24.856363+00:00",
+      "regrading": {
+        "runtime_files_sha256": "4c9daf674bb150d8f345f2130f52c1823a7af1d585e41215d3b7964857184db2",
+        "source_sha256": "c9501308320a5d9e010ca67b58b3fd617fd397a849a6a05585fa7a87c1cf5670",
+        "scope": "New fixture-version assessment; original verdict is not rewritten",
+        "passed": true,
+        "regressions_passed": true,
+        "sha256_file": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 82, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-sha256_file",
+            "session": "3110e0f262b648a0b0385d71bea7921d",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.56,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "sha256_file_public_passed": true,
+        "format_json": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": true,
+            "object_idempotent": true,
+            "array": true,
+            "array_idempotent": true,
+            "scalar": true,
+            "scalar_idempotent": true,
+            "exact_output_limit": true,
+            "unicode_output_exact": true,
+            "unicode_output_exact_idempotent": true,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 82, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-format_json",
+            "session": "54e78a3f0d3d4ee7b270c4bbc46abfb7",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.15,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "format_json_public_passed": true
+      }
+    },
+    "calibrate-old": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\calibrate-old\\attempt-001",
+      "started": "2026-10-19T19:23:24.907876+00:00",
+      "finished": "2026-10-19T19:25:23.898687+00:00"
+    },
+    "calibrate-current": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\calibrate-current\\attempt-001",
+      "started": "2026-10-19T19:25:23.940524+00:00",
+      "finished": "2026-10-19T19:27:32.071228+00:00"
+    },
+    "ox-preflight": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-preflight\\attempt-001",
+      "started": "2026-10-19T19:27:56.728343+00:00",
+      "finished": "2026-10-19T19:28:11.698831+00:00",
+      "calls": {
+        "calls": 2,
+        "wire_requests": 2,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 8044,
+            "measured_calls": 2,
+            "expected_calls": 2,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 76,
+            "measured_calls": 2,
+            "expected_calls": 2,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 14.966,
+            "measured_calls": 2,
+            "expected_calls": 2,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 14.965,
+            "measured_calls": 2,
+            "expected_calls": 2,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 2
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 2,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 12.441276,
+            "measured_calls": 2,
+            "expected_calls": 2,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 2.465336,
+            "measured_calls": 2,
+            "expected_calls": 2,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 1165,
+            "measured_calls": 2,
+            "expected_calls": 2,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 10,
+        "bytes": 36307,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "saved-use-oxcoder": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\saved-use-oxcoder\\attempt-001",
+      "started": "2026-10-19T19:28:11.732695+00:00",
+      "finished": "2026-10-19T19:28:32.988108+00:00",
+      "run": {
+        "task": "fresh-two-tool-use",
+        "session": "85b5be95b4934efcac02de87def53443",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [
+          {
+            "path": "inventory.json",
+            "passed": true
+          },
+          {
+            "path": "audit.json",
+            "passed": true
+          }
+        ],
+        "steps": 6,
+        "seconds": 21.11,
+        "model_requests": 6,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 0,
+        "read_actions": 3,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 3,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 510,
+        "read_characters": 219,
+        "overlapping_read_characters": 35,
+        "new_read_characters": 184,
+        "first_runtime_source_edit_seconds": null,
+        "runtime_source_edits": 0,
+        "first_green_development_check_seconds": null,
+        "last_green_development_check_seconds": null,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 21.247,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "reuse": {
+        "source_unchanged": true,
+        "usage": {
+          "direct": [
+            "format_json",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "passed": true,
+        "scope": "Reuse of supplied verified capabilities; no new upgrade credit."
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 21.246993,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.3e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 356,
+        "reported_output_tokens": 356,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 6,
+        "wire_requests": 6,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 13578,
+            "measured_calls": 6,
+            "expected_calls": 6,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 356,
+            "measured_calls": 6,
+            "expected_calls": 6,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 16.322,
+            "measured_calls": 6,
+            "expected_calls": 6,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 16.32,
+            "measured_calls": 6,
+            "expected_calls": 6,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 6
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 6,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 4.855783,
+            "measured_calls": 6,
+            "expected_calls": 6,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 11.107568,
+            "measured_calls": 6,
+            "expected_calls": 6,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 10819,
+            "measured_calls": 6,
+            "expected_calls": 6,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 30,
+        "bytes": 63034,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "saved-use-qwen": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\saved-use-qwen\\attempt-001",
+      "started": "2026-10-19T19:29:00.324303+00:00",
+      "finished": "2026-10-19T19:29:47.815045+00:00",
+      "run": {
+        "task": "fresh-two-tool-use",
+        "session": "3a67f782514546468c530b40c800eade",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [
+          {
+            "path": "inventory.json",
+            "passed": true
+          },
+          {
+            "path": "audit.json",
+            "passed": true
+          }
+        ],
+        "steps": 7,
+        "seconds": 47.36,
+        "model_requests": 8,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 0,
+        "read_actions": 3,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 3,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 510,
+        "read_characters": 219,
+        "overlapping_read_characters": 35,
+        "new_read_characters": 184,
+        "first_runtime_source_edit_seconds": null,
+        "runtime_source_edits": 0,
+        "first_green_development_check_seconds": null,
+        "last_green_development_check_seconds": null,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 47.482,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "reuse": {
+        "source_unchanged": true,
+        "usage": {
+          "direct": [
+            "format_json",
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "passed": true,
+        "scope": "Reuse of supplied verified capabilities; no new upgrade credit."
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 47.482216,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.2e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 677,
+        "reported_output_tokens": 677,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 8,
+        "wire_requests": 8,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 19089,
+            "measured_calls": 8,
+            "expected_calls": 8,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 677,
+            "measured_calls": 8,
+            "expected_calls": 8,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 42.65,
+            "measured_calls": 8,
+            "expected_calls": 8,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 42.648,
+            "measured_calls": 8,
+            "expected_calls": 8,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 8
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 8,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 6.805707,
+            "measured_calls": 8,
+            "expected_calls": 8,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 35.615125,
+            "measured_calls": 8,
+            "expected_calls": 8,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 16604,
+            "measured_calls": 8,
+            "expected_calls": 8,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 40,
+        "bytes": 92321,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "basic-old-exact-file": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\basic-old-exact-file\\attempt-001",
+      "started": "2026-10-19T19:30:13.584469+00:00",
+      "finished": "2026-10-19T19:30:27.653129+00:00",
+      "run": {
+        "task": "exact-file",
+        "session": "0403080f816641dca519ea34a8fe16d8",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [
+          {
+            "path": "greeting.txt",
+            "passed": true
+          }
+        ],
+        "steps": 2,
+        "seconds": 14.0,
+        "model_requests": 3,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 0,
+        "read_actions": 1,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 1,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 103,
+        "read_characters": 20,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 20,
+        "first_runtime_source_edit_seconds": null,
+        "runtime_source_edits": 0,
+        "first_green_development_check_seconds": null,
+        "last_green_development_check_seconds": null,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 14.059,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 240.0,
+        "work_seconds": 14.059364,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.2e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 8192,
+        "charged_output_tokens": 203,
+        "reported_output_tokens": 203,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 3,
+        "wire_requests": 3,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 5173,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 203,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 9.469,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 9.468,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 3
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 3,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 3.272625,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 6.13746,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 3340,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 15,
+        "bytes": 25610,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "basic-old-nested-directory": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\basic-old-nested-directory\\attempt-001",
+      "started": "2026-10-19T19:30:27.686846+00:00",
+      "finished": "2026-10-19T19:30:41.169089+00:00",
+      "run": {
+        "task": "nested-directory",
+        "session": "933c7d478ede4e2f9eaffb069c65d3b6",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [
+          {
+            "path": "notes/idea.md",
+            "passed": true
+          }
+        ],
+        "steps": 2,
+        "seconds": 13.41,
+        "model_requests": 3,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 0,
+        "read_actions": 1,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 1,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 619,
+        "read_characters": 532,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 532,
+        "first_runtime_source_edit_seconds": null,
+        "runtime_source_edits": 0,
+        "first_green_development_check_seconds": null,
+        "last_green_development_check_seconds": null,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 13.473,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 240.0,
+        "work_seconds": 13.472823,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.1e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 8192,
+        "charged_output_tokens": 269,
+        "reported_output_tokens": 269,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 3,
+        "wire_requests": 3,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 5410,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 269,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 9.309,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 9.308,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 3
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 3,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 1.187621,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 8.070381,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 4901,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 15,
+        "bytes": 27973,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "basic-old-precise-edit": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\basic-old-precise-edit\\attempt-001",
+      "started": "2026-10-19T19:30:41.201683+00:00",
+      "finished": "2026-10-19T19:30:54.866339+00:00",
+      "run": {
+        "task": "precise-edit",
+        "session": "9d849d50fe9342aeb42d29c24ee3b348",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [
+          {
+            "path": "settings.json",
+            "passed": true
+          }
+        ],
+        "steps": 3,
+        "seconds": 13.58,
+        "model_requests": 4,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 0,
+        "read_actions": 2,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 2,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 235,
+        "read_characters": 55,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 55,
+        "first_runtime_source_edit_seconds": null,
+        "runtime_source_edits": 0,
+        "first_green_development_check_seconds": null,
+        "last_green_development_check_seconds": null,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 13.652,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 240.0,
+        "work_seconds": 13.652283,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.7e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 8192,
+        "charged_output_tokens": 258,
+        "reported_output_tokens": 258,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 4,
+        "wire_requests": 4,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 7128,
+            "measured_calls": 4,
+            "expected_calls": 4,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 258,
+            "measured_calls": 4,
+            "expected_calls": 4,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 9.156,
+            "measured_calls": 4,
+            "expected_calls": 4,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 9.155,
+            "measured_calls": 4,
+            "expected_calls": 4,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 4
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 4,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 1.194386,
+            "measured_calls": 4,
+            "expected_calls": 4,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 7.867532,
+            "measured_calls": 4,
+            "expected_calls": 4,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 6656,
+            "measured_calls": 4,
+            "expected_calls": 4,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 20,
+        "bytes": 35132,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "basic-current-exact-file": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\basic-current-exact-file\\attempt-001",
+      "started": "2026-10-19T19:30:54.903607+00:00",
+      "finished": "2026-10-19T19:31:07.634799+00:00",
+      "run": {
+        "task": "exact-file",
+        "session": "ef592759ad504e199705b82b534b4e73",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [
+          {
+            "path": "greeting.txt",
+            "passed": true
+          }
+        ],
+        "steps": 2,
+        "seconds": 12.65,
+        "model_requests": 3,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 0,
+        "read_actions": 1,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 1,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 103,
+        "read_characters": 20,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 20,
+        "first_runtime_source_edit_seconds": null,
+        "runtime_source_edits": 0,
+        "first_green_development_check_seconds": null,
+        "last_green_development_check_seconds": null,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 12.72,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 240.0,
+        "work_seconds": 12.720403,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.6e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 8192,
+        "charged_output_tokens": 176,
+        "reported_output_tokens": 176,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 3,
+        "wire_requests": 3,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 5221,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 176,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 8.518,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 8.517,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 3
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 3,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 3.023948,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 5.42966,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 3370,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 15,
+        "bytes": 25719,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "basic-current-nested-directory": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\basic-current-nested-directory\\attempt-001",
+      "started": "2026-10-19T19:31:07.665282+00:00",
+      "finished": "2026-10-19T19:31:20.234351+00:00",
+      "run": {
+        "task": "nested-directory",
+        "session": "33e65b756dbe488baee39bb7d940aa12",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [
+          {
+            "path": "notes/idea.md",
+            "passed": true
+          }
+        ],
+        "steps": 2,
+        "seconds": 12.49,
+        "model_requests": 3,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 0,
+        "read_actions": 1,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 1,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 452,
+        "read_characters": 366,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 366,
+        "first_runtime_source_edit_seconds": null,
+        "runtime_source_edits": 0,
+        "first_green_development_check_seconds": null,
+        "last_green_development_check_seconds": null,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 12.558,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 240.0,
+        "work_seconds": 12.557822,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.7e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 8192,
+        "charged_output_tokens": 235,
+        "reported_output_tokens": 235,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 3,
+        "wire_requests": 3,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 5423,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 235,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 8.226,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 8.225,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 3
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 3,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 1.158946,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 6.991454,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 4954,
+            "measured_calls": 3,
+            "expected_calls": 3,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 15,
+        "bytes": 27370,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "basic-current-precise-edit": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\basic-current-precise-edit\\attempt-001",
+      "started": "2026-10-19T19:31:20.264996+00:00",
+      "finished": "2026-10-19T19:31:37.246464+00:00",
+      "run": {
+        "task": "precise-edit",
+        "session": "57eb9c45836f4ad19ea83487b677cece",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [
+          {
+            "path": "settings.json",
+            "passed": true
+          }
+        ],
+        "steps": 4,
+        "seconds": 16.9,
+        "model_requests": 5,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 0,
+        "read_actions": 2,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 2,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 235,
+        "read_characters": 55,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 55,
+        "first_runtime_source_edit_seconds": null,
+        "runtime_source_edits": 0,
+        "first_green_development_check_seconds": null,
+        "last_green_development_check_seconds": null,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 16.971,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 240.0,
+        "work_seconds": 16.97111,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 2.4e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 8192,
+        "charged_output_tokens": 369,
+        "reported_output_tokens": 369,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 5,
+        "wire_requests": 5,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 9371,
+            "measured_calls": 5,
+            "expected_calls": 5,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 369,
+            "measured_calls": 5,
+            "expected_calls": 5,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 12.609,
+            "measured_calls": 5,
+            "expected_calls": 5,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 12.607,
+            "measured_calls": 5,
+            "expected_calls": 5,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 5
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 5,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 1.523157,
+            "measured_calls": 5,
+            "expected_calls": 5,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 10.980112,
+            "measured_calls": 5,
+            "expected_calls": 5,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 8750,
+            "measured_calls": 5,
+            "expected_calls": 5,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 25,
+        "bytes": 46376,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "ox-old-1-first": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-old-1-first\\attempt-001",
+      "started": "2026-10-19T19:31:37.277773+00:00",
+      "finished": "2026-10-19T19:38:14.603811+00:00",
+      "review": {
+        "source_sha256": "efd63de0af16472baf628d85d8da6ed07ec8760b3bf4bd589a6d4f86f535c437",
+        "changed_files": [
+          "autoproteus/providers.py",
+          "autoproteus/tools.py",
+          "sample.txt",
+          "tests/test_sha256_file.py"
+        ],
+        "new_test_files": [
+          "tests/test_sha256_file.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "documentation_updated": false,
+        "runtime_changed": true,
+        "completed": true,
+        "verified_upgrade": true,
+        "autonomously_completed": true,
+        "accepted": true,
+        "regressions_passed": true,
+        "feature": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 63, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-sha256_file",
+            "session": "d3550a44908a458fb008d963c881879c",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.31,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "public_passed": true
+      },
+      "run": {
+        "task": "sha256_file",
+        "session": "dbe44902e4274e1da006ae430f73e46a",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 53,
+        "seconds": 380.44,
+        "model_requests": 54,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 4,
+        "read_actions": 37,
+        "repeated_reads": 1,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 35,
+        "search_actions": 1,
+        "outline_actions": 0,
+        "returned_context_bytes": 45269,
+        "read_characters": 39621,
+        "overlapping_read_characters": 8113,
+        "new_read_characters": 31508,
+        "first_runtime_source_edit_seconds": 40.56,
+        "runtime_source_edits": 3,
+        "first_green_development_check_seconds": 307.573,
+        "last_green_development_check_seconds": 319.618,
+        "actions_after_last_green_check": 2,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 397.288,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 397.288006,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 3.3e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 7880,
+        "reported_output_tokens": 7880,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 54,
+        "wire_requests": 54,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 834960,
+            "measured_calls": 54,
+            "expected_calls": 54,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 7880,
+            "measured_calls": 54,
+            "expected_calls": 54,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 359.405,
+            "measured_calls": 54,
+            "expected_calls": 54,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 359.391,
+            "measured_calls": 54,
+            "expected_calls": 54,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 54
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 54,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 71.625677,
+            "measured_calls": 54,
+            "expected_calls": 54,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 281.990496,
+            "measured_calls": 54,
+            "expected_calls": 54,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 806625,
+            "measured_calls": 54,
+            "expected_calls": 54,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 270,
+        "bytes": 3673561,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "ox-old-1-growth": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-old-1-growth\\attempt-001",
+      "started": "2026-10-19T19:38:14.640587+00:00",
+      "finished": "2026-10-19T20:08:14.969364+00:00",
+      "review": {
+        "source_sha256": "dc097f951695a353acba4b38b3518c8b06ab1bb299862fcab9ba7824d76a2055",
+        "changed_files": [
+          "autoproteus/providers.py",
+          "autoproteus/tools.py",
+          "sample.txt",
+          "tests/test_format_json.py"
+        ],
+        "new_test_files": [
+          "tests/test_format_json.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "documentation_updated": false,
+        "runtime_changed": true,
+        "completed": false,
+        "verified_upgrade": true,
+        "autonomously_completed": false,
+        "accepted": false,
+        "regressions_passed": true,
+        "feature": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": true,
+            "object_idempotent": true,
+            "array": true,
+            "array_idempotent": true,
+            "scalar": true,
+            "scalar_idempotent": true,
+            "exact_output_limit": true,
+            "unicode_output_exact": true,
+            "unicode_output_exact_idempotent": true,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 81, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-format_json",
+            "session": "9bb4719f19644cba951a3c3bc9ec5c73",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.26,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "public_passed": true
+      },
+      "run": {
+        "task": "second-extension-audit",
+        "session": "bbcd2193d8cb45a09988a9b778d02a34",
+        "status": "waiting",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": false,
+        "checks": [],
+        "steps": 28,
+        "seconds": 383.06,
+        "model_requests": 29,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 6,
+        "read_actions": 4,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": "Waiting for your reply"
+      },
+      "navigation": {
+        "read_actions": 4,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 28055,
+        "read_characters": 26680,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 26680,
+        "first_runtime_source_edit_seconds": 46.23,
+        "runtime_source_edits": 3,
+        "first_green_development_check_seconds": 322.214,
+        "last_green_development_check_seconds": 322.214,
+        "actions_after_last_green_check": 7,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 1800.271,
+      "verified_extension": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": true,
+        "submitted_source_sha256": "dc097f951695a353acba4b38b3518c8b06ab1bb299862fcab9ba7824d76a2055",
+        "correct_final_use": true,
+        "explicit_finish": false
+      },
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": false,
+        "capabilities_used": true,
+        "functional_growth": false,
+        "direct_tool_use": true,
+        "strict_route_success": false
+      },
+      "final": {
+        "session": "bbcd2193d8cb45a09988a9b778d02a34",
+        "status": "paused",
+        "timed_out": true,
+        "steps": 108,
+        "provider_error_category": null,
+        "last_notices": [
+          "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, run_command, sha256_file, format_json. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+          "Session resumed. Checking the current workspace before continuing.",
+          "The same unchanged material is being read repeatedly. The agent received a progress hint."
+        ]
+      },
+      "final_usage": {
+        "direct": [
+          "format_json",
+          "list_files",
+          "read_file",
+          "sha256_file",
+          "write_file"
+        ],
+        "development": []
+      },
+      "final_artifacts_correct": true,
+      "final_source_unchanged": true,
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 1800.271427,
+        "deadline_reached": true,
+        "deadline_overrun_seconds": 0.271427,
+        "cleanup_seconds": 1.6e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 26306,
+        "reported_output_tokens": 22210,
+        "unmeasured_sent_calls": 1,
+        "usage_complete": false,
+        "exhausted": false
+      },
+      "retained": {
+        "passed": true,
+        "reason": null,
+        "timed_out": null,
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "empty": true,
+          "binary": true,
+          "exact": true,
+          "oversized": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 81, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "run": {
+          "task": "independent-sha256_file",
+          "session": "dd1c9b1e40e84308a19cc6d0483c4270",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.16,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "retained_public_passed": true,
+      "calls": {
+        "calls": 110,
+        "wire_requests": 110,
+        "trace_complete": false,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 1474528,
+            "measured_calls": 109,
+            "expected_calls": 110,
+            "complete": false,
+            "status": "partial"
+          },
+          "output_tokens": {
+            "known_sum": 22210,
+            "measured_calls": 109,
+            "expected_calls": 110,
+            "complete": false,
+            "status": "partial"
+          },
+          "call_seconds": {
+            "known_sum": 1733.153,
+            "measured_calls": 110,
+            "expected_calls": 110,
+            "complete": false,
+            "status": "partial"
+          },
+          "transport_seconds": {
+            "known_sum": 1729.19,
+            "measured_calls": 109,
+            "expected_calls": 110,
+            "complete": false,
+            "status": "partial"
+          }
+        },
+        "statuses": {
+          "returned": 109,
+          "cancelled": 1
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 110,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 884.850795,
+            "measured_calls": 109,
+            "expected_calls": 110,
+            "complete": false,
+            "status": "partial"
+          },
+          "generation_seconds": {
+            "known_sum": 831.223346,
+            "measured_calls": 109,
+            "expected_calls": 110,
+            "complete": false,
+            "status": "partial"
+          },
+          "cached_input_tokens": {
+            "known_sum": 1100526,
+            "measured_calls": 109,
+            "expected_calls": 110,
+            "complete": false,
+            "status": "partial"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 548,
+        "bytes": 5977907,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "ox-current-1-first": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-current-1-first\\attempt-001",
+      "started": "2026-10-19T20:08:15.002331+00:00",
+      "finished": "2026-10-19T20:14:50.700007+00:00",
+      "review": {
+        "source_sha256": "519d27b967bfb7bef1cb273f462926ba8b33371db108cb3efaf4a648458a574a",
+        "changed_files": [
+          "autoproteus/providers.py",
+          "autoproteus/tools.py",
+          "tests/test_sha256_file.py"
+        ],
+        "new_test_files": [
+          "tests/test_sha256_file.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "documentation_updated": false,
+        "runtime_changed": true,
+        "completed": true,
+        "verified_upgrade": true,
+        "autonomously_completed": true,
+        "accepted": true,
+        "regressions_passed": true,
+        "feature": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 61, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-sha256_file",
+            "session": "352f1f49c5b8488c94091b7bfd5a0d1d",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.1,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "public_passed": true
+      },
+      "run": {
+        "task": "sha256_file",
+        "session": "8349909a8cba4b48a8c9c7da17d98fa0",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 86,
+        "seconds": 379.69,
+        "model_requests": 87,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 7,
+        "read_actions": 60,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 59,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 45251,
+        "read_characters": 37772,
+        "overlapping_read_characters": 50,
+        "new_read_characters": 37722,
+        "first_runtime_source_edit_seconds": 54.802,
+        "runtime_source_edits": 2,
+        "first_green_development_check_seconds": 149.621,
+        "last_green_development_check_seconds": 363.01,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 395.64,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 395.640428,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.1e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 6976,
+        "reported_output_tokens": 6976,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 87,
+        "wire_requests": 87,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 1438035,
+            "measured_calls": 87,
+            "expected_calls": 87,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 6976,
+            "measured_calls": 87,
+            "expected_calls": 87,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 354.851,
+            "measured_calls": 87,
+            "expected_calls": 87,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 354.828,
+            "measured_calls": 87,
+            "expected_calls": 87,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 87
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 87,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 65.516123,
+            "measured_calls": 87,
+            "expected_calls": 87,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 262.601754,
+            "measured_calls": 87,
+            "expected_calls": 87,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 1413302,
+            "measured_calls": 87,
+            "expected_calls": 87,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 435,
+        "bytes": 6179843,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "ox-current-1-growth": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-current-1-growth\\attempt-001",
+      "started": "2026-10-19T20:14:50.736716+00:00",
+      "finished": "2026-10-19T20:19:25.234135+00:00",
+      "review": {
+        "source_sha256": "32329cacc11619d6580d549e486295519ae973dbe58832968c1ac9f485ffe3b2",
+        "changed_files": [
+          "autoproteus/providers.py",
+          "autoproteus/tools.py"
+        ],
+        "new_test_files": [],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "documentation_updated": false,
+        "runtime_changed": true,
+        "completed": true,
+        "verified_upgrade": false,
+        "autonomously_completed": false,
+        "accepted": false,
+        "regressions_passed": true,
+        "feature": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": true,
+            "object_idempotent": true,
+            "array": true,
+            "array_idempotent": true,
+            "scalar": true,
+            "scalar_idempotent": true,
+            "exact_output_limit": true,
+            "unicode_output_exact": true,
+            "unicode_output_exact_idempotent": true,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 61, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-format_json",
+            "session": "091ab660b4c44e72ab43a5d5a4f26ecb",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.13,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "public_passed": true
+      },
+      "run": {
+        "task": "second-extension-audit",
+        "session": "4ac94873bf41460e970699bba696b87e",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 35,
+        "seconds": 247.42,
+        "model_requests": 36,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 4,
+        "read_actions": 10,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 10,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 29488,
+        "read_characters": 27402,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 27402,
+        "first_runtime_source_edit_seconds": 31.548,
+        "runtime_source_edits": 2,
+        "first_green_development_check_seconds": 157.497,
+        "last_green_development_check_seconds": 230.082,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 274.469,
+      "verified_extension": false,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": false,
+        "submitted_source_sha256": "32329cacc11619d6580d549e486295519ae973dbe58832968c1ac9f485ffe3b2"
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 274.469419,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 2.5e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 5427,
+        "reported_output_tokens": 5427,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "retained": {
+        "passed": true,
+        "reason": null,
+        "timed_out": null,
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "empty": true,
+          "binary": true,
+          "exact": true,
+          "oversized": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 61, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "run": {
+          "task": "independent-sha256_file",
+          "session": "d40c4b15c5b54522bd7598d0d9fb8af2",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.55,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "retained_public_passed": true,
+      "calls": {
+        "calls": 36,
+        "wire_requests": 36,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 409278,
+            "measured_calls": 36,
+            "expected_calls": 36,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 5427,
+            "measured_calls": 36,
+            "expected_calls": 36,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 231.635,
+            "measured_calls": 36,
+            "expected_calls": 36,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 231.626,
+            "measured_calls": 36,
+            "expected_calls": 36,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 36
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 36,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 36.183826,
+            "measured_calls": 36,
+            "expected_calls": 36,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 192.362077,
+            "measured_calls": 36,
+            "expected_calls": 36,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 392284,
+            "measured_calls": 36,
+            "expected_calls": 36,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 180,
+        "bytes": 1912228,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "ox-current-2-first": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-current-2-first\\attempt-001",
+      "started": "2026-10-19T20:19:25.274127+00:00",
+      "finished": "2026-10-19T20:26:02.061526+00:00",
+      "review": {
+        "source_sha256": "4c7d4c6666923eecbbb9fc5112a4a8aca348701123f2c9471e19eef211e2110e",
+        "changed_files": [
+          "autoproteus/providers.py",
+          "autoproteus/tools.py",
+          "tests/test_sha256_file.py"
+        ],
+        "new_test_files": [
+          "tests/test_sha256_file.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "documentation_updated": false,
+        "runtime_changed": true,
+        "completed": true,
+        "verified_upgrade": true,
+        "autonomously_completed": true,
+        "accepted": true,
+        "regressions_passed": true,
+        "feature": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 63, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-sha256_file",
+            "session": "8a76a936a9b64339a4aad1dad05a33bb",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.9,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "public_passed": true
+      },
+      "run": {
+        "task": "sha256_file",
+        "session": "8ca697393b524df1930e6bad7f9cf9f3",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 50,
+        "seconds": 376.48,
+        "model_requests": 51,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 4,
+        "read_actions": 32,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 31,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 27078,
+        "read_characters": 23142,
+        "overlapping_read_characters": 20,
+        "new_read_characters": 23122,
+        "first_runtime_source_edit_seconds": 41.878,
+        "runtime_source_edits": 4,
+        "first_green_development_check_seconds": 334.378,
+        "last_green_development_check_seconds": 334.378,
+        "actions_after_last_green_check": 3,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 396.745,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0000000000146,
+        "work_seconds": 396.745209,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 2.3e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 7394,
+        "reported_output_tokens": 7394,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 51,
+        "wire_requests": 51,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 635124,
+            "measured_calls": 51,
+            "expected_calls": 51,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 7394,
+            "measured_calls": 51,
+            "expected_calls": 51,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 359.402,
+            "measured_calls": 51,
+            "expected_calls": 51,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 359.388,
+            "measured_calls": 51,
+            "expected_calls": 51,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 51
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 51,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 63.602722,
+            "measured_calls": 51,
+            "expected_calls": 51,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 290.388808,
+            "measured_calls": 51,
+            "expected_calls": 51,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 611758,
+            "measured_calls": 51,
+            "expected_calls": 51,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 255,
+        "bytes": 2833379,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "ox-current-2-growth": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-current-2-growth\\attempt-001",
+      "started": "2026-10-19T20:26:02.112136+00:00",
+      "finished": "2026-10-19T20:33:40.646091+00:00",
+      "review": {
+        "source_sha256": "80c03a1e0d6258d3da024e67cd1d0f01cbb1cbfaeecf0eca8f5a7b1e2afe1c93",
+        "changed_files": [
+          "arguments.json",
+          "autoproteus/providers.py",
+          "autoproteus/tools.py",
+          "sample.txt",
+          "test_input.json",
+          "tests/test_format_json.py"
+        ],
+        "new_test_files": [
+          "tests/test_format_json.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": false,
+        "documentation_updated": false,
+        "runtime_changed": true,
+        "completed": false,
+        "verified_upgrade": false,
+        "autonomously_completed": false,
+        "accepted": false,
+        "regressions_passed": true,
+        "feature": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": true,
+            "object_idempotent": true,
+            "array": true,
+            "array_idempotent": true,
+            "scalar": true,
+            "scalar_idempotent": true,
+            "exact_output_limit": true,
+            "unicode_output_exact": true,
+            "unicode_output_exact_idempotent": true,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 78, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-format_json",
+            "session": "1e11dcf4a29b427991c691acb7fadbbe",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.37,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "public_passed": true
+      },
+      "run": {
+        "task": "second-extension-audit",
+        "session": "661715e84b384b5bacb07c36af6738a1",
+        "status": "waiting",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": false,
+        "checks": [],
+        "steps": 39,
+        "seconds": 430.29,
+        "model_requests": 40,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 10,
+        "read_actions": 6,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": "Waiting for your reply"
+      },
+      "navigation": {
+        "read_actions": 5,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 31492,
+        "read_characters": 29777,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 29777,
+        "first_runtime_source_edit_seconds": 77.404,
+        "runtime_source_edits": 2,
+        "first_green_development_check_seconds": 352.5,
+        "last_green_development_check_seconds": 402.712,
+        "actions_after_last_green_check": 1,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 458.498,
+      "verified_extension": false,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": false,
+        "submitted_source_sha256": "80c03a1e0d6258d3da024e67cd1d0f01cbb1cbfaeecf0eca8f5a7b1e2afe1c93"
+      },
+      "wall_budget": {
+        "allowance_seconds": 1799.9999999999854,
+        "work_seconds": 458.49775,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 2.3e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 9080,
+        "reported_output_tokens": 9080,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "retained": {
+        "passed": true,
+        "reason": null,
+        "timed_out": null,
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "empty": true,
+          "binary": true,
+          "exact": true,
+          "oversized": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 78, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "run": {
+          "task": "independent-sha256_file",
+          "session": "30a3d282c690409c9ed39330ce6f2e90",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.59,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "retained_public_passed": true,
+      "calls": {
+        "calls": 40,
+        "wire_requests": 40,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 653820,
+            "measured_calls": 40,
+            "expected_calls": 40,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 9080,
+            "measured_calls": 40,
+            "expected_calls": 40,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 407.49,
+            "measured_calls": 40,
+            "expected_calls": 40,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 407.478,
+            "measured_calls": 40,
+            "expected_calls": 40,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 40
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 40,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 71.252908,
+            "measured_calls": 40,
+            "expected_calls": 40,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 332.293339,
+            "measured_calls": 40,
+            "expected_calls": 40,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 623119,
+            "measured_calls": 40,
+            "expected_calls": 40,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 200,
+        "bytes": 3031884,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "ox-old-2-first": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-old-2-first\\attempt-001",
+      "started": "2026-10-19T20:33:40.685433+00:00",
+      "finished": "2026-10-19T20:38:31.735218+00:00",
+      "review": {
+        "source_sha256": "8a1ddf92080114eff15a8534e00cdf1e2dba4fc566208deecd390d88b40dbcb0",
+        "changed_files": [
+          "autoproteus/providers.py",
+          "autoproteus/tools.py",
+          "tests/test_sha256_file.py"
+        ],
+        "new_test_files": [
+          "tests/test_sha256_file.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "documentation_updated": false,
+        "runtime_changed": true,
+        "completed": true,
+        "verified_upgrade": true,
+        "autonomously_completed": true,
+        "accepted": true,
+        "regressions_passed": true,
+        "feature": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 61, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-sha256_file",
+            "session": "c9ad4c9abba941168894afe7cafc9ceb",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.18,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "public_passed": true
+      },
+      "run": {
+        "task": "sha256_file",
+        "session": "ac268b3e7efb4ec091aa16bf69546efb",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 18,
+        "seconds": 274.51,
+        "model_requests": 19,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 4,
+        "read_actions": 5,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 4,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 32178,
+        "read_characters": 30825,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 30825,
+        "first_runtime_source_edit_seconds": 40.384,
+        "runtime_source_edits": 3,
+        "first_green_development_check_seconds": 154.392,
+        "last_green_development_check_seconds": 250.428,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 291.025,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 291.024976,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.1e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 6175,
+        "reported_output_tokens": 6175,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 19,
+        "wire_requests": 19,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 204795,
+            "measured_calls": 19,
+            "expected_calls": 19,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 6175,
+            "measured_calls": 19,
+            "expected_calls": 19,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 262.149,
+            "measured_calls": 19,
+            "expected_calls": 19,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 262.144,
+            "measured_calls": 19,
+            "expected_calls": 19,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 19
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 19,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 38.028341,
+            "measured_calls": 19,
+            "expected_calls": 19,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 222.70101,
+            "measured_calls": 19,
+            "expected_calls": 19,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 186941,
+            "measured_calls": 19,
+            "expected_calls": 19,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 95,
+        "bytes": 973691,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "ox-old-2-growth": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-old-2-growth\\attempt-001",
+      "started": "2026-10-19T20:38:31.778241+00:00",
+      "finished": "2026-10-19T20:45:30.397813+00:00",
+      "review": {
+        "source_sha256": "9f33dd8a0727ac41671961a679ac62743893f07811d1506cf1532d358a223dcb",
+        "changed_files": [
+          "autoproteus/providers.py",
+          "autoproteus/tools.py",
+          "sample.txt",
+          "test_sample.json",
+          "tests/test_format_json.py"
+        ],
+        "new_test_files": [
+          "tests/test_format_json.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": false,
+        "documentation_updated": false,
+        "runtime_changed": true,
+        "completed": false,
+        "verified_upgrade": false,
+        "autonomously_completed": false,
+        "accepted": false,
+        "regressions_passed": true,
+        "feature": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": true,
+            "object_idempotent": true,
+            "array": true,
+            "array_idempotent": true,
+            "scalar": true,
+            "scalar_idempotent": true,
+            "exact_output_limit": true,
+            "unicode_output_exact": true,
+            "unicode_output_exact_idempotent": true,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 78, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-format_json",
+            "session": "e8074e6a7ba846af865a5f7ddf7f89c7",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.38,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "public_passed": true
+      },
+      "run": {
+        "task": "second-extension-audit",
+        "session": "2eccdc5d90c249558d2795dd70e6c558",
+        "status": "waiting",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": false,
+        "checks": [],
+        "steps": 31,
+        "seconds": 390.77,
+        "model_requests": 32,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 7,
+        "read_actions": 4,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": "Waiting for your reply"
+      },
+      "navigation": {
+        "read_actions": 4,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 29236,
+        "read_characters": 27661,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 27661,
+        "first_runtime_source_edit_seconds": 62.726,
+        "runtime_source_edits": 3,
+        "first_green_development_check_seconds": 330.622,
+        "last_green_development_check_seconds": 330.622,
+        "actions_after_last_green_check": 10,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 418.581,
+      "verified_extension": false,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": false,
+        "submitted_source_sha256": "9f33dd8a0727ac41671961a679ac62743893f07811d1506cf1532d358a223dcb"
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 418.580707,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 8317,
+        "reported_output_tokens": 8317,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "retained": {
+        "passed": true,
+        "reason": null,
+        "timed_out": null,
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "empty": true,
+          "binary": true,
+          "exact": true,
+          "oversized": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 78, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "run": {
+          "task": "independent-sha256_file",
+          "session": "8ab0cf2304a0410c8b2304bd3a931eaf",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.44,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "retained_public_passed": true,
+      "calls": {
+        "calls": 32,
+        "wire_requests": 32,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 471779,
+            "measured_calls": 32,
+            "expected_calls": 32,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 8317,
+            "measured_calls": 32,
+            "expected_calls": 32,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 375.713,
+            "measured_calls": 32,
+            "expected_calls": 32,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 375.704,
+            "measured_calls": 32,
+            "expected_calls": 32,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 32
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 32,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 57.986757,
+            "measured_calls": 32,
+            "expected_calls": 32,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 314.940698,
+            "measured_calls": 32,
+            "expected_calls": 32,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 448846,
+            "measured_calls": 32,
+            "expected_calls": 32,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 160,
+        "bytes": 2314002,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "ox-old-3-first": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-old-3-first\\attempt-001",
+      "started": "2026-10-19T20:45:30.446993+00:00",
+      "finished": "2026-10-19T20:54:06.496621+00:00",
+      "review": {
+        "source_sha256": "c95dba5a63e97abe8311f2be07d1e3db9777a0fe36223d6b21d795e5c932398b",
+        "changed_files": [
+          "autoproteus/providers.py",
+          "autoproteus/tools.py",
+          "tests/test_sha256_file.py"
+        ],
+        "new_test_files": [
+          "tests/test_sha256_file.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "documentation_updated": false,
+        "runtime_changed": true,
+        "completed": true,
+        "verified_upgrade": true,
+        "autonomously_completed": true,
+        "accepted": true,
+        "regressions_passed": true,
+        "feature": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 59, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-sha256_file",
+            "session": "c5183e6e38c6443c8a959a7a31be6784",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.6,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "public_passed": true
+      },
+      "run": {
+        "task": "sha256_file",
+        "session": "b3f6cc9abc944504868e79c734266a4a",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 85,
+        "seconds": 498.8,
+        "model_requests": 86,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 9,
+        "read_actions": 65,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 64,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 63402,
+        "read_characters": 54763,
+        "overlapping_read_characters": 10240,
+        "new_read_characters": 44523,
+        "first_runtime_source_edit_seconds": 41.311,
+        "runtime_source_edits": 3,
+        "first_green_development_check_seconds": 256.463,
+        "last_green_development_check_seconds": 471.101,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 515.973,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 515.973351,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.3e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 9173,
+        "reported_output_tokens": 9173,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 86,
+        "wire_requests": 86,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 1722524,
+            "measured_calls": 86,
+            "expected_calls": 86,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 9173,
+            "measured_calls": 86,
+            "expected_calls": 86,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 471.69,
+            "measured_calls": 86,
+            "expected_calls": 86,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 471.666,
+            "measured_calls": 86,
+            "expected_calls": 86,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 86
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 86,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 89.921363,
+            "measured_calls": 86,
+            "expected_calls": 86,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 367.822748,
+            "measured_calls": 86,
+            "expected_calls": 86,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 1690726,
+            "measured_calls": 86,
+            "expected_calls": 86,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 430,
+        "bytes": 7337056,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "ox-old-3-growth": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-old-3-growth\\attempt-001",
+      "started": "2026-10-19T20:54:06.541669+00:00",
+      "finished": "2026-10-19T20:59:13.934637+00:00",
+      "review": {
+        "source_sha256": "24483eee56802415d2c74f3de60539909c970ed7a6c2d953abd2fe8f52377763",
+        "changed_files": [
+          "autoproteus/providers.py",
+          "autoproteus/tools.py",
+          "tests/test_format_json.py"
+        ],
+        "new_test_files": [
+          "tests/test_format_json.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "documentation_updated": false,
+        "runtime_changed": true,
+        "completed": true,
+        "verified_upgrade": false,
+        "autonomously_completed": false,
+        "accepted": false,
+        "regressions_passed": true,
+        "feature": {
+          "passed": false,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": false,
+            "object_idempotent": false,
+            "array": false,
+            "array_idempotent": false,
+            "scalar": false,
+            "scalar_idempotent": false,
+            "exact_output_limit": true,
+            "unicode_output_exact": false,
+            "unicode_output_exact_idempotent": false,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 72, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-format_json",
+            "session": "edc1afaa04464d7c943cebc5b5e5d846",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.15,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "public_passed": false
+      },
+      "run": {
+        "task": "second-extension-audit",
+        "session": "bbac11be4e704e3498bd2b6617b1cfbf",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 27,
+        "seconds": 281.09,
+        "model_requests": 28,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 3,
+        "read_actions": 8,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 8,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 26896,
+        "read_characters": 25130,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 25130,
+        "first_runtime_source_edit_seconds": 65.051,
+        "runtime_source_edits": 2,
+        "first_green_development_check_seconds": 222.814,
+        "last_green_development_check_seconds": 222.814,
+        "actions_after_last_green_check": 11,
+        "reads_after_last_green_check": 4,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 307.351,
+      "verified_extension": false,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": false,
+        "submitted_source_sha256": "24483eee56802415d2c74f3de60539909c970ed7a6c2d953abd2fe8f52377763"
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 307.350838,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.1e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 6023,
+        "reported_output_tokens": 6023,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "retained": {
+        "passed": true,
+        "reason": null,
+        "timed_out": null,
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "empty": true,
+          "binary": true,
+          "exact": true,
+          "oversized": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 72, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "run": {
+          "task": "independent-sha256_file",
+          "session": "094651c95e514500a2d7992c79ed9c05",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.11,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "retained_public_passed": true,
+      "calls": {
+        "calls": 28,
+        "wire_requests": 28,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 349697,
+            "measured_calls": 28,
+            "expected_calls": 28,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 6023,
+            "measured_calls": 28,
+            "expected_calls": 28,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 264.625,
+            "measured_calls": 28,
+            "expected_calls": 28,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 264.617,
+            "measured_calls": 28,
+            "expected_calls": 28,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 28
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 28,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 39.050366,
+            "measured_calls": 28,
+            "expected_calls": 28,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 223.235629,
+            "measured_calls": 28,
+            "expected_calls": 28,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 332597,
+            "measured_calls": 28,
+            "expected_calls": 28,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 140,
+        "bytes": 1663877,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "ox-current-3-first": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-current-3-first\\attempt-001",
+      "started": "2026-10-19T20:59:13.977060+00:00",
+      "finished": "2026-10-19T21:04:33.560081+00:00",
+      "review": {
+        "source_sha256": "2661dc7060b5b81b7c8a7d89c7d507f680df68780e613959f68f42e7bcd09c30",
+        "changed_files": [
+          "autoproteus/providers.py",
+          "autoproteus/tools.py",
+          "tests/test_sha256_file.py"
+        ],
+        "new_test_files": [
+          "tests/test_sha256_file.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "documentation_updated": false,
+        "runtime_changed": true,
+        "completed": true,
+        "verified_upgrade": true,
+        "autonomously_completed": true,
+        "accepted": true,
+        "regressions_passed": true,
+        "feature": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 60, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-sha256_file",
+            "session": "1fe5f0cfc1bc474cbfe75284fa217244",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.2,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "public_passed": true
+      },
+      "run": {
+        "task": "sha256_file",
+        "session": "1d545fa918a34b96b5cc3ee4cd281c99",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 52,
+        "seconds": 303.39,
+        "model_requests": 53,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 5,
+        "read_actions": 33,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "navigation": {
+        "read_actions": 33,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 44373,
+        "read_characters": 39512,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 39512,
+        "first_runtime_source_edit_seconds": 51.753,
+        "runtime_source_edits": 3,
+        "first_green_development_check_seconds": 175.582,
+        "last_green_development_check_seconds": 279.895,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 319.537,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 319.537447,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.4e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 6321,
+        "reported_output_tokens": 6321,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "calls": {
+        "calls": 53,
+        "wire_requests": 53,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 792312,
+            "measured_calls": 53,
+            "expected_calls": 53,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 6321,
+            "measured_calls": 53,
+            "expected_calls": 53,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 284.294,
+            "measured_calls": 53,
+            "expected_calls": 53,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 284.281,
+            "measured_calls": 53,
+            "expected_calls": 53,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 53
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 53,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 52.929606,
+            "measured_calls": 53,
+            "expected_calls": 53,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 225.780033,
+            "measured_calls": 53,
+            "expected_calls": 53,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 770532,
+            "measured_calls": 53,
+            "expected_calls": 53,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 265,
+        "bytes": 3473006,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    },
+    "ox-current-3-growth": {
+      "state": "completed",
+      "folder": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-current-3-growth\\attempt-001",
+      "started": "2026-10-19T21:04:33.604602+00:00",
+      "finished": "2026-10-19T21:14:26.214322+00:00",
+      "review": {
+        "source_sha256": "fe873d4dd81cc0efbf0de821ebe9d9253f8af3608531e3737c821e12ff3d0a85",
+        "changed_files": [
+          "autoproteus/providers.py",
+          "autoproteus/tools.py",
+          "sample.json",
+          "tests/test_format_json.py",
+          "tests/test_size_check.py"
+        ],
+        "new_test_files": [
+          "tests/test_format_json.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": false,
+        "documentation_updated": false,
+        "runtime_changed": true,
+        "completed": false,
+        "verified_upgrade": false,
+        "autonomously_completed": false,
+        "accepted": false,
+        "regressions_passed": true,
+        "feature": {
+          "passed": true,
+          "reason": null,
+          "timed_out": null,
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": true,
+            "object_idempotent": true,
+            "array": true,
+            "array_idempotent": true,
+            "scalar": true,
+            "scalar_idempotent": true,
+            "exact_output_limit": true,
+            "unicode_output_exact": true,
+            "unicode_output_exact_idempotent": true,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "compact: 100010\nindented: 100014\n{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 75, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "run": {
+            "task": "independent-format_json",
+            "session": "19bb15aff3554002b3e60470946d3672",
+            "status": "completed",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": true,
+            "checks": [
+              {
+                "path": "heldout-result.json",
+                "passed": true
+              }
+            ],
+            "steps": 1,
+            "seconds": 6.06,
+            "model_requests": 2,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 0,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": ""
+          }
+        },
+        "public_passed": true
+      },
+      "run": {
+        "task": "second-extension-audit",
+        "session": "bc9216b62e894e029f98c45d73e4928d",
+        "status": "waiting",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": false,
+        "checks": [],
+        "steps": 72,
+        "seconds": 564.14,
+        "model_requests": 73,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 16,
+        "read_actions": 11,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": "Waiting for your reply"
+      },
+      "navigation": {
+        "read_actions": 11,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 51393,
+        "read_characters": 48478,
+        "overlapping_read_characters": 110,
+        "new_read_characters": 48368,
+        "first_runtime_source_edit_seconds": 49.547,
+        "runtime_source_edits": 2,
+        "first_green_development_check_seconds": 481.619,
+        "last_green_development_check_seconds": 545.14,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 592.538,
+      "verified_extension": false,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": false,
+        "submitted_source_sha256": "fe873d4dd81cc0efbf0de821ebe9d9253f8af3608531e3737c821e12ff3d0a85"
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 592.538074,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.1e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 12760,
+        "reported_output_tokens": 12760,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "retained": {
+        "passed": true,
+        "reason": null,
+        "timed_out": null,
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "empty": true,
+          "binary": true,
+          "exact": true,
+          "oversized": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "compact: 100010\nindented: 100014\n{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 75, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "run": {
+          "task": "independent-sha256_file",
+          "session": "a8f5aa501ef54fe6bc4c385f4ae008a7",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.06,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "retained_public_passed": true,
+      "calls": {
+        "calls": 73,
+        "wire_requests": 73,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 1527229,
+            "measured_calls": 73,
+            "expected_calls": 73,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 12760,
+            "measured_calls": 73,
+            "expected_calls": 73,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 533.363,
+            "measured_calls": 73,
+            "expected_calls": 73,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 533.344,
+            "measured_calls": 73,
+            "expected_calls": 73,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "statuses": {
+          "returned": 73
+        },
+        "error_categories": {}
+      },
+      "latency": {
+        "measurements": {
+          "model_load_seconds": {
+            "known_sum": null,
+            "measured_calls": 0,
+            "expected_calls": 73,
+            "complete": false,
+            "status": "unavailable"
+          },
+          "prompt_processing_seconds": {
+            "known_sum": 81.452109,
+            "measured_calls": 73,
+            "expected_calls": 73,
+            "complete": true,
+            "status": "complete"
+          },
+          "generation_seconds": {
+            "known_sum": 442.014089,
+            "measured_calls": 73,
+            "expected_calls": 73,
+            "complete": true,
+            "status": "complete"
+          },
+          "cached_input_tokens": {
+            "known_sum": 1494005,
+            "measured_calls": 73,
+            "expected_calls": 73,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "time_to_first_token": null,
+        "scope": "Provider-reported phases only; unknown timings and cache hits are not zero."
+      },
+      "capture": {
+        "records": 365,
+        "bytes": 6819030,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      }
+    }
+  },
+  "completion": {
+    "finished": "2026-10-19T21:14:26.271094+00:00",
+    "arms": {
+      "old": {
+        "first_attempts": 3,
+        "first_accepted": 3,
+        "growth_attempts": 3,
+        "second_verified": 1,
+        "completed_chains": 0,
+        "direct_route_chains": 0
+      },
+      "current": {
+        "first_attempts": 3,
+        "first_accepted": 3,
+        "growth_attempts": 3,
+        "second_verified": 0,
+        "completed_chains": 0,
+        "direct_route_chains": 0
+      }
+    },
+    "provisional_winner": null,
+    "qwen_confirmation": "deferred: no clear provisional winner",
+    "queue": {
+      "launched_attempts": 25,
+      "completed_attempts": 25,
+      "interrupted_or_error_attempts": 0,
+      "unresolved_cells": [],
+      "not_run": 0
+    },
+    "disk": {
+      "total": 1024207089664,
+      "free": 127870124032,
+      "reserve": 102420708967,
+      "headroom": 25449415065
+    }
+  },
+  "audit": {
+    "time": "2026-10-19T21:17:07.089306+00:00",
+    "seed_sha256": "44ac04dd3eb74191ee46481899e2ccc9d9d606ca273699b03b7b53b447fa2e4c",
+    "frozen_seed_unchanged": true,
+    "trusted_files_unchanged": true,
+    "source_snapshots_unchanged": {
+      "old": true,
+      "current": true
+    },
+    "private_test_ports_listening": {
+      "47841": false,
+      "11435": false
+    },
+    "git_head": "aed23d3b73d304c32ae86a9b247fc947c7f4e502",
+    "tracked_changes": [
+      "CHANGELOG.md",
+      "README.md",
+      "autoproteus/__init__.py",
+      "controller/__init__.py",
+      "tests/test_seed.py"
+    ],
+    "disk": {
+      "free_bytes": 127870173184,
+      "total_bytes": 1024207089664,
+      "free_percent": 12.484796724649593,
+      "reserve_met": true
+    }
+  },
+  "launches": {
+    "oxcoder-9b-q6_k-matched-chains": {
+      "created": "2026-10-19T19:29:50.747173+00:00",
+      "command": [
+        "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-server.exe",
+        "-m",
+        "D:\\AI_New\\AP\\.data\\model-round-v0.0.16-20261018\\downloads\\OxCoder-9B-GGUF\\OxCoder-9B-Q6_K.gguf",
+        "--alias",
+        "oxcoder-9b-q6_k",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "47841",
+        "-ngl",
+        "auto",
+        "-c",
+        "131072",
+        "-np",
+        "1",
+        "-b",
+        "256",
+        "-ub",
+        "128",
+        "-fa",
+        "on",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--jinja",
+        "--temp",
+        "0.6",
+        "--top-p",
+        "0.8",
+        "--top-k",
+        "20",
+        "--min-p",
+        "0",
+        "--presence-penalty",
+        "0",
+        "--repeat-penalty",
+        "1.0",
+        "--metrics",
+        "--chat-template-kwargs",
+        "{\"enable_thinking\":false}",
+        "--reasoning-budget",
+        "0"
+      ],
+      "gpu_before": "NVIDIA GeForce GTX 1080 Ti, 11264, 1199, 2",
+      "ram_before": {
+        "physical_total": 34132537344,
+        "physical_available": 17152970752,
+        "load_percent": 49
+      },
+      "settings": {
+        "context": 131072,
+        "thinking": false,
+        "temperature": 0.6,
+        "top_p": 0.8,
+        "top_k": 20,
+        "repeat_penalty": 1.0
+      }
+    },
+    "oxcoder-9b-q6_k-seed-comparison": {
+      "created": "2026-10-19T19:27:49.863748+00:00",
+      "command": [
+        "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-server.exe",
+        "-m",
+        "D:\\AI_New\\AP\\.data\\model-round-v0.0.16-20261018\\downloads\\OxCoder-9B-GGUF\\OxCoder-9B-Q6_K.gguf",
+        "--alias",
+        "oxcoder-9b-q6_k",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "47841",
+        "-ngl",
+        "auto",
+        "-c",
+        "131072",
+        "-np",
+        "1",
+        "-b",
+        "256",
+        "-ub",
+        "128",
+        "-fa",
+        "on",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--jinja",
+        "--temp",
+        "0.6",
+        "--top-p",
+        "0.8",
+        "--top-k",
+        "20",
+        "--min-p",
+        "0",
+        "--presence-penalty",
+        "0",
+        "--repeat-penalty",
+        "1.0",
+        "--metrics",
+        "--chat-template-kwargs",
+        "{\"enable_thinking\":false}",
+        "--reasoning-budget",
+        "0"
+      ],
+      "gpu_before": "NVIDIA GeForce GTX 1080 Ti, 11264, 1245, 1",
+      "ram_before": {
+        "physical_total": 34132537344,
+        "physical_available": 16914698240,
+        "load_percent": 50
+      },
+      "settings": {
+        "context": 131072,
+        "thinking": false,
+        "temperature": 0.6,
+        "top_p": 0.8,
+        "top_k": 20,
+        "repeat_penalty": 1.0
+      }
+    },
+    "qwen35-9b-q6_k-saved-candidate-use": {
+      "created": "2026-10-19T19:28:52.574831+00:00",
+      "command": [
+        "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-server.exe",
+        "-m",
+        "D:\\AI_New\\AP\\.data\\models\\gguf\\Qwen_Qwen3.5-9B-Q6_K.gguf",
+        "--alias",
+        "qwen35-9b-q6_k",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "47841",
+        "-ngl",
+        "auto",
+        "-c",
+        "131072",
+        "-np",
+        "1",
+        "-b",
+        "256",
+        "-ub",
+        "128",
+        "-fa",
+        "on",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--jinja",
+        "--temp",
+        "0.6",
+        "--top-p",
+        "0.8",
+        "--top-k",
+        "20",
+        "--min-p",
+        "0",
+        "--presence-penalty",
+        "0",
+        "--repeat-penalty",
+        "1.0",
+        "--metrics",
+        "--chat-template-kwargs",
+        "{\"enable_thinking\":false}",
+        "--reasoning-budget",
+        "0"
+      ],
+      "gpu_before": "NVIDIA GeForce GTX 1080 Ti, 11264, 1243, 2",
+      "ram_before": {
+        "physical_total": 34132537344,
+        "physical_available": 17258917888,
+        "load_percent": 49
+      },
+      "settings": {
+        "context": 131072,
+        "thinking": false,
+        "temperature": 0.6,
+        "top_p": 0.8,
+        "top_k": 20,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "ordinary_validation": {
+    "passed": 232,
+    "skipped": 45,
+    "total": 277,
+    "exit_code": 0,
+    "initial_sandbox_run": "Loopback sockets denied; original output retained. Repeat with local socket access passed without code changes."
+  }
+}

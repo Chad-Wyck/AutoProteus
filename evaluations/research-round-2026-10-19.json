@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-10-19T19:51:43Z",
+  "timezone": "America/Regina",
+  "report": "evaluations/research-round-2026-10-19.md",
+  "local": {
+    "git_head": "aed23d3b73d304c32ae86a9b247fc947c7f4e502",
+    "working_version": "0.2.1",
+    "dirty": true,
+    "note": "Existing fixture correction/version changes and v0.2.0 findings were read; application files were not edited by this research round.",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "sha256": "e0fc9326c15e5b8e201d4fc7fec13b8a229626ba221a73ff43c092a06c1679ee"
+      },
+      {
+        "path": "README.md",
+        "sha256": "3465609529db2b006bd93e21c42ef355f351788bab754d914b692a152ada7e6b"
+      },
+      {
+        "path": "autoproteus/__init__.py",
+        "sha256": "d149af0a2c668415271c0ce4c4add815ff32c0e76829bb01c0f967bdde91fc53"
+      },
+      {
+        "path": "controller/__init__.py",
+        "sha256": "d149af0a2c668415271c0ce4c4add815ff32c0e76829bb01c0f967bdde91fc53"
+      },
+      {
+        "path": "tests/test_seed.py",
+        "sha256": "792d90e3300878a25190202af9bc741b99283c6da0353b01da34d6144435e40e"
+      },
+      {
+        "path": "tests/test_context_fixtures.py",
+        "sha256": "ef75c107d5aa3c298cb88916b26dd56d65268df9fc2ce55016e587d4d5e38a60"
+      },
+      {
+        "path": "evaluations/seed-v0.2.0-local-findings.md",
+        "sha256": "6ded18572b8c027b88117ef98a6e2411165f9a8303fe5231a88a4ecc5f3ef5a7"
+      },
+      {
+        "path": "evaluations/seed-v0.2.0-local-results.json",
+        "sha256": "12e4ce8085fc1c990ca8ce54af8213909dd97b15413ed667091ac8ba08ca158b"
+      }
+    ]
+  },
+  "method": "Focused static source, test and documentation review. Upstream code/tests not executed. No model trials. Unchanged heads/releases do not imply a comprehensive audit.",
+  "upstream": [
+    {
+      "repository": "google-research/harness2",
+      "head_sha": "1cfe254e8d25b15f37048c3730134686abe60335",
+      "head_changed_since_watch_baseline": false,
+      "latest_release_tag": null,
+      "release_changed_since_watch_baseline": false,
+      "selected_source_sections_inspected": [
+        "harness2/core/prompts.py",
+        "harness2/core/library.py",
+        "harness2/core/selection.py"
+      ]
+    },
+    {
+      "repository": "NousResearch/hermes-agent",
+      "head_sha": "c0015464f0f40d52c5702a84cf58e70361f4a04c",
+      "head_changed_since_watch_baseline": false,
+      "latest_release_tag": "v0.22.2",
+      "release_changed_since_watch_baseline": false,
+      "selected_source_sections_inspected": [
+        "agent/background_review.py",
+        "agent/usage_anchor.py",
+        "tools/skill_ledger.py"
+      ]
+    },
+    {
+      "repository": "adithya-s-k/FineEnvs",
+      "head_sha": "410fb3454a903646f814bb752513c56fed3eae78",
+      "head_changed_since_watch_baseline": false,
+      "latest_release_tag": null,
+      "release_changed_since_watch_baseline": false,
+      "selected_source_sections_inspected": [
+        "05-multi-harness-rl/eval/README.md"
+      ]
+    },
+    {
+      "repository": "gepa-ai/gepa",
+      "head_sha": "f1cfdee2856e9dc4b5b4dc5cc2e391d0aa20d819",
+      "head_changed_since_watch_baseline": false,
+      "latest_release_tag": "v0.1.4",
+      "release_changed_since_watch_baseline": false,
+      "selected_source_sections_inspected": [
+        "src/gepa/core/adapter.py",
+        "src/gepa/proposer/reflective_mutation/reflective_mutation.py",
+        "src/gepa/oa/budget.py"
+      ]
+    },
+    {
+      "repository": "SWE-agent/mini-swe-agent",
+      "head_sha": "04d809ceab9df28f9adaed044884180159172930",
+      "head_changed_since_watch_baseline": false,
+      "latest_release_tag": "v2.4.6",
+      "release_changed_since_watch_baseline": false,
+      "selected_source_sections_inspected": [
+        "src/minisweagent/models/utils/actions_toolcall.py",
+        "tests/models/test_format_error_response_persistence.py",
+        "tests/models/test_truncation_finish_reason.py"
+      ]
+    },
+    {
+      "repository": "SakanaAI/ShinkaEvolve",
+      "head_sha": "8adc053a2ce4511ad2ac310e004c530a73fb974a",
+      "head_changed_since_watch_baseline": false,
+      "latest_release_tag": "v0.0.7",
+      "release_changed_since_watch_baseline": false,
+      "selected_source_sections_inspected": [
+        "shinka/core/sampler.py",
+        "shinka/core/novelty_judge.py",
+        "shinka/database/island_sampler.py"
+      ]
+    },
+    {
+      "repository": "UKGovernmentBEIS/inspect_ai",
+      "head_sha": "4aa17c03d738a31b16cf08a63d9a953279c2f6a8",
+      "head_changed_since_watch_baseline": false,
+      "latest_release_tag": "0.3.281",
+      "release_changed_since_watch_baseline": false,
+      "selected_source_sections_inspected": [
+        "docs/_errors_and_retries.md",
+        "docs/eval-sets.qmd",
+        "docs/metrics.qmd"
+      ]
+    },
+    {
+      "repository": "ggml-org/llama.cpp",
+      "head_sha": "1b29621bacc6a446bd523fc790316a24a06e886f",
+      "head_changed_since_watch_baseline": false,
+      "latest_release_tag": "b11739",
+      "release_changed_since_watch_baseline": false,
+      "selected_source_sections_inspected": [
+        "docs/function-calling.md"
+      ]
+    }
+  ],
+  "additional_paper": {
+    "title": "Adaptive-GEPA: Make Your Harness Fit Heterogeneous Requests",
+    "url": "https://arxiv.org/html/2609.38762v1",
+    "published": "2026-09-30",
+    "scope": "Paper-level methods and limitations; associated implementation not validated; not added to the eight-repository watchlist."
+  },
+  "findings": [
+    {
+      "id": "2026-10-19-repair-feedback",
+      "theme": "Structured failure evidence for test repair; use existing invoker/traces."
+    },
+    {
+      "id": "2026-10-19-lesson-provenance",
+      "theme": "Selectively retrieved lessons with source evidence; static procedure and loaded/followed records already exist."
+    },
+    {
+      "id": "2026-10-19-profile-qualification",
+      "theme": "Repeated full-profile qualification and response replay; cutoff handling and identity freezing already exist."
+    },
+    {
+      "id": "2026-10-19-capability-progress",
+      "theme": "Extend existing verification UI with capability-scoped active/check/use evidence."
+    },
+    {
+      "id": "2026-10-19-variants-later",
+      "theme": "Small archive later; no routing/population requirement for initial lessons."
+    }
+  ]
+}

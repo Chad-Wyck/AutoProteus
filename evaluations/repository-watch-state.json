@@ -1,0 +1,359 @@
+{
+  "schema_version": 1,
+  "created_on": "2026-10-19",
+  "timezone": "America/Regina",
+  "research_only": true,
+  "scope_note": "Head/release observations plus an initial relevance screen; not a comprehensive source audit or a reproduced benchmark.",
+  "automation": {
+    "id": "autoproteus-repository-watch",
+    "status": "ACTIVE",
+    "name": "AutoProteus repository watch",
+    "cadence": "Mondays at 09:00",
+    "timezone": "America/Regina"
+  },
+  "repositories": [
+    {
+      "repository": "google-research/harness2",
+      "url": "https://github.com/google-research/harness2",
+      "origin": "user_link_or_linked_source",
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "Apache-2.0",
+      "observed_at": "2026-10-19T19:40:55Z",
+      "last_seen_head": {
+        "sha": "1cfe254e8d25b15f37048c3730134686abe60335",
+        "committed_at": "2026-10-14T02:22:49Z",
+        "subject": "Fix arXiv link"
+      },
+      "latest_visible_release": null,
+      "focus_paths": [
+        "harness2/core/",
+        "docs/EXPERIMENTS.md"
+      ],
+      "coverage": "Default-branch head and latest visible release rechecked; selected source/test/documentation sections reviewed. Not a comprehensive audit.",
+      "last_change_reviewed_through": null,
+      "reported_findings": [
+        "2026-10-19-lesson-provenance",
+        "2026-10-19-repair-feedback"
+      ],
+      "access_gaps": [],
+      "last_checked_at": "2026-10-19T19:51:43Z",
+      "last_source_review": {
+        "head_sha": "1cfe254e8d25b15f37048c3730134686abe60335",
+        "reviewed_at": "2026-10-19T19:51:43Z",
+        "paths": [
+          "harness2/core/prompts.py",
+          "harness2/core/library.py",
+          "harness2/core/selection.py"
+        ],
+        "scope": "Focused static review of selected sections, with local-code comparison; source not executed.",
+        "report": "evaluations/research-round-2026-10-19.md"
+      }
+    },
+    {
+      "repository": "NousResearch/hermes-agent",
+      "url": "https://github.com/NousResearch/hermes-agent",
+      "origin": "user_link_or_linked_source",
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "MIT",
+      "observed_at": "2026-10-19T19:40:55Z",
+      "last_seen_head": {
+        "sha": "c0015464f0f40d52c5702a84cf58e70361f4a04c",
+        "committed_at": "2026-10-19T19:12:46Z",
+        "subject": "Merge pull request #141501 from NousResearch/fix/pkg13-cli-queue"
+      },
+      "latest_visible_release": {
+        "tag": "v0.22.2",
+        "url": "https://github.com/NousResearch/hermes-agent/releases/tag/v0.22.2",
+        "published_at": "2026-10-15T08:21:32Z",
+        "prerelease": false
+      },
+      "focus_paths": [
+        "agent/",
+        "tools/skills_tool.py",
+        "tools/session_search_tool.py",
+        "tools/skill_ledger.py"
+      ],
+      "coverage": "Default-branch head and latest visible release rechecked; selected source/test/documentation sections reviewed. Not a comprehensive audit.",
+      "last_change_reviewed_through": null,
+      "reported_findings": [
+        "2026-10-19-lesson-provenance",
+        "2026-10-19-capability-progress"
+      ],
+      "access_gaps": [],
+      "last_checked_at": "2026-10-19T19:51:43Z",
+      "last_source_review": {
+        "head_sha": "c0015464f0f40d52c5702a84cf58e70361f4a04c",
+        "reviewed_at": "2026-10-19T19:51:43Z",
+        "paths": [
+          "agent/background_review.py",
+          "agent/usage_anchor.py",
+          "tools/skill_ledger.py"
+        ],
+        "scope": "Focused static review of selected sections, with local-code comparison; source not executed.",
+        "report": "evaluations/research-round-2026-10-19.md"
+      }
+    },
+    {
+      "repository": "adithya-s-k/FineEnvs",
+      "url": "https://github.com/adithya-s-k/FineEnvs",
+      "origin": "user_link_or_linked_source",
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "Apache-2.0",
+      "observed_at": "2026-10-19T19:40:55Z",
+      "last_seen_head": {
+        "sha": "410fb3454a903646f814bb752513c56fed3eae78",
+        "committed_at": "2026-10-14T12:39:59Z",
+        "subject": "Merge pull request #69 from adithya-s-k/readme-openenv-link"
+      },
+      "latest_visible_release": null,
+      "focus_paths": [
+        "05-multi-harness-rl/"
+      ],
+      "coverage": "Default-branch head and latest visible release rechecked; selected source/test/documentation sections reviewed. Not a comprehensive audit.",
+      "last_change_reviewed_through": null,
+      "reported_findings": [
+        "2026-10-19-retain-coverage-policy"
+      ],
+      "access_gaps": [],
+      "last_checked_at": "2026-10-19T19:51:43Z",
+      "last_source_review": {
+        "head_sha": "410fb3454a903646f814bb752513c56fed3eae78",
+        "reviewed_at": "2026-10-19T19:51:43Z",
+        "paths": [
+          "05-multi-harness-rl/eval/README.md"
+        ],
+        "scope": "Focused static review of selected sections, with local-code comparison; source not executed.",
+        "report": "evaluations/research-round-2026-10-19.md"
+      }
+    },
+    {
+      "repository": "gepa-ai/gepa",
+      "url": "https://github.com/gepa-ai/gepa",
+      "origin": "additional_repository",
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "MIT",
+      "observed_at": "2026-10-19T19:40:55Z",
+      "last_seen_head": {
+        "sha": "f1cfdee2856e9dc4b5b4dc5cc2e391d0aa20d819",
+        "committed_at": "2026-10-12T19:48:04Z",
+        "subject": "fix(oa): make start() honor the stopped state too"
+      },
+      "latest_visible_release": {
+        "tag": "v0.1.4",
+        "url": "https://github.com/gepa-ai/gepa/releases/tag/v0.1.4",
+        "published_at": "2026-07-15T14:50:58Z",
+        "prerelease": false
+      },
+      "focus_paths": [
+        "src/gepa/",
+        "docs/"
+      ],
+      "coverage": "Default-branch head and latest visible release rechecked; selected source/test/documentation sections reviewed. Not a comprehensive audit.",
+      "last_change_reviewed_through": null,
+      "reported_findings": [
+        "2026-10-19-repair-feedback",
+        "2026-10-19-whole-search-budget"
+      ],
+      "access_gaps": [],
+      "last_checked_at": "2026-10-19T19:51:43Z",
+      "last_source_review": {
+        "head_sha": "f1cfdee2856e9dc4b5b4dc5cc2e391d0aa20d819",
+        "reviewed_at": "2026-10-19T19:51:43Z",
+        "paths": [
+          "src/gepa/core/adapter.py",
+          "src/gepa/proposer/reflective_mutation/reflective_mutation.py",
+          "src/gepa/oa/budget.py"
+        ],
+        "scope": "Focused static review of selected sections, with local-code comparison; source not executed.",
+        "report": "evaluations/research-round-2026-10-19.md"
+      }
+    },
+    {
+      "repository": "SWE-agent/mini-swe-agent",
+      "url": "https://github.com/SWE-agent/mini-swe-agent",
+      "origin": "additional_repository",
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "MIT",
+      "observed_at": "2026-10-19T19:40:55Z",
+      "last_seen_head": {
+        "sha": "04d809ceab9df28f9adaed044884180159172930",
+        "committed_at": "2026-09-03T05:05:59Z",
+        "subject": "Merge branch 'main' of github.com:SWE-agent/mini-swe-agent"
+      },
+      "latest_visible_release": {
+        "tag": "v2.4.6",
+        "url": "https://github.com/SWE-agent/mini-swe-agent/releases/tag/v2.4.6",
+        "published_at": "2026-07-23T03:12:33Z",
+        "prerelease": false
+      },
+      "focus_paths": [
+        "src/minisweagent/agents/",
+        "src/minisweagent/models/",
+        "src/minisweagent/environments/"
+      ],
+      "coverage": "Default-branch head and latest visible release rechecked; selected source/test/documentation sections reviewed. Not a comprehensive audit.",
+      "last_change_reviewed_through": null,
+      "reported_findings": [
+        "2026-10-19-profile-qualification"
+      ],
+      "access_gaps": [],
+      "last_checked_at": "2026-10-19T19:51:43Z",
+      "last_source_review": {
+        "head_sha": "04d809ceab9df28f9adaed044884180159172930",
+        "reviewed_at": "2026-10-19T19:51:43Z",
+        "paths": [
+          "src/minisweagent/models/utils/actions_toolcall.py",
+          "tests/models/test_format_error_response_persistence.py",
+          "tests/models/test_truncation_finish_reason.py"
+        ],
+        "scope": "Focused static review of selected sections, with local-code comparison; source not executed.",
+        "report": "evaluations/research-round-2026-10-19.md"
+      }
+    },
+    {
+      "repository": "SakanaAI/ShinkaEvolve",
+      "url": "https://github.com/SakanaAI/ShinkaEvolve",
+      "origin": "additional_repository",
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "Apache-2.0",
+      "observed_at": "2026-10-19T19:40:55Z",
+      "last_seen_head": {
+        "sha": "8adc053a2ce4511ad2ac310e004c530a73fb974a",
+        "committed_at": "2026-10-05T04:18:27Z",
+        "subject": "Merge pull request #195 from SakanaAI/security/harden-claude-workflow"
+      },
+      "latest_visible_release": {
+        "tag": "v0.0.7",
+        "url": "https://github.com/SakanaAI/ShinkaEvolve/releases/tag/v0.0.7",
+        "published_at": "2026-06-02T16:44:18Z",
+        "prerelease": false
+      },
+      "focus_paths": [
+        "shinka/",
+        "README.md",
+        "CHANGELOG.md"
+      ],
+      "coverage": "Default-branch head and latest visible release rechecked; selected source/test/documentation sections reviewed. Not a comprehensive audit.",
+      "last_change_reviewed_through": null,
+      "reported_findings": [
+        "2026-10-19-variants-later"
+      ],
+      "access_gaps": [],
+      "last_checked_at": "2026-10-19T19:51:43Z",
+      "last_source_review": {
+        "head_sha": "8adc053a2ce4511ad2ac310e004c530a73fb974a",
+        "reviewed_at": "2026-10-19T19:51:43Z",
+        "paths": [
+          "shinka/core/sampler.py",
+          "shinka/core/novelty_judge.py",
+          "shinka/database/island_sampler.py"
+        ],
+        "scope": "Focused static review of selected sections, with local-code comparison; source not executed.",
+        "report": "evaluations/research-round-2026-10-19.md"
+      }
+    },
+    {
+      "repository": "UKGovernmentBEIS/inspect_ai",
+      "url": "https://github.com/UKGovernmentBEIS/inspect_ai",
+      "origin": "additional_repository",
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "MIT",
+      "observed_at": "2026-10-19T19:40:55Z",
+      "last_seen_head": {
+        "sha": "4aa17c03d738a31b16cf08a63d9a953279c2f6a8",
+        "committed_at": "2026-10-19T18:58:34Z",
+        "subject": "docs: ask non-maintainers to leave PR reviews as comments (#5957)"
+      },
+      "latest_visible_release": {
+        "tag": "0.3.281",
+        "url": "https://github.com/UKGovernmentBEIS/inspect_ai/releases/tag/0.3.281",
+        "published_at": "2026-10-15T17:58:56Z",
+        "prerelease": false
+      },
+      "focus_paths": [
+        "src/inspect_ai/",
+        "docs/models.qmd",
+        "docs/eval-logs.qmd",
+        "docs/log-viewer.qmd"
+      ],
+      "coverage": "Default-branch head and latest visible release rechecked; selected source/test/documentation sections reviewed. Not a comprehensive audit.",
+      "last_change_reviewed_through": null,
+      "reported_findings": [
+        "2026-10-19-capability-progress",
+        "2026-10-19-retain-coverage-policy"
+      ],
+      "access_gaps": [],
+      "last_checked_at": "2026-10-19T19:51:43Z",
+      "last_source_review": {
+        "head_sha": "4aa17c03d738a31b16cf08a63d9a953279c2f6a8",
+        "reviewed_at": "2026-10-19T19:51:43Z",
+        "paths": [
+          "docs/_errors_and_retries.md",
+          "docs/eval-sets.qmd",
+          "docs/metrics.qmd"
+        ],
+        "scope": "Focused static review of selected sections, with local-code comparison; source not executed.",
+        "report": "evaluations/research-round-2026-10-19.md"
+      }
+    },
+    {
+      "repository": "ggml-org/llama.cpp",
+      "url": "https://github.com/ggml-org/llama.cpp",
+      "origin": "additional_repository",
+      "default_branch": "master",
+      "archived": false,
+      "license_spdx": "MIT",
+      "observed_at": "2026-10-19T19:40:55Z",
+      "last_seen_head": {
+        "sha": "1b29621bacc6a446bd523fc790316a24a06e886f",
+        "committed_at": "2026-10-19T19:30:39Z",
+        "subject": "opencl: add cooperative-k dp4a gemm for q4_0, q4_k and q6_k (#30741)"
+      },
+      "latest_visible_release": {
+        "tag": "b11739",
+        "url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11739",
+        "published_at": "2026-10-19T17:57:49Z",
+        "prerelease": true
+      },
+      "focus_paths": [
+        "tools/server/",
+        "src/",
+        "ggml/src/ggml-cuda/",
+        "docs/function-calling.md"
+      ],
+      "coverage": "Default-branch head and latest visible release rechecked; selected source/test/documentation sections reviewed. Not a comprehensive audit.",
+      "last_change_reviewed_through": null,
+      "reported_findings": [
+        "2026-10-19-profile-qualification"
+      ],
+      "access_gaps": [],
+      "last_checked_at": "2026-10-19T19:51:43Z",
+      "last_source_review": {
+        "head_sha": "1b29621bacc6a446bd523fc790316a24a06e886f",
+        "reviewed_at": "2026-10-19T19:51:43Z",
+        "paths": [
+          "docs/function-calling.md"
+        ],
+        "scope": "Focused static review of selected sections, with local-code comparison; source not executed.",
+        "report": "evaluations/research-round-2026-10-19.md"
+      }
+    }
+  ],
+  "last_manual_review": {
+    "reviewed_at": "2026-10-19T19:51:43Z",
+    "report": "evaluations/research-round-2026-10-19.md",
+    "manifest": "evaluations/research-round-2026-10-19.json",
+    "local_git_head": "aed23d3b73d304c32ae86a9b247fc947c7f4e502",
+    "local_working_version": "0.2.1 (uncommitted fixture correction)",
+    "default_branch_changes_observed": 0,
+    "release_changes_observed": 0,
+    "scope": "Selected current source/test/documentation sections; not a comprehensive change or security audit."
+  }
+}

@@ -2,7 +2,7 @@
 
 A small, model-agnostic agent that grows its own harness inside a disposable Linux VM. A separate host controller keeps model connections, credentials, the browser interface, safety policy, and recovery outside the editable seed.
 
-Development releases use **v0.x.y**: increase `x` for a feature release and `y` for bug fixes, resetting `y` to zero when `x` increases. Each number can have multiple digits. The current release is **v0.2.0**; a following bug fix would be `v0.2.1`, and the next feature release `v0.3.0`. **v1.0.0** is reserved for launch. See [release notes](CHANGELOG.md).
+Development releases use **v0.x.y**: increase `x` for a feature release and `y` for bug fixes, resetting `y` to zero when `x` increases. Each number can have multiple digits. The current release is **v0.2.1**; a following bug fix would be `v0.2.2`, and the next feature release `v0.3.0`. **v1.0.0** is reserved for launch. See [release notes](CHANGELOG.md).
 
 Incomplete model responses never execute partial actions. Each response, including the free final response, has two repair retries; a successful response resets that allowance. Recognized malformed native arguments and oversized tool batches use the same repair allowance, with the entire rejected response discarded. The controller reserves the same bounded request allowance, so interleaved repairs cannot consume the requests needed to finish. Connection failures, timeouts and repeated invalid responses still stop the run with its checkpoint preserved.
 

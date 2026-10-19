@@ -1,0 +1,128 @@
+{
+  "kind": "research_example_only",
+  "created_on": "2026-10-19",
+  "external_design_reference": "bartanderson/Determined@31f3337848416bc23cc99b0b82b90a2d644b58fe",
+  "local_git_head": "aed23d3b73d304c32ae86a9b247fc947c7f4e502",
+  "local_working_version": "0.2.1, uncommitted fixture changes",
+  "purpose": "Example of focused source evidence for a seed-tool edit. No new feature contract is supplied or inferred.",
+  "target": {
+    "path": "autoproteus/tools.py",
+    "symbol": "Workspace.execute"
+  },
+  "observed_workspace_apis": [
+    {
+      "qualified_name": "Workspace.read_text",
+      "line": 31,
+      "signature": "def read_text(self, path, missing_ok=False):"
+    },
+    {
+      "qualified_name": "Workspace.write_text",
+      "line": 49,
+      "signature": "def write_text(self, path, content):"
+    },
+    {
+      "qualified_name": "Workspace.__init__",
+      "line": 61,
+      "signature": "def __init__(self, root: Path, terminal=False, cancel=None, timeout=60):"
+    },
+    {
+      "qualified_name": "Workspace.path",
+      "line": 67,
+      "signature": "def path(self, value=\".\"):"
+    },
+    {
+      "qualified_name": "Workspace.execute",
+      "line": 75,
+      "signature": "def execute(self, tool, args):"
+    }
+  ],
+  "source_evidence": [
+    {
+      "path": "autoproteus/tools.py",
+      "sha256": "3a1bf580cdc0e08753b77ac1c864b3e546af5d1145d20ef5a4ee8d2efcb2194f",
+      "excerpts": [
+        {
+          "line": 75,
+          "end_line": 79,
+          "character_start": 2661,
+          "character_end": 2865,
+          "source": "    def execute(self, tool, args):\n        if self.cancel.is_set():\n            raise Cancelled()\n        if not isinstance(args, dict):\n            raise ValueError(\"Action arguments must be an object\")\n",
+          "complete_file": false
+        },
+        {
+          "line": 98,
+          "end_line": 109,
+          "character_start": 3856,
+          "character_end": 4452,
+          "source": "        if tool in (\"read_file\", \"read_section\"):\n            from .file_ops import read_file\n            return read_file(self, tool, args)\n        if tool == \"write_file\":\n            return self.write_text(args[\"path\"], args[\"content\"])\n        if tool == \"edit_file\":\n            from .file_ops import edit_file\n            return edit_file(self, args)\n        if tool == \"run_command\":\n            if not self.terminal:\n                raise ValueError(\"Terminal access is disabled. Use file tools or ask the user to enable it in Settings.\")\n            return self.command(args[\"command\"])\n",
+          "complete_file": false
+        }
+      ]
+    },
+    {
+      "path": "autoproteus/providers.py",
+      "sha256": "677ebbba88a342cf315c55e0bb51a41b6ca54b48e2bf1b560c819e517d54e6b1",
+      "excerpts": [
+        {
+          "line": 14,
+          "end_line": 19,
+          "character_start": 311,
+          "character_end": 991,
+          "source": "# name: (description, argument properties, required arguments)\nTOOL_SPECS = {\n    \"list_files\": (\"List a directory in the task workspace; path defaults to '.'.\", {\"path\": STRING}, []),\n    \"read_file\": (f\"Read a complete UTF-8 file of at most {LIMIT} characters. Larger files require read_section; never returns a partial file.\",\n                  {\"path\": STRING}, [\"path\"]),\n    \"read_section\": (f\"Read a relevant section of a UTF-8 file. start is a character position (default 0), length is characters (default {READ_DEFAULT}, maximum {LIMIT}). Prefer useful sections to many tiny reads. next_start continues a whole-file read when needed; stop once you have enough context.\",\n",
+          "complete_file": false
+        },
+        {
+          "line": 34,
+          "end_line": 40,
+          "character_start": 2454,
+          "character_end": 2839,
+          "source": "def tool_definitions(terminal=False):\n    return [{\"type\": \"function\", \"function\": {\"name\": name, \"description\": description,\n             \"parameters\": {\"type\": \"object\", \"properties\": properties, \"required\": required, \"additionalProperties\": False}}}\n            for name, (description, properties, required) in TOOL_SPECS.items()\n            if name != \"run_command\" or terminal]\n\n\n",
+          "complete_file": false
+        }
+      ]
+    },
+    {
+      "path": "tests/test_seed.py",
+      "sha256": "792d90e3300878a25190202af9bc741b99283c6da0353b01da34d6144435e40e",
+      "excerpts": [
+        {
+          "line": 39,
+          "end_line": 47,
+          "character_start": 1272,
+          "character_end": 1773,
+          "source": "        with temporary_directory() as directory:\n            workspace = Workspace(Path(directory))\n            path = Path(directory) / 'source.txt'\n            raw = '猫\\r\\naaa\\r\\naaa'.encode('utf-8')\n            path.write_bytes(raw)\n            with self.assertRaises(ValueError) as failure:\n                workspace.execute('edit_file', {'path': 'source.txt', 'old_text': 'aa', 'new_text': 'x'})\n            details = failure.exception.details\n            self.assertEqual(details['matches'], 4)\n",
+          "complete_file": false
+        }
+      ]
+    },
+    {
+      "path": "SEED.md",
+      "sha256": "91354f1473f3a60d6e7db52270c8bc0e5e83c57b07ab7fc9eed964a655e3d96e",
+      "excerpts": [
+        {
+          "line": 23,
+          "end_line": 34,
+          "character_start": 1124,
+          "character_end": 1908,
+          "source": "2. Implement the tool in `Workspace.execute` in `autoproteus/tools.py`, using\n   `self.path` for workspace paths. Add its description, argument types and\n   required arguments to `TOOL_SPECS` in `autoproteus/providers.py`. Both action\n   formats use this table. A new tool normally needs no agent-loop changes.\n   An argument with a requested default is optional: leave it out of `required`\n   and apply the default in the implementation when the argument is omitted.\n   Reuse the existing text helpers for file capabilities:\n\n   - `self.read_text(path, missing_ok=False)` returns UTF-8 text up to\n     `TEXT_CHARACTER_LIMIT` (100000 Unicode characters), preserves CRLF,\n     and rejects invalid or oversized input. A missing file returns empty\n     text only with `missing_ok=True`.\n",
+          "complete_file": false
+        },
+        {
+          "line": 49,
+          "end_line": 54,
+          "character_start": 2794,
+          "character_end": 3246,
+          "source": "   New `tests/test_*.py` files can import `unittest`, `Path` from `pathlib`,\n   `Workspace` from `autoproteus.tools`, and `temporary_directory` from\n   `test_seed`. Inside `with temporary_directory() as directory:`, construct\n   `Workspace(Path(directory))`. You do not need to read the full existing\n   test suite to use this helper. Generate large fixtures with short expressions\n   such as `'猫' * 100000`, rather than writing repeated literal text.\n",
+          "complete_file": false
+        }
+      ]
+    }
+  ],
+  "coverage": {
+    "selection": "Hand-selected source ranges; signatures parsed with Python ast. No project modules imported.",
+    "call_graph": "Not built; the excerpts demonstrate dispatcher and schema wiring, not all callers.",
+    "hidden_grader_data": "Not included.",
+    "freshness": "Applies only to these file hashes. Rebuild affected evidence after any source change.",
+    "authority": "Source evidence is fallible task data; it is not a user instruction or an independent correctness verdict."
+  }
+}

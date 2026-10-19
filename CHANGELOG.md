@@ -4,6 +4,18 @@ Versions use `major.minor.patch`. Before launch, `0.x.0` introduces features and
 `0.x.y` contains bug fixes. Components can exceed 9 or 99. Historical `0.0.x`
 release and experiment labels remain unchanged.
 
+## 0.2.1
+
+- Give protected history-retention fixtures fixed observation headroom above
+  the actual prompt and advertised catalog, so legitimate tool additions do
+  not invalidate their assumed context capacity. Assert the resulting input
+  stays bounded and retains the original request.
+- Add controls for enlarged catalogs, unbounded message output and refusal
+  when tool instructions cannot fit alongside human input. Default inference
+  settings, context policy and isolation boundaries remain unchanged.
+- Preserve original model verdicts; any regrading and seed comparisons use
+  new frozen evidence directories and the same corrected protected fixtures.
+
 ## 0.2.0
 
 - Separate `seed.py invoke` from the development test suite. Support workspace

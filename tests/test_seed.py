@@ -589,6 +589,23 @@ class AgentTests(unittest.TestCase):
         self.temporary.cleanup()
         self.guest_marker.stop()
 
+    def history_config(self, agent, session, protocol='native'):
+        # Test observation retention with fixed headroom, independent of the
+        # size of the advertised catalog in an extended seed. Window-overflow
+        # refusal is tested separately; a larger catalog is not a corrupt tool.
+        config = {**self.settings.values, 'provider': 'ollama', 'protocol': protocol,
+                  'context_tokens': 131072, 'response_tokens': 512}
+        fixed = agent.messages({**session, 'messages': []}, config)
+        schemas = tool_definitions(config['terminal']) if protocol == 'native' else []
+        fixed_bytes = len(json.dumps({'messages': fixed, 'tools': schemas}, ensure_ascii=False).encode('utf-8'))
+        config['context_tokens'] = 512 + 128 + (fixed_bytes + 1800 + 1) // 2
+        return config
+
+    def assert_history_bound(self, messages, config):
+        schemas = tool_definitions(config['terminal']) if config['protocol'] == 'native' else []
+        actual = len(json.dumps({'messages': messages, 'tools': schemas}, ensure_ascii=False).encode('utf-8'))
+        self.assertLessEqual(actual, (config['context_tokens'] - config['response_tokens'] - 128) * 2)
+
     def test_complete_run_refreshes_todo_and_records_all_events(self):
         agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
         session = self.store.create('Create a sample welcome file.', 'demo', 'scripted-demo')
@@ -725,14 +742,15 @@ class AgentTests(unittest.TestCase):
         agent.close()
 
     def test_large_history_keeps_tool_messages_valid(self):
-        self.settings.update({'context_tokens': 4096, 'response_tokens': 512})
         agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
         session = self.store.create('Preserve valid history', 'demo', 'scripted-demo')
         session['messages'] = [
             {'role':'assistant', 'content':json.dumps({'action':{'tool':'write_file','arguments':{'path':'large.txt','content':'a' * 20000}}})},
             {'role':'user', 'content':'ACTION RESULT\n' + json.dumps({'tool':'write_file','ok':True,'result':{'content':'a' * 20000}})}]
-        config = {**self.settings.values, 'provider':'ollama'}
+        config = self.history_config(agent, session)
         messages = agent.messages(session, config)
+        self.assert_history_bound(messages, config)
+        self.assertEqual(messages[1]['content'], session['task'])
         self.assertEqual(messages[-1]['role'], 'user')
         self.assertTrue(json.loads(messages[-1]['content'].split('\n', 1)[1])['result']['context_shortened'])
         agent.close()
@@ -750,9 +768,9 @@ class AgentTests(unittest.TestCase):
             {'role': 'user', 'content': result}]
         journal = list(session['messages'])
         for protocol in ('native', 'json'):
-            config = {**self.settings.values, 'provider': 'ollama', 'protocol': protocol,
-                      'context_tokens': 4096, 'response_tokens': 512}
+            config = self.history_config(agent, session, protocol)
             messages = agent.messages(session, config)
+            self.assert_history_bound(messages, config)
             self.assertEqual(messages[1], {'role': 'user', 'content': session['task']})
             self.assertEqual(messages[-2:], journal[-2:])
             self.assertEqual(len(messages), 4)
@@ -808,8 +826,11 @@ class AgentTests(unittest.TestCase):
         session['messages'] = [
             {'role': 'assistant', 'content': json.dumps({'action': {'tool': 'read_section', 'arguments': {'path': 'large.txt'}}})},
             {'role': 'user', 'content': 'ACTION RESULT\n' + json.dumps({'tool': 'read_section', 'ok': True, 'result': result})}]
-        config = {**self.settings.values, 'provider': 'ollama', 'context_tokens': 4096, 'response_tokens': 512}
-        shortened = json.loads(agent.messages(session, config)[-1]['content'].split('\n', 1)[1])['result']
+        config = self.history_config(agent, session)
+        messages = agent.messages(session, config)
+        self.assert_history_bound(messages, config)
+        self.assertEqual(messages[1]['content'], session['task'])
+        shortened = json.loads(messages[-1]['content'].split('\n', 1)[1])['result']
         self.assertTrue(shortened['context_shortened'])
         self.assertFalse(shortened['eof'])
         self.assertEqual(shortened['next_start'], len(shortened['content']))
@@ -829,8 +850,11 @@ class AgentTests(unittest.TestCase):
         session['messages'] = [
             {'role': 'assistant', 'content': json.dumps({'action': {'tool': 'read_file', 'arguments': {'path': 'text.txt'}}})},
             {'role': 'user', 'content': 'ACTION RESULT\n' + json.dumps({'tool': 'read_file', 'ok': True, 'result': result})}]
-        config = {**self.settings.values, 'provider': 'ollama', 'context_tokens': 4096, 'response_tokens': 512}
-        omitted = json.loads(agent.messages(session, config)[-1]['content'].split('\n', 1)[1])['result']
+        config = self.history_config(agent, session)
+        messages = agent.messages(session, config)
+        self.assert_history_bound(messages, config)
+        self.assertEqual(messages[1]['content'], session['task'])
+        omitted = json.loads(messages[-1]['content'].split('\n', 1)[1])['result']
         self.assertTrue(omitted['content_omitted'])
         self.assertNotIn('content', omitted)
         self.assertNotIn('eof', omitted)
