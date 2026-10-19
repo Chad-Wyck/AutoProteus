@@ -1,214 +1,117 @@
-# AutoProteus Seed
+# AutoProteus
 
-A small, model-agnostic agent that grows its own harness inside a disposable Linux VM. A separate host controller keeps model connections, credentials, the browser interface, safety policy, and recovery outside the editable seed.
+**A small, model-agnostic seed for agents that can extend their own tools.**
 
-Development releases use **v0.x.y**: increase `x` for a feature release and `y` for bug fixes, resetting `y` to zero when `x` increases. Each number can have multiple digits. The current release is **v0.2.1**; a following bug fix would be `v0.2.2`, and the next feature release `v0.3.0`. **v1.0.0** is reserved for launch. See [release notes](CHANGELOG.md).
+Run a local model, give it a task, and let it work in a private workspace. AutoProteus can edit a copy of its own harness, test new capabilities, and continue with the edited version. A separate controller manages model connections, isolation and recovery.
 
-Incomplete model responses never execute partial actions. Each response, including the free final response, has two repair retries; a successful response resets that allowance. Recognized malformed native arguments and oversized tool batches use the same repair allowance, with the entire rejected response discarded. The controller reserves the same bounded request allowance, so interleaved repairs cannot consume the requests needed to finish. Connection failures, timeouts and repeated invalid responses still stop the run with its checkpoint preserved.
+AutoProteus is experimental. Small models can produce useful extensions, but reliable autonomous growth remains an open problem. See the [latest comparison results](evaluations/seed-v0.2.1-seed-comparison.md).
 
-VM isolation is the default. An explicitly acknowledged **Linux native mode** is available for disposable machines and environments isolated by their operator. The security claims below apply to VM mode unless stated otherwise.
+[Download ZIP](https://github.com/Chad-Wyck/AutoProteus/archive/refs/heads/main.zip) · [Release notes](CHANGELOG.md) · [Security](SECURITY.md)
 
 ## Start
 
-### Windows
+Download and extract the project, then open the launcher for your system:
 
-On **64-bit Windows 11**, double-click **Start AutoProteus.cmd**. Choose a local model, hosted connection, or scripted demo. Before the first task, choose **Prepare isolated environment**. The app downloads pinned portable QEMU and Linux components into this project, then continues your task. Later runs reuse them.
+| System | Launch |
+| --- | --- |
+| Windows 11, 64-bit | Double-click **Start AutoProteus.cmd** |
+| Linux desktop, 64-bit Intel/AMD | Open **Start AutoProteus.desktop**; choose **Allow Launching** or **Run** if prompted |
 
-**Windows Hypervisor Platform must be enabled.** If unavailable, the app explains how to enable it through Windows Features and restart. Portable setup does not install drivers or alter Windows features.
+Follow setup in the browser:
 
-### Linux
+1. Choose a local model, hosted connection, or interactive demo.
+2. Prepare your model if needed.
+3. Choose **Prepare isolated environment** before the first task.
 
-On a **64-bit Intel/AMD Linux desktop**, open **Start AutoProteus.desktop** in the downloaded project folder. If your file manager asks, choose **Allow Launching** or **Run**. The launcher takes care of first-time setup and opens the same browser interface used on Windows. No preinstalled Python, Ollama, QEMU, pip packages, or separate setup commands are required.
+The launchers handle dependency setup; you do not need to install Python, Ollama or QEMU beforehand. First-time setup needs internet access and space for the model, usually several GB. Later launches reuse the downloads.
 
-The setup window explains any administrator prompt before installing missing components through your distribution's package manager and granting your account access to KVM. Ubuntu/Debian, Fedora, Arch and openSUSE package managers are supported. The launcher downloads checksum-pinned private Python into `.runtime/python-linux/`. Choose a local model in the browser to download its engine and weights, then choose **Prepare isolated environment** before the first task. Later launches reuse the setup.
+- **Windows:** Windows Hypervisor Platform must be enabled. The app explains how to enable it and restart if needed.
+- **Linux:** Hardware virtualization and KVM are required. Setup may request administrator permission to install components and grant KVM access.
 
-Linux tasks run inside the same diskless, network-free guest appliance, using **QEMU/KVM**. QEMU is managed by the distribution; its executable and the pinned guest image are checked before execution. Model-written code cannot change this host setup or give itself access to host files. Hardware virtualization must be enabled and KVM exposed to the computer; if unavailable, the app explains the next step and refuses VM execution. Native mode is never selected automatically.
+Linux ARM and macOS are not supported yet.
 
-First-time setup needs internet access and disk space for the engine and selected model. Local inference can use the CPU when a compatible GPU is unavailable. Linux ARM and macOS VM backends are not included in this release.
+## Choose a model
 
-The interface starts in dark mode. Use **Light mode** in the top bar to switch;
-your browser remembers the choice across launches.
+| Option | What to expect |
+| --- | --- |
+| **Local — default** | Download a model through setup, or connect an existing engine. Inference uses your CPU or a compatible GPU. |
+| **Hosted** | Connect a compatible chat-completions service with a model name and optional API key. Task data is sent to that provider; charges may apply. |
+| **Interactive demo** | Try the interface and file workflow with a scripted agent. No AI model is called. |
 
-## Advanced execution
+Model size, available memory and inference speed affect the experience. A successful connection check confirms communication with the model, not its ability to complete a task or improve the seed.
 
-### Linux without AutoProteus VM protection
+## Everyday use
 
-For a disposable Linux machine, container, or cloud workspace you manage, explicitly launch:
+- **Describe a task.** Attach inputs with **Files**, or use **Add files** in a stopped session. Imports copy files into the workspace without granting access to the original folder.
+- **Review the results.** Preview or download saved files. A model reporting completion is different from an independently checked result.
+- **Stop and resume.** Stop ends the VM. Resume restores the last saved checkpoint in a fresh VM; changes made after that checkpoint may be lost.
+- **Keep your work.** Search, rename or archive sessions. Deleted sessions can be restored from **Saved work & storage**.
+
+Terminal access starts off. Enable it in Settings when a task needs Linux commands inside the VM. Use **Settings → Quit AutoProteus** to close the background controller.
+
+The interface defaults to dark mode, with a light-mode toggle in the top bar.
+
+## Growing the seed
+
+Each task has an editable source copy in `harness/`. Ask the agent to add a capability and test it there. Edits do not replace the running tools automatically.
+
+| Control | Purpose |
+| --- | --- |
+| **Check edited seed** | Compare the starter and edited copy on fixed tasks. Results cover those tasks; a new capability still needs its own functional checks. |
+| **Continue with edited seed** | Restart the same task with the current source copy, saved files and conversation. |
+| **Try edited seed in a new VM** | Explore the edited version in a separate session. |
+| **Resume with starter seed** | Return to the protected starter while keeping saved task files. |
+
+Stop an active task before switching seeds. After further edits, choose **Continue with edited seed** again to activate the next version.
+
+For implementation and testing details, see the [seed upgrade recipe](SEED.md). Model connections, credentials, the trusted browser interface and execution policy remain outside the editable seed.
+
+## Isolation
+
+By default, code and commands run in a disposable Linux VM with no host-drive mounts or general network access. The controller handles inference and bounded file transfers from outside the VM. Edited seed code is never imported on the host.
+
+VM isolation has limits, and running a downloaded program yourself is outside that boundary. See [SECURITY.md](SECURITY.md) for the threat model, resource limits and recovery behavior.
+
+<details>
+<summary><strong>Advanced: Linux without VM protection</strong></summary>
+
+For a disposable machine or an environment you have isolated yourself:
 
 ```sh
 sh launch.sh --execution native --acknowledge-host-access
 ```
 
-Add `--no-browser` when accessing the loopback interface through your environment's port forwarding. The app prints a warning and displays it persistently. Both flags are required on every controller launch; preferences, model output, container detection and a failed VM launch cannot enable this mode. An already-running app in a different mode must be quit before switching.
+**Native mode removes AutoProteus's VM protection.** Agent code has the launching account's access to files, networks and credentials. A working directory alone does not restrict it. Review the [native-mode security details](SECURITY.md#explicit-linux-native-mode) before using it.
 
-**This mode adds no filesystem or network isolation.** Seed code and commands have the account's permissions, even when ordinary file tools restrict paths or terminal access is off. Code may access or modify the controller, starter, other files, credentials, tests and reports. A dedicated computer still exposes everything accessible on that computer. An external container/cloud boundary must be reviewed for host mounts, network access, privileged capabilities, management sockets and secrets. Never assume that a detected container is sufficient protection.
+Add `--no-browser` when using your environment's port forwarding. Native mode is never selected automatically and is not supported on Windows.
 
-Native runs copy the same seed into a fresh temporary directory and use the existing inference/artifact broker. They do not intentionally inherit provider keys. Stop and shutdown terminate the worker and ordinary command descendants; parent-death cleanup is best effort. Deliberately detached code can evade these controls. There are no AutoProteus-enforced aggregate CPU, memory, disk or network limits in this mode; configure them externally. Session histories and evaluation reports record the execution mode. Native checks are functional evidence only, and are not protected against same-account candidate code.
+</details>
 
-Automatic model-engine setup works on Windows and Linux. An installed Ollama service, hosted provider, or scripted demo can also be selected. API keys entered in the Linux interface stay in memory for that launch; `AUTOPROTEUS_API_KEY` is also supported. The surrounding native environment must protect keys. Windows native execution is not supported.
+## Files on your computer
 
-Preparing a local model requires several GB. Both launchers can prepare Python automatically, with no pip dependencies. Developers with Python 3.10+ can also use `python app.py --no-browser` to start the controller directly; normal desktop use starts from the platform's Start file.
-
-## Models
-
-- **Local model** is the default. Prepare portable Ollama and Qwen3 4B Instruct, choose the lighter 1.7B model, or connect an existing engine. Ollama runs on the host to use your GPU. The VM receives responses through the broker and cannot access the engine directly.
-- **Hosted connection** accepts a compatible chat-completions service, model ID, and optional key. Windows encrypts saved keys with DPAPI; Linux keeps entered keys in memory for that launch. The host keeps provider addresses, credentials, and settings. Hosted requests send task data to the provider and may incur charges.
-- **Interactive demo** creates real files using a deterministic script inside the same VM boundary. It does not call an AI model.
-
-Native tool calls and a JSON text fallback share a small action protocol. Incomplete replies never execute actions. Native replies must explicitly call `finish`; plain prose enters a bounded repair loop. Tool compatibility does not guarantee task competence.
-
-The managed local engine keeps one model loaded at a time to reduce GPU memory contention. Closing AutoProteus also ends that engine's runner processes; an existing engine you connected separately remains independently managed. See [Ollama's concurrency settings](https://docs.ollama.com/faq).
-
-## Work and recovery
-
-Every run starts a fresh VM and restores its saved checkpoint as copied bytes. Host drives are never mounted. The VM has no network card, clipboard integration, shared filesystem, display, USB passthrough, or host command channel.
-
-**Terminal access** is initially off. When enabled, commands run as an unprivileged Linux user inside the VM. **Stop** terminates the VM from the host, including noncooperating candidate code. **Resume** starts another VM from the last committed checkpoint; later guest changes may be lost. Use **Settings → Quit AutoProteus** to close the background controller.
-
-Saved files enter a quarantine store as inert blobs. The interface previews text or downloads attachments. It never imports exported code or serves edited seed JavaScript as host UI. **Download saved files** produces an archive. Running a downloaded program yourself is outside the isolation boundary.
-
-Exports are limited to 2 MiB per file, 500 files, and 32 MiB per checkpoint. The VM receives 2 GiB RAM, two virtual CPUs, and a 512 MiB task filesystem in RAM. External process, CPU, memory, transfer, journal, model-request, and one-hour runtime limits apply. One task runs at a time. “Finished” reflects the model's report; review outputs or use independent checks.
-
-Conversation history stays bounded by a conservative estimate of serialized UTF-8 bytes, including the system prompt and native tool schemas, with room reserved for the response. The complete original request and latest human follow-up stay in context. Repair and Resume notices are tagged separately so they cannot displace that follow-up. Legacy journals recognize recorded human inputs and old internal notices. Provenance stays in the journal and is removed from provider requests. If the required inputs alone exceed the estimate, the task stops with a settings hint. This is an estimate rather than an exact tokenizer for every model. Older history may be trimmed; the full journal remains on disk. Source files use LF line endings on Windows and Linux so exact source edits see consistent text.
-
-Checkpoints transfer changed conversation tails rather than resending the full growing history. The host validates the reconstructed state under the same limits, and the full journal is retained. Temporary test files that disappear during a checkpoint no longer interrupt the run.
-
-An active task keeps a visible Stop control even after choosing New task or viewing another session. Conflicting starts are rejected before a new session is created. The interface identifies local or hosted inference and defaults to dark mode, with a light-mode toggle. Saved sessions support title search, pagination, renaming and archiving. Delete moves a session to recoverable Trash; **Saved work & storage** shows usage and restores it. Histories load on demand and polling transfers new conversation entries rather than full model context.
-
-Use **Files** to copy inputs into a new task, or **Add files** in a stopped session. Imports are inert bytes in quarantine; they do not grant access to the original host folder. The same 2 MiB/file, 500-file and 32 MiB/checkpoint limits include the editable seed. Existing names and `harness/` cannot be overwritten by imports.
-
-Connecting or preparing a model checks the selected native-tool or JSON protocol with a harmless two-request tool/result exchange. Protocol-related settings are checked before saving. Failed checks report a connection, timeout, cutoff, context or protocol category without exposing provider response bodies or credentials. Compatibility confirms that exchange, not task competence; AutoProteus never silently switches protocols.
-
-## Growing the seed
-
-Each workspace has `harness/`, a small copy of the editable source: `seed.py`, the agent, tools, session storage, tool descriptions, guest documentation, and tests. Model adapters, download/setup code, browser assets and evaluation definitions remain outside this copy. The model edits its seed without overwriting the protected starter or controller.
-
-File capabilities can reuse `Workspace.read_text` and `Workspace.write_text` for bounded UTF-8 access, preserved line endings and workspace validation. `TEXT_CHARACTER_LIMIT` counts Unicode characters; encoded byte counts may be larger. The public `write_file` uses the same write helper. See the [seed upgrade recipe](SEED.md).
-
-**Check edited seed** compares the starter with that frozen source copy using the connected real model. The same sixteen tasks run in fresh VMs, twice by default; order alternates between repeats. They include file recreation, source search, long files, follow-up corrections, multiple files and interruption/resume. The bug-fix check calls the submitted function with several inputs in a fresh guest instead of accepting a matching comment. The host checks saved file bytes independently and records source fingerprints, configuration, runtime identity, model digest and engine version when available, changes, successes, failures, reads, time and reported steps. A comparison can take several minutes and hosted requests may incur charges. **Stop checks** saves incomplete results. Checks use a separate store and never activate a candidate. A new feature still requires independent functional review beyond these existing tasks. Saved comparisons can be reopened from the source panel after restarting the app.
-
-The optional [role diagnostic](evaluations/role-check.py) asks "Who are you, and what is your role?" at the start and after a separate file task, using cached models from the local benchmark plan. It preserves answers and distinguishes role wording from the required completion protocol. It runs outside the editable seed and is not an upgrade acceptance or safety check. See the [initial findings](evaluations/role-check-findings.md).
-
-Before any model task, a protected guest driver runs the unchanged starter tests against each version. The candidate cannot edit those test files or the driver. A failed regression stops the comparison and shows its output. These checks help catch breakage; they do not prove a hostile candidate honest or make its new tests authoritative.
-
-**Continue with edited seed** freezes the current checkpoint and restarts the same task with that source, saved files and conversation history. Stop an active run first. Resume keeps the activated version; use the same control after further edits to activate the next version. The controller owns each restart, tells the agent when its edited seed is active, and uses the same selected execution policy. **Try edited seed in a new VM** remains available for a separate trial session. **Resume with starter seed** restores the protected starter while keeping saved task files. Candidates cannot supply VM arguments, enable host mounts, obtain keys, choose host commands or URLs, or change export locations. The controller never imports a candidate.
-
-The browser interface and `controller/` are maintained by the human developer. Generated interfaces remain guest artifacts. Additional host capabilities, such as email, will need separately implemented, explicitly authorized broker operations. The current broker exposes only inference, bounded session events/state, and artifacts.
-
-`read_file(path)` returns the whole UTF-8 file up to 12,000 characters, and rejects larger files instead of truncating them. `read_section(path, start=0, length=1000)` reads a chosen section of up to 12,000 characters. Both `start` and `length` count characters. Search and read useful surrounding sections; continue at `next_start` only when more of the file is needed. Unicode and original line endings are preserved. Whole-file results that cannot fit the model context are explicitly omitted with a section-reading hint. This replaces the older byte-offset `read_file` API; existing candidate copies retain their own implementation. `edit_file` replaces exactly one matching fragment, preserving surrounding bytes and line endings. Failed matches return a count, up to three locations and a recovery hint; they never apply an approximate replacement. Writes and edits are limited to 100,000 characters. Checklists in `todo.txt` are optional. The main tool dispatch stays short; existing search and terminal machinery lives in plainly named helpers.
-
-From the task workspace, `python3 harness/seed.py check` runs the edited copy's tests and returns a compact count and useful failure traces. Run it early and after changes. Add `--tool TOOL_NAME --arguments '{"path":"sample.txt"}'` with the actual tool's arguments to check registration in both descriptions and invoke the edited implementation on a disposable sample file. This runs in a new guest process; edited tools do not replace those in the running loop. Check returned values and Unicode/CRLF, exact-limit and rejected-write behavior. Editable development checks support repair during a task; protected regressions and independent feature checks still determine acceptance.
-
-New installations default to **128 tool actions per run**, a **32,768-token context**, **8,192 response tokens**, and a 300-second model timeout. Saved preferences are preserved. In Settings, **Allow longer upgrades** selects these allowances; review and save to apply them to an existing installation. Limits remain individually adjustable. Compare 4,096 versus 8,192 response tokens at the same context and action allowance before attributing a gain to either limit. Larger supported contexts still need memory and performance measurements on the selected hardware. Opening instructions stay stable across actions; current checklist state and an exhaustion notice belong after the conversation history. This runtime context is included when it fits without displacing user instructions. Failed calls and each tool in a batch count; finishing is free, with one final opportunity to inspect the last result and report completion. A further tool request at zero pauses the saved task. Resume keeps its files and gives a fresh allowance. Host VM, time and request limits remain outside the editable seed.
-
-The seed's `TOOL_SPECS` table supplies both native and JSON descriptions. To add a tool, implement its dispatch, add one table entry and focused tests, then follow the short recipe in the copied `harness/README.md`. Give a concise final explanation and update usage documentation where needed; a separate `feature.md` report is not required. Upgrade evaluators assemble filenames, diffs, fingerprints and recorded command results on the host. Guest commands remain diagnostic; protected regressions and independent feature checks remain required. The host forwards descriptions as data and never imports the editable modules.
-
-`search_files(query, path=".")` searches a literal in bounded UTF-8 files and returns paths, lines, snippets and character starts usable with `read_section`. It reads at most 200 files / 2 MiB, visits at most 2,000 entries, skips links and hidden files, and returns at most 30 matches. `delete_file(path)` deletes one ordinary workspace file. Three identical consecutive reads, or each eight consecutive successful reads/searches without another action, receive a progress hint; this does not force a stop or change the model's tools.
-
-## Files
-
-| Path | Purpose |
+| Location | Contents |
 | --- | --- |
-| `app.py`, `launch.ps1`, `launch.sh`, `Start AutoProteus.desktop` | Host launchers and explicit execution choice |
-| `controller/` | Host UI/API, credentials, inference, VM policy, broker |
-| `guest/worker.py` | Shared VM/native bootstrap and communication adapter |
-| `seed.py`, `autoproteus/` | Editable guest entry point, agent and tools |
-| `web/` | Trusted host interface, outside the editable seed |
-| `SEED.md` | Copied into the guest as `harness/README.md` |
-| `controller/evaluation.py`, `evaluations/` | Protected artifact checks and evaluation definitions |
-| `.data/evaluations/checks/` | Frozen comparisons, diffs, reports and isolated evaluation sessions |
-| `.data/sessions/<id>/` | Session state, journal, quarantined artifact blobs |
-| `.data/models/` | Managed local model cache |
-| `.data/native-runs/` | Temporary native workers; not a sandbox |
-| `.runtime/isolation/` | VM engine, kernel, and guest appliance |
-| `.runtime/` | Portable Python, Ollama, and download caches |
-| `old/` | Earlier experiments, untouched |
+| `.data/models/` | Managed local model downloads |
+| `.data/sessions/` | Saved sessions, journals and file checkpoints |
+| `.data/evaluations/` | Saved comparisons and reports |
+| `.runtime/` | Downloaded runtimes and VM components |
 
-Existing sessions and model downloads are preserved. Legacy files can be previewed; resuming copies their contents into the environment explicitly selected at launch. Oversized legacy inputs must be reduced before migration. Execution history retains prior native runs even if a later resume uses VM mode.
+## Development and research
 
-## Verify
+The editable core lives in `seed.py` and `autoproteus/`. The host controller and interface live in `controller/` and `web/`.
 
-GitHub CI runs ordinary tests on Windows and Linux, plus interface syntax checks. The manual **Hardware VM checks** workflow uses a prepared self-hosted runner labelled `autoproteus-vm` and `linux` or `windows`. Review the selected revision before dispatching it: this lane runs trusted repository code with hardware access. It is never triggered automatically by pull requests. The runner needs Python 3.13, internet for pinned appliance setup, and working KVM or WHPX. It runs the real VM checks, including identical-byte file recreation and functional grading.
-
-Before releases, run the manual **Empty-cache release check** workflow on Windows and Linux. It downloads all pinned VM components into a separate empty cache and builds the appliance. Locally, `python evaluations/check-install.py --output .data/release-check --boot` also boots and verifies a fixture task when KVM or WHPX is available. The output directory must be new; the check preserves the app's existing cache and preferences. This detects upstream archives disappearing even when a development machine still has cached copies.
-
-`python -m unittest discover -s tests -v` runs regression and broker tests. Set `AUTOPROTEUS_VM_TESTS=1` on a prepared Windows/WHPX or Linux/KVM host to include real VM checks for host file visibility, networking, guest privilege, forged exports, Stop, restoration, and recovery. `tests/test_linux.py` also covers Linux runtime integrity and managed engine cleanup. Guest tests copied into `harness/tests/` run inside the VM; controller tests stay on the host.
-
-On Linux, `python3 -m unittest discover -s tests -p test_native.py -v` runs trusted, offline native-worker fixtures for consent, startup, broker exports, checkpoint restoration, functional regressions, Stop and ordinary parent-exit cleanup. These are not hostile-code isolation tests. To evaluate the demo without a VM:
+With Python installed, run the ordinary regression suite:
 
 ```sh
-python3 evaluate.py --execution native --acknowledge-host-access
+python -m unittest discover -s tests -v
 ```
 
-The evaluator accepts the same launch flags for live/candidate trials. Reports include `execution_mode`, `isolated`, `checks_protected` and the warning. Native regression passes do not claim immutable tests or a protected controller. Runtime fingerprints from a VM installation are not evidence for native execution.
+Real VM checks require a prepared WHPX/KVM host and `AUTOPROTEUS_VM_TESTS=1`. GitHub CI runs ordinary checks on Windows and Linux; hardware and empty-cache release checks are separate workflows.
 
-`python evaluate.py` checks the scripted demo inside the VM. `--live` uses the configured model with independent artifact checks; `--model MODEL_NAME` selects another model without changing preferences, including a cached local model while the app is in demo mode. `--task exact-file` selects one task, `--repeat 2` repeats tasks, and `--candidate SESSION_ID` compares a saved editable copy with the starter. Hosted evaluations may incur charges. VM execution is serialized across the app, evaluator and tests. Input bytes are integrity-checked before guest source is loaded.
-
-`python evaluate.py --live --model qwen3:4b-instruct --self-improve --max-steps 128 --context-tokens 32768 --response-tokens 8192 --timeout 2700` runs a feature trial with Linux commands enabled inside the VM, without changing saved preferences. The model can run its guest tests. Match context, output and timeout settings to the model and hardware. A ready submission reports `REVIEW`, `passed: null`, and exit code 2 until independent functional checks are recorded. Candidate code never executes on the host. Reports, source snapshots and diffs are saved under `.data/evaluations/runs/`. Guest tests and journals are diagnostics; host artifact checks determine task success. Comparisons establish performance on the checked tasks, not general capability or security of a candidate.
-
-The saved local-model benchmark accepts `--upgrade-steps` (default 128), `--response-tokens` (8,192), `--context-tokens` (32,768), `--temperature` (0.6), `--thinking auto|on|off` and `--timeout` (2,700 seconds per upgrade). Ordinary tasks keep their 32-action comparison limit. Use separate data directories for different settings; resuming a batch refuses to mix them. Frozen source and task JSON can be supplied from `.data/` for controlled experiments. Reports retain source fingerprints, settings and independent results. Earlier published results retain their original 48-action/4,096-response-token settings.
-
-The controlled [generalization study](evaluations/generalization.py) freezes the starter and trusted graders before testing binary hashing, CSV preview and JSON formatting. It compares the default inference settings with an experimental Qwen3.5 9B profile; terminal access is explicitly enabled for both. `python evaluations/generalization.py --output .data/generalization --repeats 3` uses already cached models and a prepared VM. A one-repeat pilot cannot qualify a profile. Independent positive and negative controls run before inference. Candidate code runs only in the guest, and no accepted candidate replaces the starter automatically.
-
-The optional [navigation comparison](evaluations/navigation-study.md) prepares an 18-attempt Qwen3.5 9B baseline/outline study for later execution. It adds host-only provider traces and overlapping-read metrics without changing the normal seed or saved preferences. Preparation and scripted VM checks do not start model trials; the prepared folder contains a separate Start file for that purpose.
-
-The optional [experience experiments](evaluations/experience-study.md) provide one launch menu for navigation, a reusable upgrade procedure, bounded task-history retrieval, usage-based context budgeting and guest-side inspection programs. Each comparison runs separately with frozen inputs and independent checks. These options are for evaluation; normal app behavior and VM permissions stay the same.
-
-New opt-in comparison plans allow 30 minutes and 65,536 generated tokens per attempt, including reasoning and repair responses. Verified functionality and autonomous workflow completion are scored separately. The [cumulative growth comparison](evaluations/growth-study.md) validates the normal app connection before comparing a small invoke/read-back procedure on an accepted seed. It adds no tools to the default seed and changes no saved app preferences.
-
-A further inventory-audit task lets the model choose which of two specified missing capabilities to add first, then asks it to reuse that capability and add the other. An accepted first checkpoint is forked into full-history and concise-context continuations. This experimental option changes only inference context: the complete journal stays on disk, and original human instructions, activation state and subsequent results are retained. Ordinary activation keeps full history. Results score verified functional growth separately from direct tool routing; recognized command-based invocation can demonstrate growth without satisfying the direct-route score.
-
-See [SECURITY.md](SECURITY.md) for the threat model and limits. Virtualization provides an operating-system boundary, but cannot guarantee immunity to hypervisor or host OS vulnerabilities.
-
-The [v0.3 findings](evaluations/seed-v0.3-findings.md) record the seed reduction, local-model measurements, and rejected self-improvement attempts, including limitations of the comparison.
-
-The [v0.6 local findings](evaluations/seed-v0.6-local-findings.md) compare the cached Qwen3.5 9B with K2-Horizon 7B on the expanded suite and repeated feature upgrades, including independent functional checks and a targeted JSON fallback diagnostic.
-
-The [v0.0.10 local findings](evaluations/seed-v0.0.10-local-findings.md) record 32 fresh Qwen3.5 9B feature attempts, checkpoint fixes, shared text helpers and further growth trials. Some extensions now pass independent checks, but consistent autonomous improvement remains unproven.
-
-The [v0.0.11 findings](evaluations/seed-v0.0.11-findings.md) cover retry accounting, empty-cache installation, separate growth/routing scores and the frozen-seed generalization pilot. Neither inference profile is yet qualified for repeatable autonomous seed improvement.
-
-The [v0.0.12 preparation](evaluations/seed-v0.0.12-findings.md) adds opt-in frozen comparisons, verifies the JSON character boundary against a faulty byte-limit control, separates trace completeness from cost coverage, and fixes the Linux CI test fixture. Navigation alone is recommended for the first run; no live-model improvement is claimed by these preparation checks.
-
-## Runtime sources
-
-Opt-in [local model comparisons](evaluations/model-study.md) now support a small
-inference benchmark, quick screening and full first/second-pass qualification.
-Frozen queues resume completed work, preserve interrupted attempts, reuse matching
-grader calibration and report timing/usage coverage. These research tools leave
-the normal seed interface and saved model settings unchanged.
-
-The [v0.0.16 workflow experiments](evaluations/workflow-experiments.md) prepare
-separate comparisons of edit previews, advisory syntax feedback, leaner history
-and focused development/use stages. Grader calibration checks realistic faulty
-implementations. The app distinguishes agent-reported completion from scoped
-seed-check results; no live-model improvement is claimed by these preparations.
-
-The [v0.0.17 preparation](evaluations/seed-v0.0.17-preparation.md) corrects native
-tool-message context overhead at the protected host boundary. It preserves user
-instructions and the newest exchange while retaining the context limit. Fresh
-Qwen/OxCoder phase-comparison plans are prepared for later; no new model results
-are claimed.
-
-The [v0.1.0 preparation](evaluations/seed-v0.1.0-preparation.md) supersedes those
-plans with exact calibration requirements, one deadline through all grading
-stages, and complete-path protection for human messages that resemble tool
-results. Qwen and OxCoder live trials remain deferred.
-
-The [v0.2.0 preparation](evaluations/seed-v0.2.0-preparation.md) separates trying
-an edited tool from running its tests, adds JSON argument files and splits the
-core source into modules that fit a whole-file read. An optional workflow study
-withholds final inputs until verified activation; its results remain distinct
-from the strict preservation baseline. Fresh plans supersede earlier preparation;
-the 9B model trials remain deferred.
-
-VM downloads and SHA-256 hashes are pinned in `controller/runtime-lock.json`. Managed Python and Ollama versions, URLs and hashes are pinned in `controller/managed-runtime-lock.json`: Windows Python 3.13.12, Linux Python 3.13.16, and Ollama 0.40.4. Hashes are checked before extraction. Installed private runtimes are inventoried and verified before reuse, including libraries and added or missing files. An old unrecorded engine is replaced through verified setup while preserving model weights; damaged runtimes stop or require verified setup. Independently installed model services remain user-managed and are not covered by these private-runtime manifests.
-
-The guest builder consumes only the pinned root filesystem and package archives, rechecks their hashes, and extracts its kernel from the versioned Linux package. It ignores unrelated cached packages. A mutable package index and redundant netboot kernel are no longer installation prerequisites.
-
-Pin updates require reviewing official upstream metadata, changing the version/URL/hash together, synchronizing the Linux launcher's Python pin, and repeating launcher, integrity and hardware checks. Pins identify selected bytes; upstream suppliers and security updates still require review.
-
-- [QEMU downloads](https://www.qemu.org/download/#windows), [WHPX backend](https://www.qemu.org/docs/master/system/whpx.html), and [Windows build provider](https://qemu.weilnetz.de/w64/)
-- [Alpine Linux releases](https://alpinelinux.org/releases/)
-- [Ollama Windows distribution](https://docs.ollama.com/windows), [Linux distribution](https://docs.ollama.com/linux), and [chat API](https://docs.ollama.com/api/chat)
-- [Python portable distribution](https://www.python.org/downloads/release/python-31312/)
+- [Seed upgrade recipe](SEED.md)
+- [Local model testing guide](evaluations/model-study.md)
+- [Workflow experiments](evaluations/workflow-experiments.md)
+- [Experience experiments](evaluations/experience-study.md)
+- [Latest seed comparison](evaluations/seed-v0.2.1-seed-comparison.md)
+- [Security and execution limits](SECURITY.md)
+- [Release notes](CHANGELOG.md)
