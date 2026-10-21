@@ -1,0 +1,72 @@
+{
+  "created": "2026-10-21T01:39:25.094403+00:00",
+  "version": "0.3.0",
+  "source_sha256": "870a6b523a5d771cc931eca8b7a343e35d27a92aa35943cfcccf6a0d4f6dc304",
+  "trusted_files": {
+    "controller/appliance.py": "c3dd7aaffb6b7d496c5a412bd686ae9b67288d762b2e7b965e02d5eafdbde869",
+    "controller/capabilities.py": "19d0f1e3b4b1a56c99273723c4951046bad95beca4ef05adce4283ffdfc2f8cf",
+    "controller/compatibility.py": "606abb6422529270dcb4c058e4d1f675d23cccd8ee14c906cd4d0d8471d83565",
+    "controller/config.py": "0a76e3b05691c91331b1f3819ca1a61fe5362d1ed5a3404991227a0fadd17f4f",
+    "controller/errors.py": "1cc92d249a079cc6fda748d82b046d6fb93d46be17307ce5af84464f540e8fb7",
+    "controller/evaluation.py": "77eeeca3ec6305b3e953f5758eaaa90663f20e24530f782e03ab6f800605557d",
+    "controller/execution.py": "e60c6d07f59f9c6ff977bd721f978615c0efb6b5f072678842f79d817dc318bf",
+    "controller/integrity.py": "4471967490cfbd54c76409727327b8113007e47fd78acda596f1367cd6f13ba4",
+    "controller/isolation.py": "4954c76f3dca6c48959da22b83ec6824a6445c6ad8882a0175a537257be50465",
+    "controller/linux_process.py": "b321bf5b1001f75021ae56fdd604a2845c397278e3cdfa5292904eb826d0cf7a",
+    "controller/native.py": "fedaa3cf35a4206f6535142ef9c8494a557bdb86c329552809c0c4171f7f3fdf",
+    "controller/providers.py": "867e091eb121558c86c679e073ab360691428029f564d33731b27945d78af380",
+    "controller/runtime.py": "08e7c455924f25130edf32f9b5f70dc3ab94c51af763ac3daf2cb03d615d66e9",
+    "controller/server.py": "5321006b7d4df25a3eaf7b81653e8601c642b20a5f2e8c1af40b26b64ef49a30",
+    "controller/storage.py": "08b5b8bdc83c35f1989f1bdbfc7ca1f38e194d4874aaa71f3fbbf6cec41b8e82",
+    "controller/submissions.py": "a8c2b48e138c54d98172bd5c606734da9a6ae305cdd8b81da61e55d684877c25",
+    "controller/windows_job.py": "68d67a3ad0c613f383cddfc3d217e33d104901eeda7e872bb22d1ea7138bbc2b",
+    "controller/__init__.py": "4c3792bf6704162dcde1486589f36c9b1b803bdc4edb8008270f3ec97578838a",
+    "guest/worker.py": "59b283ce6eafe14b7db8cfb3e56278beeb58fa7e7f43bb3f3fd217e681f697a4",
+    "controller/runtime-lock.json": "1c9250abb0fe1d7e172348749b2ec474e9537c6007c216d1b91165f7ebcf2b88",
+    "controller/managed-runtime-lock.json": "4dcbd55128f50a1cb8f756e0141f9dfaf7b36964dfc005d11bc49e1cd95139be",
+    "tests/test_seed.py": "792d90e3300878a25190202af9bc741b99283c6da0353b01da34d6144435e40e",
+    "tests/test_text_helpers.py": "db76c2c7e785bacd54c80bbec6559ae5b0bb2da510e48bb4d1e5dc4ef457a17c",
+    "evaluations/model_study.py": "f3a64db44b2456929d92f3af4cb97dc41bc40db934dd86dc3e551b19baa86256",
+    "evaluations/model_plan.py": "5acc2b754015d21d501c0e1e2b47300eec408c9edd3b23bc31c9215a57158583",
+    "evaluations/study_support.py": "52e90c499db3805a150c979989aa845df6e6335bf4a646d7bb844674e76a3a77",
+    "evaluations/generalization.py": "2d3122e1cc03646a5e6b4dd0e017b513a091646fb8fb46822892ec0547efa0c7",
+    "evaluations/grader_faults.py": "47c64140487741496851e6d7e26c9efbfae56193c741368edebddb41df4e6061",
+    "evaluations/workflow_variants.py": "4aee448d4b8fba22c1d6e21e5293a5fbbf13858764bf82fc487b77ff5be47f2f",
+    "evaluations/workflow_support.py": "2c2fc11879df90e97f0f528712681ee4b0995b25cb06595015c3ae7ad1775108",
+    "evaluations/edit_context.py": "25bf5eda28aa470241e494bf2c478da7c95dc0ebf7512d6bbbd3390565abe796",
+    "evaluations/lessons/verified-submission.md": "f3708348db748fd5260254437c5cb35f80a62d55c66d3aad69fb108c989c332d",
+    "evaluations/generalization-probe.py": "51f4fecd1f4d5dd55f4e9023d3b4acb62abd00fcc8f9835ddca517dcbee525e3",
+    "evaluations/local-model-benchmark.py": "24e65b9c61c4479d7c40437d41f096d43ac266d4e6d0163b7fe5e67dbf127ebf",
+    "evaluations/local-feature-probe.py": "a69b25ba23eac7d2446ef871fde47fb22dea38c01dba91eed5c4e0f0780a18f4",
+    "evaluations/local-upgrade-tasks.json": "f685d2f992373d1cda9c16903c478d3bd67a236807529b0905db30f9a612556f",
+    "evaluations/observations.py": "6f655408e1fd8378348177cf4849e1841e307f4b0d09d0a31bfd24b4c8af9e98",
+    "evaluations/run_budget.py": "bb3272034344b1074e2ab033eeaab335ba903436d1cf79517eafff15b344314c",
+    "evaluations/invoke_tool.py": "d2eeca9f4f20b579fd5d35789fd6de13207cf2f49b83234dd4084cb4614b14e1",
+    "evaluations/tasks.json": "b64343913ff104e27c70f0c7b5bd7c6a55e8fd53abc3c130f0d7109a33015f9e"
+  },
+  "ordinary": {
+    "total": 298,
+    "passed": 252,
+    "skipped": 46,
+    "failed": 0,
+    "log": ".data/v030-release-validation/ordinary.log",
+    "log_sha256": "cba92ec75ee93d9dfec10a79c53d03473789482882ccb81f34ff0f0802ce0ecd"
+  },
+  "real_vm": {
+    "passed": 2,
+    "failed": 0,
+    "seconds": 13.734,
+    "tests": [
+      "test_protocol_repairs_are_bounded_and_rejected_calls_never_execute",
+      "test_static_context_refresh_and_capability_observations_are_source_bound"
+    ],
+    "evidence": "Captured tool output from the explicit unittest invocation; both passed."
+  },
+  "javascript": {
+    "syntax_passed": true,
+    "app_sha256": "8ad087355fbce85db5470122495742b949e460aa6db6dd4a9946edee7b92c28e",
+    "browser_preview": "Prior preparation preview; unchanged web files, no new preview claim."
+  },
+  "next_study": "evaluations/staged-inputs-v0.3.0-plan.md",
+  "scope": "Release checks before the next live-model study. Historical studies retain their original verdicts; fresh frozen plans required."
+}

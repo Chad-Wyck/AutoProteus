@@ -4,6 +4,28 @@ Versions use `major.minor.patch`. Before launch, `0.x.0` introduces features and
 `0.x.y` contains bug fixes. Components can exceed 9 or 99. Historical `0.0.x`
 release and experiment labels remain unchanged.
 
+## 0.3.0
+
+- Add public, source-bound file-tool submission tickets and an optional repair
+  control. Share the evaluator's existing scope policy; syntax and recorded
+  development failures remain distinct from hypotheses and independent grading.
+- Clarify separate focused test files, Workspace.execute, scratch files outside
+  the source bundle, and explicit completion after verified final outputs.
+- Prepare separate opt-in submission-feedback, edit-context and verified-lesson
+  comparisons. Repairs share existing budgets; hidden grading feedback remains
+  private. Static context packets are bounded, source-hashed and refreshable;
+  the curated lesson records evidence, hypotheses and unmeasured benefit.
+- Qualify repeated tool exchanges and rejected-call recovery with the actual
+  connection protocol and catalog. Bind receipts to available inference identity
+  and settings; incomplete identities cannot reuse a saved receipt.
+- Give connection qualification the agent's two bounded response-format repair
+  attempts per decision, within the same overall deadline. Report first-pass
+  versus repaired success; wrong valid actions and connection errors still fail.
+- Validate the existing staged-input comparison's delivery and activation path
+  while keeping the editable seed frozen for the next live comparison.
+- Extend the existing verification display with source-bound declaration,
+  activation and observed-use information, keeping scripted checks separate.
+
 ## 0.2.1
 
 - Give protected history-retention fixtures fixed observation headroom above

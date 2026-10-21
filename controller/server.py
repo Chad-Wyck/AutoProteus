@@ -19,10 +19,12 @@ from . import __version__
 from .isolation import IsolatedAgent, Artifacts, safe_path, relative_name, MAX_FILE, MAX_FILES, MAX_EXPORT, seed_files, packed_files
 from .config import Settings
 from .providers import ModelClient, ProviderError, ERROR_MESSAGES
-from .compatibility import check_protocol
+from .compatibility import qualify_profile as check_protocol, PROFILE_FIELDS
 from .runtime import LocalRuntime
 from .storage import Store
 from .evaluation import EvaluationService
+from .evaluation import candidate_source
+from .submissions import repair_ticket, ticket_message
 from .execution import ExecutionPolicy
 
 
@@ -280,14 +282,19 @@ def handler_for(app):
                     if any(key in data for key in ('execution', 'execution_mode', 'acknowledge_host_access')):
                         raise ValueError('Execution mode can only be selected at launch')
                     candidate = app.settings.preview(data)
-                    changed = any(candidate[k] != app.settings.values[k] for k in ('protocol', 'context_tokens', 'response_tokens', 'json_mode', 'thinking'))
-                    compatibility = check_protocol(candidate, app.settings.key()) if candidate['configured'] and changed else None
+                    changed = any(candidate[k] != app.settings.values[k] for k in (*PROFILE_FIELDS, 'base_url')) or bool(data.get('api_key') or data.get('clear_key'))
+                    if data.get('api_key') or data.get('clear_key'):
+                        candidate.pop('compatibility', None)
+                    connection_key = data.get('api_key') or (os.environ.get('AUTOPROTEUS_API_KEY', '') if data.get('clear_key') else app.settings.key())
+                    compatibility = check_protocol(candidate, connection_key) if candidate['configured'] and changed else None
                     result = app.settings.update(data)
                     if compatibility:
                         result = app.settings.record_compatibility(compatibility)
                     return self.send(result)
                 if self.path == "/api/connect":
                     config = app.settings.preview({**data, "configured": False})
+                    if data.get('api_key'):
+                        config.pop('compatibility', None)
                     if config["provider"] == "ollama":
                         names = [item["name"] for item in app.local.models(config["base_url"])]
                         if config["model"] not in names and config["model"] + ":latest" not in names:
@@ -307,6 +314,16 @@ def handler_for(app):
                 if self.path == '/api/seed-check/stop':
                     app.evaluations.stop()
                     return self.send({'ok': True})
+                if self.path == '/api/submission-review':
+                    app.ensure_idle()
+                    session = app.store.get(data.get('id'))
+                    source = candidate_source(app.store, session)
+                    path = app.store.directory(session['id']) / 'candidate.json'
+                    starter = json.loads(path.read_text(encoding='utf-8')) if path.exists() else seed_files(app.root)
+                    journal = app.store.directory(session['id']) / 'events.jsonl'
+                    events = [json.loads(line) for line in journal.read_text(encoding='utf-8').splitlines()] if journal.exists() else []
+                    ticket = repair_ticket(starter, source, events)
+                    return self.send({'ticket': ticket, 'message': ticket_message(ticket)})
                 if self.path == "/api/start":
                     app.ensure_idle()
                     task = data.get("task", "").strip()

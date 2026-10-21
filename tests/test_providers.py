@@ -25,8 +25,14 @@ class FakeModelServer:
                     messages = parent.payloads[-1]['messages']
                     if messages[-1]['role'] == 'tool' or messages[-1]['content'].startswith('ACTION RESULT\n'):
                         result = json.loads(messages[-1]['content'].removeprefix('ACTION RESULT\n'))
-                        decision = {'message': result['result']['receipt'], 'status': 'completed'}
-                        calls = [{'function': {'name': 'finish', 'arguments': decision}}]
+                        if result.get('ok') is False:
+                            value = next(item['content'].split('Test value: ')[1] for item in reversed(messages)
+                                         if item['role'] == 'user' and item['content'].startswith('Test value: '))
+                            decision = {'action': {'tool': 'diagnostic_echo', 'arguments': {'value': value}}}
+                            calls = [{'function': {'name': 'diagnostic_echo', 'arguments': {'value': value}}}]
+                        else:
+                            decision = {'message': result['result']['receipt'], 'status': 'completed'}
+                            calls = [{'function': {'name': 'finish', 'arguments': decision}}]
                     else:
                         value = messages[-1]['content'].split('Test value: ')[1]
                         decision = {'action': {'tool': 'diagnostic_echo', 'arguments': {'value': value}}}

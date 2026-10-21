@@ -117,7 +117,8 @@ class Settings:
         if not save:
             return candidate
         if key or data.get('clear_key') or any(candidate[k] != self.values[k] for k in
-                ('provider', 'base_url', 'model', 'protocol', 'json_mode', 'thinking', 'context_tokens', 'response_tokens')):
+                ('provider', 'base_url', 'model', 'protocol', 'json_mode', 'thinking', 'context_tokens', 'response_tokens',
+                 'temperature', 'terminal', 'request_timeout')):
             candidate.pop('compatibility', None)
         if key:
             if os.name == "nt":

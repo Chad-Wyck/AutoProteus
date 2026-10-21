@@ -1,7 +1,7 @@
 # v0.0.16: optional interaction and completion experiments
 
 For current preparation and the source refactor, see
-[v0.2.0](seed-v0.2.0-preparation.md). Earlier plan receipts are historical; prepare
+[v0.3.0](seed-v0.3.0-preparation.md). Earlier plan receipts are historical; prepare
 fresh plans against the current controller before live inference.
 
 These experiments are prepared for later testing. No live-model benefit is
@@ -36,6 +36,9 @@ Replace `edit-feedback` with one of:
 | `edit-feedback` | Successful exact `edit_file` returns at most 1,000 characters around the changed span, character positions, line number and an explicit truncation flag. The receipt and exact-match restrictions remain. |
 | `syntax-feedback` | Successful `edit_file` on `.py` adds a bounded Python syntax diagnostic. It parses inside the guest without importing or executing the edited program. Invalid intermediate syntax is saved and reported; no automatic rollback or full test suite. |
 | `masked-history` | Bulky old tool result bodies are replaced with explicit omission envelopes. Retain recent exact results, actions, recorded outcomes and human instructions. The full journal remains on disk. Existing context trimming still supplies the final bound. |
+| `submission-feedback` | Up to two bounded public repair tickets before hidden grading; shared action/token/wall allowances, no automatic repairs or approval. |
+| `edit-context` | A directly supplied, source-hashed static context packet and an optional guest refresh/check script. |
+| `verified-lesson` | One opt-in curated lesson file with evidence and explicit uncertainty, alongside the ordinary fixed recipe. |
 
 Masking defaults to eight recent observations and a 512-character threshold;
 these are experimental settings, not supported optimal values. Configure with

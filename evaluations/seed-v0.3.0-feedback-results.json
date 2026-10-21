@@ -1,0 +1,1408 @@
+{
+  "created": "2026-10-20T08:52:47.340905+00:00",
+  "version": "0.3.0",
+  "model": {
+    "id": "oxcoder-9b-q6_k",
+    "family": "oxcoder-9b",
+    "repo": "sizzlebop/OxCoder-9B-GGUF",
+    "revision": "468132cf1e1fde2b98da5c87fda2ca5f14f55a30",
+    "file": "OxCoder-9B-Q6_K.gguf",
+    "expected_bytes": 7359267840,
+    "sha256": "2a88e77a2d4623027b5387af4a8d6d060afe9746cfbf0be0e5384da21161ed40",
+    "quantization": "Q6_K",
+    "path": "D:\\AI_New\\AP\\.data\\model-round-v0.0.16-20261018\\downloads\\OxCoder-9B-GGUF\\OxCoder-9B-Q6_K.gguf",
+    "url": "https://huggingface.co/sizzlebop/OxCoder-9B-GGUF/resolve/468132cf1e1fde2b98da5c87fda2ca5f14f55a30/OxCoder-9B-Q6_K.gguf",
+    "staged": false
+  },
+  "configuration": {
+    "id": "oxcoder-9b-q6_k",
+    "assets": {
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-base.dll": "4b8dea6fc4083032304d4f9c4f698a3228195fda366d14d6b50f263b49449473",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-alderlake.dll": "9c00390ab75ea711d44cd97bf3ddf4b3ac12b47c92c7e979d5d694c626dd2118",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-cannonlake.dll": "1e26e50e52233db4eb3f3a6f710e3cdecd20068cac426b5c3900f05f1c53ac15",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-cascadelake.dll": "b0b2ffd364c9df0ad4da428fd21f6c4d09fe5aeca9196e32fb0c96d54aae0978",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-haswell.dll": "c32c97271fc9bc19c3df1fb22489325eaae88f9e64ca9ae7b904414f970229c6",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-icelake.dll": "c7dc3ae0bfa1470a9ef1ce1659b2ba6675dca4ec38912c9ef6e44dbac49febb3",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-sandybridge.dll": "95dcc72b4bffc52eed6d6f9980a080cf3da9c6a98b217ead586b2c9fdec1bf6b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-skylakex.dll": "56ddcf8ca415d3861a55c4df8fdf1d425c6d53f4bfc9c278a006481519f57d14",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-sse42.dll": "9a6605b9bb1b90054d829425c4616887f0094135615c9c9f41742e994b4c06e7",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-ssse3.dll": "f721d32210c313cf938eabdd3bc7d717e390f18e4d1e3e3b5340062d822223c8",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-x64.dll": "90a60c7c1ae2b5131dd2629a5929b1cd38466a0fc8bf71fce8d7a44c8995d71f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cuda.dll": "385ccf238798fb885ceca6d284b0368d244f92a3dd4be21d8300b3f3401a0c27",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-rpc-server.exe": "11b0c26f0b7635dac627c25ca7aca858bfc4ef1580fe685342bd911958e4f5e5",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-rpc.dll": "cb65808a2834bc8d5abf4b478b742e275b3ae606c1f1d2ff97e4275478be5b59",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml.dll": "407b6660136284bdbf13288c0b7a41d41ec6c90347ca80bffa29547c3e3edacc",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-batched-bench-impl.dll": "55407cea234f3c2ab6c7a5a37b3919e06a674de20339338d519c9a1d8fe465fe",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-batched-bench.exe": "744947e28b0d5d09d12c43e6ebb521a6d3a070d376b3a043fb1b8a960331b21d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-batched.exe": "f2d27f4957a3cad49d22d264bc2c38cdbe927541e9b0b9dc646c4899776753f6",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-bench-impl.dll": "a56f9991cfb3b1642d046b60a79376d31bb9fa7d09967df2f9cb80888b2a8070",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-bench.exe": "b5d123a14d14d2f72d1a91bbd495045bcea8ed4ea23036ce38785e3259bf51f0",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-cli-impl.dll": "e5e6e485983a44b7c33868c7bd7ab64227c9dee5ff8c21bbe8ea4e873654cb26",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-cli.exe": "8a2789d277ed9005b9cc528d3add48389e1dec68db235d65d9f6937fd5413885",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-common.dll": "8a575f0d66d0f3a774d26776cfe1cea9ee38ac55b1fdc1506d79881bf45f812b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-completion-impl.dll": "0a07fe66584ba63da12b3100daa6f33b9b6e544bdc7ba2bb4f47637190f3df74",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-completion.exe": "9bfc8ac145537b5fc2fce4d253a61e6b7281f0d9fb1c931451ddb27efb69609f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-debug.exe": "53ca92eeaae8ba9156ca6201b09e8d033733d6904a9548d6462270e16169952e",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-diffusion-cli.exe": "71b9685ffe69412cf8c0e62d496de3b409ef043511b46106d891b8f681f90a6b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-embedding.exe": "e7845976777a5d718214c2c0758a43a124c02f3de18c14eed940c40f267e0f50",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-eval-callback.exe": "8f8847263757648faf80c9a6d17d238e9861af9fbc212fd8d603e5107e1b641d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-finetune.exe": "631f8a0d9ac4a427074fcb075b488b44c179eed0adf78a39691208950381cbcc",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-fit-params-impl.dll": "fc32b33b1c0d71e16c3dd71c0fc37ec6ea4b4b71a1fe27ba6c936d09d5b48a6b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-fit-params.exe": "2629e7cd005f0612a330724f55ec4ed2a4d710b56c877f2d5cd383d095ce0b9e",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gemma3-cli.exe": "5f338aeb6f3e0acb6201c1be508ef597cafbff845f9ed7aa5c3db8deeea8f995",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gen-docs.exe": "ff5c462c7d9fc3a08b532f77c844c800c56198eb717a5a0bb01675631154a8bb",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gguf-hash.exe": "6d362d6cce991e454cf5344835a6aed102ae8512de62e6215c57b9643e1495a7",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gguf-split.exe": "ae66afaea8a036210e1631ede277b178891dc0b13692489fb9873e7d00404138",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gguf.exe": "57166ce495af2b01d7635f0c629d088ce1a1ac743de0884b7de62d4467f2039f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-idle.exe": "ba995103500564a627899c374f9699c9a1a9478693c0eaff2c185ab859203f9d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-imatrix.exe": "bc96b8534d1562afb74f572dc4ee986537001295064c640c31b9bbbd34d2cecb",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-kv-mean-center.exe": "4cf96d5171a76e0f1aac0d9abbc01cc2c5568a4c0aa23bdfab64c241982775f4",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-llava-cli.exe": "5f338aeb6f3e0acb6201c1be508ef597cafbff845f9ed7aa5c3db8deeea8f995",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookahead.exe": "67d75e12ef16c03dbb2b7c11a85118d208c34ffab117f5851b47280edc3c1572",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookup-create.exe": "40d18a7e10ebbd795c2bb3d2dd381f760e1c87ffbde7b2023ad196cc8aa23f12",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookup-merge.exe": "cb833d7ac420c5dedd3352b00c4290870acb90897eac595161261148bb192661",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookup-stats.exe": "fdf30d155da1ba3c78f9d80d487e84227195fe6919117d410e421599e12c040d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookup.exe": "861783f9d7c6d6905d92ca44df68034671e513103da58db724039a2a1e0e16fc",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-minicpmv-cli.exe": "5f338aeb6f3e0acb6201c1be508ef597cafbff845f9ed7aa5c3db8deeea8f995",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-mtmd-cli.exe": "9ad01231a98c5bf1e9ec08ed6c37604590b76426dcb796b34378b4cde17513e2",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-mtmd-debug.exe": "f754a27f25a371749701a9088293e799a1d54cbaed7e79b68351c0bd96c4192c",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-mtp-export.exe": "90f7aa68661d003158afcea27658c6f326bf229aecd3931935b8f641b70e2d21",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-parallel.exe": "15eb59b88776aaf11dda986edae20266acfb82bd731468c01b9286d4a3f1fd5f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-passkey.exe": "4faab3e6e67f51a751002f051178a5981de2ab5a38b917de3f0adfac621ee31d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-perplexity-impl.dll": "acac4834ad95320b451985d0d23ab37e0b6bbbf98a971d24bb7b8653b4265261",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-perplexity.exe": "96df778f8fbc685fbdffd47f852f53d6851728d2dc363035355508ce97504f5d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-quantize-impl.dll": "9de57a9f263c8b82bd2202360a86a3919db3601a94bba8fab56e9c4468264568",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-quantize.exe": "3786628113e05377a041a1a8b461f78aa3d847635ad124de7e2c3b0a4c731d45",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-qwen2vl-cli.exe": "5f338aeb6f3e0acb6201c1be508ef597cafbff845f9ed7aa5c3db8deeea8f995",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-results.exe": "2b6a37fe1718e16ddfd20aea8f8f59cce600e090a94a4b46b4d7ecfb0e581df2",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-retrieval.exe": "a1b24d33c942f3634ed35ad81f848740e155c63afd2e0df43438a35d5808f196",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-rs-rollback-multi.exe": "9a22e2c924b90ff8e985117e25df81837319dcb14fd77c03d9d7065790bb8041",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-rs-rollback.exe": "01e4ba14c069ff0e73a04dd5bca2fa7b7eb56fcf2bb9ad722f1992642dce4437",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-server-impl.dll": "74367a893c9e7682f635b17416d2cfc8b2a9fb3420957ff03d31e7bd16b98c7b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-server.exe": "e95c81a7f99b05b4e9c67eba3f6856d777987ff813e6c1f14069c6c599e029d7",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-simple-chat.exe": "860d5911a52579773603dfddee934ccba990c8c46585e61b8121533b09dfaf03",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-simple.exe": "e5c425eba58db58dc486e751330c099d588a8ddd4f9ec712695ac966345cf381",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-speculative-simple.exe": "35d0d08d3e87d5c3bcf738d6838a680adf1e10fe57aa11d951aa5cc85dd1ca41",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-speculative.exe": "dc8fb0b7450c4b1b3573c734732150654b14d397bbb79f1e5b14f4fa53f7a8be",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-tokenize.exe": "e9cf0797da15bd2194d860aff2a878f9cb7b8df2dea0695e3ddba6a4745ceacf",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-tts.exe": "5cd966ad4c3586e8a2dd233ebda863037a3d466de1e37974fb6b8b86734a9274",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama.dll": "0c4f1e9e4df371770938aa3e95c2b0c66b31567aa78d5a47a273aa6c51aee0df",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama.exe": "bee03536e47f116dd9d5bed66f435eda90bbdfb00e6d39604407816826b566ca",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\mtmd.dll": "eddaf1303f22e984e577dca58b71ac2ee2f105f13db3b567e33c55e79cbab9dc",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\cublas64_12.dll": "e40202fe4223c1cd2d2dce7beec59e1ed61c7801bd827309183be9b50e358f4c",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\cublasLt64_12.dll": "2a896460bef60ed57ef32b0875812f355a6984e671d638bb632f5e8c1d7a831f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\cudart64_12.dll": "d28e42265da7462162a54da6b7a99ea4fa2caf8139d862bb500db875d0b32dfc",
+      "D:\\AI_New\\AP\\.data\\model-round-v0.0.16-20261018\\downloads\\OxCoder-9B-GGUF\\OxCoder-9B-Q6_K.gguf": "2a88e77a2d4623027b5387af4a8d6d060afe9746cfbf0be0e5384da21161ed40",
+      "D:\\AI_New\\AP\\.data\\night-v030-20261020\\runtime\\oxcoder-9b-q6_k-paired-001\\launch.json": "f1ae1f2f97c87629dca5787dd448690ea95ba59ef9504158c9b36b6e2dfa5f10"
+    },
+    "runtime_settings": {
+      "context": 131072,
+      "thinking": false,
+      "temperature": 0.6,
+      "top_p": 0.8,
+      "top_k": 20,
+      "repeat_penalty": 1.0,
+      "engine": "PrismML prism-b10777-e3de715 CUDA12.4",
+      "kv_cache": "q8_0",
+      "gpu_layers": "auto",
+      "weight": {
+        "id": "oxcoder-9b-q6_k",
+        "family": "oxcoder-9b",
+        "repo": "sizzlebop/OxCoder-9B-GGUF",
+        "revision": "468132cf1e1fde2b98da5c87fda2ca5f14f55a30",
+        "file": "OxCoder-9B-Q6_K.gguf",
+        "expected_bytes": 7359267840,
+        "sha256": "2a88e77a2d4623027b5387af4a8d6d060afe9746cfbf0be0e5384da21161ed40",
+        "quantization": "Q6_K",
+        "path": "D:\\AI_New\\AP\\.data\\model-round-v0.0.16-20261018\\downloads\\OxCoder-9B-GGUF\\OxCoder-9B-Q6_K.gguf",
+        "url": "https://huggingface.co/sizzlebop/OxCoder-9B-GGUF/resolve/468132cf1e1fde2b98da5c87fda2ca5f14f55a30/OxCoder-9B-Q6_K.gguf",
+        "staged": false
+      }
+    },
+    "config": {
+      "configured": true,
+      "provider": "hosted",
+      "base_url": "http://127.0.0.1:47841/v1",
+      "model": "oxcoder-9b-q6_k",
+      "context_tokens": 131072,
+      "response_tokens": 4096,
+      "temperature": 0.6,
+      "max_steps": 128,
+      "request_timeout": 900,
+      "command_timeout": 60,
+      "terminal": true,
+      "json_mode": false,
+      "thinking": false,
+      "protocol": "native"
+    }
+  },
+  "scope": "Exploratory directed second extensions from one human-assembled, independently requalified hash parent. No autonomous first-extension credit, unseen-task generalization or demonstrated feedback effect.",
+  "source_sha256": "870a6b523a5d771cc931eca8b7a343e35d27a92aa35943cfcccf6a0d4f6dc304",
+  "parent_sha256": "ad5fbe47ceede347406880a6378ee008d970e92b5481ab5ca5e17078c62fde33",
+  "parent_provenance": {
+    "original_candidate": "D:\\AI_New\\AP\\.data\\seed-comparison-v021-20261019\\trials\\ox-current-1-first\\attempt-001\\review\\candidate-source.json",
+    "original_candidate_sha256": "519d27b967bfb7bef1cb273f462926ba8b33371db108cb3efaf4a648458a574a",
+    "supplied_parent_sha256": "ad5fbe47ceede347406880a6378ee008d970e92b5481ab5ca5e17078c62fde33",
+    "model_files": {
+      "autoproteus/providers.py": "5829294d9464a711226395bfe53709457dfb31b3413dd90d66f1d01f25f2e47b",
+      "autoproteus/tools.py": "816f0fcd1f53706c1add7d217f0557434940520c972f6b1a300287b7a4d7bc72",
+      "tests/test_sha256_file.py": "32c35cc0290d063228b2e9d0c01a795e8acfcc29b1ef003fe5fbe565f8dcd0c4"
+    },
+    "human_changes": "Assembled on current v0.3.0 starter/guidance; model runtime and focused test bytes are unchanged. Independent requalification required.",
+    "autonomous_first_upgrade_credit": false
+  },
+  "arms": {
+    "baseline": {
+      "attempts": 3,
+      "verified_extensions": 3,
+      "complete_workflows": 0,
+      "stage_order_preserved": 0,
+      "repair_messages_delivered": 0,
+      "posthoc_correct_artifacts": 3,
+      "reported_input_tokens": 3969779,
+      "reported_output_tokens": 26937,
+      "model_calls": 202,
+      "token_and_call_timing_complete": true,
+      "median_total_seconds": 451.41
+    },
+    "submission-feedback": {
+      "attempts": 3,
+      "verified_extensions": 3,
+      "complete_workflows": 1,
+      "stage_order_preserved": 1,
+      "repair_messages_delivered": 0,
+      "posthoc_correct_artifacts": 3,
+      "reported_input_tokens": 2098329,
+      "reported_output_tokens": 24824,
+      "model_calls": 148,
+      "token_and_call_timing_complete": true,
+      "median_total_seconds": 443.874
+    }
+  },
+  "trials": [
+    {
+      "cell": "oxcoder-9b-q6_k_growth_01_sha256_file_baseline",
+      "treatment": "baseline",
+      "source_sha256": "10b000b93fda5af60c2b002f24ae1ca7322fbfa32210650ff9b59828aad37905",
+      "candidate_json": ".data/night-v030-20261020/studies/oxcoder/trials/oxcoder-9b-q6_k_growth_01_sha256_file_baseline/attempt-001/review/candidate-source.json",
+      "result_json": ".data/night-v030-20261020/studies/oxcoder/trials/oxcoder-9b-q6_k_growth_01_sha256_file_baseline/attempt-001/result.json",
+      "review": {
+        "runtime_changed": true,
+        "new_test_files": [
+          "tests/test_format_json.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "verified_upgrade": true,
+        "accepted": true
+      },
+      "independent_feature_cases": {
+        "registered": true,
+        "schema": true,
+        "object": true,
+        "object_idempotent": true,
+        "array": true,
+        "array_idempotent": true,
+        "scalar": true,
+        "scalar_idempotent": true,
+        "exact_output_limit": true,
+        "unicode_output_exact": true,
+        "unicode_output_exact_idempotent": true,
+        "preserve_invalid": true,
+        "preserve_utf8": true,
+        "preserve_large": true,
+        "preserve_expanded": true,
+        "reject_path_directory": true,
+        "reject_path_missing": true,
+        "reject_path_../outside-heldout.txt": true,
+        "reject_path_escape": true,
+        "outside_preserved": true
+      },
+      "feature_suite_passed": true,
+      "public_invocation_passed": true,
+      "protected_regressions_passed": true,
+      "retained_passed": true,
+      "verified_extension": true,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "10b000b93fda5af60c2b002f24ae1ca7322fbfa32210650ff9b59828aad37905"
+      },
+      "complete_workflow": false,
+      "strict_route_success": false,
+      "final_source_unchanged": null,
+      "development_run": {
+        "task": "second-extension-audit",
+        "session": "9b8ada3fae78446b8bec59fa0ac6ba81",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 34,
+        "seconds": 418.62,
+        "model_requests": 35,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 3,
+        "read_actions": 8,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "final_run": null,
+      "cumulative_actions": 34,
+      "public_repair_continuations": 0,
+      "public_tickets": [],
+      "navigation": {
+        "read_actions": 8,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 23998,
+        "read_characters": 22468,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 22468,
+        "first_runtime_source_edit_seconds": 64.816,
+        "runtime_source_edits": 3,
+        "first_green_development_check_seconds": 323.462,
+        "last_green_development_check_seconds": 400.302,
+        "actions_after_last_green_check": 0,
+        "reads_after_last_green_check": 0,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 451.41,
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 8165,
+        "reported_output_tokens": 8165,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 469749,
+          "measured_calls": 35,
+          "expected_calls": 35,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 8165,
+          "measured_calls": 35,
+          "expected_calls": 35,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 399.957,
+          "measured_calls": 35,
+          "expected_calls": 35,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 399.945,
+          "measured_calls": 35,
+          "expected_calls": 35,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 175,
+        "bytes": 2190322,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "timings": {
+        "development_or_basic": 418.713113,
+        "independent_grading": 20.321507,
+        "retention_grading": 12.170772,
+        "cleanup": 1.8e-05,
+        "vm_tools_and_orchestration_seconds": 18.960703
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "bytes": 54,
+        "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4",
+        "explicit_completion": true,
+        "observed_usage_all_runs": {
+          "direct": [
+            "edit_file",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": [
+            "format_json",
+            "sha256_file"
+          ]
+        },
+        "scope": "Read-only secondary analysis after all six trials. Does not alter official stage-order or workflow verdicts. Development-call evidence is guest-reported and not bound to an exact runtime-source hash at each call."
+      }
+    },
+    {
+      "cell": "oxcoder-9b-q6_k_growth_01_sha256_file_submission-feedback",
+      "treatment": "submission-feedback",
+      "source_sha256": "12d1ff6ff54b84f3a239ba896f4db021eeb46653bcba318f008430403eb3e13c",
+      "candidate_json": ".data/night-v030-20261020/studies/oxcoder/trials/oxcoder-9b-q6_k_growth_01_sha256_file_submission-feedback/attempt-001/review/candidate-source.json",
+      "result_json": ".data/night-v030-20261020/studies/oxcoder/trials/oxcoder-9b-q6_k_growth_01_sha256_file_submission-feedback/attempt-001/result.json",
+      "review": {
+        "runtime_changed": true,
+        "new_test_files": [
+          "tests/test_format_json.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "verified_upgrade": true,
+        "accepted": true
+      },
+      "independent_feature_cases": {
+        "registered": true,
+        "schema": true,
+        "object": true,
+        "object_idempotent": true,
+        "array": true,
+        "array_idempotent": true,
+        "scalar": true,
+        "scalar_idempotent": true,
+        "exact_output_limit": true,
+        "unicode_output_exact": true,
+        "unicode_output_exact_idempotent": true,
+        "preserve_invalid": true,
+        "preserve_utf8": true,
+        "preserve_large": true,
+        "preserve_expanded": true,
+        "reject_path_directory": true,
+        "reject_path_missing": true,
+        "reject_path_../outside-heldout.txt": true,
+        "reject_path_escape": true,
+        "outside_preserved": true
+      },
+      "feature_suite_passed": true,
+      "public_invocation_passed": true,
+      "protected_regressions_passed": true,
+      "retained_passed": true,
+      "verified_extension": true,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "12d1ff6ff54b84f3a239ba896f4db021eeb46653bcba318f008430403eb3e13c"
+      },
+      "complete_workflow": false,
+      "strict_route_success": false,
+      "final_source_unchanged": null,
+      "development_run": {
+        "task": "second-extension-audit",
+        "session": "2ecff376150f4c0f99ff07bddba162a9",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 69,
+        "seconds": 532.85,
+        "model_requests": 69,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 5,
+        "read_actions": 38,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "final_run": null,
+      "cumulative_actions": 69,
+      "public_repair_continuations": 0,
+      "public_tickets": [
+        {
+          "ticket": {
+            "schema": 1,
+            "source_sha256": "12d1ff6ff54b84f3a239ba896f4db021eeb46653bcba318f008430403eb3e13c",
+            "ready_for_independent_checks": true,
+            "policy": {
+              "source_sha256": "12d1ff6ff54b84f3a239ba896f4db021eeb46653bcba318f008430403eb3e13c",
+              "changed_files": [
+                "autoproteus/providers.py",
+                "autoproteus/tools.py",
+                "tests/test_format_json.py"
+              ],
+              "new_test_files": [
+                "tests/test_format_json.py"
+              ],
+              "runtime_changed": true,
+              "protected_unchanged": true,
+              "allowed_files_only": true,
+              "unexpected_files": [],
+              "protected_changes": [],
+              "documentation_updated": false
+            },
+            "issues": [],
+            "development_failure": null,
+            "scope": "Public requirements and static/development evidence only. This is not independent approval.",
+            "next_step": "Request independent verification; after activation use the tools and explicitly finish the task."
+          },
+          "attempt": 1,
+          "continued": false
+        }
+      ],
+      "navigation": {
+        "read_actions": 37,
+        "search_actions": 1,
+        "outline_actions": 0,
+        "returned_context_bytes": 40439,
+        "read_characters": 35079,
+        "overlapping_read_characters": 270,
+        "new_read_characters": 34809,
+        "first_runtime_source_edit_seconds": 61.704,
+        "runtime_source_edits": 2,
+        "first_green_development_check_seconds": 390.533,
+        "last_green_development_check_seconds": 452.454,
+        "actions_after_last_green_check": 10,
+        "reads_after_last_green_check": 4,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 562.187,
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 8548,
+        "reported_output_tokens": 8548,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 1081916,
+          "measured_calls": 69,
+          "expected_calls": 69,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 8548,
+          "measured_calls": 69,
+          "expected_calls": 69,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 506.963,
+          "measured_calls": 69,
+          "expected_calls": 69,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 506.941,
+          "measured_calls": 69,
+          "expected_calls": 69,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 345,
+        "bytes": 4770391,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "timings": {
+        "development_or_basic": 532.945165,
+        "independent_grading": 17.540544,
+        "retention_grading": 11.233208,
+        "cleanup": 1.1e-05,
+        "vm_tools_and_orchestration_seconds": 26.450237
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "bytes": 54,
+        "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4",
+        "explicit_completion": true,
+        "observed_usage_all_runs": {
+          "direct": [
+            "edit_file",
+            "list_files",
+            "read_file",
+            "read_section",
+            "search_files",
+            "write_file"
+          ],
+          "development": [
+            "format_json",
+            "sha256_file"
+          ]
+        },
+        "scope": "Read-only secondary analysis after all six trials. Does not alter official stage-order or workflow verdicts. Development-call evidence is guest-reported and not bound to an exact runtime-source hash at each call."
+      }
+    },
+    {
+      "cell": "oxcoder-9b-q6_k_growth_02_sha256_file_submission-feedback",
+      "treatment": "submission-feedback",
+      "source_sha256": "cef8ac244a76fdea25dd3af0a81d646f84514409ba954e5d84559c37aa7b07fb",
+      "candidate_json": ".data/night-v030-20261020/studies/oxcoder/trials/oxcoder-9b-q6_k_growth_02_sha256_file_submission-feedback/attempt-001/review/candidate-source.json",
+      "result_json": ".data/night-v030-20261020/studies/oxcoder/trials/oxcoder-9b-q6_k_growth_02_sha256_file_submission-feedback/attempt-001/result.json",
+      "review": {
+        "runtime_changed": true,
+        "new_test_files": [
+          "tests/test_format_json.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "verified_upgrade": true,
+        "accepted": false
+      },
+      "independent_feature_cases": {
+        "registered": true,
+        "schema": true,
+        "object": true,
+        "object_idempotent": true,
+        "array": true,
+        "array_idempotent": true,
+        "scalar": true,
+        "scalar_idempotent": true,
+        "exact_output_limit": true,
+        "unicode_output_exact": true,
+        "unicode_output_exact_idempotent": true,
+        "preserve_invalid": true,
+        "preserve_utf8": true,
+        "preserve_large": true,
+        "preserve_expanded": true,
+        "reject_path_directory": true,
+        "reject_path_missing": true,
+        "reject_path_../outside-heldout.txt": true,
+        "reject_path_escape": true,
+        "outside_preserved": true
+      },
+      "feature_suite_passed": true,
+      "public_invocation_passed": true,
+      "protected_regressions_passed": true,
+      "retained_passed": true,
+      "verified_extension": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": true,
+        "submitted_source_sha256": "cef8ac244a76fdea25dd3af0a81d646f84514409ba954e5d84559c37aa7b07fb",
+        "correct_final_use": true,
+        "explicit_finish": true
+      },
+      "complete_workflow": true,
+      "strict_route_success": true,
+      "final_source_unchanged": true,
+      "development_run": {
+        "task": "second-extension-audit",
+        "session": "923bf6af12b44a99a3b3b59d7882d78f",
+        "status": "waiting",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": false,
+        "checks": [],
+        "steps": 24,
+        "seconds": 253.46,
+        "model_requests": 25,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 4,
+        "read_actions": 6,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": "Waiting for your reply"
+      },
+      "final_run": {
+        "session": "923bf6af12b44a99a3b3b59d7882d78f",
+        "status": "completed",
+        "timed_out": false,
+        "steps": 34,
+        "provider_error_category": null,
+        "last_notices": [
+          "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, run_command, sha256_file, format_json. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+          "Session resumed. Checking the current workspace before continuing."
+        ]
+      },
+      "cumulative_actions": 34,
+      "public_repair_continuations": 0,
+      "public_tickets": [
+        {
+          "ticket": {
+            "schema": 1,
+            "source_sha256": "cef8ac244a76fdea25dd3af0a81d646f84514409ba954e5d84559c37aa7b07fb",
+            "ready_for_independent_checks": true,
+            "policy": {
+              "source_sha256": "cef8ac244a76fdea25dd3af0a81d646f84514409ba954e5d84559c37aa7b07fb",
+              "changed_files": [
+                "autoproteus/providers.py",
+                "autoproteus/tools.py",
+                "tests/test_format_json.py"
+              ],
+              "new_test_files": [
+                "tests/test_format_json.py"
+              ],
+              "runtime_changed": true,
+              "protected_unchanged": true,
+              "allowed_files_only": true,
+              "unexpected_files": [],
+              "protected_changes": [],
+              "documentation_updated": false
+            },
+            "issues": [],
+            "development_failure": null,
+            "scope": "Public requirements and static/development evidence only. This is not independent approval.",
+            "next_step": "Request independent verification; after activation use the tools and explicitly finish the task."
+          },
+          "attempt": 1,
+          "continued": false
+        }
+      ],
+      "navigation": {
+        "read_actions": 6,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 23695,
+        "read_characters": 22342,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 22342,
+        "first_runtime_source_edit_seconds": 49.069,
+        "runtime_source_edits": 3,
+        "first_green_development_check_seconds": 208.43,
+        "last_green_development_check_seconds": 236.19,
+        "actions_after_last_green_check": 2,
+        "reads_after_last_green_check": 1,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 324.837,
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 6666,
+        "reported_output_tokens": 6666,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 333905,
+          "measured_calls": 35,
+          "expected_calls": 35,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 6666,
+          "measured_calls": 35,
+          "expected_calls": 35,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 277.318,
+          "measured_calls": 35,
+          "expected_calls": 35,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 277.308,
+          "measured_calls": 35,
+          "expected_calls": 35,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 175,
+        "bytes": 1558693,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "timings": {
+        "development_or_basic": 253.571887,
+        "independent_grading": 16.336453,
+        "retention_grading": 10.851116,
+        "activation_and_final_use": 43.649699,
+        "cleanup": 1.3e-05,
+        "vm_tools_and_orchestration_seconds": 20.331418
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "bytes": 54,
+        "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4",
+        "explicit_completion": true,
+        "observed_usage_all_runs": {
+          "direct": [
+            "edit_file",
+            "format_json",
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "scope": "Read-only secondary analysis after all six trials. Does not alter official stage-order or workflow verdicts. Development-call evidence is guest-reported and not bound to an exact runtime-source hash at each call."
+      }
+    },
+    {
+      "cell": "oxcoder-9b-q6_k_growth_02_sha256_file_baseline",
+      "treatment": "baseline",
+      "source_sha256": "2a3b3a6990d3632fc27471c3303d0c39d80a9519e93f26a7e711343df06abf5d",
+      "candidate_json": ".data/night-v030-20261020/studies/oxcoder/trials/oxcoder-9b-q6_k_growth_02_sha256_file_baseline/attempt-001/review/candidate-source.json",
+      "result_json": ".data/night-v030-20261020/studies/oxcoder/trials/oxcoder-9b-q6_k_growth_02_sha256_file_baseline/attempt-001/result.json",
+      "review": {
+        "runtime_changed": true,
+        "new_test_files": [
+          "tests/test_format_json.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "verified_upgrade": true,
+        "accepted": true
+      },
+      "independent_feature_cases": {
+        "registered": true,
+        "schema": true,
+        "object": true,
+        "object_idempotent": true,
+        "array": true,
+        "array_idempotent": true,
+        "scalar": true,
+        "scalar_idempotent": true,
+        "exact_output_limit": true,
+        "unicode_output_exact": true,
+        "unicode_output_exact_idempotent": true,
+        "preserve_invalid": true,
+        "preserve_utf8": true,
+        "preserve_large": true,
+        "preserve_expanded": true,
+        "reject_path_directory": true,
+        "reject_path_missing": true,
+        "reject_path_../outside-heldout.txt": true,
+        "reject_path_escape": true,
+        "outside_preserved": true
+      },
+      "feature_suite_passed": true,
+      "public_invocation_passed": true,
+      "protected_regressions_passed": true,
+      "retained_passed": true,
+      "verified_extension": true,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "2a3b3a6990d3632fc27471c3303d0c39d80a9519e93f26a7e711343df06abf5d"
+      },
+      "complete_workflow": false,
+      "strict_route_success": false,
+      "final_source_unchanged": null,
+      "development_run": {
+        "task": "second-extension-audit",
+        "session": "73fcc521209f4ae5926fe08384beaeee",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 37,
+        "seconds": 271.49,
+        "model_requests": 38,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 9,
+        "read_actions": 7,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "final_run": null,
+      "cumulative_actions": 37,
+      "public_repair_continuations": 0,
+      "public_tickets": [],
+      "navigation": {
+        "read_actions": 6,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 23739,
+        "read_characters": 22404,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 22404,
+        "first_runtime_source_edit_seconds": 76.882,
+        "runtime_source_edits": 2,
+        "first_green_development_check_seconds": 210.901,
+        "last_green_development_check_seconds": 258.374,
+        "actions_after_last_green_check": 3,
+        "reads_after_last_green_check": 2,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 299.754,
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 5624,
+        "reported_output_tokens": 5624,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 449246,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 5624,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 253.676,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 253.666,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 190,
+        "bytes": 2031469,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "timings": {
+        "development_or_basic": 271.57944,
+        "independent_grading": 17.380922,
+        "retention_grading": 10.624197,
+        "cleanup": 1.6e-05,
+        "vm_tools_and_orchestration_seconds": 18.072865
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "bytes": 54,
+        "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4",
+        "explicit_completion": true,
+        "observed_usage_all_runs": {
+          "direct": [
+            "edit_file",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "scope": "Read-only secondary analysis after all six trials. Does not alter official stage-order or workflow verdicts. Development-call evidence is guest-reported and not bound to an exact runtime-source hash at each call."
+      }
+    },
+    {
+      "cell": "oxcoder-9b-q6_k_growth_03_sha256_file_baseline",
+      "treatment": "baseline",
+      "source_sha256": "a7196545103e22681de0ab9f336641a3dcd0b51c313b49e8c432de8ce3badd47",
+      "candidate_json": ".data/night-v030-20261020/studies/oxcoder/trials/oxcoder-9b-q6_k_growth_03_sha256_file_baseline/attempt-001/review/candidate-source.json",
+      "result_json": ".data/night-v030-20261020/studies/oxcoder/trials/oxcoder-9b-q6_k_growth_03_sha256_file_baseline/attempt-001/result.json",
+      "review": {
+        "runtime_changed": true,
+        "new_test_files": [
+          "tests/test_format_json.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "verified_upgrade": true,
+        "accepted": true
+      },
+      "independent_feature_cases": {
+        "registered": true,
+        "schema": true,
+        "object": true,
+        "object_idempotent": true,
+        "array": true,
+        "array_idempotent": true,
+        "scalar": true,
+        "scalar_idempotent": true,
+        "exact_output_limit": true,
+        "unicode_output_exact": true,
+        "unicode_output_exact_idempotent": true,
+        "preserve_invalid": true,
+        "preserve_utf8": true,
+        "preserve_large": true,
+        "preserve_expanded": true,
+        "reject_path_directory": true,
+        "reject_path_missing": true,
+        "reject_path_../outside-heldout.txt": true,
+        "reject_path_escape": true,
+        "outside_preserved": true
+      },
+      "feature_suite_passed": true,
+      "public_invocation_passed": true,
+      "protected_regressions_passed": true,
+      "retained_passed": true,
+      "verified_extension": true,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "a7196545103e22681de0ab9f336641a3dcd0b51c313b49e8c432de8ce3badd47"
+      },
+      "complete_workflow": false,
+      "strict_route_success": false,
+      "final_source_unchanged": null,
+      "development_run": {
+        "task": "second-extension-audit",
+        "session": "7b5ec01f2e2242f79a49975258cf266f",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 128,
+        "seconds": 643.91,
+        "model_requests": 129,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 7,
+        "read_actions": 103,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "final_run": null,
+      "cumulative_actions": 128,
+      "public_repair_continuations": 0,
+      "public_tickets": [],
+      "navigation": {
+        "read_actions": 102,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 51526,
+        "read_characters": 39539,
+        "overlapping_read_characters": 160,
+        "new_read_characters": 39379,
+        "first_runtime_source_edit_seconds": 62.962,
+        "runtime_source_edits": 2,
+        "first_green_development_check_seconds": 267.244,
+        "last_green_development_check_seconds": 314.867,
+        "actions_after_last_green_check": 92,
+        "reads_after_last_green_check": 92,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 671.385,
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 13148,
+        "reported_output_tokens": 13148,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 3050784,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 13148,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 607.881,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 607.847,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 645,
+        "bytes": 12955785,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "timings": {
+        "development_or_basic": 644.000774,
+        "independent_grading": 16.736164,
+        "retention_grading": 10.359536,
+        "cleanup": 1.1e-05,
+        "vm_tools_and_orchestration_seconds": 36.408289
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "bytes": 54,
+        "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4",
+        "explicit_completion": true,
+        "observed_usage_all_runs": {
+          "direct": [
+            "edit_file",
+            "list_files",
+            "read_file",
+            "read_section",
+            "write_file"
+          ],
+          "development": []
+        },
+        "scope": "Read-only secondary analysis after all six trials. Does not alter official stage-order or workflow verdicts. Development-call evidence is guest-reported and not bound to an exact runtime-source hash at each call."
+      }
+    },
+    {
+      "cell": "oxcoder-9b-q6_k_growth_03_sha256_file_submission-feedback",
+      "treatment": "submission-feedback",
+      "source_sha256": "906929a6e064394f1518b73a004ae783c1849193ae00cdf6515cdec28fa7482c",
+      "candidate_json": ".data/night-v030-20261020/studies/oxcoder/trials/oxcoder-9b-q6_k_growth_03_sha256_file_submission-feedback/attempt-001/review/candidate-source.json",
+      "result_json": ".data/night-v030-20261020/studies/oxcoder/trials/oxcoder-9b-q6_k_growth_03_sha256_file_submission-feedback/attempt-001/result.json",
+      "review": {
+        "runtime_changed": true,
+        "new_test_files": [
+          "tests/test_format_json.py"
+        ],
+        "protected_unchanged": true,
+        "allowed_files_only": true,
+        "verified_upgrade": true,
+        "accepted": true
+      },
+      "independent_feature_cases": {
+        "registered": true,
+        "schema": true,
+        "object": true,
+        "object_idempotent": true,
+        "array": true,
+        "array_idempotent": true,
+        "scalar": true,
+        "scalar_idempotent": true,
+        "exact_output_limit": true,
+        "unicode_output_exact": true,
+        "unicode_output_exact_idempotent": true,
+        "preserve_invalid": true,
+        "preserve_utf8": true,
+        "preserve_large": true,
+        "preserve_expanded": true,
+        "reject_path_directory": true,
+        "reject_path_missing": true,
+        "reject_path_../outside-heldout.txt": true,
+        "reject_path_escape": true,
+        "outside_preserved": true
+      },
+      "feature_suite_passed": true,
+      "public_invocation_passed": true,
+      "protected_regressions_passed": true,
+      "retained_passed": true,
+      "verified_extension": true,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "906929a6e064394f1518b73a004ae783c1849193ae00cdf6515cdec28fa7482c"
+      },
+      "complete_workflow": false,
+      "strict_route_success": false,
+      "final_source_unchanged": null,
+      "development_run": {
+        "task": "second-extension-audit",
+        "session": "79111c097c90437f8244ae9c4cf4158a",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [],
+        "steps": 43,
+        "seconds": 416.04,
+        "model_requests": 44,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 4,
+        "read_actions": 9,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "final_run": null,
+      "cumulative_actions": 43,
+      "public_repair_continuations": 0,
+      "public_tickets": [
+        {
+          "ticket": {
+            "schema": 1,
+            "source_sha256": "906929a6e064394f1518b73a004ae783c1849193ae00cdf6515cdec28fa7482c",
+            "ready_for_independent_checks": true,
+            "policy": {
+              "source_sha256": "906929a6e064394f1518b73a004ae783c1849193ae00cdf6515cdec28fa7482c",
+              "changed_files": [
+                "autoproteus/providers.py",
+                "autoproteus/tools.py",
+                "tests/test_format_json.py"
+              ],
+              "new_test_files": [
+                "tests/test_format_json.py"
+              ],
+              "runtime_changed": true,
+              "protected_unchanged": true,
+              "allowed_files_only": true,
+              "unexpected_files": [],
+              "protected_changes": [],
+              "documentation_updated": false
+            },
+            "issues": [],
+            "development_failure": null,
+            "scope": "Public requirements and static/development evidence only. This is not independent approval.",
+            "next_step": "Request independent verification; after activation use the tools and explicitly finish the task."
+          },
+          "attempt": 1,
+          "continued": false
+        }
+      ],
+      "navigation": {
+        "read_actions": 9,
+        "search_actions": 0,
+        "outline_actions": 0,
+        "returned_context_bytes": 24210,
+        "read_characters": 22585,
+        "overlapping_read_characters": 0,
+        "new_read_characters": 22585,
+        "first_runtime_source_edit_seconds": 48.414,
+        "runtime_source_edits": 2,
+        "first_green_development_check_seconds": 343.036,
+        "last_green_development_check_seconds": 343.036,
+        "actions_after_last_green_check": 16,
+        "reads_after_last_green_check": 5,
+        "runtime_edits_after_last_green_check": 0,
+        "scope": "Observed file tools only; commands invalidate coverage. Green checks are diagnostic, not independent approval."
+      },
+      "total_seconds": 443.874,
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 9610,
+        "reported_output_tokens": 9610,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 682508,
+          "measured_calls": 44,
+          "expected_calls": 44,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 9610,
+          "measured_calls": 44,
+          "expected_calls": 44,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 396.013,
+          "measured_calls": 44,
+          "expected_calls": 44,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 396.0,
+          "measured_calls": 44,
+          "expected_calls": 44,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 220,
+        "bytes": 3123781,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "timings": {
+        "development_or_basic": 416.12136,
+        "independent_grading": 17.005638,
+        "retention_grading": 10.379215,
+        "cleanup": 1.1e-05,
+        "vm_tools_and_orchestration_seconds": 20.476136
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "bytes": 54,
+        "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4",
+        "explicit_completion": true,
+        "observed_usage_all_runs": {
+          "direct": [
+            "edit_file",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": [
+            "format_json",
+            "sha256_file"
+          ]
+        },
+        "scope": "Read-only secondary analysis after all six trials. Does not alter official stage-order or workflow verdicts. Development-call evidence is guest-reported and not bound to an exact runtime-source hash at each call."
+      }
+    }
+  ],
+  "all_ordinary_gate_results": {
+    "oxcoder-9b-q6_k_benchmark_01": true,
+    "oxcoder-9b-q6_k_basic_exact-file": true,
+    "oxcoder-9b-q6_k_basic_precise-edit": true,
+    "oxcoder-9b-q6_k_basic_recovery": true,
+    "oxcoder-9b-q6_k_basic_unicode": true,
+    "oxcoder-9b-q6_k_basic_bug-fix": true
+  },
+  "primary_matched_success_pairs": 0,
+  "efficiency_claim": "None: no matched complete-workflow successes and no delivered repair intervention. Token sums are logical provider-reported usage, not uncached compute or monetary cost.",
+  "protocol_amendment": {
+    "before_any_growth_trials": true,
+    "original_protocol_sha256": "aff802c6ea672f22f01364fed0f603658ec9c3d3fc0d31c70d48169fc35ce525",
+    "reason": "The new strict seven-request qualification failed on OxCoder at its seventh response before the ordinary/upgrade queue began. Preserve this failure and diagnose it separately from actual task performance.",
+    "admission": "The public runner unchanged two-call benchmark and at-least-four-of-five basic-task gate admit both arms. The new three-round diagnostic is advisory for both models and its full trace is retained. This is not qualification of the ordinary app connection.",
+    "prohibited": "No source edits, model/sampling changes, hidden success retries, JSON fallback, weaker grading or candidate repair."
+  },
+  "original_admission_failure": {
+    "time": "2026-10-20T07:54:47.915947+00:00",
+    "kind": "ProviderError",
+    "detail": "The model did not follow the selected action protocol. Try JSON fallback or another model.",
+    "results": {}
+  },
+  "qualification": {
+    "attempts": 2,
+    "passed": 0,
+    "trace_path": ".data/night-v030-20261020/runtime/oxcoder-9b-q6_k-paired-002/qualification-decisions.jsonl",
+    "traced_requests": 7,
+    "traced_normalized_decisions": [
+      "{\"message\": \"\", \"action\": {\"tool\": \"diagnostic_echo\", \"arguments\": {\"value\": \"98ffe95b16343efe\"}}}",
+      "{\"message\": \"\", \"action\": {\"tool\": \"diagnostic_echo\", \"arguments\": {\"value\": \"98ffe95b16343efe\"}}}",
+      "{\"message\": \"0c042a41b9adc260\", \"status\": \"completed\"}",
+      "{\"message\": \"\", \"action\": {\"tool\": \"diagnostic_echo\", \"arguments\": {\"value\": \"8de694e2bb45b3ab\"}}}",
+      "{\"message\": \"2bbf30b04e185c41\", \"status\": \"completed\"}",
+      "{\"message\": \"\", \"action\": {\"tool\": \"diagnostic_echo\", \"arguments\": {\"value\": \"f40f385f9df74afb\"}}}",
+      ""
+    ],
+    "last_response": {
+      "content": "",
+      "raw_content": "f06193e8e69b825c",
+      "tool_calls": [],
+      "usage": {
+        "completion_tokens": 17,
+        "prompt_tokens": 1741,
+        "total_tokens": 1758,
+        "prompt_tokens_details": {
+          "cached_tokens": 1648
+        }
+      },
+      "normalization_error": "A native response needs a tool call. Call finish with message and status=\"completed\" after verification, or status=\"needs_input\" to ask the user a required question."
+    },
+    "scope": "Two diagnostic attempts, both before candidate rollouts. The traced attempt correctly echoed/retried and finished two rounds, then omitted a native finish call at request seven. Native task transport subsequently passed the normal benchmark/basic gate. Full app-profile qualification remains failed."
+  },
+  "conditional_runs": {
+    "qwen": "Not run: treatment 1/3 versus baseline 0/3 did not meet at least 2/3 and a two-workflow lead.",
+    "fresh_first_and_second_chains": "Not run: conditional confirmation prerequisites were not met."
+  },
+  "first_server_launch": "2026-10-20T07:51:18.661285+00:00",
+  "finished": "2026-10-20T08:48:10.946323+00:00",
+  "server_launch_to_finish_seconds": 3412.285038,
+  "six_trial_seconds": 2753.447,
+  "cleanup": {
+    "verified_targets": [
+      {
+        "path": "D:\\AI_New\\AP\\.data\\models\\gguf\\nvidia_NVIDIA-Nemotron-Nano-9B-v2-Q4_K_M.gguf",
+        "name": "Nemotron Nano 9B v2 Q4",
+        "sha256": "be84528231457f766a35612386e2638d9af10beb10a9d8d23f0cc73c20818da7",
+        "bytes": 6525629280
+      },
+      {
+        "path": "D:\\AI_New\\AP\\.data\\models\\gguf\\LFM2.5-8B-A1B-Q4_K_M.gguf",
+        "name": "LFM2.5 8B Q4",
+        "sha256": "4923ec14f06b968b74d663e5949867d2d9c3bf13a20b8be1a9f9af39989b2bb0",
+        "bytes": 5155564768
+      },
+      {
+        "path": "D:\\AI_New\\AP\\.data\\models\\gguf\\Ornith-1.5-9B-Q4_K_M.gguf",
+        "name": "Ornith 1.5 9B Q4",
+        "sha256": "70c112196e0b7023803c9762752e46d29e612a92c83f995bc3ba1ceb07e8fab6",
+        "bytes": 5780090816
+      }
+    ],
+    "reason": "Restore the previously requested 10% reserve. These older model families earned no accepted upgrades in the latest screen. Preserve Qwen/OxCoder, higher-precision LFM, reports and metadata.",
+    "free_bytes": 113127907328,
+    "evidence": "evaluations/seed-v0.2.0-local-findings.md",
+    "completed": true
+  },
+  "stopped": {
+    "time": "2026-10-20T08:48:10.949715+00:00",
+    "gpu": "NVIDIA GeForce GTX 1080 Ti, 11264, 1327, 2",
+    "free_bytes": 113004859392
+  },
+  "final_audit": {
+    "source_unchanged": true,
+    "trusted_files_unchanged": true,
+    "human_helpers_unchanged": true,
+    "disk_free_bytes": 113004666880,
+    "disk_total_bytes": 1024207089664,
+    "disk_free_percent": 11.033,
+    "model_port_closed": true,
+    "preexisting_local_changes_preserved": true
+  },
+  "pre_intervention_task_identity": {
+    "task_sha256": "59f55a5999db8976bd30b5673a4c4bb057034d9c1939c9324f113964df6c4079",
+    "all_six_tasks_identical": true,
+    "repair_messages_delivered": 0,
+    "interpretation": "No active intervention exposure; score differences do not demonstrate a feedback effect."
+  }
+}

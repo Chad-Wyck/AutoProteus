@@ -34,7 +34,8 @@ function renderApp() {
   text('composer-note', active ? 'An active task is still running. Use Stop above to pause it.' : 'Enter to send · Shift + Enter for a new line');
   const provider = active?.provider || config.provider;
   text('privacy-label', !config.configured && !active ? 'Local workspace' : provider === 'hosted' ? 'Hosted model · task data sent to provider' : provider === 'ollama' ? 'Local model · on your computer' : 'Scripted demo · no model requests');
-  text('compatibility-note', config.compatibility?.passed ? `Tool compatibility checked · ${config.compatibility.protocol}` : 'Tool compatibility is checked when you connect or prepare a model.');
+  const qualified = config.compatibility;
+  text('compatibility-note', qualified?.passed ? `Connection checked · ${qualified.protocol}${qualified.rounds ? ` · ${qualified.rounds} rounds` : ''}${qualified.rejected_call_recovery ? ' · error recovery checked' : ''}${qualified.cached ? ' · saved matching check' : ''}${qualified.identity_complete === false ? '. Some model details are unavailable; reconnecting runs a fresh check.' : ''}` : 'The connection and tool replies are checked when you connect or prepare a model.');
   const native = app.execution?.mode === 'native';
   visible('execution-warning', native); text('execution-warning', app.execution?.warning || '');
   text('terminal-help', native ? 'Commands run with this account’s access. Files and networks are restricted only by your surrounding environment.' : 'Let the agent run Linux commands inside its virtual machine. Your host drives and network remain unavailable.');
@@ -217,8 +218,56 @@ function renderVerification() {
   text('output-verification', evidence?.label || 'Saved outputs have not been independently checked.');
   text('verification-scope', evidence?.scope || 'Review the saved files to check the requested outcome.');
   visible('view-verification', !!evidence?.report_id);
+  const progress = evidence?.capabilities;
+  text('capability-progress', progress ? `Declared in this draft: ${progress.declared.join(', ') || 'No literal tool list found'}.\nSource checks: ${progress.checked_source.replaceAll('_', ' ')} (listed tasks only).\nThis exact draft is active: ${progress.activated ? 'yes' : 'not observed'}.\nObserved model use with this draft: ${progress.model_used.join(', ') || 'none recorded'}.\nDevelopment invocation: ${progress.development_used.join(', ') || 'none recorded'}.` : 'Capability progress appears after a source checkpoint.');
+  text('capability-scope', progress?.scope || 'Declaring, checking, activating and using a tool are separate steps.');
+  $('review-submission').disabled = !!state.app?.active || !!state.app?.evaluation?.busy;
 }
 $('view-verification').onclick = () => openChecks();
+function renderSubmission(ticket) {
+  const body = $('submission-feedback'); body.replaceChildren();
+  const summary = document.createElement('p');
+  summary.textContent = ticket.ready_for_independent_checks ? 'Public submission checks found no issue. Independent checks are still required.' :
+    !ticket.policy.changed_files.length ? 'There is no edited seed submission to review yet.' : 'Review these issues before independent checks:';
+  body.append(summary);
+  const list = document.createElement('ul');
+  for (const issue of ticket.policy.changed_files.length ? ticket.issues : []) {
+    const item = document.createElement('li');
+    const observation = document.createElement('p');
+    observation.textContent = issue.evidence + (issue.paths.length ? ` Paths: ${issue.paths.join(', ')}` : '');
+    const explanation = document.createElement('p'); explanation.className = 'muted';
+    explanation.textContent = 'Possible explanation: ' + issue.hypothesis;
+    item.append(observation, explanation); list.append(item);
+  }
+  body.append(list);
+  if (ticket.development_failure) {
+    const label = document.createElement('p'); label.textContent = 'Recent development check (reported by the guest):';
+    const output = document.createElement('pre'); output.style.whiteSpace = 'pre-wrap';
+    output.textContent = ticket.development_failure.output;
+    const hypothesis = document.createElement('p'); hypothesis.className = 'muted';
+    hypothesis.textContent = 'Possible explanation: ' + ticket.development_failure.hypothesis;
+    body.append(label, output, hypothesis);
+  }
+  const scope = document.createElement('p'); scope.className = 'muted'; scope.textContent = ticket.scope; body.append(scope);
+  text('submission-technical', JSON.stringify(ticket, null, 2));
+  $('send-submission-feedback').disabled = ticket.ready_for_independent_checks || !ticket.policy.changed_files.length;
+}
+$('review-submission').onclick = async () => {
+  try {
+    const result = await api('/api/submission-review', {id: state.id});
+    renderSubmission(result.ticket);
+    $('submission-dialog').showModal();
+  } catch (error) { toast(error.message); }
+};
+$('close-submission').onclick = () => $('submission-dialog').close();
+$('send-submission-feedback').onclick = async () => {
+  try {
+    const result = await api('/api/submission-review', {id: state.id});
+    if (result.ticket.ready_for_independent_checks || !result.ticket.policy.changed_files.length) { renderSubmission(result.ticket); return; }
+    await api('/api/resume', {id: state.id, message: result.message});
+    $('submission-dialog').close(); await poll();
+  } catch (error) { toast(error.message); }
+};
 
 async function refreshFiles() {
   const id = state.id; if (!id) return;

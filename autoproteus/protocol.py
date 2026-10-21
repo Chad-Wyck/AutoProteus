@@ -3,12 +3,15 @@ import json
 
 GUIDANCE = '''Search for the relevant code, then read useful surrounding sections (often 2000-6000 characters).
 Use read_file for small files; read_section positions and lengths count characters. Stop reading when you have enough context.
-For seed upgrades, follow harness/README.md: one implementation, one tool definition, focused tests and a concise explanation.
+For seed upgrades, follow harness/README.md: one implementation, one tool definition, a separate new tests/test_*.py file and a concise explanation.
+Call Workspace.execute(tool, arguments) in tests; tool names are not Workspace methods. Preserve existing tests.
+Keep disposable inputs and argument JSON outside harness/, for example development/args.json.
 Reuse Workspace.read_text and Workspace.write_text for UTF-8 file capabilities. TEXT_CHARACTER_LIMIT counts Unicode characters, not encoded bytes.
 Check requested defaults by omitting optional arguments; the tool schema and implementation must match the user's contract.
 Use todo.txt only when a checklist helps. With terminal access, python3 harness/seed.py invoke --tool NAME --arguments-file args.json
 tries an edited tool even before its tests pass. Inspect resulting files as well as return values. Run python3 harness/seed.py check separately.
 The controller can restart this task with the edited seed and saved checkpoint.
+After the requested outputs are verified, explicitly finish. Do not repeat checks of unchanged passing work.
 '''
 
 PROTOCOL = '''You are AutoProteus, an autonomous assistant working in a private task workspace.

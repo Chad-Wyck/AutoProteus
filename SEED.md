@@ -39,7 +39,9 @@ Source map:
    Helpers accept relative strings or validated `Path` objects. The text
    limit applies to `len(text)`. Only report byte size using
    `len(text.encode("utf-8"))`; valid Unicode text can exceed 100000 bytes.
-3. Add focused tests and preserve existing behavior and tests. For file tools,
+3. Add a separate new `tests/test_<capability>.py` file and preserve existing
+   behavior and tests. Invoke tools with `workspace.execute("tool_name", arguments)`;
+   tool names are not methods such as `workspace.format_json(...)`. For file tools,
    cover empty text, Unicode versus byte counts, CRLF, exact limits, invalid
    inputs and failed writes preserving the original bytes.
    Test the smallest valid call from the user's contract, omitting optional
@@ -53,7 +55,9 @@ Source map:
    test suite to use this helper. Generate large fixtures with short expressions
    such as `'猫' * 100000`, rather than writing repeated literal text.
 4. Try the edited implementation on a disposable example before running the
-   suite. From the task workspace, replace the tool and arguments as needed:
+   suite. Keep disposable input files and argument JSON outside `harness/`,
+   for example in `development/`. They are task files, not seed source.
+   From the task workspace, replace the tool and arguments as needed:
 
        python3 harness/seed.py invoke --tool read_file --arguments '{"path":"sample.txt"}'
 
@@ -79,6 +83,8 @@ Source map:
    usage documentation where needed. A checklist in `todo.txt` is optional;
    no separate `feature.md` report is required. The host records the diff,
    source fingerprints and command results.
+   After the requested outputs are verified, explicitly finish. Repeating
+   checks of unchanged passing work does not complete the user's task.
 
 Every command starts at the task workspace root; use relative `harness/` paths.
 Optional task notes belong in `todo.txt` at that root, beside `harness/`.

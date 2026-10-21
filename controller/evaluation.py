@@ -395,6 +395,23 @@ class EvaluationService:
         return value
 
     def status_for(self, session):
+        value = self._status_for(session)
+        if 'artifacts' in session:
+            from .capabilities import capability_progress
+            try:
+                # Cache static inspection by host-computed manifest identity;
+                # do not reread the seed on every UI poll.
+                manifest = tuple(sorted((name, item['sha256']) for name, item in session['artifacts'].items() if name.startswith('harness/')))
+                cache = getattr(self, '_capability_cache', None)
+                if not cache or cache[:2] != (session['id'], manifest):
+                    cache = (session['id'], manifest, candidate_source(self.task_agent.store, session))
+                    self._capability_cache = cache
+                value['capabilities'] = capability_progress(cache[2], session.get('active_seed', {}), value)
+            except (OSError, ValueError, KeyError, TypeError):
+                pass
+        return value
+
+    def _status_for(self, session):
         """Describe host-owned evidence without certifying ordinary saved outputs."""
         value = {'state': 'unchecked', 'label': 'Saved outputs have not been independently checked.',
                  'scope': 'Seed comparisons cover their frozen source and listed tasks, not every file in this session.'}

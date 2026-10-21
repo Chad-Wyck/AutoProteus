@@ -17,7 +17,7 @@ import zipfile
 from pathlib import Path
 
 from .providers import request_json, ProviderError, ERROR_MESSAGES
-from .compatibility import check_protocol
+from .compatibility import qualify_profile as check_protocol
 from .integrity import record_runtime, verify_runtime
 
 
@@ -262,7 +262,7 @@ class LocalRuntime:
             if not completed:
                 raise ValueError("The model download was interrupted. Try again; Ollama can reuse downloaded layers.")
             config = self.settings.preview({'provider': 'ollama', 'base_url': base, 'model': model, 'thinking': None})
-            self.update(phase='check', message='Checking tool compatibility…', progress=None)
+            self.update(phase='check', message='Checking repeated tool replies and error recovery…', progress=None)
             compatibility = check_protocol(config, self.settings.key())
             self.settings.update({"provider": "ollama", "base_url": base, "model": model, "configured": True,
                                   "thinking": None})

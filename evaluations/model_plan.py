@@ -29,6 +29,7 @@ def trusted_files():
         'controller/managed-runtime-lock.json', 'tests/test_seed.py', 'tests/test_text_helpers.py',
         'evaluations/model_study.py', 'evaluations/model_plan.py', 'evaluations/study_support.py', 'evaluations/generalization.py',
         'evaluations/grader_faults.py', 'evaluations/workflow_variants.py', 'evaluations/workflow_support.py',
+        'evaluations/edit_context.py', 'evaluations/lessons/verified-submission.md',
         'evaluations/generalization-probe.py', 'evaluations/local-model-benchmark.py',
         'evaluations/local-feature-probe.py', 'evaluations/local-upgrade-tasks.json',
         'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/invoke_tool.py', 'evaluations/tasks.json')]
@@ -94,8 +95,8 @@ def prepare(args):
         if bool(parent_path) != bool(parent_tool):
             raise ValueError('Provide both --parent-source and --parent-tool')
         if parent_path:
-            if experiment not in ('phases', 'staged-inputs') or parent_tool not in study.CONTRACTS:
-                raise ValueError('A supplied parent is supported only for the phase or staged-inputs comparison')
+            if experiment not in ('phases', 'staged-inputs', 'submission-feedback', 'edit-context', 'verified-lesson') or parent_tool not in study.CONTRACTS:
+                raise ValueError('This comparison does not support a supplied parent')
             if experiment == 'staged-inputs' and parent_tool == 'csv_preview':
                 raise ValueError('Staged inputs currently require a sha256_file or format_json parent')
             parent = json.loads(Path(parent_path).read_text(encoding='utf-8'))

@@ -118,7 +118,7 @@ class WorkflowTests(unittest.TestCase):
             changed = variant(source, name)
             before, after = ({row['path']: row['data'] for row in pack} for pack in (source, changed))
             self.assertTrue(all(after[key] == value for key, value in before.items() if key.startswith('tests/')))
-            if name in ('phases', 'staged-inputs'): self.assertEqual(changed, source)
+            if name in ('phases', 'staged-inputs', 'submission-feedback', 'edit-context', 'verified-lesson'): self.assertEqual(changed, source)
             else: self.assertIn('autoproteus/workflow_support.py', after)
         self.assertEqual(source_identity(seed_files(ROOT)), fingerprint)
         self.assertEqual(source_identity(source), fingerprint)
@@ -227,7 +227,7 @@ class WorkflowTests(unittest.TestCase):
             self.assertEqual(calls[2:4], [('csv_preview', 'edit-feedback'), ('csv_preview', 'baseline')])
 
     def test_phase_activation_retains_original_task_and_shares_wall_action_and_token_budgets(self):
-        for treatment, status, early_use in itertools.product(('baseline', 'phases'), ('waiting', 'completed'), (False, True)):
+        for treatment, status, early_use in itertools.product(('baseline', 'phases', 'staged-inputs'), ('waiting', 'completed'), (False, True)):
             with self.subTest(treatment=treatment, status=status, early_use=early_use), temporary_directory() as directory:
                 folder = Path(directory)
                 folder.mkdir(exist_ok=True)
@@ -249,8 +249,13 @@ class WorkflowTests(unittest.TestCase):
                     session = freeze_source(store, source, 'Edited seed fixture')
                     session.update(status=status, steps=3)
                     artifacts = Artifacts(store, session)
-                    artifacts.put('inventory.json', base64.b64encode((fixture + ('\n' if early_use else '')).encode()).decode())
-                    artifacts.checkpoint(list(session['artifacts']) + ['inventory.json'])
+                    if treatment == 'staged-inputs':
+                        self.assertNotIn('inventory.json', actual_task['fixtures'])
+                        self.assertIn('development/example.json', actual_task['fixtures'])
+                        self.assertIn('withholding inventory.json', actual_task['task'])
+                    if treatment != 'staged-inputs' or early_use:
+                        artifacts.put('inventory.json', base64.b64encode((fixture + ('\n' if early_use else '')).encode()).decode())
+                        artifacts.checkpoint(list(session['artifacts']) + ['inventory.json'])
                     sessions.append((store, session))
                     self.assertGreater(timeout, 0)
                     self.assertLessEqual(timeout, 30)
@@ -260,6 +265,8 @@ class WorkflowTests(unittest.TestCase):
                 def use(agent, session, timeout):
                     self.assertLess(timeout, 30)
                     self.assertEqual(settings_seen[0].values['max_steps'], 1)
+                    if treatment == 'staged-inputs':
+                        self.assertEqual(Artifacts(sessions[0][0], session).read('inventory.json'), fixture.encode())
                     raw = (json.dumps(json.loads(fixture), ensure_ascii=False, sort_keys=True, indent=2) + '\n').encode()
                     files = Artifacts(sessions[0][0], session)
                     import hashlib
@@ -290,6 +297,10 @@ class WorkflowTests(unittest.TestCase):
                 if treatment == 'phases':
                     self.assertIn(DEVELOPMENT_FOCUS, json.loads((folder / 'task.json').read_text())['task'])
                     self.assertEqual(agent.start.call_args.args[1], USE_FOCUS)
+                    self.assertEqual(agent.start.call_args.kwargs['handoff'], 'concise')
+                elif treatment == 'staged-inputs':
+                    self.assertTrue(result['withheld_input']['delivered'])
+                    self.assertEqual(agent.start.call_args.kwargs['candidate'], sessions[0][1])
                     self.assertEqual(agent.start.call_args.kwargs['handoff'], 'concise')
                 else:
                     agent.restart_seed.assert_called_once()

@@ -408,6 +408,11 @@ class Broker:
                                or not re.fullmatch(r'[A-Za-z0-9_-]{1,64}', str(t['function'].get('name', '')))
                                or not isinstance(t['function'].get('parameters'), dict) for t in tools)):
                     raise IsolationError('Invalid guest tool descriptions')
+            if self.session.get('selected_seed'):
+                selected = self.session['selected_seed']
+                if self.session.get('active_seed', {}).get('source_sha256') != selected['source_sha256']:
+                    self.session['active_seed'] = {**selected, 'direct': [], 'development': []}
+                self.store.save(self.session)
             if self.activation_context and messages[-1] != {'role': 'user', 'content': self.activation_context}:
                 extended = messages + [{'role': 'user', 'content': self.activation_context}]
                 try:
@@ -505,6 +510,17 @@ class Broker:
             if journal.stat().st_size + len(json.dumps(frame).encode()) > MAX_JOURNAL:
                 raise IsolationError('Session journal quota exceeded')
             self.store.event(self.session, frame['type'], frame['data'])
+            if frame['type'] == 'action_result' and self.session.get('active_seed'):
+                from .evaluation import tool_use
+                try:
+                    used = tool_use([{'type': frame['type'], 'data': frame['data']}])
+                except (ValueError, TypeError, AttributeError, RecursionError):
+                    used = {'direct': [], 'development': []}
+                active = self.session['active_seed']
+                for route in ('direct', 'development'):
+                    active[route] = sorted(name for name in set(active.get(route, [])) | set(used[route])
+                                           if isinstance(name, str) and re.fullmatch(r'[A-Za-z0-9_-]{1,64}', name))[:64]
+                self.store.save(self.session)
         elif op == 'done' and set(frame) == {'op'}:
             self.finished = True
         elif op == 'failure' and set(frame) == {'op', 'message'}:
@@ -576,6 +592,8 @@ class IsolatedAgent:
             if candidate:
                 # Freeze only after input validation; candidate bytes never run here.
                 atomic_json(self.store.directory(session['id']) / 'candidate.json', source)
+            from .submissions import source_hash
+            session['selected_seed'] = {'source_sha256': source_hash(source)}
             session.update(status='running', activity='Starting the virtual machine…' if self.execution.mode == 'vm'
                            else 'Starting without AutoProteus VM protection…',
                            isolation=self.execution.mode == 'vm', execution_mode=self.execution.mode)

@@ -46,6 +46,23 @@ class StartupTests(unittest.TestCase):
 
 
 class HostApiTests(unittest.TestCase):
+    def test_public_submission_review_returns_source_bound_evidence_without_running_code(self):
+        from controller.evaluation import freeze_source, source_identity
+        from controller.isolation import seed_files
+        from controller.storage import atomic_json
+        source = seed_files(ROOT)
+        session = freeze_source(self.app.store, source, 'Review')
+        atomic_json(self.app.store.directory(session['id']) / 'candidate.json', source)
+        files = Artifacts(self.app.store, session)
+        files.put('harness/arguments.json', base64.b64encode(b'{}').decode())
+        files.checkpoint([*session['artifacts'], 'harness/arguments.json'])
+        with patch.object(self.app, 'start_run') as start:
+            with self.request('/api/submission-review', {'id': session['id']}) as response:
+                result = json.load(response)
+        start.assert_not_called()
+        self.assertFalse(result['ticket']['ready_for_independent_checks'])
+        self.assertIn('arguments.json', result['ticket']['policy']['unexpected_files'])
+        self.assertNotEqual(result['ticket']['source_sha256'], source_identity(source))
     def test_restart_uses_the_same_task_and_checkpoint_without_creating_a_session(self):
         session = self.app.store.create('Continue this exact task.', 'demo', 'fixture')
         session['messages'] = [{'role': 'user', 'content': 'Preserve my correction.', 'origin': 'human'}]
@@ -203,9 +220,10 @@ class HostApiTests(unittest.TestCase):
             self.assertEqual(self.app.settings.values['protocol'], 'native')
             self.assertIn('tools', provider.payloads[0])
             self.assertNotIn('response_format', provider.payloads[0])
-            self.assertEqual(len(provider.payloads), 2)
+            self.assertEqual(len(provider.payloads), 7)
             self.assertEqual(provider.payloads[1]['messages'][-1]['role'], 'tool')
             self.assertTrue(self.app.settings.values['compatibility']['passed'])
+            self.assertTrue(self.app.settings.values['compatibility']['rejected_call_recovery'])
         finally:
             provider.close()
 

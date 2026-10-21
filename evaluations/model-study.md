@@ -1,9 +1,16 @@
 # Faster local model comparisons
 
 Optional paired [workflow experiments](workflow-experiments.md) add edit feedback,
-advisory syntax diagnostics, observation masking, focused phases and optional
-withheld final inputs.
+advisory syntax diagnostics, observation masking, focused phases, optional
+withheld final inputs, public submission feedback, precise source context and
+one evidence-backed lesson. See the [v0.3.0 preparation](seed-v0.3.0-preparation.md).
 They require explicit selection and leave the default seed behavior unchanged.
+
+The app's connection qualification permits the same two response-format repairs
+per decision as ordinary agent use, within one fixed deadline. Receipts report
+actual request count, repair count and first-pass success. A valid wrong action
+still fails; connection errors are not format repairs. Qualification does not
+establish seed-editing ability.
 
 `model_plan.py` owns preparation, fingerprints and scripted input calibration;
 `model_study.py` owns trial execution, deadlines, queues and reporting. Frozen

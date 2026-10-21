@@ -4,7 +4,8 @@ import copy
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-TREATMENTS = ('edit-feedback', 'syntax-feedback', 'masked-history', 'phases', 'staged-inputs')
+TREATMENTS = ('edit-feedback', 'syntax-feedback', 'masked-history', 'phases', 'staged-inputs',
+              'submission-feedback', 'edit-context', 'verified-lesson')
 
 
 def replace_once(text, anchor, replacement):
@@ -17,7 +18,7 @@ def variant(source, treatment, keep=8, threshold=512):
     if treatment not in ('baseline', *TREATMENTS):
         raise ValueError('Unknown workflow treatment')
     result = copy.deepcopy(source)
-    if treatment in ('baseline', 'phases', 'staged-inputs'):
+    if treatment in ('baseline', 'phases', 'staged-inputs', 'submission-feedback', 'edit-context', 'verified-lesson'):
         return result
     # Validate even when only preparing inert source packs.
     if type(keep) is not int or keep < 1 or type(threshold) is not int or threshold < 1:

@@ -117,22 +117,13 @@ def assess(store,starter,result,feature,directory,feature_check=None,public_chec
     atomic_json(directory/'candidate-source.json',source)
     changes=source_changes(starter,source)
     atomic_json(directory/'changes.json',changes)
-    original={item['path']:base64.b64decode(item['data']) for item in starter}
-    candidate={item['path']:base64.b64decode(item['data']) for item in source}
-    changed={item['path'] for item in changes}
-    additions=changed-original.keys()
-    editable={'autoproteus/tools.py','autoproteus/providers.py'}
-    if 'autoproteus/extensions.py' in original:
-        editable.add('autoproteus/extensions.py')
-    runtime_changed=bool(changed & editable)
-    new_tests=[name for name in additions if name.startswith('tests/test_') and name.endswith('.py') and b'def test_' in candidate[name]]
-    # Reused candidates may contain disposable text fixtures from prior checks.
-    # Their contents are not protected test code or part of the runtime edit scope.
-    text_files={name for name in changed | original.keys() if Path(name).suffix in {'.md', '.txt'}}
-    protected_unchanged=all(candidate.get(name)==content for name,content in original.items() if name not in editable | text_files)
-    allowed=all(name in editable | text_files or
-                (name in additions and name.startswith('tests/') and name.endswith('.py')) for name in changed)
-    review={'source_sha256':source_identity(source),'changed_files':sorted(changed),'new_test_files':new_tests,'protected_unchanged':protected_unchanged,'allowed_files_only':allowed,'documentation_updated':'README.md' in changed,'runtime_changed':runtime_changed,'completed':result['status']=='completed' and not result['timed_out'],
+    from controller.submissions import submission_policy
+    policy=submission_policy(starter,source)
+    runtime_changed=policy['runtime_changed']
+    new_tests=policy['new_test_files']
+    protected_unchanged=policy['protected_unchanged']
+    allowed=policy['allowed_files_only']
+    review={**policy,'completed':result['status']=='completed' and not result['timed_out'],
             'submission':upgrade_review(store,session,starter,source)}
     frozen=freeze_source(store,source,'Candidate '+feature)
     # Runtime edits get checked even when the author prematurely stops or claims failure.

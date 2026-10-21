@@ -29,6 +29,7 @@ from controller.evaluation import candidate_source, freeze_source, growth_scores
 from controller.isolation import Artifacts, IsolatedAgent, VMLease, seed_files
 from controller.providers import ProviderError
 from controller.storage import Store, atomic_json, now
+from controller.submissions import repair_ticket, ticket_message
 from observations import CallRecorder, call_metrics, latency_metrics, navigation_metrics, read_events
 from run_budget import BudgetModelClient, GeneratedTokenBudget, DEFAULT_OUTPUT_TOKENS, DEFAULT_TASK_SECONDS
 from study_support import ResultCache, StudyQueue, Timings, file_identity, identity
@@ -137,6 +138,13 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
         task['task'] += DEVELOPMENT_FOCUS
     elif plan.get('treatment') == 'phases' and reuse_only:
         task['task'] += USE_FOCUS
+    support = None
+    if feature and plan.get('treatment') in ('edit-context', 'verified-lesson'):
+        from edit_context import task_support
+        support = task_support(source, task['task'], plan['treatment'])
+        task.setdefault('fixtures', {}).update(support.pop('fixtures'))
+        task['task'] += '\nTASK SUPPORT (source observations, not additional requirements):\n' + support['text']
+        atomic_json(folder / 'task-support.json', support)
     store = Store(folder / 'sessions')
     recorder = CallRecorder(folder / 'provider-calls.jsonl')
     budget = GeneratedTokenBudget(plan['generated_tokens'] if feature or reuse_only else plan['ordinary_generated_tokens'])
@@ -165,6 +173,42 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
             row['run'] = run_task(agent, store, config, task, freeze_source(store, source, 'Frozen input'),
                                   max(0, deadline - time.monotonic()), deadline=deadline)
         session = store.get(row['run']['session'])
+        if support:
+            events = study.journal(store, session)
+            lesson_read = any(event.get('type') == 'action_result' and event.get('data', {}).get('ok') and
+                event['data'].get('action', {}).get('tool') in ('read_file', 'read_section') and
+                event['data']['action'].get('arguments', {}).get('path') == 'experience/verified-submission.md' for event in events)
+            row['task_support'] = {'kind': support['kind'], 'provided': True,
+                'read_observed': bool(lesson_read) if support['kind'] == 'verified-lesson' else None,
+                'exposure': 'file with read hint' if support['kind'] == 'verified-lesson' else 'direct task context',
+                'followed': 'unmeasured', 'caused_success': 'unmeasured',
+                'scope': 'Independent attempt outcomes are reported separately; exposure or a read is not evidence of benefit.'}
+            if support['kind'] == 'edit-context':
+                from edit_context import stale_paths
+                row['task_support']['stale_after_development'] = stale_paths(support['packet'], candidate_source(store, session))
+        if feature and plan.get('treatment') == 'submission-feedback':
+            # Public feedback precedes every hidden check. No held-out failures
+            # or answers are disclosed. Repairs use the original running seed.
+            row['submission_feedback'] = []
+            row['initial_submission'] = copy.deepcopy(row['run'])
+            row['initial_submission_grading'] = 'Public policy only; no hidden grading before repair.'
+            for attempt in range(2):
+                ticket = repair_ticket(source, candidate_source(store, session), study.journal(store, session))
+                entry = {'ticket': ticket, 'attempt': attempt + 1, 'continued': False}
+                row['submission_feedback'].append(entry)
+                remaining_actions = max(0, config['max_steps'] - session['steps'])
+                if (ticket['ready_for_independent_checks'] or session['status'] not in ('completed', 'waiting') or
+                        row['run']['timed_out'] or time.monotonic() >= deadline or
+                        budget.summary()['exhausted'] or remaining_actions <= 0):
+                    break
+                settings.values = {**config, 'max_steps': remaining_actions}
+                with timings.measure('public_submission_repair'):
+                    agent.start(session, ticket_message(ticket), deadline=deadline)
+                    row['run'] = study.wait(agent, session, max(0, deadline - time.monotonic()))
+                entry['continued'] = True
+                entry['run'] = copy.deepcopy(row['run'])
+                entry['cumulative_actions'] = session['steps']
+            row['final_submission_ticket'] = repair_ticket(source, candidate_source(store, session), study.journal(store, session))
         row['stages']['submitted'] = session['status'] in ('completed', 'waiting') and not row['run']['timed_out']
         row['stages']['activation_requested'] = session['status'] == 'waiting'
         row['navigation'] = navigation_metrics(study.journal(store, session))
@@ -178,6 +222,11 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
         if feature:
             with timings.measure('independent_grading'):
                 row['review'] = checks.assess(store, source, row['run'], feature, folder / 'review')
+            if row.get('submission_feedback') is not None:
+                repaired = sum(entry['continued'] for entry in row['submission_feedback'])
+                row['public_submission_repairs'] = repaired
+                row['accepted_without_public_repair'] = bool(row['review'].get('accepted') and not repaired)
+                row['accepted_after_public_repair'] = bool(row['review'].get('accepted') and repaired)
             if earlier:
                 edited = candidate_source(store, session)
                 frozen = freeze_source(store, edited, 'Exact combined candidate')

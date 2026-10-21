@@ -29,6 +29,45 @@ class ScriptedClient:
 
 @unittest.skipUnless(os.environ.get('AUTOPROTEUS_VM_TESTS') == '1', 'Real VM checks require explicit opt in')
 class RealVMTests(unittest.TestCase):
+    def test_static_context_refresh_and_capability_observations_are_source_bound(self):
+        from controller.evaluation import run_task, freeze_source, source_identity, candidate_source
+        from controller.capabilities import capability_progress
+        import sys
+        sys.path.insert(0, str(ROOT / 'evaluations'))
+        from edit_context import task_support
+        source = seed_files(ROOT)
+        support = task_support(source, 'Inspect source without importing it.', 'edit-context')
+        probe = '''import json, subprocess
+from pathlib import Path
+def call(*args):
+    return json.loads(subprocess.check_output(['python3', 'experience/context_packet.py', *args]))
+before = call('--check', 'experience/context.json')
+assert before['fresh'] is True
+path = Path('harness/autoproteus/tools.py')
+path.write_bytes(path.read_bytes() + b'\\n# Draft edit for freshness check\\n')
+after = call('--check', 'experience/context.json')
+assert after == {'fresh': False, 'stale_paths': ['autoproteus/tools.py'], 'use_old_excerpts': False}
+packet = call()
+assert len(json.dumps(packet, ensure_ascii=False).encode()) <= 12000
+Path('packet-result.json').write_text(json.dumps({'passed': True, 'stale': after['stale_paths']}))
+'''
+        agent = self.agent([{'action': {'tool': 'run_command', 'arguments': {'command': 'python3 probe_context.py'}}},
+                            {'action': {'tool': 'read_file', 'arguments': {'path': 'packet-result.json'}}},
+                            {'status': 'completed', 'message': 'Checked actual packet output.'}])
+        result = run_task(agent, self.store, self.settings.values,
+            {'name': 'context-refresh', 'task': 'Run the static context freshness checks.',
+             'fixtures': {**support['fixtures'], 'probe_context.py': probe},
+             'checks': [{'path': 'packet-result.json', 'json': {'passed': True, 'stale': ['autoproteus/tools.py']}}]},
+            freeze_source(self.store, source, 'Frozen source'), 90)
+        self.assertTrue(result['passed'], result)
+        session = self.store.get(result['session'])
+        self.assertEqual(session['active_seed']['source_sha256'], source_identity(source))
+        self.assertIn('read_file', session['active_seed']['direct'])
+        progress = capability_progress(candidate_source(self.store, session), session['active_seed'],
+                                       {'state': 'unchecked', 'scope': 'No independent feature checks'})
+        self.assertFalse(progress['activated'])  # A draft edit is not activation.
+        self.assertEqual(progress['model_used'], [])
+
     def test_concise_activation_preserves_humans_files_journal_and_new_results(self):
         prompts = [[], [], []]
         phases = [
