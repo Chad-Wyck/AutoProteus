@@ -44,7 +44,7 @@ Model size, available memory and inference speed affect the experience. A succes
 
 - **Describe a task.** Attach inputs with **Files**, or use **Add files** in a stopped session. Imports copy files into the workspace without granting access to the original folder.
 - **Review the results.** Preview or download saved files. A model reporting completion is different from an independently checked result.
-- **Send a correction while it works.** Choose **Change direction** for the next action boundary, or **Do this afterwards** for a follow-up after completion. Pending messages can be cancelled.
+- **Send a correction while it works.** Choose **Change direction** for the next action boundary, or **Do this afterwards** for a follow-up after completion. Pending messages can be cancelled. After the task stops, an unconfirmed delivery can also be cancelled to prevent it being sent again.
 - **Stop and resume.** Stop ends the VM. Resume restores the last saved checkpoint in a fresh VM; changes made after that checkpoint may be lost.
 - **Keep your work.** Search, rename or archive sessions. Deleted sessions can be restored from **Saved work & storage**.
 

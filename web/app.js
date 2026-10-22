@@ -222,14 +222,17 @@ function renderSession() {
 
 function renderInputQueue(session) {
   const box = $('input-queue'); box.replaceChildren();
+  const stopped = !!state.app && state.app.active?.id !== session.id;
   const rows = (session.input_queue || []).filter(row => ['pending', 'offered'].includes(row.status));
   const latest = (session.input_queue || []).filter(row => row.status === 'delivered').at(-1);
   if (latest) box.append(node('small', 'muted', 'Latest message delivered to the agent.'));
   rows.forEach(row => {
     const item = node('div', 'queued-input');
-    item.append(node('span', '', `${row.mode === 'steer' ? 'Change direction' : 'Afterwards'} · ${row.status === 'offered' ? 'Delivery in progress' : 'Pending'}: ${row.message}`));
-    if (row.status === 'pending') {
+    const delivery = row.status === 'offered' ? (stopped ? 'Delivery unconfirmed' : 'Delivery in progress') : 'Pending';
+    item.append(node('span', '', `${row.mode === 'steer' ? 'Change direction' : 'Afterwards'} · ${delivery}: ${row.message}`));
+    if (row.status === 'pending' || stopped) {
       const cancel = node('button', 'quiet', 'Cancel');
+      if (row.status === 'offered') cancel.title = 'Prevent this message being sent again. Earlier work is not undone.';
       cancel.onclick = async () => { try { await api('/api/input/cancel', {id: session.id, request_id: row.id}); await poll(); } catch (error) { toast(error.message); } };
       item.append(cancel);
     }
@@ -582,6 +585,7 @@ async function poll() {
   if (state.polling) return;
   state.polling = true;
   try {
+    const previousWorker = state.app?.active?.id;
     state.app = await api(stateAddress()); renderApp();
     if (state.id) {
       const id = state.id, update = await api('/api/session?' + new URLSearchParams({id, after: state.session?.feed_count || 0, revision: state.session?.revision || -1}));
@@ -590,6 +594,8 @@ async function poll() {
         const feed = update.reset || update.feed_start === 0 ? update.feed : [...previous.slice(0, update.feed_start), ...update.feed];
         state.session = {...update, feed}; renderSession(); await refreshFiles();
       } else if (state.id === id && state.session) {
+        // Worker liveness can change after the last saved session revision.
+        if (previousWorker !== state.app.active?.id) renderInputQueue(state.session);
         state.session.verification = update.verification; renderVerification();
       }
     }

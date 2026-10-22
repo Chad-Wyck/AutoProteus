@@ -4,6 +4,20 @@ Versions use `major.minor.patch`. Before launch, `0.x.0` introduces features and
 `0.x.y` contains bug fixes. Components can exceed 9 or 99. Historical `0.0.x`
 release and experiment labels remain unchanged.
 
+## 0.5.1
+
+- Remove an obsolete prompt-wording assertion from the protected starter tests.
+  Preserve stable opening instructions, action limits and free completion;
+  check the two-request finish and actual saved output instead of prose.
+- Allow cancellation of unacknowledged message offers once their host worker
+  has stopped. Serialize with Resume, retain active-delivery protection and
+  refuse cancellation of messages already acknowledged in saved history.
+- Show cancellation and unconfirmed delivery accurately after interruption,
+  including when worker liveness changes without a new session revision.
+- Specify a paired v0.4.0/current-seed comparison for final CSV-task accuracy.
+  Keep model training and adapter results separate from seed qualification.
+  Regression coverage is added; test execution and model trials remain deferred.
+
 ## 0.5.0
 
 - Add focused `seed.py check --test tests/test_NAME.py` repair checks, labelled

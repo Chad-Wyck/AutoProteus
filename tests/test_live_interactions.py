@@ -67,6 +67,41 @@ class InteractionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'full'):
             self.inputs.enqueue('overflow', 'steer', 'z' * 32)
 
+    def test_stopped_unacknowledged_offers_can_be_cancelled_after_store_restart(self):
+        for mode in ('steer', 'followup'):
+            with self.subTest(mode=mode):
+                session = self.store.create('Interrupted delivery', 'hosted', 'fixture')
+                inputs = Inputs(self.store, session)
+                inputs.enqueue('Do not send this again.', mode, 'd' * 32)
+                self.assertEqual(inputs.offer('finish')[0]['id'], 'd' * 32)
+                with self.assertRaises(ValueError):
+                    inputs.cancel('d' * 32)
+                restored = Store(self.store.root)
+                saved = restored.get(session['id'])
+                Inputs(restored, saved).cancel('d' * 32, worker_stopped=True)
+                reopened = Store(self.store.root)
+                saved = reopened.get(session['id'])
+                self.assertEqual(saved['input_queue'][0]['status'], 'cancelled')
+                self.assertEqual(Inputs(reopened, saved).offer('finish'), [])
+                events = [json.loads(line) for line in (reopened.directory(session['id']) / 'events.jsonl').read_text().splitlines()]
+                self.assertIn('host_input_offered', [event['type'] for event in events])
+                self.assertIn('host_input_cancelled', [event['type'] for event in events])
+
+    def test_stopped_offer_with_a_saved_acknowledgment_cannot_be_cancelled(self):
+        self.inputs.enqueue('Already received.', 'steer', 'e' * 32)
+        self.inputs.offer('steer')
+        self.session['messages'].append({'role': 'user', 'origin': 'human',
+                                        'input_id': 'e' * 32, 'content': 'Already received.'})
+        self.store.save(self.session)
+        with self.assertRaisesRegex(ValueError, 'already recorded as delivered'):
+            self.inputs.cancel('e' * 32, worker_stopped=True)
+        self.assertEqual(self.session['input_queue'][0]['status'], 'delivered')
+        self.assertEqual(self.inputs.offer('steer'), [])
+        restored = Store(self.store.root).get(self.session['id'])
+        self.assertEqual(restored['input_queue'][0]['status'], 'delivered')
+        with self.assertRaises(ValueError):
+            self.inputs.cancel('e' * 32, worker_stopped=True)
+
     def test_recovery_receipts_distinguish_each_commit_window_without_replay(self):
         operations = Operations(self.store, self.session)
         action = {'tool': 'run_command', 'arguments': {'command': 'make output'}}

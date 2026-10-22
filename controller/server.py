@@ -302,7 +302,13 @@ def handler_for(app):
                         return self.send(Inputs(app.store, session).enqueue(
                             data.get('message'), data.get('mode'), data.get('request_id')))
                 if self.path == '/api/input/cancel':
-                    Inputs(app.store, app.store.get(data.get('id'))).cancel(data.get('request_id'))
+                    # Serialize with Resume/start so an idle offer cannot become
+                    # active between checking worker liveness and cancellation.
+                    with app.agent.lock:
+                        session = app.store.get(data.get('id'))
+                        worker = app.agent.workers.get(session['id'])
+                        stopped = worker is None or not worker[1].is_alive()
+                        Inputs(app.store, session).cancel(data.get('request_id'), worker_stopped=stopped)
                     return self.send({'cancelled': True})
                 if self.path == "/api/settings":
                     if any(key in data for key in ('execution', 'execution_mode', 'acknowledge_host_access')):

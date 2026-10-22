@@ -80,6 +80,40 @@ class HostApiTests(unittest.TestCase):
                 self.assertEqual(saved, value)
                 self.assertIn('events.jsonl', archive.namelist())
 
+    def test_offered_input_cancellation_uses_worker_liveness_not_guest_status_or_request_flags(self):
+        from controller.interactions import Inputs
+        from unittest.mock import Mock
+        session = self.app.store.create('Interrupted offer', 'demo', 'fixture')
+        inputs = Inputs(self.app.store, session)
+        inputs.enqueue('Cancel after stopping.', 'steer', 'b' * 32)
+        inputs.offer('steer')
+        session['status'] = 'paused'
+        self.app.store.save(session)
+        worker = Mock(); worker.is_alive.return_value = True
+        self.app.agent.workers[session['id']] = (threading.Event(), worker)
+        payload = {'id': session['id'], 'request_id': 'b' * 32, 'worker_stopped': True}
+        try:
+            with self.assertRaises(urllib.error.HTTPError):
+                self.request('/api/input/cancel', payload)
+            self.assertEqual(session['input_queue'][0]['status'], 'offered')
+            worker.is_alive.return_value = False
+            with self.request('/api/input/cancel', payload) as response:
+                self.assertTrue(json.load(response)['cancelled'])
+            self.assertEqual(session['input_queue'][0]['status'], 'cancelled')
+            self.assertEqual(inputs.offer('steer'), [])
+        finally:
+            self.app.agent.workers.clear()
+
+    def test_offered_input_can_be_cancelled_without_a_surviving_worker(self):
+        from controller.interactions import Inputs
+        session = self.app.store.create('Recovered offer', 'demo', 'fixture')
+        inputs = Inputs(self.app.store, session)
+        inputs.enqueue('Obsolete follow-up.', 'followup', 'c' * 32)
+        inputs.offer('finish')
+        with self.request('/api/input/cancel', {'id': session['id'], 'request_id': 'c' * 32}) as response:
+            self.assertTrue(json.load(response)['cancelled'])
+        self.assertEqual(inputs.offer('finish'), [])
+
     def test_public_submission_review_returns_source_bound_evidence_without_running_code(self):
         from controller.evaluation import freeze_source, source_identity
         from controller.isolation import seed_files

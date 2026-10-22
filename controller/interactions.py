@@ -49,11 +49,19 @@ class Inputs:
             self.store.event(self.session, 'host_input_queued', row)
             return dict(row)
 
-    def cancel(self, request_id):
+    def cancel(self, request_id, *, worker_stopped=False):
         with self.store.lock:
             row = next((r for r in self.session.get('input_queue', []) if r['id'] == request_id), None)
-            if row is None or row['status'] != 'pending':
-                raise ValueError('Only a pending message can be cancelled')
+            if row is None or row['status'] not in ('pending', 'offered'):
+                raise ValueError('Only an undelivered message can be cancelled')
+            if row['status'] == 'offered':
+                if worker_stopped is not True:
+                    raise ValueError('Message delivery is active. Stop the task before cancelling this offer.')
+                # A saved acknowledgment wins even if its queue status is stale.
+                self.acknowledge(self.session.get('messages', []))
+                if row['status'] == 'delivered':
+                    self.store.save(self.session)
+                    raise ValueError('This message is already recorded as delivered')
             row.update(status='cancelled', cancelled=now())
             self.store.save(self.session)
             self.store.event(self.session, 'host_input_cancelled', {'id': request_id})

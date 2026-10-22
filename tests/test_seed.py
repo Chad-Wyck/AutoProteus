@@ -418,7 +418,8 @@ class AgentTests(unittest.TestCase):
                     self.assertEqual(prompts[0][0], prompts[1][0])
                     self.assertFalse(any('allowance is exhausted' in item['content'] for item in prompts[0]))
                     self.assertIn('allowance is exhausted', prompts[1][-1]['content'])
-                    self.assertIn('Stop reading when you have enough context', prompts[0][0]['content'])
+                    self.assertEqual(len(prompts), 2)
+                    self.assertEqual((Path(session['workspace']) / 'last.txt').read_bytes(), b'saved')
                 finally:
                     agent.close()
 

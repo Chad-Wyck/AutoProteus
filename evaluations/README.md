@@ -50,6 +50,13 @@ correct saved outputs and complete workflows. A model's completion claim alone
 does not establish success. Measure efficiency among matched successful tasks;
 keep failed attempts and partial usage measurements visible.
 
+Training loss, successful export and ordinary-task checks do not qualify an
+adapter for seed extension. Report base and adapter workflows separately, with
+the exact seed, model, quantization and settings. Keep an adapter experimental
+until its benefit repeats on complete tasks and unfamiliar capabilities.
+The next [final-task comparison](seed-v0.5.1-final-task-plan.md) uses the base
+model alone so seed changes can be evaluated without changing the adapter.
+
 Historical filenames stay in place so existing links and evidence remain
 usable. Earlier version labels follow an older numbering scheme: use report
 dates and source fingerprints rather than filename sorting to establish order.
