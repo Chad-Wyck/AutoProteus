@@ -30,7 +30,7 @@ def invoke(tool, arguments):
         return 1
 
 
-def check(tool=None, arguments=None):
+def check(tool=None, arguments=None, test=None):
     """Development feedback from the editable copy, executed only where invoked."""
     import io
     import json
@@ -40,22 +40,38 @@ def check(tool=None, arguments=None):
 
     root = Path(__file__).resolve().parent
     sys.path.insert(0, str(root))
+    pattern = 'test_*.py'
+    if test is not None:
+        selected = Path(test)
+        if (selected.parent != Path('tests') or not selected.stem.startswith('test_') or
+                not selected.stem.isidentifier() or selected.suffix != '.py' or
+                not (root / selected).resolve().is_relative_to((root / 'tests').resolve())):
+            raise ValueError('Select one tests/test_NAME.py file inside this seed')
+        if tool:
+            raise ValueError('Focused checks cannot invoke tools. Use invoke separately, then run the full check.')
+        pattern = selected.name
     log = io.StringIO()
-    suite = unittest.defaultTestLoader.discover(str(root / 'tests'))
+    suite = unittest.defaultTestLoader.discover(str(root / 'tests'), pattern=pattern)
     result = unittest.TextTestRunner(stream=log, verbosity=1, buffer=True).run(suite)
-    passed = result.wasSuccessful() and result.testsRun > 0
-    print(json.dumps({'check': 'candidate tests', 'passed': passed, 'tests': result.testsRun,
+    passed = result.wasSuccessful() and result.testsRun > len(result.skipped)
+    print(json.dumps({'check': 'candidate tests' if test is None else 'candidate focused tests',
+                      'scope': 'full' if test is None else 'focused', 'selection': test,
+                      'passed': passed, 'tests': result.testsRun,
                       'failures': len(result.failures), 'errors': len(result.errors), 'skipped': len(result.skipped)}))
     if not passed:
         # Put the summary first and bound traces so the model sees useful failures.
-        for test, trace in (result.failures + result.errors)[:3]:
-            print(str(test) + '\n' + trace[-2400:])
+        for case, trace in (result.failures + result.errors)[:3]:
+            print(str(case) + '\n' + trace[-2400:])
         if not result.testsRun:
             print('No tests were discovered. Add tests/test_*.py with unittest test methods.')
+        elif result.testsRun == len(result.skipped):
+            print('Every discovered test was skipped; no test executed.')
         return 1
     if tool:
         if invoke(tool, arguments):
             return 1
+    if test is not None:
+        print('Focused repair check only. Run python3 harness/seed.py check before requesting activation.')
     print('These are development checks, not independent upgrade approval. Inspect the result and test boundary cases.')
     return 0
 
@@ -65,11 +81,14 @@ if __name__ == '__main__':
     import json
     parser = argparse.ArgumentParser(description='Test or invoke the edited seed in its current environment.')
     parser.add_argument('command', choices=['check', 'invoke'])
+    parser.add_argument('--test', metavar='tests/test_NAME.py', help='Check only this file while repairing; the full check is still required')
     parser.add_argument('--tool', help='Registered file tool from this edited copy, in the current workspace')
     arguments = parser.add_mutually_exclusive_group()
     arguments.add_argument('--arguments', type=json.loads, help='JSON object for --tool; use a disposable test file')
     arguments.add_argument('--arguments-file', help='Workspace UTF-8 JSON argument object, at most 100000 characters')
     args = parser.parse_args()
+    if args.test is not None and (args.command != 'check' or args.tool):
+        parser.error('--test is for focused checks only; use invoke separately or run the full check with --tool')
     if args.arguments_file:
         from pathlib import Path
         import sys
@@ -85,4 +104,8 @@ if __name__ == '__main__':
         parser.error('invoke requires --tool and arguments')
     if args.tool and not isinstance(args.arguments, dict):
         parser.error('Tool arguments must be a JSON object')
-    raise SystemExit(invoke(args.tool, args.arguments) if args.command == 'invoke' else check(args.tool, args.arguments))
+    try:
+        code = invoke(args.tool, args.arguments) if args.command == 'invoke' else check(args.tool, args.arguments, args.test)
+    except ValueError as error:
+        parser.error(str(error))
+    raise SystemExit(code)

@@ -77,6 +77,25 @@ class SubmissionSupportTests(unittest.TestCase):
         self.assertLessEqual(len(text.encode()), 10400)
         self.assertNotIn('heldout', text)
 
+    def test_focused_pass_cannot_clear_full_suite_failure_but_a_full_pass_can(self):
+        candidate = self.starter + [packed('tests/test_new.py', 'def test_new(): pass\n')]
+        def check(command, exit_code):
+            return {'type': 'action_result', 'data': {
+                'action': {'tool': 'run_command', 'arguments': {'command': command}},
+                'result': {'exit_code': exit_code, 'output': 'recorded development check'}}}
+        failed = check('python3 harness/seed.py check', 1)
+        for option in ('--test tests/test_new.py', '--test=tests/test_new.py', '"--test" tests/test_new.py'):
+            focused = check('python3 harness/seed.py check ' + option, 0)
+            ticket = repair_ticket(self.starter, candidate, [failed, focused])
+            self.assertFalse(ticket['ready_for_independent_checks'])
+            self.assertEqual(ticket['development_failure']['command'], 'python3 harness/seed.py check')
+            self.assertIn('full', ticket['development_failure']['scope'])
+        failed_focus = check('python3 harness/seed.py check --test tests/test_new.py', 1)
+        ticket = repair_ticket(self.starter, candidate, [failed, failed_focus])
+        self.assertIn('focused', ticket['development_failure']['scope'])
+        passed = check('python3 harness/seed.py check', 0)
+        self.assertIsNone(repair_ticket(self.starter, candidate, [failed, failed_focus, passed])['development_failure'])
+
     def test_packet_preserves_real_headers_unicode_offsets_and_freshness(self):
         text = '# 猫\r\nclass Workspace:\r\n    def execute(self, tool, args):\r\n        return tool\r\n    def read_text(self, path, missing_ok=False):\r\n        pass\r\n'
         source = [packed('autoproteus/tools.py', text), packed('autoproteus/providers.py', 'TOOL_SPECS = {}\r\n')]

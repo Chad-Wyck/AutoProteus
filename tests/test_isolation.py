@@ -228,7 +228,7 @@ class BoundaryTests(unittest.TestCase):
             self.broker.handle({'op': 'state', 'session': {**value, 'feed': [duplicate, duplicate]}})
 
     def test_oversized_file_invalid_manifest_and_request_quota(self):
-        with patch('controller.isolation.MAX_FILE', 2):
+        with patch('controller.artifacts.MAX_FILE', 2):
             with self.assertRaises(IsolationError):
                 self.broker.handle({'op': 'file', 'path': 'x', 'data': base64.b64encode(b'123').decode()})
         for paths in (['missing'], ['x', 'x'], '../x'):

@@ -22,6 +22,12 @@ acceptance rules alone. Start a local inference service using a verified engine
 and checkpoint, then prepare one frozen queue. No downloads or inference happen
 during preparation. All candidate execution and grading use disposable VMs.
 
+The v0.5.0 seed can isolate repairs with `seed.py check --test tests/test_NAME.py`.
+These records are labelled focused checks, and do not replace the full suite or
+independent acceptance checks. A focused pass cannot clear a recorded full-suite
+failure. Prepare a new frozen plan for this revision; retain earlier verdicts
+under their original source identities.
+
 Supply a JSON list of profiles. Each profile has a unique lowercase `id`, a
 `config` dictionary using the normal provider settings, and optionally an `assets`
 dictionary mapping model/runtime file paths to expected SHA-256 values. Use

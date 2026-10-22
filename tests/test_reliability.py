@@ -139,6 +139,59 @@ class ReliabilityTests(unittest.TestCase):
             finally:
                 app.close()
 
+    def test_import_quota_reserves_the_starter_until_a_harness_is_saved(self):
+        from controller.artifacts import seed_files
+        seed_bytes = sum(len(base64.b64decode(item['data'])) for item in seed_files(ROOT))
+        payload = {'path': 'notes.txt', 'data': base64.b64encode(b'notes').decode()}
+        with temporary_directory() as directory:
+            app = Application(ROOT, data=Path(directory))
+            try:
+                session = app.store.create('Starter reserve', 'demo', 'none')
+                with patch('controller.server.MAX_EXPORT', seed_bytes + 4):
+                    with self.assertRaises(ValueError):
+                        app.import_files(session, [payload])
+                self.assertNotIn('artifacts', session)
+                with patch('controller.server.MAX_EXPORT', seed_bytes + 5):
+                    app.import_files(session, [payload])
+                self.assertEqual(Artifacts(app.store, session).read('notes.txt'), b'notes')
+
+                edited = app.store.create('Existing harness', 'demo', 'none')
+                files = Artifacts(app.store, edited)
+                files.put('harness/seed.py', base64.b64encode(b'# saved seed').decode())
+                files.checkpoint(['harness/seed.py'])
+                with patch('controller.server.MAX_EXPORT', len(b'# saved seed') + 4):
+                    with self.assertRaises(ValueError):
+                        app.import_files(edited, [payload])
+                self.assertEqual(set(edited['artifacts']), {'harness/seed.py'})
+                with patch('controller.server.MAX_EXPORT', len(b'# saved seed') + 5):
+                    app.import_files(edited, [payload])
+                self.assertEqual(Artifacts(app.store, edited).read('notes.txt'), b'notes')
+            finally:
+                app.close()
+
+    def test_import_quota_includes_legacy_files_before_checkpoint_migration(self):
+        from controller.artifacts import seed_files
+        seed_bytes = sum(len(base64.b64decode(item['data'])) for item in seed_files(ROOT))
+        with temporary_directory() as directory:
+            app = Application(ROOT, data=Path(directory))
+            try:
+                session = app.store.create('Legacy imports', 'demo', 'none')
+                legacy = Path(session['workspace']) / 'earlier.txt'
+                legacy.write_bytes(b'earlier')
+                payload = {'path': 'notes.txt', 'data': base64.b64encode(b'notes').decode()}
+                with patch('controller.server.MAX_EXPORT', seed_bytes + 7 + 5 - 1):
+                    with self.assertRaises(ValueError):
+                        app.import_files(session, [payload])
+                self.assertNotIn('artifacts', session)
+                self.assertEqual(legacy.read_bytes(), b'earlier')
+                with patch('controller.server.MAX_EXPORT', seed_bytes + 7 + 5):
+                    app.import_files(session, [payload])
+                files = Artifacts(app.store, session)
+                self.assertEqual(files.read('earlier.txt'), b'earlier')
+                self.assertEqual(files.read('notes.txt'), b'notes')
+            finally:
+                app.close()
+
     def test_admission_uses_actual_worker_liveness_not_the_guest_status(self):
         with temporary_directory() as directory:
             app = Application(ROOT, data=Path(directory))

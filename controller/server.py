@@ -16,7 +16,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from . import __version__
-from .isolation import IsolatedAgent, Artifacts, safe_path, relative_name, MAX_FILE, MAX_FILES, MAX_EXPORT, seed_files, packed_files
+from .artifacts import (Artifacts, MAX_FILE, MAX_FILES, MAX_EXPORT,
+                        packed_files, relative_name, safe_path, seed_files)
+from .isolation import IsolatedAgent
 from .config import Settings
 from .providers import ModelClient, ProviderError, ERROR_MESSAGES
 from .compatibility import qualify_profile as check_protocol, PROFILE_FIELDS
@@ -71,7 +73,8 @@ class Application:
             raise ValueError('Stop the active task before changing or starting work')
 
     def import_files(self, session, files):
-        if not isinstance(files, list) or len(files) > MAX_FILES - len(seed_files(self.root)):
+        seed = seed_files(self.root)
+        if not isinstance(files, list) or len(files) > MAX_FILES - len(seed):
             raise ValueError('Too many imported files')
         previous = session.get('artifacts', {}) if session else {}
         legacy = packed_files(session['workspace']) if session and 'artifacts' not in session else []
@@ -93,9 +96,14 @@ class Application:
             if len(raw) > MAX_FILE:
                 raise ValueError('Each imported file must be at most 2 MiB')
             seen.add(name.casefold()); total += len(raw); decoded.append((name, data))
-        if len(existing) + len(decoded) + (0 if any(n.startswith('harness/') for n in existing) else len(seed_files(self.root))) > MAX_FILES:
+        needs_seed = not any(name.startswith('harness/') for name in existing)
+        seed_count = len(seed) if needs_seed else 0
+        seed_bytes = sum(len(base64.b64decode(item['data'])) for item in seed) if needs_seed else 0
+        existing_bytes = sum(item['bytes'] for item in previous.values())
+        existing_bytes += sum(len(base64.b64decode(item['data'])) for item in legacy)
+        if len(existing) + len(decoded) + seed_count > MAX_FILES:
             raise ValueError('Too many files for one checkpoint')
-        if total + sum(i['bytes'] for i in previous.values()) + sum(len(base64.b64decode(i['data'])) for i in legacy) + (0 if any(n.startswith('harness/') for n in existing) else sum(len(base64.b64decode(i['data'])) for i in seed_files(self.root))) > MAX_EXPORT:
+        if total + existing_bytes + seed_bytes > MAX_EXPORT:
             raise ValueError('Imported files and the editable seed must fit the 32 MiB checkpoint limit')
         if session is None:
             return

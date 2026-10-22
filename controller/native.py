@@ -7,7 +7,7 @@ import sys
 import tempfile
 
 from .execution import ExecutionPolicy
-from .isolation import WorkerTransport
+from .transport import WorkerTransport
 
 
 class NativeWorker(WorkerTransport):

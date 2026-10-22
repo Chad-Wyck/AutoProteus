@@ -3,6 +3,7 @@ import hashlib
 import json
 from copy import deepcopy
 
+from .artifacts import safe_path
 from .storage import atomic_json
 
 LIMIT = 64 * 1024 * 1024
@@ -25,7 +26,6 @@ class InferenceHistory:
             return self._blob(value)
 
     def _blob(self, value):
-        from .isolation import safe_path
         root = safe_path(self.store.directory(self.session['id']), 'inference')
         root.mkdir(exist_ok=True)
         key = digest(value)

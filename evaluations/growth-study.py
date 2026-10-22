@@ -41,6 +41,7 @@ def prepare(args):
             'evaluations/growth-study.py', 'evaluations/generalization.py', 'evaluations/generalization-probe.py', 'evaluations/grader_faults.py',
             'evaluations/local-model-benchmark.py', 'evaluations/run_budget.py', 'evaluations/upgrade-procedure.md',
             'evaluations/invoke_tool.py', 'controller/providers.py', 'controller/evaluation.py', 'controller/isolation.py',
+            'controller/artifacts.py', 'controller/transport.py',
             'controller/config.py', 'controller/runtime.py', 'guest/worker.py', 'tests/test_seed.py', 'tests/test_text_helpers.py')}}
     GeneratedTokenBudget(plan['output_token_budget'])
     if plan['timeout'] < 1: raise ValueError('Positive deadline required')

@@ -51,6 +51,7 @@ def main(args):
     trusted = [Path(__file__), ROOT / 'evaluations/local-model-benchmark.py',
                ROOT / 'evaluations/local-feature-probe.py', ROOT / 'evaluations/local-upgrade-tasks.json',
                ROOT / 'controller/isolation.py', ROOT / 'controller/evaluation.py',
+               ROOT / 'controller/artifacts.py', ROOT / 'controller/transport.py',
                ROOT / 'controller/providers.py', ROOT / 'guest/worker.py', ROOT / 'tests/test_seed.py',
                ROOT / 'tests/test_text_helpers.py']
     report['trusted_runner_sha256'] = {}

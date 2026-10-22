@@ -350,7 +350,8 @@ def main(args):
     atomic_json(output / 'starter-source.json', source)
     plan['trusted_sha256'] = {}
     for name in ('evaluations/generalization.py', 'evaluations/generalization-probe.py', 'evaluations/local-model-benchmark.py', 'evaluations/grader_faults.py',
-                 'controller/evaluation.py', 'controller/isolation.py', 'controller/providers.py', 'guest/worker.py',
+                 'controller/evaluation.py', 'controller/isolation.py', 'controller/artifacts.py',
+                 'controller/transport.py', 'controller/providers.py', 'guest/worker.py',
                  'controller/runtime-lock.json', 'controller/managed-runtime-lock.json', 'evaluations/run_budget.py', 'tests/test_seed.py', 'tests/test_text_helpers.py'):
         path = output / 'trusted-runner' / name
         path.parent.mkdir(parents=True, exist_ok=True)

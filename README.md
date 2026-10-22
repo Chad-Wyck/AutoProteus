@@ -4,7 +4,7 @@
 
 Run a local model, give it a task, and let it work in a private workspace. AutoProteus can edit a copy of its own harness, test new capabilities, and continue with the edited version. A separate controller manages model connections, isolation and recovery.
 
-AutoProteus is experimental. Small models can produce useful extensions, but reliable autonomous growth remains an open problem. See the [latest comparison results](evaluations/seed-v0.2.1-seed-comparison.md).
+AutoProteus is experimental. Small models can produce useful extensions, but reliable autonomous growth remains an open problem. See the [recorded model studies](evaluations/README.md#recorded-results).
 
 [Download ZIP](https://github.com/Chad-Wyck/AutoProteus/archive/refs/heads/main.zip) · [Release notes](CHANGELOG.md) · [Security](SECURITY.md)
 
@@ -119,6 +119,6 @@ Real VM checks require a prepared WHPX/KVM host and `AUTOPROTEUS_VM_TESTS=1`. Gi
 - [Local model testing guide](evaluations/model-study.md)
 - [Workflow experiments](evaluations/workflow-experiments.md)
 - [Experience experiments](evaluations/experience-study.md)
-- [Latest seed comparison](evaluations/seed-v0.2.1-seed-comparison.md)
+- [Evaluation guides and recorded results](evaluations/README.md)
 - [Security and execution limits](SECURITY.md)
 - [Release notes](CHANGELOG.md)

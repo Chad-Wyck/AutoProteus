@@ -1,135 +1,155 @@
 # Editable AutoProteus seed
 
-This is your source copy. The controller owns model connections, credentials,
-the interface, execution policy and recovery. In VM mode, code runs in a
-disposable Linux guest without host drives or general network access. Explicit
-Linux native mode has the account's access and relies on external protection.
+This is your source copy. The protected controller owns model connections,
+credentials, the interface, execution policy and recovery. VM runs have no host
+drives or general network access. Explicit Linux native mode relies on external
+protection and has the launching account's access.
 
-The loop polls the protected controller for human direction changes between
-actions, and for queued follow-ups before reporting completion. Preserve this
-small polling interface when editing the loop. All human corrections remain
-complete in context; an oversized set of instructions fails explicitly. Resume
-includes any incomplete operation receipt. Inspect saved work before retrying;
-the controller never automatically replays an interrupted command.
+Preserve the loop's input polling and complete human corrections. Resume may
+report an interrupted operation; inspect saved work before repeating it. The
+controller does not automatically replay uncertain operations.
 
-Source map:
+## Source map
 
-- `seed.py`: entry point, development tests and edited-tool invocation.
-- `autoproteus/tools.py`: workspace validation, shared text helpers and tool dispatch.
-- `autoproteus/file_ops.py`: existing section reading and exact-edit mechanics.
-- `autoproteus/providers.py`: the shared `TOOL_SPECS` definition table.
-- `autoproteus/search.py`, `terminal.py`: existing search and command helpers.
-- `autoproteus/agent.py`: the running loop; `storage.py`: saved state and snapshots.
-- `autoproteus/protocol.py`: prompts and action parsing; `context.py`: conversation budgeting.
-- `tests/`: existing regressions and your focused new tests.
+- `seed.py`: entry point, development checks and edited-tool invocation.
+- `autoproteus/tools.py`: Workspace, text helpers and tool dispatch.
+- `autoproteus/providers.py`: `TOOL_SPECS`, shared by both action formats.
+- `autoproteus/file_ops.py`, `search.py`, `terminal.py`: existing file and command helpers.
+- `autoproteus/agent.py`, `storage.py`: loop, saved state and snapshots.
+- `autoproteus/protocol.py`, `context.py`: instructions, parsing and context budgets.
+- `tests/`: existing regressions and your separate new tests.
 
-## Add a capability
+## Upgrade workflow
 
-1. Search for the relevant dispatch or definition; read useful surrounding
-   sections rather than scanning every file.
-2. Implement the tool in `Workspace.execute` in `autoproteus/tools.py`, using
-   `self.path` for workspace paths. Add its description, argument types and
-   required arguments to `TOOL_SPECS` in `autoproteus/providers.py`. Both action
-   formats use this table. A new tool normally needs no agent-loop changes.
-   An argument with a requested default is optional: leave it out of `required`
-   and apply the default in the implementation when the argument is omitted.
-   Reuse the existing text helpers for file capabilities:
+1. **Implement.** Read the relevant source, then add the requested behavior in
+   `Workspace.execute` and its definition in `TOOL_SPECS`. Use `self.path` for
+   workspace paths. A new capability normally needs no loop changes.
+2. **Test.** Preserve every existing test and add a focused `tests/test_NAME.py`.
+   Call `workspace.execute("tool_name", arguments)`; tools are not Workspace
+   methods. Use disposable fixtures outside `harness/` and inspect actual files
+   as well as return values. Repair concrete failures, then run the full suite.
+3. **Request activation.** Explain the change and actual checks. If final work
+   needs the new tools, finish `needs_input` requesting activation. Editing the
+   source copy does not change the running tools. A development pass is not
+   independent approval. No separate feature report is required.
+4. **Use the active tools.** After activation, continue the original task using
+   its actual paths, parameters and requested defaults. Earlier demonstration
+   inputs do not define the final task. The activation request is fulfilled;
+   request another only after further seed changes.
+5. **Verify outputs.** Inspect the saved files against the current user's
+   requirements. When terminal access is available and the output is checkable,
+   write and run a small `development/verify_task.py` that asserts the required
+   paths, exact contents or computed properties. Derive expected values from the
+   requirements, not by copying the actual output. For open-ended outputs,
+   inspect them and report what was and was not checked.
+6. **Finish.** Explicitly finish `completed` after verifying the requested
+   outcome. Passing implementation tests alone does not complete the user's
+   task. Avoid repeating unchanged passing checks.
 
-   - `self.read_text(path, missing_ok=False)` returns UTF-8 text up to
-     `TEXT_CHARACTER_LIMIT` (100000 Unicode characters), preserves CRLF,
-     and rejects invalid or oversized input. A missing file returns empty
-     text only with `missing_ok=True`.
-   - `self.write_text(path, content)` replaces a file after validating its
-     character limit, creates parent directories, and returns path and bytes.
-     The public `write_file` tool uses this same helper.
+Keep fixtures, argument JSON and verification scripts outside `harness/`, for
+example under `development/`. Optional task notes belong in root `todo.txt`.
+Every command below starts at the task workspace root.
 
-   Helpers accept relative strings or validated `Path` objects. The text
-   limit applies to `len(text)`. Only report byte size using
-   `len(text.encode("utf-8"))`; valid Unicode text can exceed 100000 bytes.
-3. Add a separate new `tests/test_<capability>.py` file and preserve existing
-   behavior and tests. Invoke tools with `workspace.execute("tool_name", arguments)`;
-   tool names are not methods such as `workspace.format_json(...)`. For file tools,
-   cover empty text, Unicode versus byte counts, CRLF, exact limits, invalid
-   inputs and failed writes preserving the original bytes.
-   Test the smallest valid call from the user's contract, omitting optional
-   arguments, then explicit defaults and invalid values. Check against that
-   contract, not only your new schema; a schema and implementation can share
-   the same mistake.
-   New `tests/test_*.py` files can import `unittest`, `Path` from `pathlib`,
-   `Workspace` from `autoproteus.tools`, and `temporary_directory` from
-   `test_seed`. Inside `with temporary_directory() as directory:`, construct
-   `Workspace(Path(directory))`. You do not need to read the full existing
-   test suite to use this helper. Generate large fixtures with short expressions
-   such as `'猫' * 100000`, rather than writing repeated literal text.
-4. Try the edited implementation on a disposable example before running the
-   suite. Keep disposable input files and argument JSON outside `harness/`,
-   for example in `development/`. They are task files, not seed source.
-   From the task workspace, replace the tool and arguments as needed:
+## Contract-based tests
 
-       python3 harness/seed.py invoke --tool read_file --arguments '{"path":"sample.txt"}'
+Implement optional defaults when arguments are omitted and leave those arguments
+out of `TOOL_SPECS`'s required list. Test the smallest valid call first, then
+explicit defaults and invalid values. A schema and implementation can share the
+same mistake; compare both with the user's contract.
 
-   To avoid shell quoting, write a UTF-8 `arguments.json` containing
-   `{"path":"sample.txt"}` with `write_file`, then run:
+Assert a particular exception type or message only when the contract requires
+it. Otherwise check rejection using the documented API's exceptions. For example,
+a missing-file rejection test can accept `ValueError` or `OSError` when either
+satisfies the contract. Do not invent extra restrictions to make a test pass.
+`Workspace.path` resolves paths and rejects escapes; a link that stays inside
+the workspace does not itself violate that rule.
 
-       python3 harness/seed.py invoke --tool read_file --arguments-file arguments.json
+For file tools cover empty input, Unicode character versus byte counts, CRLF,
+exact limits and failures preserving original bytes. Isolate one requirement
+per fixture. A size-limit test for valid JSON must contain valid JSON; otherwise
+it can pass because of a parse error. For example:
 
-   `invoke` does not run tests, so it also works while a test needs repair. It
-   allows registered file tools only and keeps workspace path restrictions.
-   Inspect returned values and actual resulting file contents against a simple
-   exact expected example; successful return values alone do not prove a write.
-   Then run the separate suite and repair concrete failures:
+```python
+text = json.dumps({"text": "猫" * 100000}, ensure_ascii=False)
+assert len(text) > 100000
+json.loads(text)  # Confirm validity before testing oversized-input rejection.
+```
 
-       python3 harness/seed.py check
+Import `json` for that example. For an output-limit test, use valid input within
+the limit whose transformed output exceeds it. Do not infer correctness from
+an error caused by a different invalid condition.
 
-   The older `check --tool NAME --arguments JSON` still runs tests first and
-   invokes the tool only if they pass. These editable
-   development checks do not replace independent controller checks. Terminal
-   access must be enabled to run commands. The check already bounds its output;
-   run it directly so a shell pipeline cannot hide its failure status.
-5. Finish with a concise explanation of the change and actual checks. Update
-   usage documentation where needed. A checklist in `todo.txt` is optional;
-   no separate `feature.md` report is required. The host records the diff,
-   source fingerprints and command results.
-   After the requested outputs are verified, explicitly finish. Repeating
-   checks of unchanged passing work does not complete the user's task.
+New tests can import `unittest`, `Path` from `pathlib`, `Workspace` from
+`autoproteus.tools`, and `temporary_directory` from `test_seed`. Construct
+`Workspace(Path(directory))` inside `with temporary_directory() as directory:`.
+Generate large fixtures with short expressions rather than repeated literals.
 
-Every command starts at the task workspace root; use relative `harness/` paths.
-Optional task notes belong in `todo.txt` at that root, beside `harness/`.
-After enough inspection, make a small implementation, test it and repair concrete
-failures. Re-reading the whole existing suite is not an upgrade requirement.
-Cut-off model responses execute no partial action. The seed shares its two format
-repair retries with output cutoffs; retry with a smaller action when asked.
-The two retries apply to each response and reset after an accepted response.
-The controller bounds total requests using that same policy, including finishing.
+Reuse `Workspace.read_text(path, missing_ok=False)` and
+`Workspace.write_text(path, content)` for UTF-8 text. Their limit is 100000
+Unicode characters, measured by `len(text)`; report bytes separately with
+`len(text.encode("utf-8"))`. They preserve CRLF and validate before writing.
+`read_text` raises for a missing file unless `missing_ok=True`. Helpers accept
+relative strings or validated Path objects.
 
-## Continue with the edited seed
+## Development commands
 
-Edits do not replace tools in the running loop. After stopping or finishing a
-run, the user can choose **Continue with edited seed**. The controller freezes
-the current copy and starts a new worker with the same task, saved files and
-history. In VM mode it starts a fresh VM under the same policy. Resume keeps
-that activated version. After further edits, use the same control again to
-activate the next version. Starter recovery remains a controller operation.
-After activation, use the now-active tools to finish the remaining user task.
-The activation request for that version is already fulfilled. Repeat development
-or request another activation only when further changes are needed.
+Try an edited registered file tool without waiting for its tests to pass. Write
+`development/args.json` with the tool's actual argument object, then run:
 
-## File navigation and allowances
+```sh
+python3 harness/seed.py invoke --tool TOOL_NAME --arguments-file development/args.json
+```
 
-`read_file` returns a complete UTF-8 file up to 12,000 characters. For larger
-files, `read_section` uses character positions and lengths (default 1,000;
-maximum 12,000). Useful sections are often 2,000-6,000 characters. Continue at
-`next_start` only when more source is needed. Original newlines are preserved;
-CRLF counts as two characters. `search_files` returns literal matches with
-paths, snippets and character positions.
+To isolate a failing test file while repairing it:
 
-`edit_file` replaces one exact, unique fragment. Match failures return a count,
-up to three locations and a recovery hint without changing bytes. Writes and
-edits are limited to 100,000 characters. Validate before writing.
+```sh
+python3 harness/seed.py check --test tests/test_NAME.py
+```
 
-The seed enforces the action allowance and adds an exhaustion notice when it
-fits without displacing user instructions. Failed calls and each tool in a batch
-count; finishing is free.
-Resume preserves the checkpoint and grants a fresh allowance. Report unfinished
-work honestly rather than rushing to finish. Opening instructions stay stable;
-the current checklist, when present, appears after the conversation history.
+A focused pass covers only that file. Empty or entirely skipped selections fail.
+Focused checks do not invoke tools or replace the full check before submission:
+
+```sh
+python3 harness/seed.py check
+```
+
+The older `check --tool NAME --arguments JSON` runs the full suite before
+invocation. These commands require terminal access; their bounded output and exit
+status are already useful without a shell pipeline. Independent controller
+checks still decide upgrade acceptance.
+
+After activation, a task-specific assertion script can check the final files:
+
+```sh
+python3 development/verify_task.py
+```
+
+Make its assertions cover every required output and call the checks before
+exiting. Do not rely on printed success text or tool return values alone. This
+script is your development evidence, not independent certification.
+
+## Activation, navigation and allowances
+
+**Continue with edited seed** freezes the current source and restarts the same
+task with its saved files and history. VM mode uses a fresh VM under the same
+policy. Resume keeps that activated version; starter recovery stays in the
+controller. Some experiments withhold final inputs until activation; follow the
+current task's instructions about which files are available and when.
+
+`read_file` returns whole UTF-8 files up to 12000 characters. For larger files,
+`read_section` uses character offsets and lengths (default 1000, maximum 12000).
+Read useful sections, often 2000-6000 characters, and continue at `next_start`
+only when needed. Newlines are preserved; CRLF counts as two characters.
+`search_files` returns literal matches, snippets and character positions.
+`edit_file` replaces one unique exact fragment; conflicts return locations and
+a hint without changing bytes. Writes and edits are limited to 100000 characters.
+
+Failed actions and each tool in a batch consume the action allowance; finishing
+is free. Resume preserves the checkpoint and gives a fresh allowance. Opening
+instructions stay stable; current todo notes follow the conversation. Report
+unfinished work rather than rushing an unverified finish.
+
+Cut-off responses execute no partial action. Output cutoffs and invalid action
+formats share two repair retries per response, reset after an accepted response.
+The protected controller bounds total requests using the same policy, including
+finishing. The host keeps source fingerprints, differences and command results.

@@ -264,7 +264,8 @@ def run(args):
     atomic_json(DATA/'upgrade-tasks.json',tasks)
     trusted = {'evaluations/local-model-benchmark.py': DRIVER_SOURCE,
                'evaluations/local-feature-probe.py': PROBE.encode('utf-8')}
-    for name in ('controller/evaluation.py', 'controller/isolation.py', 'controller/providers.py',
+    for name in ('controller/evaluation.py', 'controller/isolation.py', 'controller/artifacts.py',
+                 'controller/transport.py', 'controller/providers.py',
                  'controller/runtime-lock.json', 'controller/managed-runtime-lock.json', 'guest/worker.py',
                  'tests/test_seed.py', 'tests/test_text_helpers.py'):
         trusted[name]=(ROOT/name).read_bytes()

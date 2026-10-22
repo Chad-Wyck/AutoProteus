@@ -37,7 +37,8 @@ def main(args):
     source = seed_files(ROOT)
     report = {'started': now(), 'config': config, 'source_sha256': source_identity(source), 'trials': [],
         'trusted_sha256': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in (
-            'controller/providers.py', 'controller/evaluation.py', 'controller/isolation.py', 'evaluations/run_budget.py',
+            'controller/providers.py', 'controller/evaluation.py', 'controller/isolation.py',
+            'controller/artifacts.py', 'controller/transport.py', 'evaluations/run_budget.py',
             'evaluations/generalization.py', 'evaluations/generalization-probe.py', 'evaluations/local-model-benchmark.py')},
         'connection': 'Production ModelClient through managed Ollama; no custom wire adapter or call-ID rewrite.',
         'qualification': 'Bounded transfer check; not a repeatability or default-profile qualification.'}

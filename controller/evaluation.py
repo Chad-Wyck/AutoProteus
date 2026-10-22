@@ -14,7 +14,8 @@ from types import SimpleNamespace
 import uuid
 
 from .errors import Cancelled, IsolationError
-from .isolation import Artifacts, IsolatedAgent, SEED_TESTS, relative_name, safe_path, seed_files
+from .artifacts import Artifacts, SEED_TESTS, relative_name, safe_path, seed_files
+from .isolation import IsolatedAgent
 from .storage import Store, atomic_json, now
 from .compatibility import model_identity
 

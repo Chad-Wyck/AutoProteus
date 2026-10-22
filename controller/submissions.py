@@ -4,6 +4,7 @@ import base64
 import hashlib
 import json
 from pathlib import PurePosixPath
+import shlex
 
 
 def source_hash(source):
@@ -68,12 +69,20 @@ def repair_ticket(starter, source, events=()):
         result = data.get('result', {}) if isinstance(data, dict) else {}
         if (event.get('type') == 'action_result' and action.get('tool') == 'run_command' and
                 'harness/seed.py check' in command and isinstance(result, dict)):
-            # The latest check supersedes older failures, including a later pass.
+            try:
+                focused = any(arg == '--test' or arg.startswith('--test=') for arg in shlex.split(command))
+            except ValueError:
+                continue
+            # A focused pass cannot clear a failure from the full suite.
+            # Focused failures remain useful public repair diagnostics.
+            if focused and result.get('exit_code') == 0:
+                continue
             if result.get('exit_code') not in (0, None):
                 failure = {'event_index': index, 'command': command[:300], 'output': str(result.get('output', ''))[-1800:],
                            'hypothesis': 'The implementation or its test may contradict the contract. Compare the failing assertion '
                                          'with the real Workspace.execute interface and a small exact output example.',
-                           'scope': 'Untrusted guest development-check output; source at that earlier command may differ.'}
+                           'scope': 'Untrusted guest ' + ('focused' if focused else 'full') +
+                                    ' development-check output; source at that earlier command may differ.'}
             break
     ready = not issues and failure is None
     return {'schema': 1, 'source_sha256': policy['source_sha256'], 'ready_for_independent_checks': ready,

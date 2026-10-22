@@ -4,6 +4,26 @@ Versions use `major.minor.patch`. Before launch, `0.x.0` introduces features and
 `0.x.y` contains bug fixes. Components can exceed 9 or 99. Historical `0.0.x`
 release and experiment labels remain unchanged.
 
+## 0.5.0
+
+- Add focused `seed.py check --test tests/test_NAME.py` repair checks, labelled
+  separately from the full suite. Empty or entirely skipped selections fail;
+  focused passes cannot clear recorded full-suite failures or invoke a tool.
+- Shorten the shared model guidance and consolidate the upgrade recipe around
+  contract-based tests, activation, actual final outputs and explicit completion.
+  Include examples for valid rejection fixtures and executable final checks.
+- Keep staged final-input delivery opt-in. No model-performance improvement is
+  claimed for this revision; new regression coverage and live trials are pending.
+- Separate protected artifact storage and worker transport from VM orchestration
+  and the model broker. Preserve transfer limits, message framing, VM policy and
+  existing imports for saved study drivers.
+- Read the starter once per file-import batch and name the existing checkpoint
+  quota calculations. Cover exact limits, saved harnesses and legacy imports.
+- Include the extracted host modules in research-runner fingerprints. Prepare
+  fresh study plans after this refactor; historical results remain unchanged.
+- Index evaluation guides, runners and recorded findings. Read the interface
+  version from the controller without displaying a stale fallback release.
+
 ## 0.4.0
 
 - Allow live direction changes between actions and queued follow-ups after model

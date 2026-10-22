@@ -86,6 +86,7 @@ def prepare(args):
             for variant in order:
                 plan['schedule'].append({'id': f'{repeat}-{task}-{variant}', 'repeat': repeat, 'task': task, 'variant': variant})
     trusted = ('controller/providers.py', 'controller/isolation.py', 'controller/evaluation.py',
+        'controller/artifacts.py', 'controller/transport.py',
         'controller/appliance.py', 'controller/config.py', 'controller/runtime.py', 'controller/storage.py',
         'controller/compatibility.py', 'controller/execution.py', 'controller/runtime-lock.json',
         'controller/managed-runtime-lock.json', 'guest/worker.py', 'tests/test_seed.py', 'tests/test_text_helpers.py',

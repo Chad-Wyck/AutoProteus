@@ -100,6 +100,52 @@ class SeedRevisionTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual((self.workspace / 'sample.txt').read_bytes(), '猫\r\né'.encode('utf-8'))
 
+    def test_focused_check_isolates_one_file_without_approving_the_full_suite(self):
+        (self.seed / 'tests/test_unrelated.py').write_text('raise RuntimeError("unrelated import failure")\n', encoding='utf-8')
+        focused = self.check('--test', 'tests/test_example.py')
+        self.assertEqual(focused.returncode, 0, focused.stdout + focused.stderr)
+        record = json.loads(focused.stdout.splitlines()[0])
+        self.assertEqual(record['check'], 'candidate focused tests')
+        self.assertEqual(record['scope'], 'focused')
+        self.assertEqual(record['selection'], 'tests/test_example.py')
+        self.assertEqual(record['tests'], 1)
+        self.assertIn('before requesting activation', focused.stdout)
+        full = self.check()
+        self.assertNotEqual(full.returncode, 0)
+        self.assertEqual(json.loads(full.stdout.splitlines()[0])['scope'], 'full')
+        self.assertIn('unrelated import failure', full.stdout)
+
+    def test_focused_check_preserves_the_actual_failure_and_rejects_empty_or_skipped_selections(self):
+        self.test_file.write_text('import unittest\nclass Example(unittest.TestCase):\n def test_example(self): self.assertEqual(1, 2, "contract mismatch")\n', encoding='utf-8')
+        failed = self.check('--test', 'tests/test_example.py')
+        self.assertEqual(failed.returncode, 1)
+        self.assertIn('contract mismatch', failed.stdout)
+        missing = self.check('--test', 'tests/test_missing.py')
+        self.assertEqual(missing.returncode, 1)
+        self.assertIn('No tests were discovered', missing.stdout)
+        self.test_file.write_text('import unittest\n@unittest.skip("fixture")\nclass Example(unittest.TestCase):\n def test_example(self): pass\n', encoding='utf-8')
+        for arguments in ((), ('--test', 'tests/test_example.py')):
+            with self.subTest(arguments=arguments):
+                skipped = self.check(*arguments)
+                self.assertEqual(skipped.returncode, 1)
+                self.assertFalse(json.loads(skipped.stdout.splitlines()[0])['passed'])
+                self.assertIn('no test executed', skipped.stdout)
+
+    def test_focused_check_rejects_traversal_patterns_and_tool_invocation(self):
+        outside = self.workspace / 'test_outside.py'
+        outside.write_text('raise RuntimeError("outside selection executed")\n', encoding='utf-8')
+        for selection in ('../test_outside.py', str(outside), 'tests/../test_outside.py',
+                          'tests/test_*.py', 'tests/test_example.py/extra', 'tests/example.py'):
+            with self.subTest(selection=selection):
+                result = self.check('--test', selection)
+                self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                self.assertNotIn('outside selection executed', result.stderr)
+        for command in ('check', 'invoke'):
+            result = self.command(command, '--test', 'tests/test_example.py', '--tool', 'write_file',
+                                  '--arguments', '{"path":"never.txt","content":"bad"}')
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertFalse((self.workspace / 'never.txt').exists())
+
     def test_new_limits_preserve_saved_preferences_and_broker_has_final_status_room(self):
         settings = Settings(self.workspace / 'settings')
         self.assertEqual(settings.values['max_steps'], 128)
