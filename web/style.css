@@ -101,3 +101,4 @@ button { color: inherit; }
 .storage-item { display: grid; gap: 5px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; text-transform: capitalize; }
 .trash-item { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 9px 0; border-bottom: 1px solid var(--line); }
 @media (max-width: 600px) { .privacy { max-width: 120px; overflow: hidden; font-size: 10px; } .active-work { padding: 8px 12px; } }
+.input-queue{padding:8px 12px;max-height:160px;overflow:auto}.queued-input{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:12px}.queued-input span{white-space:pre-wrap;overflow-wrap:anywhere;flex:1}#input-mode{max-width:160px;font-size:12px;padding:5px;background:var(--paper);color:inherit;border:1px solid var(--line);border-radius:7px}

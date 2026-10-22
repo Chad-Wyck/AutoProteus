@@ -44,12 +44,19 @@ Model size, available memory and inference speed affect the experience. A succes
 
 - **Describe a task.** Attach inputs with **Files**, or use **Add files** in a stopped session. Imports copy files into the workspace without granting access to the original folder.
 - **Review the results.** Preview or download saved files. A model reporting completion is different from an independently checked result.
+- **Send a correction while it works.** Choose **Change direction** for the next action boundary, or **Do this afterwards** for a follow-up after completion. Pending messages can be cancelled.
 - **Stop and resume.** Stop ends the VM. Resume restores the last saved checkpoint in a fresh VM; changes made after that checkpoint may be lost.
 - **Keep your work.** Search, rename or archive sessions. Deleted sessions can be restored from **Saved work & storage**.
 
 Terminal access starts off. Enable it in Settings when a task needs Linux commands inside the VM. Use **Settings → Quit AutoProteus** to close the background controller.
 
 The interface defaults to dark mode, with a light-mode toggle in the top bar.
+
+Session journal downloads include the effective model instructions, tool
+definitions and provider exchanges. These can contain your task data. Resume
+shows incomplete operation receipts so uncertain work can be inspected before
+retrying. Older edited seeds must retain the current input-polling loop to
+receive live messages; undelivered messages remain visibly pending.
 
 ## Growing the seed
 

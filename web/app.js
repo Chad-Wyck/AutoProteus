@@ -28,10 +28,13 @@ function renderApp() {
   const active = app.active;
   visible('active-work', !!active);
   if (active) text('active-work-label', `${active.title} · ${active.activity}`);
-  $('send').disabled = !!active;
+  const canSteer = active?.id === state.id && active.status !== 'stopping';
+  $('send').disabled = state.sending || (!!active && !canSteer);
+  $('send').setAttribute('aria-label', canSteer ? 'Send message' : state.id ? 'Send reply' : 'Start task');
+  visible('input-mode', !!canSteer);
   $('restart-seed').disabled = !!active || app.evaluation?.status === 'running';
   $('attach-button').disabled = !!active;
-  text('composer-note', active ? 'An active task is still running. Use Stop above to pause it.' : 'Enter to send · Shift + Enter for a new line');
+  text('composer-note', canSteer ? 'Changes arrive between actions. Running commands finish first.' : active ? 'Open the active task to send a message.' : 'Enter to send · Shift + Enter for a new line');
   const provider = active?.provider || config.provider;
   text('privacy-label', !config.configured && !active ? 'Local workspace' : provider === 'hosted' ? 'Hosted model · task data sent to provider' : provider === 'ollama' ? 'Local model · on your computer' : 'Scripted demo · no model requests');
   const qualified = config.compatibility;
@@ -74,6 +77,7 @@ function home() {
   visible('welcome', true); visible('feed', false); visible('activity', false);
   visible('inspector-empty', true); visible('inspector-session', false); visible('trace-button', false);
   visible('session-banner', false); visible('stop', false); visible('send', true);
+  visible('input-queue', false);
   text('page-name', 'New task'); $('task').placeholder = 'Describe a task, an idea, or a problem…'; $('task').disabled = false;
   $('task').value = ''; $('send').disabled = false; if (state.app) renderApp(); $('task').focus();
   state.attachments = []; renderAttachments();
@@ -186,8 +190,9 @@ function renderSession() {
   if (added && (nearBottom || state.feedIds.size < 5)) feed.scrollTop = feed.scrollHeight;
   const active = state.app?.active?.id === session.id; visible('activity', active); text('activity-label', session.activity);
   text('elapsed', active ? Math.floor((Date.now() - state.started) / 1000) + 's' : '');
-  visible('stop', active); visible('send', !active); $('stop').disabled = session.status === 'stopping';
-  $('task').disabled = active; $('task').placeholder = active ? 'AutoProteus is working. You can stop and resume at any time.' : 'Add a reply, clarify the task, or request a change…';
+  visible('stop', active); visible('send', true); $('stop').disabled = session.status === 'stopping';
+  $('task').disabled = session.status === 'stopping'; $('task').placeholder = active ? 'Change direction, or queue something for afterwards…' : 'Add a reply, clarify the task, or request a change…';
+  renderInputQueue(session);
   const labels = { running: 'Working', stopping: 'Stopping', completed: session.provider === 'demo' ? 'Demo finished' : 'Agent reported completion', waiting: 'Your input needed', paused: 'Paused', interrupted: 'Interrupted', error: 'Needs attention', ready: 'Ready' };
   text('status-label', labels[session.status] || session.status); $('status-dot').className = 'status-dot ' + session.status;
   renderVerification();
@@ -206,11 +211,35 @@ function renderSession() {
   visible('session-banner', resumable);
   if (resumable) {
     const banner = $('session-banner'); banner.replaceChildren(node('span', '', session.status === 'error' ? 'Your work is saved. Update the connection or try again.' : 'Your session is saved and ready to continue.'));
+    const receipt = session.operation_receipts?.at(-1);
+    if (receipt && receipt.status !== 'recorded') banner.append(node('span', '', ` Interrupted ${receipt.tool}: ${receipt.status.replaceAll('_', ' ')}. Resume includes a reminder to inspect saved work before retrying.`));
     const button = node('button', '', 'Resume'); button.onclick = () => resume(); banner.append(button);
   }
   if (state.app) renderApp();
   text('archive-session', session.archived ? 'Unarchive' : 'Archive');
   ['rename-session', 'archive-session', 'delete-session', 'import-session'].forEach(id => $(id).disabled = active || !!state.app.evaluation?.busy);
+}
+
+function renderInputQueue(session) {
+  const box = $('input-queue'); box.replaceChildren();
+  const rows = (session.input_queue || []).filter(row => ['pending', 'offered'].includes(row.status));
+  const latest = (session.input_queue || []).filter(row => row.status === 'delivered').at(-1);
+  if (latest) box.append(node('small', 'muted', 'Latest message delivered to the agent.'));
+  rows.forEach(row => {
+    const item = node('div', 'queued-input');
+    item.append(node('span', '', `${row.mode === 'steer' ? 'Change direction' : 'Afterwards'} · ${row.status === 'offered' ? 'Delivery in progress' : 'Pending'}: ${row.message}`));
+    if (row.status === 'pending') {
+      const cancel = node('button', 'quiet', 'Cancel');
+      cancel.onclick = async () => { try { await api('/api/input/cancel', {id: session.id, request_id: row.id}); await poll(); } catch (error) { toast(error.message); } };
+      item.append(cancel);
+    }
+    box.append(item);
+  });
+  if (rows.length && state.app?.active?.id !== session.id) {
+    const resumeQueued = node('button', 'quiet', 'Continue queued work');
+    resumeQueued.onclick = () => resume(); box.append(resumeQueued);
+  }
+  visible('input-queue', !!rows.length || !!latest);
 }
 
 function renderVerification() {
@@ -294,14 +323,22 @@ async function startTask(task) {
   $('task').value = ''; state.app = await api(stateAddress()); await selectSession(response.id);
 }
 async function resume(message = '') {
-  try { await api('/api/resume', { id: state.id, message }); state.started = Date.now(); await poll(); }
-  catch (e) { toast(e.message); }
+  try { await api('/api/resume', { id: state.id, message }); state.started = Date.now(); await poll(); return true; }
+  catch (e) { toast(e.message); return false; }
 }
 $('task-form').onsubmit = async event => {
-  event.preventDefault(); const task = $('task').value.trim(); if (!task || busy()) return;
-  $('send').disabled = true;
-  try { if (state.id) { await resume(task); $('task').value = ''; } else await startTask(task); }
-  catch (e) { toast(e.message); } finally { if (state.app) renderApp(); }
+  event.preventDefault(); const task = $('task').value.trim(); if (!task || state.sending) return;
+  if (busy() && state.app.active.id !== state.id) { toast('Open the active task to send your message.'); return; }
+  state.sending = true; $('send').disabled = true;
+  try {
+    if (busy()) {
+      const input = {id: state.id, message: task, mode: $('input-mode').value};
+      if (!state.pendingInput || JSON.stringify(state.pendingInput.input) !== JSON.stringify(input)) state.pendingInput = {input, request_id: crypto.randomUUID()};
+      await api('/api/input', {...input, request_id: state.pendingInput.request_id});
+      state.pendingInput = null; $('task').value = ''; await poll();
+    } else if (state.id) { if (await resume(task)) $('task').value = ''; } else await startTask(task);
+  }
+  catch (e) { toast(e.message); } finally { state.sending = false; if (state.app) renderApp(); }
 };
 $('task').onkeydown = event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); $('task-form').requestSubmit(); } };
 $('stop').onclick = async () => { try { await api('/api/stop', { id: state.id }); await poll(); } catch (e) { toast(e.message); } };

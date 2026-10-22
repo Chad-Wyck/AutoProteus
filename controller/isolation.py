@@ -19,6 +19,8 @@ from .errors import Cancelled, IsolationError
 from .execution import ExecutionPolicy, NativeEnvironment
 from .providers import DemoClient, ModelClient, ProviderError, ERROR_MESSAGES, PROTOCOL_HINTS, validate_context
 from .storage import atomic_json
+from .interactions import Inputs, Operations
+from .inference_history import attach_history
 
 PREFIX = b'AP1 '
 MAX_FRAME = 4 * 1024 * 1024
@@ -358,6 +360,7 @@ class Broker:
         self.finished = False
         self.last_status = 'running'
         self.activation_context, self.context_config = activation_context, config
+        self.inputs, self.operations = Inputs(store, session), Operations(store, session)
         # Snapshot before accepting guest state. The seed's neutral transport
         # intentionally omits origin; recover it here, never as provider fields
         # or as authority to change host policy. Include legacy human records.
@@ -367,7 +370,8 @@ class Broker:
                                 if item.get('role') == 'user' and item.get('origin') == 'human')
         if human_message:
             self.human_texts.add(human_message)
-        if isinstance(client, ModelClient) and client.observer is not None:
+        if isinstance(client, ModelClient):
+            attach_history(client, store, session, config)
             client.observation_context = self.inference_context
 
     def inference_context(self, messages):
@@ -391,6 +395,10 @@ class Broker:
         if self.frames > 10000:
             raise IsolationError('Guest message quota exceeded')
         op = frame.get('op')
+        if op == 'inputs' and set(frame) == {'op', 'mode'} and frame['mode'] in ('steer', 'finish'):
+            messages = self.inputs.offer(frame['mode'])
+            self.human_texts.update(item['content'] for item in messages)
+            return messages
         if op == 'infer' and set(frame) in ({'op', 'messages'}, {'op', 'messages', 'tools'}):
             messages = frame['messages']
             if (not isinstance(messages, list) or not 1 <= len(messages) <= 400 or
@@ -453,7 +461,9 @@ class Broker:
         if op == 'file' and set(frame) == {'op', 'path', 'data'}:
             self.artifacts.put(frame['path'], frame['data'])
         elif op == 'checkpoint' and set(frame) == {'op', 'paths'}:
-            self.artifacts.checkpoint(frame['paths'])
+            with self.store.lock:
+                self.artifacts.checkpoint(frame['paths'])
+                self.operations.checkpoint()
         elif op == 'state' and set(frame) in ({'op', 'session'}, {'op', 'session', 'changes'}):
             value = frame['session']
             if 'changes' in frame:
@@ -500,16 +510,22 @@ class Broker:
             self.last_status = value['status']
             # Stop stays visible until the host has ended the VM.
             fields.remove('status')
-            self.session.update({key: value[key] for key in fields if key in value})
-            self.session['status'] = 'running'
-            self.store.save(self.session)
+            with self.store.lock:
+                self.session.update({key: value[key] for key in fields if key in value})
+                self.inputs.acknowledge(value['messages'])
+                self.operations.acknowledge(value['messages'])
+                self.session['status'] = 'running'
+                self.store.save(self.session)
         elif op == 'event' and set(frame) == {'op', 'type', 'data'}:
-            if not isinstance(frame['type'], str) or len(frame['type']) > 60 or len(json.dumps(frame['data']).encode()) > 1500000:
+            if (not isinstance(frame['type'], str) or frame['type'].startswith('host_') or
+                    len(frame['type']) > 60 or len(json.dumps(frame['data']).encode()) > 1500000):
                 raise IsolationError('Invalid journal event')
             journal = self.store.directory(self.session['id']) / 'events.jsonl'
             if journal.stat().st_size + len(json.dumps(frame).encode()) > MAX_JOURNAL:
                 raise IsolationError('Session journal quota exceeded')
-            self.store.event(self.session, frame['type'], frame['data'])
+            event = self.store.event(self.session, frame['type'], frame['data'])
+            with self.store.lock:
+                self.operations.event(frame['type'], frame['data'], event['id'])
             if frame['type'] == 'action_result' and self.session.get('active_seed'):
                 from .evaluation import tool_use
                 try:
@@ -576,10 +592,12 @@ class IsolatedAgent:
                     'Continue the remaining user task using the active tools. Do not repeat development checks solely '
                     'to request activation of this same version. Further source edits require another activation. '
                     'All original human requirements still apply.')
-            boot = {'op': 'boot', 'seed': source, 'files': inputs, 'session': dict(session),
+            boot = {'op': 'boot', 'seed': source, 'files': inputs,
+                    'session': {k: v for k, v in session.items() if k not in ('input_queue', 'operation_receipts')},
                     'config': guest_config, 'message': message, 'seed_activated': candidate is session,
                     'handoff': handoff}
             boot['verification'] = bool(verification)
+            boot['recovery_notice'] = Operations(self.store, session).notice()
             if isinstance(verification, dict):
                 boot['behavior_rules'] = verification['rules']
             # Do not send host directories, credentials, or quarantine metadata.

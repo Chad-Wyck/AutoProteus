@@ -58,35 +58,58 @@ def validate_context(messages, tools, config):
 
 def wire_messages(messages, ollama):
     """Translate the neutral journal history to a provider's tool message format."""
-    output, last_id = [], None
+    output, pending = [], None
+
+    def close_pending(result=None):
+        nonlocal pending
+        if pending is None:
+            return
+        call_id, name = pending
+        if result is None:
+            result = {'tool': name, 'ok': False, 'result': {
+                'error': 'No saved result is available. The operation outcome is unknown; inspect before retrying.'}}
+        item = {'role': 'tool', 'content': json.dumps(result, ensure_ascii=False)}
+        item.update({'tool_name': name} if ollama else {'tool_call_id': call_id})
+        output.append(item)
+        pending = None
+
     for index, message in enumerate(messages):
         content = message['content']
+        # Provider-specific reasoning signatures and old call IDs are not portable.
+        plain = {k: message[k] for k in ('role', 'content', 'origin') if k in message}
         if message['role'] == 'assistant':
+            close_pending()
             try:
                 decision = json.loads(content)
             except ValueError:
-                output.append(message); continue
-            if 'action' in decision:
-                action = decision['action']; last_id = f'call_{index}'
+                output.append(plain); continue
+            if not isinstance(decision, dict):
+                output.append(plain); continue
+            action = decision.get('action')
+            if (isinstance(action, dict) and isinstance(action.get('tool'), str)
+                    and isinstance(action.get('arguments'), dict)):
+                last_id = f'call_{index}'
+                pending = (last_id, action['tool'])
                 function = {'name': action['tool'], 'arguments': action['arguments'] if ollama else json.dumps(action['arguments'])}
                 call = {'function': function} if ollama else {'id': last_id, 'type': 'function', 'function': function}
                 output.append({'role': 'assistant', 'content': decision.get('message', ''), 'tool_calls': [call]})
             else:
-                output.append({'role': 'assistant', 'content': decision.get('message', '')})
+                output.append({'role': 'assistant', 'content': decision.get('message', content)})
         elif message['role'] == 'user' and message.get('origin') != 'human' and content.startswith('ACTION RESULT\n'):
-            if last_id is None:
-                # A pruned orphan result is useful context, but not a valid API tool response.
-                output.append(message)
-            else:
+            try:
                 result = json.loads(content.split('\n', 1)[1])
-                item = {'role': 'tool', 'content': json.dumps(result, ensure_ascii=False)}
-                item.update({'tool_name': result['tool']} if ollama else {'tool_call_id': last_id})
-                output.append(item); last_id = None
+            except ValueError:
+                result = None
+            if pending and isinstance(result, dict) and result.get('tool') == pending[1]:
+                close_pending(result)
+            else:
+                close_pending()
+                # Orphan/mismatched results remain context, never a false success.
+                output.append(plain)
         else:
-            # A human follow-up interrupts any pending action/result pairing.
-            if message['role'] == 'user':
-                last_id = None
-            output.append(message)
+            close_pending()
+            output.append(plain)
+    close_pending()
     return output
 
 
@@ -163,7 +186,8 @@ class ModelClient:
         """
         native = self.config.get('protocol', 'native') == 'native'
         ollama = self.config['provider'] == 'ollama'
-        wire = wire_messages(messages, ollama) if native else messages
+        wire = wire_messages(messages, ollama) if native else [
+            {key: item[key] for key in ('role', 'content')} for item in messages]
         wire = [{key: value for key, value in item.items() if key != 'origin'} for item in wire]
         schemas = tools if native else []
         pairs = []
@@ -206,14 +230,16 @@ class ModelClient:
         # A late result is discarded; it cannot run an action in a stopped session.
         result = queue.Queue(maxsize=1)
         call_id, started = uuid.uuid4().hex, time.monotonic()
+        observer, observation_context = self.observer, self.observation_context
+        key = self.key
 
         def record(kind, data):
-            if self.observer is None:
+            if observer is None:
                 return
             def clean(value):
-                if isinstance(value, str) and self.key:
-                    return value.replace(self.key, '[REDACTED]').replace(
-                        json.dumps(self.key, ensure_ascii=False)[1:-1], '[REDACTED]')
+                if isinstance(value, str) and key:
+                    return value.replace(key, '[REDACTED]').replace(
+                        json.dumps(key, ensure_ascii=False)[1:-1], '[REDACTED]')
                 if isinstance(value, list):
                     return [clean(item) for item in value]
                 if isinstance(value, dict):
@@ -225,15 +251,15 @@ class ModelClient:
                 snapshot = clean(snapshot)
                 if kind == 'call_end' and 'error_detail' in snapshot:
                     snapshot['error_detail'] = snapshot['error_detail'][:2000]
-                self.observer({'type': kind, 'call_id': call_id, 'time': time.time(),
+                observer({'type': kind, 'call_id': call_id, 'time': time.time(),
                                'elapsed_seconds': time.monotonic() - started, 'data': snapshot})
             except Exception:
                 # Diagnostics never change inference or release a partial action.
                 self.observation_failed = True
 
-        if self.observer is not None:
+        if observer is not None:
             try:
-                context = self.observation_context(messages) if self.observation_context else {}
+                context = observation_context(messages) if observation_context else {}
                 record('call_start', {'context': context, 'provider': self.config['provider'],
                                      'model': self.config['model'], 'protocol': self.config.get('protocol', 'native')})
             except Exception:
@@ -242,7 +268,7 @@ class ModelClient:
         def work():
             try:
                 answer = (self._complete(messages, cancel, progress, tools, observe=record)
-                          if self.observer is not None else self._complete(messages, cancel, progress, tools))
+                          if observer is not None else self._complete(messages, cancel, progress, tools))
                 outcome = (True, answer)
             except Exception as error:
                 outcome = (False, error)

@@ -1,5 +1,19 @@
 # v0.0.16: optional interaction and completion experiments
 
+v0.4.0 also adds `--experiment final-contract` with `--parent-source` and
+`--parent-tool`. Both arms use the same independently checked supplied parent,
+visible inputs and public growth instructions. Only the treatment repeats the
+verbatim final-task paragraph after activation, including default arguments and
+required artifacts. It does not supply hidden answers or change the source.
+Actions, generated tokens and the deadline remain shared across development,
+verification, activation and final use. Reuse-only tasks are excluded. Report
+verified feature behavior separately from completed final workflows.
+
+Live steering, protected inference history and recovery receipts are application
+changes; their benefit for small models remains unmeasured. No studies were
+started for this release. Existing frozen plans have stale fingerprints: prepare
+fresh plans before testing. Edit and syntax feedback remain opt-in treatments.
+
 For current preparation and the source refactor, see
 [v0.3.0](seed-v0.3.0-preparation.md). Earlier plan receipts are historical; prepare
 fresh plans against the current controller before live inference.

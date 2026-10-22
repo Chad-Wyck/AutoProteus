@@ -46,6 +46,40 @@ class StartupTests(unittest.TestCase):
 
 
 class HostApiTests(unittest.TestCase):
+    def test_live_input_api_persists_pending_cancellation_and_refuses_inactive_tasks(self):
+        from unittest.mock import Mock
+        session = self.app.store.create('Input fixture', 'demo', 'fixture')
+        payload = {'id': session['id'], 'message': 'Keep café unchanged', 'mode': 'steer', 'request_id': 'a' * 32}
+        with self.assertRaises(urllib.error.HTTPError):
+            self.request('/api/input', payload)
+        worker = Mock(); worker.is_alive.return_value = True
+        self.app.agent.workers[session['id']] = (threading.Event(), worker)
+        try:
+            with self.request('/api/input', payload) as response:
+                self.assertEqual(json.load(response)['status'], 'pending')
+            with self.request('/api/input', payload):
+                pass
+            self.assertEqual(len(session['input_queue']), 1)
+            with self.request('/api/session?id=' + session['id']) as response:
+                self.assertEqual(json.load(response)['input_queue'][0]['message'], payload['message'])
+            with self.request('/api/input/cancel', {'id': session['id'], 'request_id': payload['request_id']}):
+                pass
+            self.assertEqual(session['input_queue'][0]['status'], 'cancelled')
+        finally:
+            self.app.agent.workers.clear()
+
+    def test_journal_export_contains_verifiable_inference_blobs(self):
+        from controller.inference_history import InferenceHistory, digest
+        session = self.app.store.create('Evidence export', 'demo', 'fixture')
+        value = {'tools': [], 'instructions': [{'role': 'system', 'content': 'You are AutoProteus'}]}
+        key = InferenceHistory(self.app.store, session, self.app.settings.values).blob(value)
+        with self.request('/api/export?id=' + session['id']) as response:
+            with zipfile.ZipFile(io.BytesIO(response.read())) as archive:
+                saved = json.loads(archive.read('inference/' + key + '.json'))
+                self.assertEqual(digest(saved), key)
+                self.assertEqual(saved, value)
+                self.assertIn('events.jsonl', archive.namelist())
+
     def test_public_submission_review_returns_source_bound_evidence_without_running_code(self):
         from controller.evaluation import freeze_source, source_identity
         from controller.isolation import seed_files

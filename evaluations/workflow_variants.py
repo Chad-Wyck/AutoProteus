@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TREATMENTS = ('edit-feedback', 'syntax-feedback', 'masked-history', 'phases', 'staged-inputs',
-              'submission-feedback', 'edit-context', 'verified-lesson')
+              'submission-feedback', 'edit-context', 'verified-lesson', 'final-contract')
 
 
 def replace_once(text, anchor, replacement):
@@ -18,7 +18,7 @@ def variant(source, treatment, keep=8, threshold=512):
     if treatment not in ('baseline', *TREATMENTS):
         raise ValueError('Unknown workflow treatment')
     result = copy.deepcopy(source)
-    if treatment in ('baseline', 'phases', 'staged-inputs', 'submission-feedback', 'edit-context', 'verified-lesson'):
+    if treatment in ('baseline', 'phases', 'staged-inputs', 'submission-feedback', 'edit-context', 'verified-lesson', 'final-contract'):
         return result
     # Validate even when only preparing inert source packs.
     if type(keep) is not int or keep < 1 or type(threshold) is not int or threshold < 1:
@@ -34,7 +34,7 @@ def variant(source, treatment, keep=8, threshold=512):
             changed = True
         elif item['path'] == 'autoproteus/context.py' and treatment == 'masked-history':
             text = base64.b64decode(item['data']).decode('utf-8')
-            anchor = '    followup = next((item for item in reversed(history) if human(item)), None)'
+            anchor = '    required = [original] + [item for item in history if human(item)]'
             text = replace_once(text, anchor, '    from .workflow_support import mask_observations\n'
                 f'    history = mask_observations(history, keep={keep}, threshold={threshold}, is_human=human)\n' + anchor)
             changed = True

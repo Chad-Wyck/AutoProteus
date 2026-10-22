@@ -31,11 +31,32 @@ The guest boots into an in-memory appliance. The seed runs as UID/GID 1000 witho
 The transport is bounded, newline-framed JSON, not a network server, host shell, filesystem server, or URL proxy. Protocol 2 verifies SHA-256 for every source/input file before writing it in the guest. A host file lease serializes VM runs across app, evaluator and test processes; process exit releases the lease. After the boot/input exchange it accepts only:
 
 - `infer`: bounded history and optional guest tool schemas using the host-selected model/provider/settings. Schemas describe guest tools to the model; they never create host capabilities. Guest URL, headers, credentials, commands and environment overrides are rejected. Provider exceptions become generic guest-facing errors to avoid reflecting secrets.
+- `inputs`: poll one host-admitted human message at a time. Only the authenticated browser API can enqueue or cancel messages. Direction changes are offered between actions; follow-ups wait for reported completion. Exact saved human text and its input ID acknowledge delivery. An edited guest can ignore input or lie about following it, but cannot enqueue new human messages through this operation.
 - `file` / `checkpoint`: bounded bytes and validated relative names. The host rejects traversal, absolute paths, Windows device names, alternate data streams, control characters and links. Bytes are stored under host-computed SHA-256 blob filenames. Manifests bind files to one session. No guest archive is extracted on the host; uncommitted exports are discarded on termination.
 - `state` / `event`: bounded history/display/journal data. Identity, task, provider, storage roots and policy remain host-owned. The host keeps Stop visible until it ends the VM, even if the guest claims completion.
 - `done` / `failure`: completion signals; the host decides termination and final status.
 
 Unknown operations and extra capability fields end the run. Parser, transport and integrity failures fail closed. Only trusted host assets are served as UI. File previews are text and downloads use attachment headers. The evaluator can materialize exported bytes for content checks but never imports or executes them.
+
+Journal event names beginning with `host_` are reserved for the controller.
+Its content-addressed inference history records the actual provider payload,
+effective instructions and declared tools, source identity, context omissions,
+responses and reported usage. Known configured provider keys are redacted;
+task content can still be sensitive. These records are included in journal
+downloads. Tool declarations and guest operation receipts are observations,
+not permissions or independent evidence that the requested outcome occurred.
+Each session has at most 64 MiB of inference blobs; exceeding that allowance
+records incomplete evidence and lets inference continue. Existing guest-journal
+and transport quotas still apply; host evidence adds bounded reference events.
+Human queues hold at most 20 undelivered and 200 total entries per session,
+each at most 12,000 characters. Queued work does not reset the action allowance.
+
+Operation receipts distinguish a guest-reported start, result, committed file
+checkpoint and saved result message. Resume exposes any incomplete receipt and
+restores only committed files. No action is automatically replayed, even if a
+tool name sounds read-only: an edited seed may change its behavior. A new run
+cannot advance an old receipt using an unrelated checkpoint. As with the rest
+of the broker, native mode needs external protection for these host records.
 
 Candidate comparisons freeze both versions, model settings and trusted task definitions before execution. New tasks/recovery cannot overlap an active app comparison. Comparisons run candidate code only through the same VM broker; the host checks quarantined artifact bytes against its own definitions. Reports and source diffs are inert data. Model-authored tests, guest journals and reported step counts are not trusted acceptance criteria. A successful comparison does not auto-promote a candidate or prove a new feature. Self-improvement runs may enable guest commands without changing the host isolation boundary or saved preferences.
 

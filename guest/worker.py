@@ -198,6 +198,11 @@ def main(native_root=None):
         human_messages.insert(0, {'role': 'user', 'content': boot['session']['task']})
 
     class Client:
+        supports_inputs = True
+
+        def inputs(self, mode):
+            return call({'op': 'inputs', 'mode': mode})
+
         def complete(self, messages, cancel, progress=None):
             try:
                 if boot.get('handoff') == 'concise' and activation_notice:
@@ -290,6 +295,11 @@ def main(native_root=None):
         activation_notice = notice
         session['messages'].append({'role': 'user', 'content': notice, 'origin': 'internal'})
         store.feed(session, 'notice', notice)
+    # Keep recovery after the concise handoff boundary so activation cannot
+    # discard an uncertain-operation receipt along with development history.
+    if boot.get('recovery_notice'):
+        session['messages'].append({'role': 'user', 'origin': 'internal', 'content': boot['recovery_notice']})
+        store.feed(session, 'notice', boot['recovery_notice'])
     settings = SimpleNamespace(values=config, key=lambda: '')
     import seed
     agent = seed.run(source, store, settings, lambda _: Client(), session, boot.get('message'))

@@ -95,7 +95,7 @@ def prepare(args):
         if bool(parent_path) != bool(parent_tool):
             raise ValueError('Provide both --parent-source and --parent-tool')
         if parent_path:
-            if experiment not in ('phases', 'staged-inputs', 'submission-feedback', 'edit-context', 'verified-lesson') or parent_tool not in study.CONTRACTS:
+            if experiment not in ('phases', 'staged-inputs', 'submission-feedback', 'edit-context', 'verified-lesson', 'final-contract') or parent_tool not in study.CONTRACTS:
                 raise ValueError('This comparison does not support a supplied parent')
             if experiment == 'staged-inputs' and parent_tool == 'csv_preview':
                 raise ValueError('Staged inputs currently require a sha256_file or format_json parent')
@@ -104,11 +104,11 @@ def prepare(args):
             source_identity(parent)
             plan['parent'] = {'source': parent, 'tool': parent_tool, 'sha256': source_identity(parent),
                               'provenance': str(Path(parent_path).resolve()), 'supplied_parent': True}
-        elif experiment in ('phases', 'staged-inputs'):
+        elif experiment in ('phases', 'staged-inputs', 'final-contract'):
             raise ValueError('This comparison requires one exact supplied parent and --parent-tool; it is independently checked before trials')
         reuse_path = getattr(args, 'reuse_task', None)
         if reuse_path:
-            if experiment == 'staged-inputs':
+            if experiment in ('staged-inputs', 'final-contract'):
                 raise ValueError('Staged inputs measure new extensions, not reuse-only tasks')
             if not plan.get('parent'):
                 raise ValueError('--reuse-task requires the phase comparison and a supplied parent')

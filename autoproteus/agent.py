@@ -68,6 +68,21 @@ class Agent:
     def messages(self, session, config, steps=0):
         return build_messages(session, config, steps)
 
+    def receive_inputs(self, session, client, mode):
+        if getattr(client, 'supports_inputs', False) is not True:
+            return False
+        incoming = client.inputs(mode)
+        known = {m.get('input_id') for m in session['messages']}
+        for item in incoming:
+            if item['id'] not in known:
+                session['messages'].append({'role': 'user', 'content': item['content'],
+                                            'origin': 'human', 'input_id': item['id']})
+                self.store.feed(session, 'user', item['content'])
+                known.add(item['id'])
+        if incoming:
+            self.store.save(session)
+        return bool(incoming)
+
     def _run(self, session, config, client, cancel):
         workspace = Workspace(Path(session["workspace"]), config["terminal"], cancel, config["command_timeout"])
         repairs = 0
@@ -79,6 +94,7 @@ class Agent:
                 final_request = steps >= config['max_steps']
                 if cancel.is_set():
                     raise Cancelled()
+                self.receive_inputs(session, client, 'steer')
                 session["activity"] = "Thinking…"
                 self.store.save(session)
                 messages = self.messages(session, config, steps)
@@ -92,6 +108,9 @@ class Agent:
                 if cancel.is_set():
                     raise Cancelled()
                 self.store.event(session, "model_response", response)
+                if self.receive_inputs(session, client, 'steer'):
+                    self.store.event(session, 'response_superseded', {'reason': 'new_human_input', 'action_executed': False})
+                    continue
                 try:
                     if response.get('provider_error') == 'cutoff':
                         raise ValueError('The response exceeded its output budget. Send a smaller action or patch. '
@@ -112,6 +131,11 @@ class Agent:
                         raise Cancelled()
                     if 'action' in decision and steps >= config['max_steps']:
                         break
+                    if "status" in decision:
+                        mode = 'finish' if decision['status'] == 'completed' and not final_request else 'steer'
+                        if self.receive_inputs(session, client, mode):
+                            self.store.event(session, 'finish_deferred', {'reason': 'queued_human_input'})
+                            break
                     session["messages"].append({"role": "assistant", "content": json.dumps(decision, ensure_ascii=False)})
                     if decision.get("message"):
                         self.store.feed(session, "assistant", decision["message"])
@@ -156,6 +180,8 @@ class Agent:
                     self.store.feed(session, "result", "Done" if ok else "Action needs attention", result=result, ok=ok)
                     self.messages(session, config, steps)
                     self.store.save(session)
+                    if self.receive_inputs(session, client, 'steer'):
+                        break
                     if not ok:
                         # Later calls may depend on this result. Let the model replan.
                         break

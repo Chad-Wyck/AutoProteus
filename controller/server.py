@@ -26,6 +26,7 @@ from .evaluation import EvaluationService
 from .evaluation import candidate_source
 from .submissions import repair_ticket, ticket_message
 from .execution import ExecutionPolicy
+from .interactions import Inputs
 
 
 class Application:
@@ -244,9 +245,14 @@ def handler_for(app):
                             return self.send(content, mime="application/octet-stream", filename=Path(name).name)
                         return self.send({"path": query["path"][0], "content": content[:100000].decode("utf-8", errors="replace"), "truncated": len(content) > 100000})
                     buffer = io.BytesIO()
-                    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+                    with app.store.lock, zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+                        directory = app.store.directory(session['id'])
                         for name in ("session.json", "events.jsonl"):
-                            archive.write(app.store.directory(session["id"]) / name, name)
+                            archive.write(safe_path(directory, name), name)
+                        history = safe_path(directory, 'inference')
+                        if history.exists():
+                            for blob in sorted(history.glob('*.json')):
+                                archive.write(safe_path(directory, 'inference/' + blob.name), 'inference/' + blob.name)
                     return self.send(buffer.getvalue(), mime="application/zip", filename="autoproteus-session-" + session["id"][:8] + ".zip")
                 if path == "/":
                     page = (app.root / "web" / "index.html").read_text(encoding="utf-8").replace("__APP_TOKEN__", app.token)
@@ -278,6 +284,18 @@ def handler_for(app):
                 data = json.loads(self.rfile.read(size))
                 if not isinstance(data, dict):
                     raise ValueError("Provide a JSON object")
+                if self.path == '/api/input':
+                    with app.evaluations.gate, app.agent.lock:
+                        active = app.active()
+                        session = app.store.get(data.get('id'))
+                        if (app.evaluations.busy or not active or active['id'] != session['id']
+                                or session['status'] == 'stopping'):
+                            raise ValueError('This task is no longer running. Send your message with Resume.')
+                        return self.send(Inputs(app.store, session).enqueue(
+                            data.get('message'), data.get('mode'), data.get('request_id')))
+                if self.path == '/api/input/cancel':
+                    Inputs(app.store, app.store.get(data.get('id'))).cancel(data.get('request_id'))
+                    return self.send({'cancelled': True})
                 if self.path == "/api/settings":
                     if any(key in data for key in ('execution', 'execution_mode', 'acknowledge_host_access')):
                         raise ValueError('Execution mode can only be selected at launch')

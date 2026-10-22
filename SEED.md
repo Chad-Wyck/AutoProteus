@@ -5,6 +5,13 @@ the interface, execution policy and recovery. In VM mode, code runs in a
 disposable Linux guest without host drives or general network access. Explicit
 Linux native mode has the account's access and relies on external protection.
 
+The loop polls the protected controller for human direction changes between
+actions, and for queued follow-ups before reporting completion. Preserve this
+small polling interface when editing the loop. All human corrections remain
+complete in context; an oversized set of instructions fails explicitly. Resume
+includes any incomplete operation receipt. Inspect saved work before retrying;
+the controller never automatically replays an interrupted command.
+
 Source map:
 
 - `seed.py`: entry point, development tests and edited-tool invocation.

@@ -4,6 +4,27 @@ Versions use `major.minor.patch`. Before launch, `0.x.0` introduces features and
 `0.x.y` contains bug fixes. Components can exceed 9 or 99. Historical `0.0.x`
 release and experiment labels remain unchanged.
 
+## 0.4.0
+
+- Allow live direction changes between actions and queued follow-ups after model
+  completion. Persist pending, delivery-in-progress, delivered and cancelled
+  states; keep existing action and host request limits across queued work.
+- Preserve all human corrections under context pressure. Reject an irreducible
+  request explicitly rather than silently dropping earlier instructions.
+- Save protected, content-addressed inference evidence: effective instructions,
+  tool declarations, actual provider messages/responses, usage and context
+  omissions. Session journal downloads include these blobs; known provider keys
+  are redacted and a storage-cap failure is explicitly recorded.
+- Record guest-reported operation starts, results, committed checkpoints and
+  saved results separately. Resume explains uncertain outcomes; no operation is
+  automatically replayed. These receipts do not replace independent checks.
+- Repair missing native tool-result envelopes with explicit unknown-outcome
+  errors, match results by tool name and discard foreign reasoning metadata.
+- Add an opt-in final-contract handoff comparison, repeating only the public
+  final requirements after activation under the existing shared budgets.
+  Edit feedback, syntax feedback and context treatments remain opt-in. No live
+  model benefit has been established for these additions.
+
 ## 0.3.0
 
 - Add public, source-bound file-tool submission tickets and an optional repair

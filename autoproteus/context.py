@@ -45,10 +45,9 @@ def build_messages(session, config, steps=0, measure=None):
         if human(item) and item['content'] == session['task']:
             history.pop(index)
             break
-    # Keep the original request and latest follow-up complete. Never silently
+    # Keep the original request and human follow-ups complete. Never silently
     # shorten user instructions to accommodate fixed prompts or tool schemas.
-    followup = next((item for item in reversed(history) if human(item)), None)
-    required = [original] + ([followup] if followup else [])
+    required = [original] + [item for item in history if human(item)]
     schemas = tool_definitions(config['terminal']) if native else []
     allowance = max(0, config['context_tokens'] - config['response_tokens'] - 128) * 2
     def plain(items):
@@ -74,16 +73,18 @@ def build_messages(session, config, steps=0, measure=None):
     # Keep recent complete action/result groups. The full journal stays saved.
     budget = allowance - size([fixed[0], *required, *runtime])
     while len(history) > 2 and size(fixed + history + runtime) > allowance:
-        index = 1 if history[0] == followup else 0
+        index = next((i for i, item in enumerate(history) if not human(item)), None)
+        if index is None:
+            break
         history.pop(index)
-        while len(history) > index and history[index] != followup and history[index]['role'] != 'assistant':
+        while len(history) > index and not human(history[index]) and history[index]['role'] != 'assistant':
             history.pop(index)
     if history and size(fixed + history + runtime) > allowance:
         limit = max(1, budget // max(1, len(history)) // 2)
         shortened = []
         for item in history:
             content = item['content']
-            if item == followup or len(content.encode('utf-8')) <= limit:
+            if human(item) or len(content.encode('utf-8')) <= limit:
                 shortened.append(item)
             elif content.startswith('ACTION RESULT\n'):
                 result = json.loads(content.split('\n', 1)[1])
@@ -103,9 +104,11 @@ def build_messages(session, config, steps=0, measure=None):
                 shortened.append({'role': 'user', 'content': 'A large prior action was omitted. Inspect current files before continuing.', 'origin': 'internal'})
         history = shortened
     while history and size(fixed + history + runtime) > allowance:
-        index = 1 if history[0] == followup else 0
+        index = next((i for i, item in enumerate(history) if not human(item)), None)
+        if index is None:
+            break
         history.pop(index)
-        if len(history) > index and history[index]['content'].startswith('ACTION RESULT\n'):
+        if len(history) > index and not human(history[index]) and history[index]['content'].startswith('ACTION RESULT\n'):
             history.pop(index)
     return plain([fixed[0], original, *history, *runtime])
 

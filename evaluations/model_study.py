@@ -134,6 +134,9 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
             'inspect exact file contents, repair tests, then request activation. Final use remains required.')
     reuse_only = not feature and bool(plan.get('reuse_task')) and task['name'] == plan['reuse_task']['name']
     focused = plan.get('treatment') == 'phases' and earlier is not None
+    final_contract = plan.get('treatment') == 'final-contract'
+    if final_contract and (not earlier or not feature or not task.get('final_task')):
+        raise ValueError('Final-contract trials require a growth task with an explicit public final task')
     if focused:
         task['task'] += DEVELOPMENT_FOCUS
     elif plan.get('treatment') == 'phases' and reuse_only:
@@ -164,7 +167,8 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
     row = {'task': task['name'], 'earlier': earlier, 'added': feature, 'operator_candidate_repairs': [],
            'input_protocol': 'withheld_final_input' if staged else 'strict_preserve_visible_input',
            'treatment': plan.get('treatment', 'baseline'), 'stages': {'activated': False},
-           'experimental_instructions': [DEVELOPMENT_FOCUS, USE_FOCUS] if focused else
+           'experimental_instructions': ['CURRENT FINAL TASK\n' + task['final_task']] if final_contract else
+                                       [DEVELOPMENT_FOCUS, USE_FOCUS] if focused else
                                        [USE_FOCUS] if reuse_only and plan.get('treatment') == 'phases' else []}
     atomic_json(folder / 'original-task.json', original_task)
     atomic_json(folder / 'task.json', task)
@@ -259,7 +263,11 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
                             # Both sides of the paired experiment share action,
                             # wall and generated-token allowances across stages.
                             settings.values = {**config, 'max_steps': remaining_actions}
-                        if focused:
+                        if final_contract:
+                            session['candidate_from'] = session['id']
+                            agent.start(session, 'CURRENT FINAL TASK\n' + task['final_task'], candidate=session,
+                                        handoff='concise', deadline=deadline)
+                        elif focused:
                             session['candidate_from'] = session['id']
                             agent.start(session, USE_FOCUS, candidate=session, handoff='concise', deadline=deadline)
                         elif staged:
@@ -331,7 +339,8 @@ def growth_task(parent, plan):
              'rows (default preview) and truncated matching the actual results.' if parent == 'csv_preview' else
              'Use format_json to format inventory.json and sha256_file to hash its final bytes. '
              'Write audit.json with path="inventory.json", bytes and sha256 matching the formatted file.')
-    return added, {'name': 'second-extension-audit', 'checks': [], 'fixtures': fixtures, 'task':
+    final += ' Inspect the input and receipt, then finish completed. Do not edit the seed after activation.'
+    return added, {'name': 'second-extension-audit', 'checks': [], 'fixtures': fixtures, 'final_task': final, 'task':
         'Your active seed already includes the independently verified ' + parent + ' tool. Use it on sample.txt with arguments ' +
         json.dumps(arguments) + '. Then add exactly one new tool: ' + plan['contracts'][added] +
         plan['recipe'].replace('Finish completed only after implementing and verifying the feature.', '') +
@@ -339,8 +348,7 @@ def growth_task(parent, plan):
         'use disposable examples. You can invoke an edited tool before its full suite passes with '
         'python3 experience/invoke_tool.py TOOL_NAME \'{"path":"sample.txt"}\'. '
         'Check actual file contents as well as return values. After development checks pass, finish needs_input requesting activation. '
-        'After independent verification and activation, ' + final +
-        ' Inspect the input and receipt, then finish completed. Do not edit the seed after activation.'}
+        'After independent verification and activation, ' + final}
 
 
 def summarize(queue, plan):
