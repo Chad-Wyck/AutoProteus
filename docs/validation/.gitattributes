@@ -1,0 +1,4 @@
+# Preserve recorded Windows log bytes, including CRLF and final blank lines.
+*.log -text whitespace=cr-at-eol
+*.json text eol=lf
+SHA256SUMS text eol=lf
