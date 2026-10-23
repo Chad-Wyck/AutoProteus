@@ -28,6 +28,7 @@ TOOL_SPECS = {
     "finish": ("Report verified completion, or ask the user for required information.",
                {"message": STRING, "status": {"type": "string", "enum": ["completed", "needs_input"]}}, ["message", "status"]),
     "run_command": ("Run a native shell command from the task workspace.", {"command": STRING}, ["command"]),
+    "friend_lease": ("Read-only bridge to the FRIEND-LEASE app. action 'health' checks the service; other allowed actions (getEngineCatalog, getPaymentLinks, listProfiles, listHumans, getSession) call its action bus with args in 'args'. Bus actions need a session token (env FRIEND_LEASE_TOKEN); without one the server's auth error is returned as-is. Nothing here can post, pay, follow, or message.", {"action": STRING, "args": {"type": "object"}}, ["action"]),
 }
 
 
