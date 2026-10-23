@@ -103,6 +103,9 @@ class Workspace:
         if tool == "edit_file":
             from .file_ops import edit_file
             return edit_file(self, args)
+        if tool == "friend_lease":
+            from .friend_lease import friend_lease
+            return friend_lease(self, args)
         if tool == "run_command":
             if not self.terminal:
                 raise ValueError("Terminal access is disabled. Use file tools or ask the user to enable it in Settings.")
