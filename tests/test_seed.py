@@ -564,7 +564,7 @@ class AgentTests(unittest.TestCase):
                     session = self.store.create('Preserve the complete request.', 'ollama', 'offline-test')
                     config = {**self.settings.values, 'provider': 'ollama', 'protocol': protocol,
                               'context_tokens': 8192, 'response_tokens': 2048, 'max_steps': 1}
-                    schemas = tool_definitions(config['terminal']) if protocol == 'native' else []
+                    schemas = tool_definitions(config['terminal'])
                     def size(messages):
                         return len(json.dumps({'messages': messages, 'tools': schemas}, ensure_ascii=False).encode('utf-8'))
                     allowance = (config['context_tokens'] - config['response_tokens'] - 128) * 2
@@ -597,13 +597,13 @@ class AgentTests(unittest.TestCase):
         config = {**self.settings.values, 'provider': 'ollama', 'protocol': protocol,
                   'context_tokens': 131072, 'response_tokens': 512}
         fixed = agent.messages({**session, 'messages': []}, config)
-        schemas = tool_definitions(config['terminal']) if protocol == 'native' else []
+        schemas = tool_definitions(config['terminal'])
         fixed_bytes = len(json.dumps({'messages': fixed, 'tools': schemas}, ensure_ascii=False).encode('utf-8'))
         config['context_tokens'] = 512 + 128 + (fixed_bytes + 1800 + 1) // 2
         return config
 
     def assert_history_bound(self, messages, config):
-        schemas = tool_definitions(config['terminal']) if config['protocol'] == 'native' else []
+        schemas = tool_definitions(config['terminal'])
         actual = len(json.dumps({'messages': messages, 'tools': schemas}, ensure_ascii=False).encode('utf-8'))
         self.assertLessEqual(actual, (config['context_tokens'] - config['response_tokens'] - 128) * 2)
 
@@ -863,7 +863,7 @@ class AgentTests(unittest.TestCase):
         self.assertEqual(result['content'], content)
         agent.close()
 
-    def test_one_tool_entry_reaches_native_schema_and_json_prompt(self):
+    def test_one_tool_entry_has_one_shared_protocol_independent_prompt(self):
         agent = Agent(ROOT, self.store, self.settings, lambda _: DemoClient())
         session = self.store.create('Use the added tool', 'demo', 'scripted-demo')
         spec = ('Count words in a workspace file.', {'path': {'type': 'string'}}, ['path'])
@@ -873,10 +873,10 @@ class AgentTests(unittest.TestCase):
             self.assertEqual(tools['word_count']['parameters']['required'], ['path'])
             config = {**self.settings.values, 'provider': 'ollama', 'protocol': 'json'}
             prompt = agent.messages(session, config)[0]['content']
-            self.assertIn('word_count: ' + spec[0], prompt)
-            self.assertNotIn('finish:', prompt)
-            self.assertNotIn('run_command:', prompt)
-            self.assertIn('run_command:', agent.messages(session, {**config, 'terminal': True})[0]['content'])
+            self.assertEqual(prompt, agent.messages(session, {**config, 'protocol': 'native'})[0]['content'])
+            self.assertNotIn(spec[0], prompt)  # The controller renders declarations.
+            self.assertNotIn('run_command', tools)
+            self.assertIn('run_command', {item['function']['name'] for item in tool_definitions(True)})
         agent.close()
 
 

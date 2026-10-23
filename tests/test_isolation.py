@@ -29,7 +29,7 @@ class BoundaryTests(unittest.TestCase):
         self.assertEqual(marker['content'], '')
         self.assertNotIn('private-host-key', json.dumps(marker))
         self.assertNotIn('tool_calls', marker)
-        self.assertIn('valid JSON', marker['normalization_error'])
+        self.assertIn('could not parse the tool arguments', marker['normalization_error'])
         broker.requests = broker.request_limit
         with self.assertRaisesRegex(IsolationError, 'request quota'):
             broker.handle({'op':'infer','messages':[{'role':'user','content':'test'}]})

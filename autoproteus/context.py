@@ -2,8 +2,8 @@
 import json
 from pathlib import Path
 
-from .protocol import GUIDANCE, PROTOCOL, NATIVE_PROMPT
-from .providers import tool_instructions, tool_definitions
+from .protocol import GUIDANCE, PROTOCOL
+from .providers import tool_definitions
 from .tools import clipped
 
 
@@ -12,12 +12,10 @@ def build_messages(session, config, steps=0, measure=None):
     todo = clipped(todo_path.read_text(encoding="utf-8", errors="replace"), 6000) if todo_path.exists() else ""
     session["todo"] = todo
     terminal = "Terminal commands run in the environment described below." if config["terminal"] else "Terminal access is disabled. Use the file tools."
-    native = config.get("protocol", "native") == "native" and config["provider"] != "demo"
-    prompt = NATIVE_PROMPT if native else PROTOCOL
     environment = ("This run has no AutoProteus VM protection. Code has this account's access; stay within the requested workspace."
                    if session.get('execution_mode') == 'native' else
                    "Commands run inside a disposable Linux VM. Host files, the controller and general network access are unavailable.")
-    system = prompt.replace("{tools}", tool_instructions(config['terminal'])).replace("{terminal}", terminal).replace('{environment}', environment).replace('{guidance}', GUIDANCE)
+    system = PROTOCOL.replace("{terminal}", terminal).replace('{environment}', environment).replace('{guidance}', GUIDANCE)
     # Keep the opening prefix stable so local runtimes can reuse its cache.
     # _run still enforces the action cap, including failed calls.
     runtime = []
@@ -48,7 +46,9 @@ def build_messages(session, config, steps=0, measure=None):
     # Keep the original request and human follow-ups complete. Never silently
     # shorten user instructions to accommodate fixed prompts or tool schemas.
     required = [original] + [item for item in history if human(item)]
-    schemas = tool_definitions(config['terminal']) if native else []
+    # Count declarations in either mode. The controller renders the selected
+    # wire format and checks its actual size, including response instructions.
+    schemas = tool_definitions(config['terminal']) if config['provider'] != 'demo' else []
     allowance = max(0, config['context_tokens'] - config['response_tokens'] - 128) * 2
     def plain(items):
         # Journal provenance is local bookkeeping, never provider API fields.

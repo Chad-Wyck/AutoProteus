@@ -376,6 +376,20 @@ invoked = subprocess.run(['python3','harness/seed.py','invoke','--tool','write_f
 assert invoked.returncode == 0, invoked.stdout + invoked.stderr
 assert json.loads(invoked.stdout)['result']['written'] is True
 assert Path('result.txt').read_bytes() == '猫\\r\\né'.encode()
+Path('arguments.json').write_text(json.dumps({'path':'raw.txt'}))
+Path('fragment.txt').write_bytes('print("猫\\\\n")\\r\\n'.encode())
+invoked = subprocess.run(['python3','harness/seed.py','invoke','--tool','write_file','--arguments-file','arguments.json',
+                          '--text-file','content','fragment.txt'], capture_output=True, text=True)
+assert invoked.returncode == 0, invoked.stdout + invoked.stderr
+assert Path('raw.txt').read_bytes() == Path('fragment.txt').read_bytes()
+outside = Path('/tmp/external-fragment.txt'); outside.write_text('valid external text')
+Path('escape.txt').symlink_to(outside)
+for name in (str(outside), 'escape.txt'):
+    denied = subprocess.run(['python3','harness/seed.py','invoke','--tool','write_file','--arguments-file','arguments.json',
+                             '--text-file','content',name], capture_output=True, text=True)
+    assert denied.returncode != 0
+    assert Path('raw.txt').read_bytes() == Path('fragment.txt').read_bytes()
+assert outside.read_text() == 'valid external text'
 checked = subprocess.run(['python3','harness/seed.py','check'], capture_output=True, text=True)
 assert checked.returncode == 1, checked.stdout + checked.stderr
 assert 'Deliberately failing development suite' in checked.stdout
@@ -501,13 +515,19 @@ pathlib.Path('boundary.json').write_text(json.dumps(report))
         self.assertEqual(self.wait(agent, session), 'completed', session['feed'])
         self.assertEqual(json.loads(Artifacts(self.store, session).read('boundary.json')), report)
 
-    def test_native_provider_gateway_keeps_credentials_outside_guest_and_saves_verified_output(self):
+    def test_both_provider_formats_keep_credentials_outside_guest_and_save_verified_output(self):
+        for protocol in ('native', 'json'):
+            with self.subTest(protocol=protocol):
+                self.provider_gateway(protocol)
+
+    def provider_gateway(self, protocol):
+        from controller.evaluation import freeze_source
         requests = []
         secret = 'boundary-test-key-never-send-to-guest'
-        content = 'Protected native gateway café 🙂\r\n世界\n'
+        content = 'Protected gateway café 🙂\r\n世界 "quotes" \\n\n'
         section_start = content.index('café')
         actions = [
-            ('write_file', {'path': 'gateway.txt', 'content': content}),
+            ('fixture_write', {'path': 'gateway.txt', 'content': content}),
             ('read_file', {'path': 'gateway.txt'}),
             ('read_section', {'path': 'gateway.txt', 'start': section_start, 'length': 4}),
             ('finish', {'message': 'Verified', 'status': 'completed'}),
@@ -518,26 +538,50 @@ pathlib.Path('boundary.json').write_text(json.dumps(report))
                 payload = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
                 requests.append((payload, self.headers.get('Authorization')))
                 name, args = actions[min(len(requests) - 1, len(actions) - 1)]
-                body = json.dumps({'choices': [{'finish_reason': 'tool_calls', 'message': {'content': '', 'tool_calls': [
-                    {'id': 'native-test', 'type': 'function', 'function': {'name': name, 'arguments': json.dumps(args)}}]}}]}).encode()
+                message = ({'content': '', 'tool_calls': [
+                    {'id': 'native-test', 'type': 'function', 'function': {'name': name, 'arguments': json.dumps(args)}}]}
+                    if protocol == 'native' else {'content': json.dumps(args if name == 'finish' else {'action': {'tool': name, 'arguments': args}})})
+                body = json.dumps({'choices': [{'finish_reason': 'tool_calls' if protocol == 'native' else 'stop', 'message': message}]}).encode()
                 self.send_response(200); self.send_header('Content-Type', 'application/json')
                 self.send_header('Content-Length', str(len(body))); self.end_headers(); self.wfile.write(body)
         server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
         try:
-            self.settings.update({'base_url': f'http://127.0.0.1:{server.server_port}/v1', 'api_key': secret, 'protocol': 'native'})
+            self.settings.update({'base_url': f'http://127.0.0.1:{server.server_port}/v1', 'api_key': secret, 'protocol': protocol})
             agent = IsolatedAgent(ROOT, self.store, self.settings)
             self.agents.append(agent)
-            session = self.store.create('Verify the native provider gateway', 'hosted', 'offline-boundary-test')
-            agent.start(session)
+            session = self.store.create('Verify the ' + protocol + ' provider gateway', 'hosted', 'offline-boundary-test')
+            # A hand-written edited seed proves the active catalog crosses the
+            # guest boundary in both formats, without importing it on the host.
+            source = seed_files(ROOT)
+            for item in source:
+                if item['path'] not in ('autoproteus/tools.py', 'autoproteus/providers.py'):
+                    continue
+                text = base64.b64decode(item['data']).decode()
+                if item['path'] == 'autoproteus/tools.py':
+                    text = text.replace('        if tool == "list_files":',
+                        '        if tool == "fixture_write":\n            return self.execute("write_file", args)\n        if tool == "list_files":')
+                else:
+                    text = text.replace('TOOL_SPECS = {',
+                        'TOOL_SPECS = {\n    "fixture_write": ("Write using the edited seed.", {"path": STRING, "content": STRING}, ["path", "content"]),')
+                item['data'] = base64.b64encode(text.encode()).decode()
+            candidate = freeze_source(self.store, source, 'Hand-written gateway capability')
+            agent.start(session, candidate=candidate)
             self.assertEqual(self.wait(agent, session), 'completed', session['feed'])
             self.assertEqual(Artifacts(self.store, session).read('gateway.txt'), content.encode('utf-8'))
             self.assertEqual(len(requests), 4)
             self.assertTrue(all(auth == 'Bearer ' + secret for _, auth in requests))
-            self.assertIn('read_section', [tool['function']['name'] for tool in requests[0][0]['tools']])
-            whole = json.loads(requests[2][0]['messages'][-1]['content'])['result']
-            section = json.loads(requests[3][0]['messages'][-1]['content'])['result']
+            if protocol == 'native':
+                self.assertIn('read_section', [tool['function']['name'] for tool in requests[0][0]['tools']])
+                self.assertIn('fixture_write', [tool['function']['name'] for tool in requests[0][0]['tools']])
+            else:
+                self.assertNotIn('tools', requests[0][0])
+                catalog = json.loads(requests[0][0]['messages'][0]['content'].split('Tools:\n', 1)[1])
+                self.assertIn('read_section', [tool['function']['name'] for tool in catalog])
+                self.assertIn('fixture_write', [tool['function']['name'] for tool in catalog])
+            whole = json.loads(requests[2][0]['messages'][-1]['content'].removeprefix('ACTION RESULT\n'))['result']
+            section = json.loads(requests[3][0]['messages'][-1]['content'].removeprefix('ACTION RESULT\n'))['result']
             self.assertEqual(whole['content'], content)
             self.assertTrue(whole['eof'])
             self.assertEqual(whole['next_start'], len(content))

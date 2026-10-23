@@ -288,7 +288,7 @@ class HostApiTests(unittest.TestCase):
             self.assertEqual(self.app.settings.values['protocol'], 'native')
             self.assertIn('tools', provider.payloads[0])
             self.assertNotIn('response_format', provider.payloads[0])
-            self.assertEqual(len(provider.payloads), 7)
+            self.assertEqual(len(provider.payloads), 8)
             self.assertEqual(provider.payloads[1]['messages'][-1]['role'], 'tool')
             self.assertTrue(self.app.settings.values['compatibility']['passed'])
             self.assertTrue(self.app.settings.values['compatibility']['rejected_call_recovery'])

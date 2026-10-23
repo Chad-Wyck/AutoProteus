@@ -158,7 +158,7 @@ class SubmissionSupportTests(unittest.TestCase):
 
 
 class ProfileQualificationTests(unittest.TestCase):
-    def diagnostic_client(self, failures=None, wrong=False):
+    def diagnostic_client(self, failures=None, wrong=False, confirm=None, finish_message='Connection checked.'):
         client = Mock(config=dict(DEFAULTS))
         histories = []
         failures = dict(failures or {})
@@ -170,8 +170,10 @@ class ProfileQualificationTests(unittest.TestCase):
             if failure is not None:
                 return failure
             last = next(item['content'] for item in reversed(messages)
-                        if item['content'].startswith(('Test value: ', 'ACTION RESULT\n')))
-            if last.startswith('Test value: '):
+                        if item['content'].startswith(('Test value: ', 'ACTION RESULT\n', 'All rounds are complete.')))
+            if last.startswith('All rounds are complete.'):
+                decision = {'status': 'completed', 'message': finish_message}
+            elif last.startswith('Test value: '):
                 decision = {'action': {'tool': 'diagnostic_echo', 'arguments': {'value': 'wrong' if wrong else last[12:]}}}
             else:
                 result = json.loads(last.split('\n', 1)[1])
@@ -179,28 +181,47 @@ class ProfileQualificationTests(unittest.TestCase):
                     value = next(item['content'][12:] for item in reversed(messages) if item['content'].startswith('Test value: '))
                     decision = {'action': {'tool': 'diagnostic_echo', 'arguments': {'value': value}}}
                 else:
-                    decision = {'status': 'completed', 'message': result['result']['receipt']}
+                    receipt = result['result']['receipt']
+                    decision = {'action': {'tool': 'diagnostic_confirm', 'arguments': {'receipt': confirm(receipt) if confirm else receipt}}}
             return {'content': json.dumps(decision)}
         client.complete.side_effect = complete
         return client, histories
 
     def test_final_native_format_error_is_repaired_without_restarting_diagnostic(self):
-        client, history = self.diagnostic_client({7: {'content': '{}', 'normalization_error': 'native response needs a tool call'}})
+        client, history = self.diagnostic_client({8: {'content': '{}', 'normalization_error': 'native response needs a tool call'}})
         with patch('controller.compatibility.ModelClient', return_value=client):
             result = check_protocol(DEFAULTS, rounds=3, recovery=True)
-        self.assertEqual(result['requests'], 8)
+        self.assertEqual(result['requests'], 9)
         self.assertEqual(result['format_repairs'], 1)
         self.assertFalse(result['first_pass'])
-        self.assertEqual(history[7][:-1], history[6])
-        self.assertIn('No action was executed', history[7][-1]['content'])
+        self.assertEqual(history[8][:-1], history[7])
+        self.assertIn('No action was executed', history[8][-1]['content'])
+
+    def test_receipt_is_checked_as_an_exact_argument_while_completion_prose_is_free(self):
+        for message in ('Connection checked.', '{"receipt":"unrelated message text"}', '猫\nReady.'):
+            with self.subTest(message=message):
+                client, history = self.diagnostic_client(finish_message=message)
+                with patch('controller.compatibility.ModelClient', return_value=client):
+                    result = check_protocol(DEFAULTS, rounds=3, recovery=True)
+                self.assertTrue(result['passed'])
+                self.assertEqual(result['requests'], 8)
+                confirms = [json.loads(item['content'])['action'] for item in history[-1]
+                            if item['role'] == 'assistant' and '"action"' in item['content']]
+                self.assertEqual(sum(item['tool'] == 'diagnostic_confirm' for item in confirms), 3)
+        for confirm in (lambda value: 'wrong', lambda value: {'receipt': value},
+                        lambda value: json.dumps({'receipt': value})):
+            client, history = self.diagnostic_client(confirm=confirm)
+            with patch('controller.compatibility.ModelClient', return_value=client), self.assertRaises(ProviderError):
+                check_protocol(DEFAULTS)
+            self.assertEqual(len(history), 2)  # No guessing, unwrapping or successful retry selection.
 
     def test_repairs_reset_after_valid_decisions_and_share_fixed_request_deadline(self):
         config = {**DEFAULTS, 'request_timeout': 20}
         client, history = self.diagnostic_client({index: {'content': 'invalid JSON'} for index in (1, 2, 4, 5)})
         with patch('controller.compatibility.ModelClient', return_value=client), \
-             patch('controller.compatibility.time.monotonic', side_effect=[0, 1, 2, 3, 4, 5, 55]):
+             patch('controller.compatibility.time.monotonic', side_effect=[0, 1, 2, 3, 4, 5, 54, 55]):
             result = check_protocol(config)
-        self.assertEqual(result['requests'], 6)
+        self.assertEqual(result['requests'], 7)
         self.assertEqual(result['format_repairs'], 4)
         self.assertEqual(client.config['request_timeout'], 5)
         client, history = self.diagnostic_client({1: {'content': 'invalid JSON'}})
@@ -215,10 +236,10 @@ class ProfileQualificationTests(unittest.TestCase):
         client, history = self.diagnostic_client(failures)
         with patch('controller.compatibility.ModelClient', return_value=client):
             result = check_protocol(DEFAULTS)
-        self.assertEqual(result['requests'], 4)
+        self.assertEqual(result['requests'], 5)
         self.assertEqual(result['format_repairs'], 2)
         self.assertNotIn('private key secret', json.dumps(history))
-        self.assertIn('valid JSON arguments', json.dumps(history))
+        self.assertIn('could not parse the tool arguments', json.dumps(history))
 
     def test_bad_format_exhausts_two_repairs_and_valid_wrong_actions_are_not_repaired(self):
         client, history = self.diagnostic_client({index: {'content': 'broken'} for index in range(1, 4)})
@@ -243,11 +264,11 @@ class ProfileQualificationTests(unittest.TestCase):
             try:
                 config = {**DEFAULTS, 'provider': 'hosted', 'base_url': server.url, 'protocol': protocol}
                 result = qualify_profile(config)
-                self.assertEqual(result['requests'], 7)
+                self.assertEqual(result['requests'], 8)
                 self.assertTrue(result['first_pass'])
                 self.assertEqual(result['format_repairs'], 0)
                 self.assertTrue(result['rejected_call_recovery'])
-                self.assertEqual(len(server.payloads), 7)
+                self.assertEqual(len(server.payloads), 8)
                 self.assertGreater(len(server.payloads[-1]['messages']), len(server.payloads[1]['messages']))
                 if protocol == 'native':
                     self.assertIn('read_file', [tool['function']['name'] for tool in server.payloads[0]['tools']])
@@ -278,6 +299,21 @@ class ProfileQualificationTests(unittest.TestCase):
              patch('controller.compatibility.check_protocol', return_value={'passed': True, 'requests': 7}), \
              self.assertRaises(ProviderError):
             qualify_profile(DEFAULTS)
+
+    def test_response_format_changes_invalidate_a_cached_qualification(self):
+        identity = {'engine_version': 'engine1', 'digest': 'weights1', 'template_sha256': 'template1',
+                    'parameters_sha256': 'params1', 'details': {'quantization_level': 'Q6'}}
+        read_bytes = Path.read_bytes
+        def changed(path):
+            return read_bytes(path) + (b'\n# changed response format\n' if path.name == 'action_protocol.py' else b'')
+        with patch('controller.compatibility.model_identity', return_value=identity), \
+             patch('controller.compatibility.check_protocol', return_value={'passed': True, 'requests': 8}) as check:
+            original = qualify_profile(DEFAULTS)
+            with patch('controller.compatibility.Path.read_bytes', changed):
+                revised = qualify_profile(DEFAULTS, previous=original)
+            self.assertFalse(revised['cached'])
+            self.assertNotEqual(original['profile_sha256'], revised['profile_sha256'])
+            self.assertEqual(check.call_count, 2)
 
     def test_sampling_changes_remove_a_saved_receipt(self):
         with temporary_directory() as directory:

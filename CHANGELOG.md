@@ -4,6 +4,24 @@ Versions use `major.minor.patch`. Before launch, `0.x.0` introduces features and
 `0.x.y` contains bug fixes. Components can exceed 9 or 99. Historical `0.0.x`
 release and experiment labels remain unchanged.
 
+## 0.6.0
+
+- Use one shared seed prompt and normalized action interface. Move native and
+  JSON response instructions into the protected controller; render both from
+  the same guest-supplied tool catalog, including newly activated capabilities.
+- Budget the effective model request after adding format instructions. Preserve
+  human messages and the newest observation while dropping only old matched
+  exchanges when needed; record adjustments in either mode.
+- Qualify result retrieval with an exact structured receipt argument, followed
+  by explicit completion with a free-form message. Keep three rounds, rejected
+  call recovery, bounded repairs and strict rejection of incorrect receipts.
+  Invalidate receipts from the previous qualification procedure.
+- Add `--text-file ARGUMENT FILE` to guest development invocation, allowing raw
+  source fragments without embedding them in argument JSON. Preserve workspace
+  validation, text limits and existing tool execution; reject duplicate names.
+- Keep independent outcome checks and activation requirements. Add regression
+  and VM coverage; live model comparisons have not been run on this revision.
+
 ## 0.5.1
 
 - Remove an obsolete prompt-wording assertion from the protected starter tests.

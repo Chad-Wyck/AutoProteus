@@ -226,7 +226,7 @@ class Broker:
                     return {'content': '', 'provider_error': 'cutoff'}
                 if error.category == 'protocol':
                     reason = error.response.get('protocol_reason') if isinstance(error.response, dict) else None
-                    hint = PROTOCOL_HINTS.get(reason, 'Use the supplied tools with valid JSON arguments. Prefer one tool call at a time.')
+                    hint = PROTOCOL_HINTS.get(reason, 'Use the supplied tools with valid arguments. Prefer one tool call at a time.')
                     self.store.event(self.session, 'provider_protocol_error', {'reason': reason if reason in PROTOCOL_HINTS else 'unspecified',
                                                                              'partial_action_executed': False})
                     return {'content': '', 'provider_error': 'protocol', 'normalization_error': hint}

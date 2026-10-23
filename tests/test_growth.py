@@ -29,8 +29,13 @@ class GrowthScoringTests(unittest.TestCase):
         command = "python3 harness/seed.py check --tool new --arguments '{}'"
         self.assertEqual(tool_use([event(command)])['development'], ['new'])
         for operation in ('check', 'invoke'):
-            for arguments in ("--arguments '{}'", '--arguments-file arguments.json'):
+            for arguments in ("--arguments '{}'", '--arguments-file arguments.json',
+                              '--arguments-file arguments.json --text-file content body.txt',
+                              '--text-file path path.txt --text-file content body.txt'):
                 self.assertEqual(tool_use([event('python3 harness/seed.py ' + operation + ' --tool new ' + arguments)])['development'], ['new'])
+        for tail in ('--test tests/test_new.py', '--text-file content', '--unknown x',
+                     '--arguments-file x --arguments y', '--text-file content x --text-file content y'):
+            self.assertEqual(tool_use([event('python3 harness/seed.py invoke --tool new ' + tail)])['development'], [])
         self.assertEqual(tool_use([event('echo fabricated'), event(command, False)])['development'], [])
 
     def test_python_development_route_is_parsed_as_data_and_requires_a_successful_top_level_call(self):

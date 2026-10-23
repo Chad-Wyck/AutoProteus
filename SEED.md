@@ -13,11 +13,17 @@ controller does not automatically replay uncertain operations.
 
 - `seed.py`: entry point, development checks and edited-tool invocation.
 - `autoproteus/tools.py`: Workspace, text helpers and tool dispatch.
-- `autoproteus/providers.py`: `TOOL_SPECS`, shared by both action formats.
+- `autoproteus/providers.py`: one `TOOL_SPECS` catalog for every model connection.
 - `autoproteus/file_ops.py`, `search.py`, `terminal.py`: existing file and command helpers.
 - `autoproteus/agent.py`, `storage.py`: loop, saved state and snapshots.
-- `autoproteus/protocol.py`, `context.py`: instructions, parsing and context budgets.
+- `autoproteus/protocol.py`, `context.py`: shared instructions, normalized actions and context budgets.
 - `tests/`: existing regressions and your separate new tests.
+
+The controller supplies model-facing response syntax and renders this catalog
+for native calls or JSON fallback. The seed uses the same prompt and action loop
+in either mode. Register a capability once; do not add separate implementations
+or instructions for each provider. Protocol compatibility does not change host
+permissions or independently certify a capability.
 
 ## Upgrade workflow
 
@@ -99,6 +105,20 @@ Try an edited registered file tool without waiting for its tests to pass. Write
 ```sh
 python3 harness/seed.py invoke --tool TOOL_NAME --arguments-file development/args.json
 ```
+
+For source fragments or other multiline text, put the exact text in ordinary
+workspace files. Keep only the remaining arguments, such as `path`, in
+`development/args.json`, then load the text arguments without inline escaping:
+
+```sh
+python3 harness/seed.py invoke --tool edit_file --arguments-file development/args.json --text-file old_text development/old.txt --text-file new_text development/new.txt
+```
+
+The same option can supply `write_file`'s `content`, or any other text argument.
+Each name must be unique and absent from the supplied JSON. Files use the same
+workspace boundary and 100000-character limit as the existing text helpers;
+Unicode, backslashes and line endings are preserved. This is a development
+invocation of the registered tool, not activation or independent verification.
 
 To isolate a failing test file while repairing it:
 

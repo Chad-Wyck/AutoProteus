@@ -62,6 +62,58 @@ class SeedRevisionTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn('TOOL_SPECS', result.stdout)
 
+    def test_text_file_arguments_preserve_code_quotes_unicode_and_line_endings(self):
+        code = 'print("猫\\n")\r\n# literal </parameter> and "quotes"\r\n'
+        (self.workspace / 'body.txt').write_bytes(code.encode())
+        (self.workspace / 'args.json').write_text('{"path":"code.py"}', encoding='utf-8')
+        result = self.command('invoke', '--tool', 'write_file', '--arguments-file', 'args.json',
+                              '--text-file', 'content', 'body.txt')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual((self.workspace / 'code.py').read_bytes(), code.encode())
+        self.assertEqual(json.loads(result.stdout)['result']['bytes'], len(code.encode()))
+
+    def test_two_raw_fragments_edit_one_exact_section_without_inline_json(self):
+        original = 'before\r\nprint("old")\r\nafter\r\n'
+        (self.workspace / 'code.py').write_bytes(original.encode())
+        for path, content in [('path.txt', 'code.py'), ('old.txt', 'print("old")\r\n'),
+                              ('new.txt', 'print("猫\\n")\r\n')]:
+            (self.workspace / path).write_bytes(content.encode())
+        result = self.command('invoke', '--tool', 'edit_file', '--text-file', 'path', 'path.txt',
+                              '--text-file', 'old_text', 'old.txt', '--text-file', 'new_text', 'new.txt')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual((self.workspace / 'code.py').read_bytes(), original.replace('print("old")', 'print("猫\\n")').encode())
+
+    def test_text_argument_names_follow_the_registered_schema_not_python_identifier_rules(self):
+        providers = self.seed / 'autoproteus/providers.py'
+        providers.write_text(providers.read_text(encoding='utf-8').replace('TOOL_SPECS = {',
+            'TOOL_SPECS = {\n    "fixture_echo": ("Echo text.", {"new-value": STRING}, ["new-value"]),'), encoding='utf-8')
+        tools = self.seed / 'autoproteus/tools.py'
+        tools.write_text(tools.read_text(encoding='utf-8').replace('        if tool == "list_files":',
+            '        if tool == "fixture_echo":\n            return {"text": args["new-value"]}\n        if tool == "list_files":'), encoding='utf-8')
+        (self.workspace / 'fragment.txt').write_text('猫 "quotes"', encoding='utf-8')
+        result = self.command('invoke', '--tool', 'fixture_echo', '--text-file', 'new-value', 'fragment.txt')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(json.loads(result.stdout)['result']['text'], '猫 "quotes"')
+
+    def test_text_files_reject_conflicts_oversize_invalid_text_and_existing_external_files_before_writing(self):
+        (self.workspace / 'good.txt').write_text('content', encoding='utf-8')
+        (self.workspace / 'large.txt').write_text('猫' * 100001, encoding='utf-8')
+        (self.workspace / 'invalid.txt').write_bytes(b'\xff')
+        (self.workspace / 'output.txt').write_bytes(b'preserve')
+        with temporary_directory() as directory:
+            outside = Path(directory) / 'outside.txt'
+            outside.write_text('valid external content', encoding='utf-8')
+            fixtures = [('--text-file', 'content', path) for path in
+                        ('large.txt', 'invalid.txt', 'missing.txt', '.', str(outside))]
+            fixtures += [('--text-file', 'content', 'good.txt', '--text-file', 'content', 'good.txt'),
+                         ('--text-file', 'path', 'good.txt'), ('--text-file', 'bad-name', 'good.txt')]
+            for extra in fixtures:
+                with self.subTest(extra=extra):
+                    result = self.command('invoke', '--tool', 'write_file', '--arguments', '{"path":"output.txt"}', *extra)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertEqual((self.workspace / 'output.txt').read_bytes(), b'preserve')
+            self.assertEqual(outside.read_text(), 'valid external content')
+
     def test_check_reports_tests_and_invokes_the_edited_registered_tool(self):
         # Deliberately add a tool to the fixture copy, not to the starter modules.
         tools = self.seed / 'autoproteus/tools.py'

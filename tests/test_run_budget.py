@@ -24,7 +24,8 @@ class RunBudgetTests(unittest.TestCase):
             BudgetModelClient(config, token_budget=GeneratedTokenBudget(20)).complete(messages, threading.Event(), tools=[])
         payloads = [item.args[1] for item in request.call_args_list]
         self.assertEqual(payloads[0], payloads[1])
-        self.assertEqual(payloads[1]['messages'][0]['tool_calls'][0]['id'], 'call_0')
+        call = next(item for item in payloads[1]['messages'] if item.get('tool_calls'))
+        self.assertEqual(call['tool_calls'][0]['id'], 'call_0')
 
     def client(self, budget):
         return BudgetModelClient({**DEFAULTS, 'response_tokens': 8}, token_budget=budget)

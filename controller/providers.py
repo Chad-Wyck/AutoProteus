@@ -10,6 +10,7 @@ import urllib.error
 import urllib.request
 
 from .errors import Cancelled
+from .action_protocol import with_response_instructions
 
 
 class ProviderError(Exception):
@@ -31,7 +32,7 @@ ERROR_MESSAGES = {
 # Only these fixed explanations cross the broker for a repairable provider
 # error. Raw server errors can contain secrets and remain host diagnostics.
 PROTOCOL_HINTS = {
-    'tool_arguments': 'Tool arguments were not valid JSON. Send a complete call with valid JSON arguments; escape newlines inside strings.',
+    'tool_arguments': 'The service could not parse the tool arguments. Use the selected native format or JSON fallback correctly. Send a smaller call; do not change paths or contents to repair syntax.',
     'tool_batch': 'A response may contain at most 32 tool calls. Send one tool call, inspect its result, then continue.',
 }
 
@@ -180,19 +181,22 @@ class ModelClient:
     def prepare_messages(self, messages, tools, observe=None):
         """Budget the actual provider representation without editing the journal.
 
-        Native envelopes can exceed the seed's neutral estimate. Remove only
-        oldest complete tool exchanges, retaining all system/user messages and
+        Format instructions and envelopes can exceed the seed's neutral estimate.
+        Remove only oldest complete tool exchanges, retaining human messages and
         the newest exchange. An irreducible request still fails before transport.
         """
         native = self.config.get('protocol', 'native') == 'native'
         ollama = self.config['provider'] == 'ollama'
         wire = wire_messages(messages, ollama) if native else [
-            {key: item[key] for key in ('role', 'content')} for item in messages]
-        wire = [{key: value for key, value in item.items() if key != 'origin'} for item in wire]
+            {key: item[key] for key in ('role', 'content', 'origin') if key in item} for item in messages]
+        # Legacy callers may supply their own JSON prompt without declarations.
+        # Current guest requests always supply the catalog in either mode.
+        if tools is not None:
+            wire = with_response_instructions(wire, 'native' if native else 'json', tools)
         schemas = tools if native else []
         pairs = []
-        if native:
-            for index, (call, result) in enumerate(zip(wire, wire[1:])):
+        for index, (call, result) in enumerate(zip(wire, wire[1:])):
+            if native:
                 calls = call.get('tool_calls', [])
                 if call['role'] != 'assistant' or len(calls) != 1 or result['role'] != 'tool':
                     continue
@@ -200,6 +204,17 @@ class ModelClient:
                            result.get('tool_call_id') == calls[0].get('id'))
                 if matches:
                     pairs.append(index)
+            elif call['role'] == 'assistant' and result['role'] == 'user' and result.get('origin') != 'human':
+                # JSON history retains its neutral action/result representation.
+                # Match both names before dropping an old complete exchange.
+                try:
+                    action = json.loads(call['content'])['action']
+                    saved = json.loads(result['content'].removeprefix('ACTION RESULT\n'))
+                    if result['content'].startswith('ACTION RESULT\n') and saved.get('tool') == action.get('tool'):
+                        pairs.append(index)
+                except (ValueError, KeyError, TypeError, AttributeError):
+                    pass
+        wire = [{key: value for key, value in item.items() if key != 'origin'} for item in wire]
         # Keep the newest exact observation available for the next decision.
         removable = iter(pairs[:-1])
         removed, before = 0, None
@@ -218,7 +233,7 @@ class ModelClient:
                 removed += 1
         adjustment = None
         if removed:
-            adjustment = {'reason': 'native_wire_context_limit', 'removed_tool_exchanges': removed,
+            adjustment = {'reason': 'native_wire_context_limit' if native else 'json_wire_context_limit', 'removed_tool_exchanges': removed,
                 'messages_before': len(messages), 'messages_after': len(wire),
                 'input_bytes_before': before, 'input_bytes_after': context_bytes(wire, schemas)}
             if observe:

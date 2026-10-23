@@ -39,7 +39,8 @@ def tool_definitions(terminal=False):
 
 
 def tool_instructions(terminal=False):
-    # JSON replies use a status instead of calling the native finish tool.
+    # Legacy checks and edited seeds use this formatter. The current controller
+    # renders model-facing syntax from tool_definitions, outside the seed.
     lines = []
     for tool in tool_definitions(terminal):
         fn = tool['function']

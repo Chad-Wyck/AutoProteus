@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 from controller.config import DEFAULTS
 from controller.providers import ModelClient, ProviderError, context_bytes, validate_context, wire_messages
+from controller.action_protocol import with_response_instructions
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'evaluations'))
 from experience import UsageClient
@@ -31,7 +32,7 @@ def history(count=40):
 
 
 def tight_config(messages, provider='hosted', tools=None):
-    wire = wire_messages(messages, provider == 'ollama')
+    wire = with_response_instructions(wire_messages(messages, provider == 'ollama'), 'native', tools)
     # The actual wire request is two or three bytes over the enforced bound.
     return {**DEFAULTS, 'provider': provider, 'response_tokens': 512,
             'context_tokens': 512 + 128 + (context_bytes(wire, tools) - 2) // 2}
@@ -50,7 +51,7 @@ class ContextBudgetTests(unittest.TestCase):
         config = tight_config(messages, tools=tools)
         validate_context(messages, tools, config)
         with self.assertRaises(ProviderError):
-            validate_context(wire_messages(messages, False), tools, config)
+            validate_context(with_response_instructions(wire_messages(messages, False), 'native', tools), tools, config)
         events = []
         with patch('controller.providers.request_json', return_value=FINISHED) as transport:
             answer = ModelClient(config, observer=events.append).complete(messages, threading.Event(), tools=tools)
@@ -68,7 +69,7 @@ class ContextBudgetTests(unittest.TestCase):
         for provider in ('ollama', 'hosted'):
             with self.subTest(provider=provider):
                 config = tight_config(messages, provider, tools)
-                expected = wire_messages(messages, provider == 'ollama')
+                expected = with_response_instructions(wire_messages(messages, provider == 'ollama'), 'native', tools)
                 actual, adjustment = ModelClient(config).prepare_messages(messages, tools)
                 validate_context(actual, tools, config)
                 self.assertGreater(adjustment['removed_tool_exchanges'], 0)
@@ -87,12 +88,12 @@ class ContextBudgetTests(unittest.TestCase):
         messages = history()
         for provider in ('ollama', 'hosted'):
             actual, adjustment = ModelClient({**DEFAULTS, 'provider': provider}).prepare_messages(messages, [])
-            self.assertEqual(actual, wire_messages(messages, provider == 'ollama'))
+            self.assertEqual(actual, with_response_instructions(wire_messages(messages, provider == 'ollama'), 'native', []))
             self.assertIsNone(adjustment)
 
     def test_multiple_old_pairs_can_be_removed_across_a_human_correction(self):
         messages = history(8)
-        expected = wire_messages(messages, False)
+        expected = with_response_instructions(wire_messages(messages, False), 'native', [])
         # Leave room for precisely the instructions and most recent exchange.
         retained = [item for index, item in enumerate(expected)
                     if item['role'] in ('system', 'user') or index >= len(expected) - 3]
@@ -103,10 +104,9 @@ class ContextBudgetTests(unittest.TestCase):
         self.assertEqual(actual, retained)
         self.assertEqual(adjustment['removed_tool_exchanges'], 7)
 
-    def test_irreducible_input_and_json_history_fail_before_transport(self):
+    def test_irreducible_input_fails_before_transport(self):
         cases = [([{'role': 'user', 'content': '人' * 10000}], 'native', []),
-                 (history(1), 'native', [{'schema': 'x' * 100000}]),
-                 (history(), 'json', [])]
+                 (history(1), 'native', [{'schema': 'x' * 100000}])]
         for messages, protocol, tools in cases:
             with self.subTest(protocol=protocol, count=len(messages)):
                 config = {**tight_config(messages), 'protocol': protocol, 'context_tokens': 1024}

@@ -23,7 +23,10 @@ class FakeModelServer:
                 calls = [{'function': {'name': 'write_file', 'arguments': {'path': 'sample.txt', 'content': 'sample'}}}]
                 if diagnostic:
                     messages = parent.payloads[-1]['messages']
-                    if messages[-1]['role'] == 'tool' or messages[-1]['content'].startswith('ACTION RESULT\n'):
+                    if messages[-1]['content'].startswith('All rounds are complete.'):
+                        decision = {'message': 'Connection checked.', 'status': 'completed'}
+                        calls = [{'function': {'name': 'finish', 'arguments': decision}}]
+                    elif messages[-1]['role'] == 'tool' or messages[-1]['content'].startswith('ACTION RESULT\n'):
                         result = json.loads(messages[-1]['content'].removeprefix('ACTION RESULT\n'))
                         if result.get('ok') is False:
                             value = next(item['content'].split('Test value: ')[1] for item in reversed(messages)
@@ -31,8 +34,9 @@ class FakeModelServer:
                             decision = {'action': {'tool': 'diagnostic_echo', 'arguments': {'value': value}}}
                             calls = [{'function': {'name': 'diagnostic_echo', 'arguments': {'value': value}}}]
                         else:
-                            decision = {'message': result['result']['receipt'], 'status': 'completed'}
-                            calls = [{'function': {'name': 'finish', 'arguments': decision}}]
+                            arguments = {'receipt': result['result']['receipt']}
+                            decision = {'action': {'tool': 'diagnostic_confirm', 'arguments': arguments}}
+                            calls = [{'function': {'name': 'diagnostic_confirm', 'arguments': arguments}}]
                     else:
                         value = messages[-1]['content'].split('Test value: ')[1]
                         decision = {'action': {'tool': 'diagnostic_echo', 'arguments': {'value': value}}}
@@ -105,7 +109,8 @@ class HostProviderTests(unittest.TestCase):
                           'protocol': 'native' if native else 'json'}
                 messages = [{'role': 'user', 'content': 'Use the supplied tool.', 'origin': 'human'}]
                 ModelClient(config).complete(messages, threading.Event(), tools=tool_definitions() if native else None)
-                self.assertEqual(server.payloads[0]['messages'], [{'role': 'user', 'content': 'Use the supplied tool.'}])
+                self.assertEqual(server.payloads[0]['messages'][-1], {'role': 'user', 'content': 'Use the supplied tool.'})
+                self.assertNotIn('origin', json.dumps(server.payloads[0]['messages']))
                 self.assertEqual(messages[0]['origin'], 'human')
             finally:
                 server.close()

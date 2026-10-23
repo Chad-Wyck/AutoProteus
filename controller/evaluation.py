@@ -20,6 +20,24 @@ from .storage import Store, atomic_json, now
 from .compatibility import model_identity
 
 
+def development_invocation(args):
+    """Recognize CLI evidence as data, including raw text-file arguments."""
+    if (len(args) < 7 or args[:2] != ['python3', 'harness/seed.py'] or
+            args[2] not in ('check', 'invoke') or args[3] != '--tool'):
+        return False
+    index, payload, fields = 5, False, set()
+    while index < len(args):
+        if args[index] in ('--arguments', '--arguments-file') and index + 1 < len(args) and not payload:
+            payload = True
+            index += 2
+        elif args[index] == '--text-file' and index + 2 < len(args) and args[index + 1] not in fields:
+            fields.add(args[index + 1])
+            index += 3
+        else:
+            return False
+    return payload or bool(fields)
+
+
 def tool_use(events):
     """Observed invocation routes, not a security proof about hostile candidates."""
     native, development = set(), set()
@@ -53,9 +71,7 @@ def tool_use(events):
                         development.add(value.args[0].value)
                 continue
             helper = len(args) == 4 and args[:2] == ['python3', 'experience/invoke_tool.py']
-            checker = (len(args) == 7 and args[:2] == ['python3', 'harness/seed.py'] and
-                       args[2] in ('check', 'invoke') and args[3] == '--tool' and
-                       args[5] in ('--arguments', '--arguments-file'))
+            checker = development_invocation(args)
             if not (helper or checker):
                 continue
             expected_check = 'development tool invocation' if helper else 'candidate tool invocation'

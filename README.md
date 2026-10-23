@@ -40,6 +40,10 @@ Linux ARM and macOS are not supported yet.
 
 Model size, available memory and inference speed affect the experience. A successful connection check confirms communication with the model, not its ability to complete a task or improve the seed.
 
+Native tool calling is the default, with JSON fallback available in Settings.
+The controller handles these formats; the editable seed uses one tool catalog
+and action loop.
+
 ## Everyday use
 
 - **Describe a task.** Attach inputs with **Files**, or use **Add files** in a stopped session. Imports copy files into the workspace without granting access to the original folder.

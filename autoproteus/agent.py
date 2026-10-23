@@ -121,7 +121,7 @@ class Agent:
                     self.store.event(session, "invalid_response", {"error": str(error)})
                     if repairs > config.get('response_retries', 2):
                         raise ValueError("This model did not follow the action format after two retries. Try another model or adjust its settings.")
-                    instruction = 'Use the supplied tools with valid arguments.' if config.get('protocol', 'native') == 'native' and config['provider'] != 'demo' else 'Return exactly one complete JSON object following the system instructions.'
+                    instruction = 'Use the supplied tools with valid arguments, or explicitly finish following the response instructions.'
                     session["messages"].append({"role": "user", "content": "Your response was not accepted: " + str(error) + '. ' + instruction + " No action was executed.", "origin": "internal"})
                     self.store.feed(session, "notice", "The response format was invalid. Asking the model to correct it; no action was executed.")
                     continue

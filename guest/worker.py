@@ -215,7 +215,7 @@ def main(native_root=None):
                     call({'op': 'event', 'type': 'context_handoff', 'data': {'mode': 'concise',
                           'applied': boundary is not None, 'messages_before': before, 'messages_after': len(messages)}})
                 request = {'op': 'infer', 'messages': messages}
-                if config['provider'] != 'demo' and config.get('protocol', 'native') == 'native':
+                if config['provider'] != 'demo':
                     from autoproteus.providers import tool_definitions
                     request['tools'] = tool_definitions(config['terminal'])
                 return call(request)

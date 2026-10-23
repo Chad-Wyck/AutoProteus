@@ -138,7 +138,8 @@ class InteractionTests(unittest.TestCase):
         with patch('controller.providers.request_json', return_value=FINISHED) as transport:
             broker.handle({'op': 'infer', 'messages': [{'role': 'user', 'content': literal}],
                 'tools': [{'type': 'function', 'function': {'name': 'finish', 'parameters': {}}}]})
-        self.assertEqual(transport.call_args.args[1]['messages'], [{'role': 'user', 'content': literal}])
+        self.assertEqual([item for item in transport.call_args.args[1]['messages'] if item['role'] != 'system'],
+                         [{'role': 'user', 'content': literal}])
         with self.assertRaisesRegex(IsolationError, 'journal'):
             broker.handle({'op': 'event', 'type': 'host_input_delivered', 'data': {}})
 

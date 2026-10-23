@@ -19,6 +19,9 @@ def check_protocol(config, key='', rounds=1, recovery=False, full_catalog=False)
         {'type': 'function', 'function': {'name': 'diagnostic_echo', 'description': 'Return a test value.',
             'parameters': {'type': 'object', 'properties': {'value': {'type': 'string'}},
                            'required': ['value'], 'additionalProperties': False}}},
+        {'type': 'function', 'function': {'name': 'diagnostic_confirm', 'description': 'Confirm the exact receipt string from the diagnostic_echo result.',
+            'parameters': {'type': 'object', 'properties': {'receipt': {'type': 'string'}},
+                           'required': ['receipt'], 'additionalProperties': False}}},
         {'type': 'function', 'function': {'name': 'finish', 'description': 'Complete the diagnostic after reading the result.',
             'parameters': {'type': 'object', 'properties': {'message': {'type': 'string'},
                            'status': {'type': 'string', 'enum': ['completed']}},
@@ -31,11 +34,11 @@ def check_protocol(config, key='', rounds=1, recovery=False, full_catalog=False)
     from autoproteus.protocol import parse_decisions
     from .isolation import RESPONSE_RETRIES
     response_retries = RESPONSE_RETRIES
-    prompt = ('Call diagnostic_echo with the supplied value. After receiving its result, call finish with '
-              'status completed and the returned receipt as your message.' if native else
-              'Return exactly one JSON object per turn. First: {"action":{"tool":"diagnostic_echo","arguments":{"value":"VALUE"}}}. '
-              'After its result: {"status":"completed","message":"RECEIPT"}. Use the actual supplied value and returned receipt.')
-    prompt += ' If the diagnostic call is rejected, retry diagnostic_echo once with the same value. Each new test value begins another round.'
+    prompt = ('For each Test value, call diagnostic_echo with that exact value. '
+              'After a successful result, call diagnostic_confirm with receipt equal to the string inside result.receipt. '
+              'Supply the receipt as a string, without an object wrapper. '
+              'If diagnostic_echo is rejected, retry it once with the same value. '
+              'Each new Test value begins another round. When told all rounds are complete, finish completed with any short message.')
     messages = [{'role': 'system', 'content': prompt}]
     client = ModelClient(config, key)
     cancel = threading.Event()
@@ -50,7 +53,7 @@ def check_protocol(config, key='', rounds=1, recovery=False, full_catalog=False)
             client.config = {**client.config, 'request_timeout': min(config['request_timeout'], remaining)}
             requests += 1
             try:
-                response = client.complete(messages, cancel, tools=tools if native else None)
+                response = client.complete(messages, cancel, tools=tools)
             except ProviderError as error:
                 if error.category not in ('cutoff', 'protocol'):
                     raise
@@ -59,7 +62,7 @@ def check_protocol(config, key='', rounds=1, recovery=False, full_catalog=False)
                 reason = error.response.get('protocol_reason') if isinstance(error.response, dict) else None
                 response = ({'content': '', 'provider_error': 'cutoff'} if error.category == 'cutoff' else
                             {'content': '', 'normalization_error': PROTOCOL_HINTS.get(reason,
-                             'Use the supplied tools with valid JSON arguments. Prefer one tool call at a time.')})
+                             'Use the supplied tools with valid arguments. Prefer one tool call at a time.')})
             try:
                 if response.get('provider_error') == 'cutoff':
                     raise ValueError('The response exceeded its output budget. Send a smaller action or patch. '
@@ -98,10 +101,16 @@ def check_protocol(config, key='', rounds=1, recovery=False, full_catalog=False)
             receipt = secrets.token_hex(8)
             messages.append({'role': 'user', 'content': 'ACTION RESULT\n' + json.dumps(
                 {'tool': 'diagnostic_echo', 'ok': True, 'result': {'receipt': receipt}})})
-            second = complete()
-            if second.get('status') != 'completed' or second.get('message') != receipt or 'action' in second:
-                raise ValueError('Expected explicit completion using the actual result')
-            messages.append({'role': 'assistant', 'content': json.dumps(second)})
+            confirmed = complete()
+            if confirmed.get('action') != {'tool': 'diagnostic_confirm', 'arguments': {'receipt': receipt}}:
+                raise ValueError('Expected confirmation of the exact receipt')
+            messages.append({'role': 'assistant', 'content': json.dumps(confirmed)})
+            messages.append({'role': 'user', 'content': 'ACTION RESULT\n' + json.dumps(
+                {'tool': 'diagnostic_confirm', 'ok': True, 'result': {'confirmed': True}})})
+        messages.append({'role': 'user', 'content': 'All rounds are complete. Finish completed with a short message.'})
+        finished = complete()
+        if finished.get('status') != 'completed' or 'action' in finished:
+            raise ValueError('Expected explicit completion')
     except ProviderError:
         raise
     except (ValueError, KeyError, TypeError, AttributeError):
@@ -109,6 +118,7 @@ def check_protocol(config, key='', rounds=1, recovery=False, full_catalog=False)
     return {'passed': True, 'protocol': config['protocol'], 'model': config['model'], 'checked': now(),
             'requests': requests, 'rounds': rounds, 'rejected_call_recovery': recovery,
             'format_repairs': repairs, 'first_pass': repairs == 0, 'response_retries': response_retries,
+            'receipt_check': 'Exact diagnostic_confirm.receipt argument; completion prose is unrestricted.',
             'scope': 'Bounded transport qualification, not a seed-editing or capability benchmark.'}
 
 
@@ -147,8 +157,9 @@ def qualify_profile(config, key='', previous=None):
     profile.update(identity=identity, endpoint_sha256=hashlib.sha256(config['base_url'].encode()).hexdigest(),
                    catalog_sha256=hashlib.sha256(json.dumps(tool_definitions(config['terminal']), sort_keys=True).encode()).hexdigest(),
                    adapter_sha256=hashlib.sha256(Path(__file__).with_name('providers.py').read_bytes()).hexdigest(),
+                   response_format_sha256=hashlib.sha256(Path(__file__).with_name('action_protocol.py').read_bytes()).hexdigest(),
                    qualifier_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-                   qualification_version=2, response_retries=RESPONSE_RETRIES)
+                   qualification_version=3, response_retries=RESPONSE_RETRIES)
     fingerprint = hashlib.sha256(json.dumps(profile, sort_keys=True).encode()).hexdigest()
     known = (config['provider'] == 'ollama' and all(identity.get(name) for name in
              ('engine_version', 'digest', 'template_sha256', 'parameters_sha256')) and

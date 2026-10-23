@@ -113,7 +113,7 @@ class ReliabilityTests(unittest.TestCase):
             server = FakeModelServer(hosted=True, native=protocol == 'native', diagnostic=True)
             try:
                 result = check_protocol({**DEFAULTS, 'provider': 'hosted', 'base_url': server.url, 'protocol': protocol})
-                self.assertTrue(result['passed']); self.assertEqual(len(server.payloads), 2)
+                self.assertTrue(result['passed']); self.assertEqual(len(server.payloads), 3)
             finally:
                 server.close()
         server = FakeModelServer(hosted=True)

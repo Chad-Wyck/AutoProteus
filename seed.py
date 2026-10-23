@@ -12,12 +12,12 @@ def invoke(tool, arguments):
     from pathlib import Path
     import sys
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from autoproteus.providers import tool_definitions, tool_instructions
+    from autoproteus.providers import tool_definitions
     from autoproteus.tools import Workspace
     try:
         definitions = {item['function']['name']: item['function'] for item in tool_definitions(False)}
-        if tool == 'finish' or tool not in definitions or tool + ':' not in tool_instructions(False):
-            raise ValueError('The requested workspace tool must be registered in TOOL_SPECS for both protocols')
+        if tool == 'finish' or tool not in definitions:
+            raise ValueError('The requested workspace tool must be registered in TOOL_SPECS')
         required = definitions[tool]['parameters']['required']
         if not isinstance(arguments, dict) or any(key not in arguments for key in required):
             raise ValueError('Supply a JSON argument object containing the required tool arguments')
@@ -86,16 +86,29 @@ if __name__ == '__main__':
     arguments = parser.add_mutually_exclusive_group()
     arguments.add_argument('--arguments', type=json.loads, help='JSON object for --tool; use a disposable test file')
     arguments.add_argument('--arguments-file', help='Workspace UTF-8 JSON argument object, at most 100000 characters')
+    parser.add_argument('--text-file', nargs=2, action='append', default=[], metavar=('ARGUMENT', 'FILE'),
+                        help='Load one text argument from an ordinary workspace UTF-8 file; repeat for other arguments')
     args = parser.parse_args()
     if args.test is not None and (args.command != 'check' or args.tool):
         parser.error('--test is for focused checks only; use invoke separately or run the full check with --tool')
-    if args.arguments_file:
+    if args.arguments_file or args.text_file:
         from pathlib import Path
         import sys
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         from autoproteus.tools import Workspace
         try:
-            args.arguments = json.loads(Workspace(Path.cwd()).read_text(args.arguments_file))
+            workspace = Workspace(Path.cwd())
+            if args.arguments_file:
+                args.arguments = json.loads(workspace.read_text(args.arguments_file))
+            if args.text_file:
+                if args.arguments is None:
+                    args.arguments = {}
+                if not isinstance(args.arguments, dict):
+                    raise ValueError('Tool arguments must be a JSON object')
+                for name, path in args.text_file:
+                    if name in args.arguments:
+                        raise ValueError('Each text argument must have a unique name and must not replace a supplied argument')
+                    args.arguments[name] = workspace.read_text(path)
         except (ValueError, OSError) as error:
             parser.error(str(error))
     if bool(args.tool) != (args.arguments is not None):
