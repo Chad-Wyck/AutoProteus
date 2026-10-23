@@ -37,6 +37,9 @@ See [the security boundary](../SECURITY.md).
 
 ## Recorded results
 
+[Published regression and VM validation](../VALIDATION.md) includes exact
+revision identities, pass/skip counts, original logs and checksums.
+
 Useful starting points among the published reports:
 
 - [Qwen 9B staged final inputs](seed-v0.3.0-staged-input-findings.md).

@@ -6,7 +6,7 @@ Run a local model, give it a task, and let it work in a private workspace. AutoP
 
 AutoProteus is experimental. Small models can produce useful extensions, but reliable autonomous growth remains an open problem. See the [recorded model studies](evaluations/README.md#recorded-results).
 
-[Download ZIP](https://github.com/Chad-Wyck/AutoProteus/archive/refs/heads/main.zip) · [Release notes](CHANGELOG.md) · [Security](SECURITY.md)
+[Download ZIP](https://github.com/Chad-Wyck/AutoProteus/archive/refs/heads/main.zip) · [Release notes](CHANGELOG.md) · [Security](SECURITY.md) · [License](LICENSING.md) · [Validation](VALIDATION.md)
 
 ## Start
 
