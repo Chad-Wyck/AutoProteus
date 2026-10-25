@@ -41,7 +41,8 @@ def call(path, **kwargs):
 definitions = {item['function']['name']: item['function'] for item in tool_definitions(False)}
 check('registered', lambda: feature in definitions and feature + ':' in tool_instructions(False))
 check('schema', lambda: definitions[feature]['parameters']['properties']['path']['type'] == 'string' and
-      'path' in definitions[feature]['parameters']['required'])
+      set(definitions[feature]['parameters']['required']) == {'path'} and
+      (feature != 'csv_preview' or definitions[feature]['parameters']['properties']['limit']['type'] == 'integer'))
 
 if feature == 'sha256_file':
     for name, raw in [('empty', b''), ('binary', b'\xff\x00\r\n' * 1300), ('exact', b'x' * 1048576)]:

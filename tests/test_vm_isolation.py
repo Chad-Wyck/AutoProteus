@@ -29,6 +29,143 @@ class ScriptedClient:
 
 @unittest.skipUnless(os.environ.get('AUTOPROTEUS_VM_TESTS') == '1', 'Real VM checks require explicit opt in')
 class RealVMTests(unittest.TestCase):
+    def test_default_override_receipt_preserves_tool_data_and_operation_acknowledgement(self):
+        agent = self.agent([
+            {'action': {'tool': 'write_file', 'arguments': {'path': 'input.txt', 'content': 'abc'}}},
+            {'action': {'tool': 'read_section', 'arguments': {'path': 'input.txt', 'length': 1}}},
+            {'status': 'completed'}])
+        session = self.store.create('Read one character.', 'hosted', 'fixture')
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session), 'completed', session['feed'][-3:])
+        row = next(item for item in reversed(session['feed']) if item['kind'] == 'result')
+        self.assertEqual(row['argument_overrides']['length']['supplied'], 1)
+        self.assertEqual(row['result']['content'], 'a')
+        self.assertNotIn('argument_overrides', row['result'])
+        self.assertEqual(session['operation_receipts'][-1]['status'], 'recorded')
+
+    def test_short_guidance_variant_preserves_the_active_phase_imports_in_the_guest(self):
+        import sys
+        sys.path.insert(0, str(ROOT / 'evaluations'))
+        from workflow_variants import variant
+        from controller.evaluation import freeze_source
+        source = freeze_source(self.store, variant(seed_files(ROOT), 'short-guidance'), 'Short guidance fixture')
+        agent = self.agent([
+            {'action': {'tool': 'write_file', 'arguments': {'path': 'result.txt', 'content': 'checked'}}},
+            {'action': {'tool': 'read_file', 'arguments': {'path': 'result.txt'}}},
+            {'status': 'completed'}])
+        session = self.store.create('Write, inspect and finish.', 'hosted', 'fixture')
+        agent.start(session, candidate=source)
+        self.assertEqual(self.wait(agent, session), 'completed', session['feed'][-3:])
+        self.assertEqual(Artifacts(self.store, session).read('result.txt'), b'checked')
+
+    def test_plain_model_reply_reaches_the_user_without_format_repairs_or_completion(self):
+        from controller.providers import ModelClient, model_response
+        reply = "It seems like you're testing the system. Is there a specific task you'd like help with?"
+        class Client(ModelClient):
+            def _complete(client, messages, cancel, progress=None, tools=None, observe=None):
+                self.assertTrue(any(item['function']['name'] == 'finish' for item in tools))
+                return model_response(reply, [], True)
+        agent = IsolatedAgent(ROOT, self.store, self.settings, lambda config: Client(config))
+        self.addCleanup(agent.close)
+        session = self.store.create('Testing', 'ollama', 'fixture')
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session), 'waiting', session['feed'][-3:])
+        self.assertEqual(session['steps'], 0)
+        self.assertIn(reply, [item['text'] for item in session['feed'] if item['kind'] == 'assistant'])
+        self.assertFalse(any('response format was invalid' in item['text'] for item in session['feed']))
+
+    def test_long_human_history_survives_the_actual_broker_without_raising_permissions(self):
+        self.settings.values.update(context_tokens=131072, response_tokens=4096)
+        observed = []
+        class Client:
+            def complete(self, messages, cancel):
+                observed.append(len(messages))
+                return {'content': json.dumps({'status': 'completed', 'message': 'Preserved the instructions.'})}
+        agent = IsolatedAgent(ROOT, self.store, self.settings, lambda _: Client())
+        self.addCleanup(agent.close)
+        session = self.store.create('Keep all the human instructions.', 'demo', 'fixture')
+        session['messages'] = [{'role': 'user', 'origin': 'human', 'content': 'Instruction ' + str(i)} for i in range(402)]
+        self.store.save(session)
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session), 'completed', session['feed'][-3:])
+        self.assertGreater(max(observed), 400)
+        self.assertLessEqual(max(observed), 2048)
+
+    @unittest.skipUnless(os.environ.get('AUTOPROTEUS_WEB_TESTS') == '1', 'Live public-web probe requires explicit opt in')
+    def test_public_https_download_inside_real_vm(self):
+        self.settings.values['internet'] = True
+        agent = self.agent([
+            {'action': {'tool': 'web_request', 'arguments': {'url': 'https://example.com/', 'path': 'research/example.html'}}},
+            {'action': {'tool': 'read_file', 'arguments': {'path': 'research/example.html'}}},
+            {'status': 'completed', 'message': 'Downloaded and inspected the public page.'},
+        ])
+        session = self.store.create('Fetch and inspect the public example page.', 'hosted', 'fixture')
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session), 'completed', session['feed'][-3:])
+        data = Artifacts(self.store, session).read('research/example.html')
+        self.assertIn(b'Example Domain', data)
+        results = [item for item in session['messages'] if item.get('origin') == 'tool']
+        self.assertTrue(all(json.loads(item['content'].split('\n', 1)[1])['ok'] for item in results))
+
+    def test_web_bridge_survives_activation_and_keeps_host_permissions(self):
+        self.settings.values['internet'] = True
+        from unittest.mock import Mock
+        from controller.web_access import resolve
+        payload = b'Public fixture bytes\x00\xff'
+        connection = Mock(sock=None)
+        def reply():
+            result = Mock(status=200)
+            result.getheaders.return_value = [('Content-Type', 'application/octet-stream')]
+            result.getheader.return_value = None
+            result.read1.side_effect = [payload, b'']
+            return result
+        connection.getresponse.side_effect = reply
+        phases = [
+            [{'action': {'tool': 'web_request', 'arguments': {'url': 'https://example.com/input', 'path': 'download.bin'}}},
+             {'action': {'tool': 'run_command', 'arguments': {'command': 'python3 harness/examples/test_web_extension.py'}}},
+             {'action': {'tool': 'edit_file', 'arguments': {'path': 'harness/autoproteus/tools.py',
+                'old_text': '        if tool == "list_files":',
+                'new_text': '        if tool == "web_copy":\n            return self.execute("web_request", args)\n        if tool == "list_files":'}}},
+             {'action': {'tool': 'edit_file', 'arguments': {'path': 'harness/autoproteus/providers.py',
+                'old_text': '    "finish": (',
+                'new_text': '    "web_copy": ("Save a public URL", {"url": STRING, "path": STRING}, ["url", "path"]),\n    "finish": ('}}},
+             {'status': 'needs_input', 'message': 'Activate the reusable web tool.'}],
+            [{'action': {'tool': 'web_copy', 'arguments': {'url': 'https://example.com/second', 'path': 'second.bin'}}},
+             {'action': {'tool': 'web_request', 'arguments': {'url': 'https://127.0.0.1/', 'path': 'private.bin'}}},
+             {'status': 'completed', 'message': 'Copied public bytes; private access is blocked.'}],
+            [{'action': {'tool': 'web_copy', 'arguments': {'url': 'https://example.com/third', 'path': 'disabled.bin'}}},
+             {'status': 'completed', 'message': 'The host has disabled web access.'}],
+        ]
+        clients = []
+        def factory(config):
+            client = ScriptedClient(phases[len(clients)])
+            clients.append(client)
+            return client
+        agent = IsolatedAgent(ROOT, self.store, self.settings, factory)
+        self.agents.append(agent)
+        session = self.store.create('Download public files, extend the tool, and preserve host restrictions.', 'hosted', 'fixture')
+        with patch('controller.web_access.resolve', side_effect=lambda host, port: ['1.1.1.1'] if host == 'example.com' else resolve(host, port)), \
+                patch('controller.web_access.http.client.HTTPSConnection', return_value=connection):
+            agent.start(session)
+            self.assertEqual(self.wait(agent, session), 'waiting', session['feed'][-3:])
+            self.assertEqual(Artifacts(self.store, session).read('download.bin'), payload)
+            results = [json.loads(item['content'].split('\n', 1)[1]) for item in session['messages']
+                       if item.get('origin') == 'tool']
+            command = next(item for item in results if item['tool'] == 'run_command')
+            self.assertTrue(command['ok'], command)
+            self.assertEqual(command['result']['exit_code'], 0, command)
+            agent.restart_seed(session, handoff='concise')
+            self.assertEqual(self.wait(agent, session), 'completed', session['feed'][-3:])
+            self.assertEqual(Artifacts(self.store, session).read('second.bin'), payload)
+            self.assertNotIn('private.bin', session.get('artifacts', {}))
+            self.assertIn('reserved network', json.dumps(session))
+            self.settings.values['internet'] = False
+            agent.start(session)
+            self.assertEqual(self.wait(agent, session), 'completed', session['feed'][-3:])
+            self.assertNotIn('disabled.bin', session.get('artifacts', {}))
+            self.assertIn('Internet access is disabled', json.dumps(session))
+        self.assertEqual(connection.request.call_count, 2)
+
     def test_static_context_refresh_and_capability_observations_are_source_bound(self):
         from controller.evaluation import run_task, freeze_source, source_identity, candidate_source
         from controller.capabilities import capability_progress
@@ -70,8 +207,12 @@ Path('packet-result.json').write_text(json.dumps({'passed': True, 'stale': after
 
     def test_concise_activation_preserves_humans_files_journal_and_new_results(self):
         prompts = [[], [], []]
+        plan = '[ ] Preserve the original input; check the public default.\n[ ] Run development/verify_task.py.'
+        verifier = 'from pathlib import Path\nassert Path("old.txt").read_bytes() == b"keep"\n'
         phases = [
             [{'message': 'OLD DEVELOPMENT EXPLANATION', 'action': {'tool': 'write_file', 'arguments': {'path': 'old.txt', 'content': 'keep'}}},
+             {'action': {'tool': 'write_file', 'arguments': {'path': 'todo.txt', 'content': plan}}},
+             {'action': {'tool': 'write_file', 'arguments': {'path': 'development/verify_task.py', 'content': verifier}}},
              {'status': 'needs_input'}],
             [{'action': {'tool': 'write_file', 'arguments': {'path': 'new.txt', 'content': 'new result'}}}, {'status': 'completed'}],
             [{'status': 'completed'}]]
@@ -104,13 +245,23 @@ Path('packet-result.json').write_text(json.dumps({'passed': True, 'stale': after
             for expected in (task, 'Keep this human correction.', 'Preserve this legacy user constraint.'):
                 self.assertIn(expected, content)
             self.assertNotIn('OLD DEVELOPMENT EXPLANATION', content)
-            self.assertTrue(prompt[-1]['content'].startswith('CURRENT ACTIVATION STATE\nRunning seed bundle SHA-256:'))
-            self.assertIn('earlier activation request is fulfilled', prompt[-1]['content'])
-        phase = prompts[1][0][-1]
-        self.assertEqual(phase, prompts[1][-1][-1])
+            states = [item for item in prompt if item['content'].startswith('CURRENT ACTIVATION STATE\nRunning seed bundle SHA-256:')]
+            self.assertEqual(len(states), 1)
+            self.assertIn('earlier activation request is fulfilled', states[0]['content'])
+            self.assertIn('The edited seed is active.', prompt[0]['content'])
+        initial_context = '\n'.join(item['content'] for item in prompts[1][0])
+        later_context = '\n'.join(item['content'] for item in prompts[1][-1])
+        self.assertIn(plan, initial_context)
+        self.assertIn('Remaining final-task plan after activation', initial_context)
+        self.assertIn('model-written todo.txt; human requirements and corrections take precedence', initial_context)
+        self.assertNotIn(plan, later_context)
+        phase = next(item for item in prompts[1][0] if item['content'].startswith('CURRENT ACTIVATION STATE'))
+        self.assertIn(phase, prompts[1][-1])
+        self.assertTrue(prompts[1][-1][-1]['content'].startswith('ACTION RESULT\n'))
         self.assertFalse(any(item['content'].startswith('CURRENT ACTIVATION STATE') for item in prompts[0][0]))
         self.assertIn('new result', '\n'.join(item['content'] for item in prompts[1][-1]))
         self.assertEqual(Artifacts(self.store, session).read('old.txt'), b'keep')
+        self.assertEqual(Artifacts(self.store, session).read('development/verify_task.py'), verifier.encode())
         self.assertTrue(any('OLD DEVELOPMENT EXPLANATION' in item['content'] for item in session['messages']))
         events = (self.store.directory(session['id']) / 'events.jsonl').read_text(encoding='utf-8')
         self.assertIn('OLD DEVELOPMENT EXPLANATION', events)
@@ -119,7 +270,7 @@ Path('packet-result.json').write_text(json.dumps({'passed': True, 'stale': after
         agent.start(session)
         self.assertEqual(self.wait(agent, session), 'completed')
         self.assertIn('OLD DEVELOPMENT EXPLANATION', '\n'.join(item['content'] for item in prompts[2][0]))
-        self.assertEqual(prompts[2][0][-1], phase)
+        self.assertIn(phase, prompts[2][0])
 
     def test_protocol_repairs_are_bounded_and_rejected_calls_never_execute(self):
         from controller.providers import ProviderError

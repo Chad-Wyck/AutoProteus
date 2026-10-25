@@ -24,6 +24,7 @@ from .providers import DemoClient, ModelClient, ProviderError, ERROR_MESSAGES, P
 from .storage import atomic_json
 from .interactions import Inputs, Operations
 from .inference_history import attach_history
+from .web_access import WebAccess
 
 MAX_JOURNAL = 64 * 1024 * 1024
 MAX_SECONDS = 3600
@@ -138,6 +139,7 @@ class Broker:
         self.last_status = 'running'
         self.activation_context, self.context_config = activation_context, config
         self.inputs, self.operations = Inputs(store, session), Operations(store, session)
+        self.web = WebAccess(config.get('internet', False), cancel)
         # Snapshot before accepting guest state. The seed's neutral transport
         # intentionally omits origin; recover it here, never as provider fields
         # or as authority to change host policy. Include legacy human records.
@@ -172,13 +174,22 @@ class Broker:
         if self.frames > 10000:
             raise IsolationError('Guest message quota exceeded')
         op = frame.get('op')
+        if op == 'web' and set(frame) == {'op', 'request'}:
+            result = self.web.request(frame['request'])
+            # No request headers, bodies or credentials enter this host receipt.
+            self.store.event(self.session, 'host_web_request', {
+                'request_index': self.web.requests, 'status': result.get('status'),
+                'bytes': result.get('bytes', 0), 'error': result.get('error')})
+            return result
         if op == 'inputs' and set(frame) == {'op', 'mode'} and frame['mode'] in ('steer', 'finish'):
             messages = self.inputs.offer(frame['mode'])
             self.human_texts.update(item['content'] for item in messages)
             return messages
         if op == 'infer' and set(frame) in ({'op', 'messages'}, {'op', 'messages', 'tools'}):
             messages = frame['messages']
-            if (not isinstance(messages, list) or not 1 <= len(messages) <= 400 or
+            if isinstance(messages, list) and len(messages) > 2048:
+                raise IsolationError('Model request exceeds the 2048-message limit')
+            if (not isinstance(messages, list) or not 1 <= len(messages) <= 2048 or
                     any(not isinstance(m, dict) or set(m) != {'role', 'content'} or
                         m['role'] not in ('system', 'user', 'assistant') or not isinstance(m['content'], str)
                         for m in messages) or len(json.dumps(messages).encode()) > 1500000):
@@ -198,11 +209,14 @@ class Broker:
                 if self.session.get('active_seed', {}).get('source_sha256') != selected['source_sha256']:
                     self.session['active_seed'] = {**selected, 'direct': [], 'development': []}
                 self.store.save(self.session)
-            if self.activation_context and messages[-1] != {'role': 'user', 'content': self.activation_context}:
-                extended = messages + [{'role': 'user', 'content': self.activation_context}]
+            if self.activation_context and not any(m['content'] == self.activation_context for m in messages):
+                # Older seeds may omit the state. Insert it before task history,
+                # leaving the newest actual result at the end of the request.
+                index = next((i for i, m in enumerate(messages) if m['role'] != 'system'), len(messages))
+                extended = messages[:index] + [{'role': 'user', 'content': self.activation_context}] + messages[index:]
                 try:
                     validate_context(extended, tools, self.context_config)
-                    fits = len(extended) <= 400 and len(json.dumps(extended).encode()) <= 1500000
+                    fits = len(extended) <= 2048 and len(json.dumps(extended).encode()) <= 1500000
                 except ProviderError:
                     fits = False
                 if fits:
@@ -423,6 +437,7 @@ class IsolatedAgent:
         deadline = time.monotonic() + MAX_SECONDS
         if run_deadline is not None:
             deadline = min(deadline, run_deadline)
+        broker.web.deadline = deadline
         try:
             lease = VMLease(self.appliance.directory)
             lease.acquire(cancel, deadline)

@@ -1,0 +1,235 @@
+{
+  "date": "2026-10-24",
+  "primary": {
+    "model_trials": 1,
+    "strict_completed_workflows": 0,
+    "independent_verification": "not_run: invalid handoff submission",
+    "activation": false,
+    "reason": [
+      "Declaration saved in development/ instead of the requested root path",
+      "Role placeholders used as argument keys instead of argument values"
+    ]
+  },
+  "raw_attempt": {
+    "started": "2026-10-24T21:55:23.689789+00:00",
+    "activated": false,
+    "inference_identity": {
+      "provider": "hosted",
+      "model": "qwen35-9b-q6_k"
+    },
+    "run": {
+      "task": "discover-stock-reconciliation",
+      "session": "4a3c880bdb604d899073b1c7ada7b61e",
+      "status": "waiting",
+      "execution_mode": "vm",
+      "isolated": true,
+      "passed": false,
+      "checks": [],
+      "steps": 26,
+      "seconds": 467.48,
+      "model_requests": 27,
+      "timed_out": false,
+      "format_repairs": 0,
+      "action_errors": 2,
+      "read_actions": 10,
+      "repeated_reads": 0,
+      "interrupted": false,
+      "failure_kind": null,
+      "detail": "Waiting for your reply"
+    },
+    "error": "ValueError: File not found",
+    "finished": "2026-10-24T22:03:11.324720+00:00",
+    "token_budget": {
+      "limit": 65536,
+      "charged_output_tokens": 4331,
+      "reported_output_tokens": 4331,
+      "unmeasured_sent_calls": 0,
+      "usage_complete": true,
+      "exhausted": false
+    },
+    "calls": {
+      "calls": 27,
+      "wire_requests": 27,
+      "trace_complete": true,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 255795,
+          "measured_calls": 27,
+          "expected_calls": 27,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 4331,
+          "measured_calls": 27,
+          "expected_calls": 27,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 455.927,
+          "measured_calls": 27,
+          "expected_calls": 27,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 455.878,
+          "measured_calls": 27,
+          "expected_calls": 27,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "trace_read_errors": 0,
+      "finished_calls": 27,
+      "transport_finished_calls": 27,
+      "provider_responses": 27,
+      "statuses": {
+        "returned": 27
+      },
+      "error_categories": {},
+      "token_usage_measured_calls": 27,
+      "output_token_usage_measured_calls": 27,
+      "input_tokens": 255795,
+      "output_tokens": 4331,
+      "call_seconds": 455.927,
+      "transport_seconds": 455.878,
+      "host_history_omissions": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "capture": {
+      "records": 135,
+      "bytes": 1222362,
+      "dropped": 0,
+      "error": null,
+      "complete": true,
+      "observer_failed": false
+    }
+  },
+  "raw_attempt_sha256": "151fa1b0a1f044626f4566ffe409e519a050eb668c4b099eb8196616de74e1a3",
+  "posthoc_diagnostic": {
+    "started": "2026-10-25T00:25:51.556860+00:00",
+    "source_sha256": "c71b75d2d5dbb745aa3b5b69c2db1ca7a171b219b9dfe6249fa3e2b584e6f2f5",
+    "original_result_sha256": "151fa1b0a1f044626f4566ffe409e519a050eb668c4b099eb8196616de74e1a3",
+    "original_declaration": {
+      "tool": "combine_stock_files",
+      "arguments": {
+        "@INPUT_A": "shops/east.tsv",
+        "@INPUT_B": "shops/west.tsv",
+        "@OUTPUT": "summary.json"
+      }
+    },
+    "model_authored_invocation_arguments": {
+      "input_a": "shops/east.tsv",
+      "input_b": "shops/west.tsv",
+      "output": "summary.json"
+    },
+    "operator_selected_diagnostic_template": {
+      "tool": "combine_stock_files",
+      "arguments": {
+        "input_a": "@INPUT_A",
+        "input_b": "@INPUT_B",
+        "output": "@OUTPUT"
+      }
+    },
+    "intervention": "Operator matched the model-authored invocation argument values to the model-authored role mapping. No model call or candidate code edit.",
+    "scope": "Posthoc scripted functional check only. No original upgrade acceptance, activation, final-use or completed-workflow credit.",
+    "finished": "2026-10-25T00:25:58.433200+00:00",
+    "result": {
+      "passed": true,
+      "probe": {
+        "passed": true,
+        "checks": {
+          "registered": true,
+          "declared_arguments": true,
+          "case_0": true,
+          "preserved_0": true,
+          "case_1": true,
+          "preserved_1": true,
+          "case_2": true,
+          "preserved_2": true
+        }
+      },
+      "run": {
+        "task": "independent-discovery",
+        "session": "071ac320f3fa40619211e68e6fd0da41",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [
+          {
+            "path": "discovery-result.json",
+            "passed": true
+          }
+        ],
+        "steps": 1,
+        "seconds": 6.78,
+        "model_requests": 2,
+        "timed_out": false,
+        "format_repairs": 0,
+        "action_errors": 0,
+        "read_actions": 0,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      }
+    },
+    "source_unchanged": true
+  },
+  "posthoc_source_policy": {
+    "source_sha256": "c71b75d2d5dbb745aa3b5b69c2db1ca7a171b219b9dfe6249fa3e2b584e6f2f5",
+    "changed_files": [
+      "autoproteus/providers.py",
+      "autoproteus/tools.py",
+      "tests/test_combine_stock_files.py"
+    ],
+    "new_test_files": [
+      "tests/test_combine_stock_files.py"
+    ],
+    "runtime_changed": true,
+    "protected_unchanged": true,
+    "allowed_files_only": true,
+    "unexpected_files": [],
+    "protected_changes": [],
+    "documentation_updated": false
+  },
+  "model_code_changed_by_operator": false,
+  "additional_model_requests": 0,
+  "scope": "Diagnostic argument selection is an operator intervention; it grants no original workflow or activation credit.",
+  "cleanup": {
+    "finished": "2026-10-24T22:03:12.403262+00:00",
+    "server_stopped": true
+  },
+  "evidence": "D:\\AI_New\\AP\\.data\\discovery-v090-20261024-r4",
+  "visible_sample_artifact_verified": true
+}

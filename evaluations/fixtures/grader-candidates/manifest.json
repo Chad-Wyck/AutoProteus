@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "purpose": "Real model-written grader regression fixtures. Parse as data on host; import/execute only inside disposable VMs.",
+  "cases": [
+    {
+      "id": "qwen-optional-path-required",
+      "feature": "inventory_files",
+      "expected_pass": false,
+      "required_failed_checks": [
+        "optional_argument_schema"
+      ],
+      "file": "qwen-optional-path-required.json.gz",
+      "gzip_sha256": "f17c2fc98ada3a30812f12d5a435a396cbb347a3a024a6cbf029864a76688730",
+      "source_sha256": "753f3f36cba7e516f8ccbb4b892bb1a2977a5d19fe47471a21d675415988c438",
+      "original_evidence": ".data/guidance-comparison-v082-60m-20261023/live/trials/qwen35-9b-q6_task1_baseline/attempt-001/review/candidate-source.json",
+      "origin": "Unmodified model-written closed-study candidate, Qwen3.5 9B Q6; no operator repair."
+    },
+    {
+      "id": "qwen-missing-file-cap",
+      "feature": "inventory_files",
+      "expected_pass": false,
+      "required_failed_checks": [
+        "over_200"
+      ],
+      "file": "qwen-missing-file-cap.json.gz",
+      "gzip_sha256": "951a6091d03f4cebc4d199e3b2ec68bd620001ff791010c66dd2941fd501b820",
+      "source_sha256": "8e5fc68524fea3f59edaf97af18c445fb4308e179ef7a298c8960146810f5ece",
+      "original_evidence": ".data/guidance-comparison-v082-60m-20261023/live/trials/qwen35-9b-q6_task2_baseline/attempt-001/review/candidate-source.json",
+      "origin": "Unmodified model-written closed-study candidate, Qwen3.5 9B Q6; no operator repair."
+    },
+    {
+      "id": "qwen-nonboolean-recursion",
+      "feature": "inventory_files",
+      "expected_pass": false,
+      "required_failed_checks": [
+        "invalid_recursion_0"
+      ],
+      "file": "qwen-nonboolean-recursion.json.gz",
+      "gzip_sha256": "4eb87ccbbbd6b8e107f4bd66484d21673ff5a525d620cb5ad638ea4ebb2e4068",
+      "source_sha256": "2f59a1f68647a3f04ec8e8802a4f68c0008b34e1ef3149b043073298ac868324",
+      "original_evidence": ".data/guidance-comparison-v082-60m-20261023/live/trials/qwen35-9b-q6_task1_short-guidance/attempt-001/review/candidate-source.json",
+      "origin": "Unmodified model-written closed-study candidate, Qwen3.5 9B Q6; no operator repair."
+    },
+    {
+      "id": "qwen-verified-inventory",
+      "feature": "inventory_files",
+      "expected_pass": true,
+      "required_failed_checks": [],
+      "file": "qwen-verified-inventory.json.gz",
+      "gzip_sha256": "7451683ff8800edfa0593ba1e543f8669d7e30ac730900740d55aaa9b796eda4",
+      "source_sha256": "7cf48b6806227bdd943f0d261e21417e94bca078a46c1c38ba14bf27387e4f10",
+      "original_evidence": ".data/guidance-comparison-v082-60m-recovery-20261023/live/trials/qwen35-9b-q6_task2_baseline/attempt-001/review/candidate-source.json",
+      "origin": "Unmodified model-written closed-study candidate, Qwen3.5 9B Q6; no operator repair."
+    }
+  ]
+}

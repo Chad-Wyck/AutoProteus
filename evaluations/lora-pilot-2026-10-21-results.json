@@ -1,0 +1,2689 @@
+{
+  "created": "2026-10-21T17:32:20.494850+00:00",
+  "commit": "4d3c8f3707fc69754a86dbf580528798f831c718",
+  "scope": "12 directed second-extension attempts, no autonomous first-upgrade credit. Fresh disabled-adapter controls share runtime, quantization and loaded adapter memory. Historical base results remain separate.",
+  "source_sha256": "870a6b523a5d771cc931eca8b7a343e35d27a92aa35943cfcccf6a0d4f6dc304",
+  "parent_sha256": "ad5fbe47ceede347406880a6378ee008d970e92b5481ab5ca5e17078c62fde33",
+  "training": {
+    "status": "three_complete_passes_verified",
+    "scope": "Training execution and teacher-forced validation; task outcomes reported separately",
+    "plan_sha256": "67ccf5b56340951f51aca67f89cf7b3335f8e3f1d153f79dc4c312e516a455d7",
+    "model_lock_sha256": "92a5255773d771458e5fd4fe36176f01b81529dd88b7a7b61726e4de9dfd5797",
+    "training_examples": 98,
+    "validation_examples": 18,
+    "complete_passes": 3,
+    "updates": 294,
+    "fresh_adapter": true,
+    "every_training_example_used_exactly_three_times": true,
+    "order_matches_frozen_plan": true,
+    "operator_interventions_during_training": 0,
+    "training_interruptions": 0,
+    "packages": {
+      "torch": "2.6.0+cu124",
+      "transformers": "5.20.2",
+      "peft": "0.21.2",
+      "bitsandbytes": "0.50.2",
+      "accelerate": "1.15.0",
+      "safetensors": "0.8.0"
+    },
+    "configuration": {
+      "rank": 8,
+      "alpha": 16,
+      "learning_rate": 5e-05,
+      "batch": 1,
+      "gradient_checkpointing": true,
+      "nf4_compute": "float32",
+      "frozen_vocab": "float16",
+      "normalization": "float32",
+      "loss": "Only supervised target positions; full untruncated context retained",
+      "loss_scale_initial": 1,
+      "gradient_scaler_enabled": false,
+      "gradient_clip": 1.0,
+      "cpu_offload": "Frozen input embedding only",
+      "cpu_input_embedding": true,
+      "allocator_policy": "Release unused cache after every update; include cost in step timing; preserve peak statistics",
+      "first_adapter_layer": null,
+      "adapter_scope": "All 32 text decoder layers; same projection types, rank 8",
+      "warmup_steps": 10,
+      "schedule": "Linear warmup for ten updates, then linear decay to 10% of peak at update 294",
+      "epoch_count": 3,
+      "fresh_adapter": true
+    },
+    "seconds": 4604.25,
+    "load_seconds": 55.219,
+    "training_update_seconds": {
+      "minimum": 11.75,
+      "maximum": 19.641,
+      "mean": 14.457897959183674,
+      "median": 13.922,
+      "sum": 4250.622
+    },
+    "evaluations": [
+      {
+        "label": "untrained-base",
+        "examples": 18,
+        "supervised_tokens": 1156,
+        "token_weighted_loss": 0.22113831493774733,
+        "mean_example_loss": 0.16611201559296912,
+        "teacher_forced_token_accuracy": 0.9273356401384083,
+        "seconds": 65.86
+      },
+      {
+        "label": "epoch-1",
+        "examples": 18,
+        "supervised_tokens": 1156,
+        "token_weighted_loss": 0.18343923372521861,
+        "mean_example_loss": 0.1324582564152984,
+        "teacher_forced_token_accuracy": 0.9342560553633218,
+        "seconds": 69.968
+      },
+      {
+        "label": "epoch-2",
+        "examples": 18,
+        "supervised_tokens": 1156,
+        "token_weighted_loss": 0.17730625878872872,
+        "mean_example_loss": 0.12868314523560306,
+        "teacher_forced_token_accuracy": 0.9359861591695502,
+        "seconds": 70.031
+      },
+      {
+        "label": "epoch-3",
+        "examples": 18,
+        "supervised_tokens": 1156,
+        "token_weighted_loss": 0.18102869424674092,
+        "mean_example_loss": 0.13134785066358745,
+        "teacher_forced_token_accuracy": 0.9377162629757786,
+        "seconds": 69.578
+      }
+    ],
+    "selected": {
+      "best_epoch": 2,
+      "best_validation_loss": 0.17730625878872872,
+      "baseline_validation_loss": 0.22113831493774733,
+      "best_adapter": "E:\\AutoProteus-training\\lora-pilot-20261020\\training\\20261021T094702Z\\epoch-2",
+      "eligible_for_deployment": true,
+      "relative_validation_loss_reduction": 0.19821104344291385
+    },
+    "checkpoints": [
+      {
+        "epoch": 1,
+        "path": "E:\\AutoProteus-training\\lora-pilot-20261020\\training\\20261021T094702Z\\epoch-1",
+        "adapter_sha256": "bfd0a45aabd8eee15ca030c479f8c6ec4ec6ca7f67d6834cfcb5261e58e7a13e",
+        "validation_loss": 0.18343923372521861,
+        "bytes": 86630872
+      },
+      {
+        "epoch": 2,
+        "path": "E:\\AutoProteus-training\\lora-pilot-20261020\\training\\20261021T094702Z\\epoch-2",
+        "adapter_sha256": "0f84b2f137afbdd9f3edd74b3883a91ca52a5b25d18458a4a14338b882a7123b",
+        "validation_loss": 0.17730625878872872,
+        "bytes": 86630872
+      },
+      {
+        "epoch": 3,
+        "path": "E:\\AutoProteus-training\\lora-pilot-20261020\\training\\20261021T094702Z\\epoch-3",
+        "adapter_sha256": "39a08ac1e169174e34eb76d7f195cc1ab625d4c4b8874ddca59cae2ff61b5f1d",
+        "validation_loss": 0.18102869424674092,
+        "bytes": 86630872
+      }
+    ],
+    "memory": {
+      "cuda_update_peak_allocated_mib": 8351.9,
+      "minimum_poststep_gpu_free_mib": 1853.43,
+      "sampled_peak_dedicated_gib": 8.68117904663086,
+      "sampled_peak_shared_mib": 66.0,
+      "minimum_sampled_host_free_gib": 11.583824157714844,
+      "sample_count": 452,
+      "sampling_seconds": 10,
+      "includes_explicit_cpu_embedding": true
+    },
+    "disk_free_percent_at_training_end": {
+      "D:": 10.896595916028327,
+      "E:": 17.593456538755515
+    }
+  },
+  "selected_export": {
+    "path": "E:\\AutoProteus-training\\lora-pilot-20261020\\training\\20261021T094702Z\\selected-adapter-f32.gguf",
+    "bytes": 86591264,
+    "sha256": "630294da6ec5bec2b0e78a1e3ce5ccdf60d59d2a29211838b73d917ad3bd1444",
+    "adapter_checkpoint": {
+      "epoch": 2,
+      "path": "E:\\AutoProteus-training\\lora-pilot-20261020\\training\\20261021T094702Z\\epoch-2",
+      "adapter_sha256": "0f84b2f137afbdd9f3edd74b3883a91ca52a5b25d18458a4a14338b882a7123b",
+      "validation_loss": 0.17730625878872872
+    },
+    "merge_required": false
+  },
+  "model": {
+    "id": "qwen35-9b-q6_k",
+    "family": "qwen35-9b",
+    "repo": "bartowski/Qwen_Qwen3.5-9B-GGUF",
+    "revision": "182be2fd6c7bc44887d88a91cb03ff009cc9f549",
+    "file": "Qwen_Qwen3.5-9B-Q6_K.gguf",
+    "expected_bytes": 7958818848,
+    "sha256": "073a9275e65d9c8cd2819cf5f77b99fbaa6e87ba591da6bbaa86ec073a64bfef",
+    "quantization": "Q6_K",
+    "path": "D:\\AI_New\\AP\\.data\\models\\gguf\\Qwen_Qwen3.5-9B-Q6_K.gguf",
+    "url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-9B-GGUF/resolve/182be2fd6c7bc44887d88a91cb03ff009cc9f549/Qwen_Qwen3.5-9B-Q6_K.gguf",
+    "staged": true,
+    "previous_removed_staging_path": "D:\\AI_New\\AP\\.data\\overnight-v020-20261019\\staged-weights\\qwen35-9b\\Qwen_Qwen3.5-9B-Q6_K.gguf"
+  },
+  "configuration": {
+    "configured": true,
+    "provider": "hosted",
+    "base_url": "http://127.0.0.1:47841/v1",
+    "model": "qwen35-9b-q6_k",
+    "protocol": "native",
+    "context_tokens": 131072,
+    "response_tokens": 4096,
+    "temperature": 0.6,
+    "thinking": false,
+    "max_steps": 128,
+    "request_timeout": 600,
+    "command_timeout": 60,
+    "terminal": true,
+    "json_mode": false
+  },
+  "runtime": {
+    "name": "PrismML prism-b10777-e3de715 CUDA12.4",
+    "assets_sha256": {
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-base.dll": "4b8dea6fc4083032304d4f9c4f698a3228195fda366d14d6b50f263b49449473",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-alderlake.dll": "9c00390ab75ea711d44cd97bf3ddf4b3ac12b47c92c7e979d5d694c626dd2118",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-cannonlake.dll": "1e26e50e52233db4eb3f3a6f710e3cdecd20068cac426b5c3900f05f1c53ac15",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-cascadelake.dll": "b0b2ffd364c9df0ad4da428fd21f6c4d09fe5aeca9196e32fb0c96d54aae0978",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-haswell.dll": "c32c97271fc9bc19c3df1fb22489325eaae88f9e64ca9ae7b904414f970229c6",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-icelake.dll": "c7dc3ae0bfa1470a9ef1ce1659b2ba6675dca4ec38912c9ef6e44dbac49febb3",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-sandybridge.dll": "95dcc72b4bffc52eed6d6f9980a080cf3da9c6a98b217ead586b2c9fdec1bf6b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-skylakex.dll": "56ddcf8ca415d3861a55c4df8fdf1d425c6d53f4bfc9c278a006481519f57d14",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-sse42.dll": "9a6605b9bb1b90054d829425c4616887f0094135615c9c9f41742e994b4c06e7",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-ssse3.dll": "f721d32210c313cf938eabdd3bc7d717e390f18e4d1e3e3b5340062d822223c8",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cpu-x64.dll": "90a60c7c1ae2b5131dd2629a5929b1cd38466a0fc8bf71fce8d7a44c8995d71f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-cuda.dll": "385ccf238798fb885ceca6d284b0368d244f92a3dd4be21d8300b3f3401a0c27",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-rpc-server.exe": "11b0c26f0b7635dac627c25ca7aca858bfc4ef1580fe685342bd911958e4f5e5",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml-rpc.dll": "cb65808a2834bc8d5abf4b478b742e275b3ae606c1f1d2ff97e4275478be5b59",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\ggml.dll": "407b6660136284bdbf13288c0b7a41d41ec6c90347ca80bffa29547c3e3edacc",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-batched-bench-impl.dll": "55407cea234f3c2ab6c7a5a37b3919e06a674de20339338d519c9a1d8fe465fe",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-batched-bench.exe": "744947e28b0d5d09d12c43e6ebb521a6d3a070d376b3a043fb1b8a960331b21d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-batched.exe": "f2d27f4957a3cad49d22d264bc2c38cdbe927541e9b0b9dc646c4899776753f6",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-bench-impl.dll": "a56f9991cfb3b1642d046b60a79376d31bb9fa7d09967df2f9cb80888b2a8070",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-bench.exe": "b5d123a14d14d2f72d1a91bbd495045bcea8ed4ea23036ce38785e3259bf51f0",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-cli-impl.dll": "e5e6e485983a44b7c33868c7bd7ab64227c9dee5ff8c21bbe8ea4e873654cb26",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-cli.exe": "8a2789d277ed9005b9cc528d3add48389e1dec68db235d65d9f6937fd5413885",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-common.dll": "8a575f0d66d0f3a774d26776cfe1cea9ee38ac55b1fdc1506d79881bf45f812b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-completion-impl.dll": "0a07fe66584ba63da12b3100daa6f33b9b6e544bdc7ba2bb4f47637190f3df74",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-completion.exe": "9bfc8ac145537b5fc2fce4d253a61e6b7281f0d9fb1c931451ddb27efb69609f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-debug.exe": "53ca92eeaae8ba9156ca6201b09e8d033733d6904a9548d6462270e16169952e",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-diffusion-cli.exe": "71b9685ffe69412cf8c0e62d496de3b409ef043511b46106d891b8f681f90a6b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-embedding.exe": "e7845976777a5d718214c2c0758a43a124c02f3de18c14eed940c40f267e0f50",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-eval-callback.exe": "8f8847263757648faf80c9a6d17d238e9861af9fbc212fd8d603e5107e1b641d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-finetune.exe": "631f8a0d9ac4a427074fcb075b488b44c179eed0adf78a39691208950381cbcc",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-fit-params-impl.dll": "fc32b33b1c0d71e16c3dd71c0fc37ec6ea4b4b71a1fe27ba6c936d09d5b48a6b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-fit-params.exe": "2629e7cd005f0612a330724f55ec4ed2a4d710b56c877f2d5cd383d095ce0b9e",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gemma3-cli.exe": "5f338aeb6f3e0acb6201c1be508ef597cafbff845f9ed7aa5c3db8deeea8f995",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gen-docs.exe": "ff5c462c7d9fc3a08b532f77c844c800c56198eb717a5a0bb01675631154a8bb",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gguf-hash.exe": "6d362d6cce991e454cf5344835a6aed102ae8512de62e6215c57b9643e1495a7",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gguf-split.exe": "ae66afaea8a036210e1631ede277b178891dc0b13692489fb9873e7d00404138",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-gguf.exe": "57166ce495af2b01d7635f0c629d088ce1a1ac743de0884b7de62d4467f2039f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-idle.exe": "ba995103500564a627899c374f9699c9a1a9478693c0eaff2c185ab859203f9d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-imatrix.exe": "bc96b8534d1562afb74f572dc4ee986537001295064c640c31b9bbbd34d2cecb",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-kv-mean-center.exe": "4cf96d5171a76e0f1aac0d9abbc01cc2c5568a4c0aa23bdfab64c241982775f4",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-llava-cli.exe": "5f338aeb6f3e0acb6201c1be508ef597cafbff845f9ed7aa5c3db8deeea8f995",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookahead.exe": "67d75e12ef16c03dbb2b7c11a85118d208c34ffab117f5851b47280edc3c1572",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookup-create.exe": "40d18a7e10ebbd795c2bb3d2dd381f760e1c87ffbde7b2023ad196cc8aa23f12",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookup-merge.exe": "cb833d7ac420c5dedd3352b00c4290870acb90897eac595161261148bb192661",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookup-stats.exe": "fdf30d155da1ba3c78f9d80d487e84227195fe6919117d410e421599e12c040d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-lookup.exe": "861783f9d7c6d6905d92ca44df68034671e513103da58db724039a2a1e0e16fc",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-minicpmv-cli.exe": "5f338aeb6f3e0acb6201c1be508ef597cafbff845f9ed7aa5c3db8deeea8f995",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-mtmd-cli.exe": "9ad01231a98c5bf1e9ec08ed6c37604590b76426dcb796b34378b4cde17513e2",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-mtmd-debug.exe": "f754a27f25a371749701a9088293e799a1d54cbaed7e79b68351c0bd96c4192c",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-mtp-export.exe": "90f7aa68661d003158afcea27658c6f326bf229aecd3931935b8f641b70e2d21",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-parallel.exe": "15eb59b88776aaf11dda986edae20266acfb82bd731468c01b9286d4a3f1fd5f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-passkey.exe": "4faab3e6e67f51a751002f051178a5981de2ab5a38b917de3f0adfac621ee31d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-perplexity-impl.dll": "acac4834ad95320b451985d0d23ab37e0b6bbbf98a971d24bb7b8653b4265261",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-perplexity.exe": "96df778f8fbc685fbdffd47f852f53d6851728d2dc363035355508ce97504f5d",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-quantize-impl.dll": "9de57a9f263c8b82bd2202360a86a3919db3601a94bba8fab56e9c4468264568",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-quantize.exe": "3786628113e05377a041a1a8b461f78aa3d847635ad124de7e2c3b0a4c731d45",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-qwen2vl-cli.exe": "5f338aeb6f3e0acb6201c1be508ef597cafbff845f9ed7aa5c3db8deeea8f995",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-results.exe": "2b6a37fe1718e16ddfd20aea8f8f59cce600e090a94a4b46b4d7ecfb0e581df2",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-retrieval.exe": "a1b24d33c942f3634ed35ad81f848740e155c63afd2e0df43438a35d5808f196",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-rs-rollback-multi.exe": "9a22e2c924b90ff8e985117e25df81837319dcb14fd77c03d9d7065790bb8041",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-rs-rollback.exe": "01e4ba14c069ff0e73a04dd5bca2fa7b7eb56fcf2bb9ad722f1992642dce4437",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-server-impl.dll": "74367a893c9e7682f635b17416d2cfc8b2a9fb3420957ff03d31e7bd16b98c7b",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-server.exe": "e95c81a7f99b05b4e9c67eba3f6856d777987ff813e6c1f14069c6c599e029d7",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-simple-chat.exe": "860d5911a52579773603dfddee934ccba990c8c46585e61b8121533b09dfaf03",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-simple.exe": "e5c425eba58db58dc486e751330c099d588a8ddd4f9ec712695ac966345cf381",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-speculative-simple.exe": "35d0d08d3e87d5c3bcf738d6838a680adf1e10fe57aa11d951aa5cc85dd1ca41",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-speculative.exe": "dc8fb0b7450c4b1b3573c734732150654b14d397bbb79f1e5b14f4fa53f7a8be",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-tokenize.exe": "e9cf0797da15bd2194d860aff2a878f9cb7b8df2dea0695e3ddba6a4745ceacf",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-tts.exe": "5cd966ad4c3586e8a2dd233ebda863037a3d466de1e37974fb6b8b86734a9274",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama.dll": "0c4f1e9e4df371770938aa3e95c2b0c66b31567aa78d5a47a273aa6c51aee0df",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama.exe": "bee03536e47f116dd9d5bed66f435eda90bbdfb00e6d39604407816826b566ca",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\mtmd.dll": "eddaf1303f22e984e577dca58b71ac2ee2f105f13db3b567e33c55e79cbab9dc",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\cublas64_12.dll": "e40202fe4223c1cd2d2dce7beec59e1ed61c7801bd827309183be9b50e358f4c",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\cublasLt64_12.dll": "2a896460bef60ed57ef32b0875812f355a6984e671d638bb632f5e8c1d7a831f",
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\cudart64_12.dll": "d28e42265da7462162a54da6b7a99ea4fa2caf8139d862bb500db875d0b32dfc"
+    },
+    "launch_command": [
+      "D:\\AI_New\\AP\\.data\\bonsai2-pilot-20261016\\engine\\llama-server.exe",
+      "-m",
+      "D:\\AI_New\\AP\\.data\\models\\gguf\\Qwen_Qwen3.5-9B-Q6_K.gguf",
+      "--alias",
+      "qwen35-9b-q6_k",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "47841",
+      "-ngl",
+      "auto",
+      "-c",
+      "131072",
+      "-np",
+      "1",
+      "-b",
+      "256",
+      "-ub",
+      "128",
+      "-fa",
+      "on",
+      "-ctk",
+      "q8_0",
+      "-ctv",
+      "q8_0",
+      "--jinja",
+      "--temp",
+      "0.6",
+      "--top-p",
+      "0.8",
+      "--top-k",
+      "20",
+      "--min-p",
+      "0",
+      "--presence-penalty",
+      "0",
+      "--repeat-penalty",
+      "1.0",
+      "--metrics",
+      "--chat-template-kwargs",
+      "{\"enable_thinking\":false}",
+      "--reasoning-budget",
+      "0",
+      "--lora",
+      "E:\\AutoProteus-training\\lora-pilot-20261020\\training\\20261021T094702Z\\selected-adapter-f32.gguf",
+      "--lora-init-without-apply",
+      "--slot-save-path",
+      "D:\\AI_New\\AP\\.data\\lora-pilot-20261020\\training\\20261021T094702Z\\inference-study-002\\slot-cache"
+    ]
+  },
+  "protocol": {
+    "created": "2026-10-21T11:08:23.464149+00:00",
+    "training": "D:\\AI_New\\AP\\.data\\lora-pilot-20261020\\training\\20261021T094702Z",
+    "selected": {
+      "best_epoch": 2,
+      "best_validation_loss": 0.17730625878872872,
+      "baseline_validation_loss": 0.22113831493774733,
+      "best_adapter": "E:\\AutoProteus-training\\lora-pilot-20261020\\training\\20261021T094702Z\\epoch-2",
+      "eligible_for_deployment": true
+    },
+    "study_plan_sha256": "769ad8309a2f20c86793f72917904c8d9768415a00a525caeecb7d22563aaac6",
+    "driver_sha256": "309f5f16fefadd4fc02fddbe7bc6e7291688a265dec3cbfa765530be9324ce01",
+    "arms": [
+      {
+        "id": "base-q6",
+        "scale": 0
+      },
+      {
+        "id": "adapter-q6",
+        "scale": 1
+      }
+    ],
+    "order": [
+      [
+        "base-q6",
+        "adapter-q6"
+      ],
+      [
+        "adapter-q6",
+        "base-q6"
+      ],
+      [
+        "base-q6",
+        "adapter-q6"
+      ]
+    ],
+    "growth_tasks": "Identical supplied-parent visible/staged formatter extensions and protected graders as historical Qwen study",
+    "admission": "One benchmark and >=4/5 ordinary tasks; one advisory app diagnostic per arm, never success-selected repeated",
+    "ordinary_overlap": "All five ordinary task families overlap training or validation; regression/connection checks, not held-out generalization evidence",
+    "scope": "12 directed second-extension attempts, no autonomous first-upgrade credit. Fresh disabled-adapter controls share runtime, quantization and loaded adapter memory. Historical base results remain separate."
+  },
+  "plan_sha256": "769ad8309a2f20c86793f72917904c8d9768415a00a525caeecb7d22563aaac6",
+  "advisory_app_qualification": {
+    "base-q6": {
+      "passed": false,
+      "error_type": "ProviderError",
+      "error": "The model did not follow the selected action protocol. Try JSON fallback or another model."
+    },
+    "adapter-q6": {
+      "passed": true,
+      "protocol": "native",
+      "model": "qwen35-9b-q6_k",
+      "checked": "2026-10-21T11:11:12.001944+00:00",
+      "requests": 8,
+      "rounds": 3,
+      "rejected_call_recovery": true,
+      "format_repairs": 1,
+      "first_pass": false,
+      "response_retries": 2,
+      "scope": "Bounded transport qualification, not a seed-editing or capability benchmark.",
+      "profile": {
+        "provider": "hosted",
+        "model": "qwen35-9b-q6_k",
+        "protocol": "native",
+        "context_tokens": 131072,
+        "response_tokens": 4096,
+        "temperature": 0.6,
+        "thinking": false,
+        "json_mode": false,
+        "terminal": true,
+        "request_timeout": 600,
+        "identity": {
+          "provider": "hosted",
+          "model": "qwen35-9b-q6_k"
+        },
+        "endpoint_sha256": "ef8446fdf41adfca4d3d7add10b4774f9a0903153097308325abd68d468bd148",
+        "catalog_sha256": "4c85ba891b6162155bfe030e73f1547195f123323a0c15c54ad744c77100a046",
+        "adapter_sha256": "867e091eb121558c86c679e073ab360691428029f564d33731b27945d78af380",
+        "qualifier_sha256": "606abb6422529270dcb4c058e4d1f675d23cccd8ee14c906cd4d0d8471d83565",
+        "qualification_version": 2,
+        "response_retries": 2
+      },
+      "profile_sha256": "21082c2328955249ff40531eed36e2b7a30be11218e1fd508ece77a2e0bfbd47",
+      "identity_complete": false,
+      "unknown_identity": [
+        "Complete weights, engine and template identity could not be verified; receipt is not reusable."
+      ],
+      "cached": false,
+      "checked_unix": 1792581072.0019662,
+      "requests_this_check": 8
+    }
+  },
+  "admission": {
+    "base-q6": true,
+    "adapter-q6": true
+  },
+  "ordinary_and_benchmark": [
+    {
+      "cell": "base-q6_benchmark_01",
+      "passed": true,
+      "seconds": 16.902
+    },
+    {
+      "cell": "base-q6_basic_exact-file",
+      "passed": true,
+      "seconds": 15.541
+    },
+    {
+      "cell": "base-q6_basic_precise-edit",
+      "passed": true,
+      "seconds": 23.349
+    },
+    {
+      "cell": "base-q6_basic_recovery",
+      "passed": true,
+      "seconds": 16.154
+    },
+    {
+      "cell": "base-q6_basic_unicode",
+      "passed": true,
+      "seconds": 16.328
+    },
+    {
+      "cell": "base-q6_basic_bug-fix",
+      "passed": true,
+      "seconds": 29.904
+    },
+    {
+      "cell": "adapter-q6_benchmark_01",
+      "passed": true,
+      "seconds": 19.132
+    },
+    {
+      "cell": "adapter-q6_basic_exact-file",
+      "passed": true,
+      "seconds": 14.561
+    },
+    {
+      "cell": "adapter-q6_basic_precise-edit",
+      "passed": true,
+      "seconds": 33.904
+    },
+    {
+      "cell": "adapter-q6_basic_recovery",
+      "passed": true,
+      "seconds": 16.866
+    },
+    {
+      "cell": "adapter-q6_basic_unicode",
+      "passed": true,
+      "seconds": 18.351
+    },
+    {
+      "cell": "adapter-q6_basic_bug-fix",
+      "passed": true,
+      "seconds": 25.567
+    }
+  ],
+  "arms": {
+    "base-q6": {
+      "all": {
+        "attempts": 6,
+        "feature_checks_passed": 6,
+        "clean_verified_extensions": 4,
+        "earlier_capability_retained": 6,
+        "activated": 2,
+        "correct_final_artifacts": 4,
+        "complete_workflows": 2,
+        "strict_native_route": 2,
+        "input_protocol_compliance": 4,
+        "model_calls": 374,
+        "development_actions": 352,
+        "cumulative_actions": 367,
+        "read_actions": 166,
+        "wall_seconds": 3496.477,
+        "median_wall_seconds": 556.6555000000001,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 5972602,
+            "complete": true,
+            "measured_calls": 374,
+            "expected_calls": 374
+          },
+          "output_tokens": {
+            "known_sum": 57050,
+            "complete": true,
+            "measured_calls": 374,
+            "expected_calls": 374
+          },
+          "call_seconds": {
+            "known_sum": 3191.987,
+            "complete": true,
+            "measured_calls": 374,
+            "expected_calls": 374
+          }
+        },
+        "trace_complete": true
+      },
+      "baseline": {
+        "attempts": 3,
+        "feature_checks_passed": 3,
+        "clean_verified_extensions": 1,
+        "earlier_capability_retained": 3,
+        "activated": 0,
+        "correct_final_artifacts": 2,
+        "complete_workflows": 0,
+        "strict_native_route": 0,
+        "input_protocol_compliance": 1,
+        "model_calls": 138,
+        "development_actions": 135,
+        "cumulative_actions": 135,
+        "read_actions": 42,
+        "wall_seconds": 1662.454,
+        "median_wall_seconds": 501.946,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 2093799,
+            "complete": true,
+            "measured_calls": 138,
+            "expected_calls": 138
+          },
+          "output_tokens": {
+            "known_sum": 27331,
+            "complete": true,
+            "measured_calls": 138,
+            "expected_calls": 138
+          },
+          "call_seconds": {
+            "known_sum": 1525.224,
+            "complete": true,
+            "measured_calls": 138,
+            "expected_calls": 138
+          }
+        },
+        "trace_complete": true
+      },
+      "staged-inputs": {
+        "attempts": 3,
+        "feature_checks_passed": 3,
+        "clean_verified_extensions": 3,
+        "earlier_capability_retained": 3,
+        "activated": 2,
+        "correct_final_artifacts": 2,
+        "complete_workflows": 2,
+        "strict_native_route": 2,
+        "input_protocol_compliance": 3,
+        "model_calls": 236,
+        "development_actions": 217,
+        "cumulative_actions": 232,
+        "read_actions": 124,
+        "wall_seconds": 1834.023,
+        "median_wall_seconds": 611.365,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 3878803,
+            "complete": true,
+            "measured_calls": 236,
+            "expected_calls": 236
+          },
+          "output_tokens": {
+            "known_sum": 29719,
+            "complete": true,
+            "measured_calls": 236,
+            "expected_calls": 236
+          },
+          "call_seconds": {
+            "known_sum": 1666.763,
+            "complete": true,
+            "measured_calls": 236,
+            "expected_calls": 236
+          }
+        },
+        "trace_complete": true
+      }
+    },
+    "adapter-q6": {
+      "all": {
+        "attempts": 6,
+        "feature_checks_passed": 6,
+        "clean_verified_extensions": 6,
+        "earlier_capability_retained": 6,
+        "activated": 4,
+        "correct_final_artifacts": 5,
+        "complete_workflows": 3,
+        "strict_native_route": 3,
+        "input_protocol_compliance": 4,
+        "model_calls": 421,
+        "development_actions": 374,
+        "cumulative_actions": 412,
+        "read_actions": 218,
+        "wall_seconds": 4634.808,
+        "median_wall_seconds": 768.0355,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 8080665,
+            "complete": true,
+            "measured_calls": 421,
+            "expected_calls": 421
+          },
+          "output_tokens": {
+            "known_sum": 65098,
+            "complete": true,
+            "measured_calls": 421,
+            "expected_calls": 421
+          },
+          "call_seconds": {
+            "known_sum": 4304.913,
+            "complete": true,
+            "measured_calls": 421,
+            "expected_calls": 421
+          }
+        },
+        "trace_complete": true
+      },
+      "baseline": {
+        "attempts": 3,
+        "feature_checks_passed": 3,
+        "clean_verified_extensions": 3,
+        "earlier_capability_retained": 3,
+        "activated": 1,
+        "correct_final_artifacts": 2,
+        "complete_workflows": 0,
+        "strict_native_route": 0,
+        "input_protocol_compliance": 1,
+        "model_calls": 218,
+        "development_actions": 196,
+        "cumulative_actions": 214,
+        "read_actions": 116,
+        "wall_seconds": 2552.352,
+        "median_wall_seconds": 903.204,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 4760606,
+            "complete": true,
+            "measured_calls": 218,
+            "expected_calls": 218
+          },
+          "output_tokens": {
+            "known_sum": 33904,
+            "complete": true,
+            "measured_calls": 218,
+            "expected_calls": 218
+          },
+          "call_seconds": {
+            "known_sum": 2388.413,
+            "complete": true,
+            "measured_calls": 218,
+            "expected_calls": 218
+          }
+        },
+        "trace_complete": true
+      },
+      "staged-inputs": {
+        "attempts": 3,
+        "feature_checks_passed": 3,
+        "clean_verified_extensions": 3,
+        "earlier_capability_retained": 3,
+        "activated": 3,
+        "correct_final_artifacts": 3,
+        "complete_workflows": 3,
+        "strict_native_route": 3,
+        "input_protocol_compliance": 3,
+        "model_calls": 203,
+        "development_actions": 178,
+        "cumulative_actions": 198,
+        "read_actions": 102,
+        "wall_seconds": 2082.456,
+        "median_wall_seconds": 755.173,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 3320059,
+            "complete": true,
+            "measured_calls": 203,
+            "expected_calls": 203
+          },
+          "output_tokens": {
+            "known_sum": 31194,
+            "complete": true,
+            "measured_calls": 203,
+            "expected_calls": 203
+          },
+          "call_seconds": {
+            "known_sum": 1916.5,
+            "complete": true,
+            "measured_calls": 203,
+            "expected_calls": 203
+          }
+        },
+        "trace_complete": true
+      }
+    }
+  },
+  "trials": [
+    {
+      "cell": "base-q6_growth_01_sha256_file_baseline",
+      "arm": "base-q6",
+      "repeat": 1,
+      "treatment": "baseline",
+      "input_protocol": "strict_preserve_visible_input",
+      "attempt": 1,
+      "state": "completed",
+      "feature_checks_passed": true,
+      "feature_check_count": 20,
+      "protected_regressions_passed": true,
+      "protected_regression_count": 50,
+      "candidate_package_valid": true,
+      "unexpected_candidate_files": [],
+      "verified_extension": true,
+      "earlier_capability_retained": true,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "6d1437a4e09b16ad3da116b09de62ed26e855cb16dc84b74b4acca06ad8e4371"
+      },
+      "scores": {},
+      "final_source_unchanged": null,
+      "development_status": "completed",
+      "final_status": null,
+      "development_actions": 37,
+      "cumulative_actions": 37,
+      "read_actions": 10,
+      "action_errors": 6,
+      "model_reported_completion": true,
+      "seconds": 501.946,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 551313,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 7893,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 459.966,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 459.956,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "model_calls": 38,
+      "wire_requests": 38,
+      "trace_complete": true,
+      "capture_complete": true,
+      "latency_measurements": {
+        "model_load_seconds": {
+          "known_sum": null,
+          "measured_calls": 0,
+          "expected_calls": 38,
+          "complete": false,
+          "status": "unavailable"
+        },
+        "prompt_processing_seconds": {
+          "known_sum": 79.793277,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "generation_seconds": {
+          "known_sum": 377.620171,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "cached_input_tokens": {
+          "known_sum": 518331,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 501.945753,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.2e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 7893,
+        "reported_output_tokens": 7893,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "inventory_correct": true,
+        "receipt_correct": true
+      },
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "edit_file",
+            "list_files",
+            "read_file",
+            "read_section",
+            "write_file"
+          ],
+          "development": [
+            "format_json",
+            "sha256_file"
+          ]
+        },
+        "required_calls_observed": true
+      },
+      "secondary_route_additional_commands": 0,
+      "failure_reasons": [
+        "Changed visible final input before activation",
+        "Did not request activation"
+      ],
+      "source_sha256": "6d1437a4e09b16ad3da116b09de62ed26e855cb16dc84b74b4acca06ad8e4371",
+      "operator_candidate_repairs": [],
+      "evidence_folder": ".data/lora-pilot-20261020/training/20261021T094702Z/inference-study-002/study/trials/base-q6_growth_01_sha256_file_baseline/attempt-001"
+    },
+    {
+      "cell": "base-q6_growth_01_sha256_file_staged-inputs",
+      "arm": "base-q6",
+      "repeat": 1,
+      "treatment": "staged-inputs",
+      "input_protocol": "withheld_final_input",
+      "attempt": 1,
+      "state": "completed",
+      "feature_checks_passed": true,
+      "feature_check_count": 20,
+      "protected_regressions_passed": true,
+      "protected_regression_count": 50,
+      "candidate_package_valid": true,
+      "unexpected_candidate_files": [],
+      "verified_extension": true,
+      "earlier_capability_retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": false,
+        "submitted": false,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "7088e577d70fa435456848b6392589f1a4e32f7f023303f198b02f10c11e1219"
+      },
+      "scores": {},
+      "final_source_unchanged": null,
+      "development_status": "paused",
+      "final_status": null,
+      "development_actions": 128,
+      "cumulative_actions": 128,
+      "read_actions": 99,
+      "action_errors": 8,
+      "model_reported_completion": false,
+      "seconds": 786.071,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 2454227,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 11759,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 727.311,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 727.277,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "model_calls": 129,
+      "wire_requests": 129,
+      "trace_complete": true,
+      "capture_complete": true,
+      "latency_measurements": {
+        "model_load_seconds": {
+          "known_sum": null,
+          "measured_calls": 0,
+          "expected_calls": 129,
+          "complete": false,
+          "status": "unavailable"
+        },
+        "prompt_processing_seconds": {
+          "known_sum": 138.267525,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "generation_seconds": {
+          "known_sum": 570.476681,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "cached_input_tokens": {
+          "known_sum": 2403222,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 786.070512,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 11759,
+        "reported_output_tokens": 11759,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "posthoc_artifact_audit": {
+        "correct": false,
+        "error": "File not found"
+      },
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "edit_file",
+            "list_files",
+            "read_file",
+            "read_section",
+            "search_files",
+            "write_file"
+          ],
+          "development": [
+            "format_json"
+          ]
+        },
+        "required_calls_observed": false
+      },
+      "secondary_route_additional_commands": 0,
+      "failure_reasons": [
+        "Action allowance exhausted before activation request"
+      ],
+      "source_sha256": "7088e577d70fa435456848b6392589f1a4e32f7f023303f198b02f10c11e1219",
+      "operator_candidate_repairs": [],
+      "evidence_folder": ".data/lora-pilot-20261020/training/20261021T094702Z/inference-study-002/study/trials/base-q6_growth_01_sha256_file_staged-inputs/attempt-001"
+    },
+    {
+      "cell": "adapter-q6_growth_01_sha256_file_baseline",
+      "arm": "adapter-q6",
+      "repeat": 1,
+      "treatment": "baseline",
+      "input_protocol": "strict_preserve_visible_input",
+      "attempt": 1,
+      "state": "completed",
+      "feature_checks_passed": true,
+      "feature_check_count": 20,
+      "protected_regressions_passed": true,
+      "protected_regression_count": 50,
+      "candidate_package_valid": true,
+      "unexpected_candidate_files": [],
+      "verified_extension": true,
+      "earlier_capability_retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": true,
+        "submitted_source_sha256": "898419bb62f55ccd41d97e3dce882387c6db981d270337e023eff31ea05f7757",
+        "correct_final_use": true,
+        "explicit_finish": true
+      },
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": false,
+        "functional_growth": false,
+        "direct_tool_use": false,
+        "strict_route_success": false
+      },
+      "final_source_unchanged": true,
+      "development_status": "waiting",
+      "final_status": "completed",
+      "development_actions": 28,
+      "cumulative_actions": 46,
+      "read_actions": 5,
+      "action_errors": 5,
+      "model_reported_completion": true,
+      "seconds": 903.204,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 522355,
+          "measured_calls": 48,
+          "expected_calls": 48,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 10598,
+          "measured_calls": 48,
+          "expected_calls": 48,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 850.384,
+          "measured_calls": 48,
+          "expected_calls": 48,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 850.371,
+          "measured_calls": 48,
+          "expected_calls": 48,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "model_calls": 48,
+      "wire_requests": 48,
+      "trace_complete": true,
+      "capture_complete": true,
+      "latency_measurements": {
+        "model_load_seconds": {
+          "known_sum": null,
+          "measured_calls": 0,
+          "expected_calls": 48,
+          "complete": false,
+          "status": "unavailable"
+        },
+        "prompt_processing_seconds": {
+          "known_sum": 279.323667,
+          "measured_calls": 48,
+          "expected_calls": 48,
+          "complete": true,
+          "status": "complete"
+        },
+        "generation_seconds": {
+          "known_sum": 568.315259,
+          "measured_calls": 48,
+          "expected_calls": 48,
+          "complete": true,
+          "status": "complete"
+        },
+        "cached_input_tokens": {
+          "known_sum": 405471,
+          "measured_calls": 48,
+          "expected_calls": 48,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 903.204138,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.4e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 10598,
+        "reported_output_tokens": 10598,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "inventory_correct": true,
+        "receipt_correct": true
+      },
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": false
+      },
+      "secondary_route_additional_commands": 0,
+      "failure_reasons": [
+        "Correct final artifacts, but required capabilities not used after activation"
+      ],
+      "source_sha256": "898419bb62f55ccd41d97e3dce882387c6db981d270337e023eff31ea05f7757",
+      "operator_candidate_repairs": [],
+      "evidence_folder": ".data/lora-pilot-20261020/training/20261021T094702Z/inference-study-002/study/trials/adapter-q6_growth_01_sha256_file_baseline/attempt-001"
+    },
+    {
+      "cell": "adapter-q6_growth_01_sha256_file_staged-inputs",
+      "arm": "adapter-q6",
+      "repeat": 1,
+      "treatment": "staged-inputs",
+      "input_protocol": "withheld_final_input",
+      "attempt": 1,
+      "state": "completed",
+      "feature_checks_passed": true,
+      "feature_check_count": 20,
+      "protected_regressions_passed": true,
+      "protected_regression_count": 50,
+      "candidate_package_valid": true,
+      "unexpected_candidate_files": [],
+      "verified_extension": true,
+      "earlier_capability_retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": true,
+        "submitted_source_sha256": "52028f2078916d0631b8244122c0baf2e1d9e7903c7567fd36ed60b5fd4e331a",
+        "correct_final_use": true,
+        "explicit_finish": true
+      },
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "final_source_unchanged": true,
+      "development_status": "waiting",
+      "final_status": "completed",
+      "development_actions": 53,
+      "cumulative_actions": 60,
+      "read_actions": 14,
+      "action_errors": 11,
+      "model_reported_completion": true,
+      "seconds": 755.173,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 992564,
+          "measured_calls": 62,
+          "expected_calls": 62,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 11636,
+          "measured_calls": 62,
+          "expected_calls": 62,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 694.396,
+          "measured_calls": 62,
+          "expected_calls": 62,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 694.379,
+          "measured_calls": 62,
+          "expected_calls": 62,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "model_calls": 62,
+      "wire_requests": 62,
+      "trace_complete": true,
+      "capture_complete": true,
+      "latency_measurements": {
+        "model_load_seconds": {
+          "known_sum": null,
+          "measured_calls": 0,
+          "expected_calls": 62,
+          "complete": false,
+          "status": "unavailable"
+        },
+        "prompt_processing_seconds": {
+          "known_sum": 59.572988,
+          "measured_calls": 62,
+          "expected_calls": 62,
+          "complete": true,
+          "status": "complete"
+        },
+        "generation_seconds": {
+          "known_sum": 629.799994,
+          "measured_calls": 62,
+          "expected_calls": 62,
+          "complete": true,
+          "status": "complete"
+        },
+        "cached_input_tokens": {
+          "known_sum": 972420,
+          "measured_calls": 62,
+          "expected_calls": 62,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 755.172574,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.7e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 11636,
+        "reported_output_tokens": 11636,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "inventory_correct": true,
+        "receipt_correct": true
+      },
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "format_json",
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": true
+      },
+      "secondary_route_additional_commands": 0,
+      "failure_reasons": [],
+      "source_sha256": "52028f2078916d0631b8244122c0baf2e1d9e7903c7567fd36ed60b5fd4e331a",
+      "operator_candidate_repairs": [],
+      "evidence_folder": ".data/lora-pilot-20261020/training/20261021T094702Z/inference-study-002/study/trials/adapter-q6_growth_01_sha256_file_staged-inputs/attempt-001"
+    },
+    {
+      "cell": "adapter-q6_growth_02_sha256_file_staged-inputs",
+      "arm": "adapter-q6",
+      "repeat": 2,
+      "treatment": "staged-inputs",
+      "input_protocol": "withheld_final_input",
+      "attempt": 1,
+      "state": "completed",
+      "feature_checks_passed": true,
+      "feature_check_count": 20,
+      "protected_regressions_passed": true,
+      "protected_regression_count": 50,
+      "candidate_package_valid": true,
+      "unexpected_candidate_files": [],
+      "verified_extension": true,
+      "earlier_capability_retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": true,
+        "submitted_source_sha256": "fdcc73826ca5c4f94d2caae330390a986a2ae3904e31b0de8fe954aecb5fe44c",
+        "correct_final_use": true,
+        "explicit_finish": true
+      },
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "final_source_unchanged": true,
+      "development_status": "waiting",
+      "final_status": "completed",
+      "development_actions": 22,
+      "cumulative_actions": 28,
+      "read_actions": 5,
+      "action_errors": 3,
+      "model_reported_completion": true,
+      "seconds": 546.385,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 275283,
+          "measured_calls": 29,
+          "expected_calls": 29,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 7740,
+          "measured_calls": 29,
+          "expected_calls": 29,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 502.28,
+          "measured_calls": 29,
+          "expected_calls": 29,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 502.272,
+          "measured_calls": 29,
+          "expected_calls": 29,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "model_calls": 29,
+      "wire_requests": 29,
+      "trace_complete": true,
+      "capture_complete": true,
+      "latency_measurements": {
+        "model_load_seconds": {
+          "known_sum": null,
+          "measured_calls": 0,
+          "expected_calls": 29,
+          "complete": false,
+          "status": "unavailable"
+        },
+        "prompt_processing_seconds": {
+          "known_sum": 85.406487,
+          "measured_calls": 29,
+          "expected_calls": 29,
+          "complete": true,
+          "status": "complete"
+        },
+        "generation_seconds": {
+          "known_sum": 415.286775,
+          "measured_calls": 29,
+          "expected_calls": 29,
+          "complete": true,
+          "status": "complete"
+        },
+        "cached_input_tokens": {
+          "known_sum": 241567,
+          "measured_calls": 29,
+          "expected_calls": 29,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 546.384904,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.2e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 7740,
+        "reported_output_tokens": 7740,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "inventory_correct": true,
+        "receipt_correct": true
+      },
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "format_json",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": true
+      },
+      "secondary_route_additional_commands": 0,
+      "failure_reasons": [],
+      "source_sha256": "fdcc73826ca5c4f94d2caae330390a986a2ae3904e31b0de8fe954aecb5fe44c",
+      "operator_candidate_repairs": [],
+      "evidence_folder": ".data/lora-pilot-20261020/training/20261021T094702Z/inference-study-002/study/trials/adapter-q6_growth_02_sha256_file_staged-inputs/attempt-001"
+    },
+    {
+      "cell": "adapter-q6_growth_02_sha256_file_baseline",
+      "arm": "adapter-q6",
+      "repeat": 2,
+      "treatment": "baseline",
+      "input_protocol": "strict_preserve_visible_input",
+      "attempt": 1,
+      "state": "completed",
+      "feature_checks_passed": true,
+      "feature_check_count": 20,
+      "protected_regressions_passed": true,
+      "protected_regression_count": 50,
+      "candidate_package_valid": true,
+      "unexpected_candidate_files": [],
+      "verified_extension": true,
+      "earlier_capability_retained": true,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "0b4fdfaa10c06db64032092cc6c63c06d38999cc738ee4ed830e81826281d05f"
+      },
+      "scores": {},
+      "final_source_unchanged": null,
+      "development_status": "completed",
+      "final_status": null,
+      "development_actions": 128,
+      "cumulative_actions": 128,
+      "read_actions": 100,
+      "action_errors": 9,
+      "model_reported_completion": true,
+      "seconds": 1222.855,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 3687720,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 16893,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 1155.927,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 1155.891,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "model_calls": 129,
+      "wire_requests": 129,
+      "trace_complete": true,
+      "capture_complete": true,
+      "latency_measurements": {
+        "model_load_seconds": {
+          "known_sum": null,
+          "measured_calls": 0,
+          "expected_calls": 129,
+          "complete": false,
+          "status": "unavailable"
+        },
+        "prompt_processing_seconds": {
+          "known_sum": 204.044684,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "generation_seconds": {
+          "known_sum": 931.408754,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "cached_input_tokens": {
+          "known_sum": 3620886,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 1222.8548,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.1e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 16893,
+        "reported_output_tokens": 16893,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "inventory_correct": true,
+        "receipt_correct": true
+      },
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "delete_file",
+            "edit_file",
+            "list_files",
+            "read_file",
+            "read_section",
+            "search_files",
+            "write_file"
+          ],
+          "development": [
+            "format_json",
+            "sha256_file"
+          ]
+        },
+        "required_calls_observed": true
+      },
+      "secondary_route_additional_commands": 0,
+      "failure_reasons": [
+        "Changed visible final input before activation",
+        "Did not request activation"
+      ],
+      "source_sha256": "0b4fdfaa10c06db64032092cc6c63c06d38999cc738ee4ed830e81826281d05f",
+      "operator_candidate_repairs": [],
+      "evidence_folder": ".data/lora-pilot-20261020/training/20261021T094702Z/inference-study-002/study/trials/adapter-q6_growth_02_sha256_file_baseline/attempt-001"
+    },
+    {
+      "cell": "base-q6_growth_02_sha256_file_staged-inputs",
+      "arm": "base-q6",
+      "repeat": 2,
+      "treatment": "staged-inputs",
+      "input_protocol": "withheld_final_input",
+      "attempt": 1,
+      "state": "completed",
+      "feature_checks_passed": true,
+      "feature_check_count": 20,
+      "protected_regressions_passed": true,
+      "protected_regression_count": 50,
+      "candidate_package_valid": true,
+      "unexpected_candidate_files": [],
+      "verified_extension": true,
+      "earlier_capability_retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": true,
+        "submitted_source_sha256": "0886659c432ce3dc7b7e740bd27b3fee6518f873e48af1f200b50d343b8dd3b3",
+        "correct_final_use": true,
+        "explicit_finish": true
+      },
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "final_source_unchanged": true,
+      "development_status": "waiting",
+      "final_status": "completed",
+      "development_actions": 59,
+      "cumulative_actions": 65,
+      "read_actions": 20,
+      "action_errors": 8,
+      "model_reported_completion": true,
+      "seconds": 611.365,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 1020793,
+          "measured_calls": 67,
+          "expected_calls": 67,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 10519,
+          "measured_calls": 67,
+          "expected_calls": 67,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 552.332,
+          "measured_calls": 67,
+          "expected_calls": 67,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 552.314,
+          "measured_calls": 67,
+          "expected_calls": 67,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "model_calls": 67,
+      "wire_requests": 67,
+      "trace_complete": true,
+      "capture_complete": true,
+      "latency_measurements": {
+        "model_load_seconds": {
+          "known_sum": null,
+          "measured_calls": 0,
+          "expected_calls": 67,
+          "complete": false,
+          "status": "unavailable"
+        },
+        "prompt_processing_seconds": {
+          "known_sum": 45.866685,
+          "measured_calls": 67,
+          "expected_calls": 67,
+          "complete": true,
+          "status": "complete"
+        },
+        "generation_seconds": {
+          "known_sum": 500.837829,
+          "measured_calls": 67,
+          "expected_calls": 67,
+          "complete": true,
+          "status": "complete"
+        },
+        "cached_input_tokens": {
+          "known_sum": 1004106,
+          "measured_calls": 67,
+          "expected_calls": 67,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 611.365355,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.2e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 10519,
+        "reported_output_tokens": 10519,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "inventory_correct": true,
+        "receipt_correct": true
+      },
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "format_json",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": true
+      },
+      "secondary_route_additional_commands": 0,
+      "failure_reasons": [],
+      "source_sha256": "0886659c432ce3dc7b7e740bd27b3fee6518f873e48af1f200b50d343b8dd3b3",
+      "operator_candidate_repairs": [],
+      "evidence_folder": ".data/lora-pilot-20261020/training/20261021T094702Z/inference-study-002/study/trials/base-q6_growth_02_sha256_file_staged-inputs/attempt-001"
+    },
+    {
+      "cell": "base-q6_growth_02_sha256_file_baseline",
+      "arm": "base-q6",
+      "repeat": 2,
+      "treatment": "baseline",
+      "input_protocol": "strict_preserve_visible_input",
+      "attempt": 1,
+      "state": "completed",
+      "feature_checks_passed": true,
+      "feature_check_count": 20,
+      "protected_regressions_passed": true,
+      "protected_regression_count": 50,
+      "candidate_package_valid": false,
+      "unexpected_candidate_files": [
+        "development/test_input.json"
+      ],
+      "verified_extension": false,
+      "earlier_capability_retained": true,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": false,
+        "submitted_source_sha256": "f66e2ec2074eb8583d2ceeb9ed927cd4efd63bd3e37b011cbb594d9a6d99d1d6"
+      },
+      "scores": {},
+      "final_source_unchanged": null,
+      "development_status": "completed",
+      "final_status": null,
+      "development_actions": 57,
+      "cumulative_actions": 57,
+      "read_actions": 22,
+      "action_errors": 8,
+      "model_reported_completion": true,
+      "seconds": 458.061,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 921562,
+          "measured_calls": 57,
+          "expected_calls": 57,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 7219,
+          "measured_calls": 57,
+          "expected_calls": 57,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 409.603,
+          "measured_calls": 57,
+          "expected_calls": 57,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 409.587,
+          "measured_calls": 57,
+          "expected_calls": 57,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "model_calls": 57,
+      "wire_requests": 57,
+      "trace_complete": true,
+      "capture_complete": true,
+      "latency_measurements": {
+        "model_load_seconds": {
+          "known_sum": null,
+          "measured_calls": 0,
+          "expected_calls": 57,
+          "complete": false,
+          "status": "unavailable"
+        },
+        "prompt_processing_seconds": {
+          "known_sum": 60.006142,
+          "measured_calls": 57,
+          "expected_calls": 57,
+          "complete": true,
+          "status": "complete"
+        },
+        "generation_seconds": {
+          "known_sum": 344.921966,
+          "measured_calls": 57,
+          "expected_calls": 57,
+          "complete": true,
+          "status": "complete"
+        },
+        "cached_input_tokens": {
+          "known_sum": 899200,
+          "measured_calls": 57,
+          "expected_calls": 57,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 458.061042,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.1e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 7219,
+        "reported_output_tokens": 7219,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "inventory_correct": true,
+        "receipt_correct": true
+      },
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "edit_file",
+            "list_files",
+            "read_file",
+            "read_section",
+            "search_files",
+            "write_file"
+          ],
+          "development": [
+            "format_json",
+            "sha256_file"
+          ]
+        },
+        "required_calls_observed": true
+      },
+      "secondary_route_additional_commands": 0,
+      "failure_reasons": [
+        "Unexpected candidate files: development/test_input.json",
+        "Changed visible final input before activation",
+        "Did not request activation"
+      ],
+      "source_sha256": "f66e2ec2074eb8583d2ceeb9ed927cd4efd63bd3e37b011cbb594d9a6d99d1d6",
+      "operator_candidate_repairs": [],
+      "evidence_folder": ".data/lora-pilot-20261020/training/20261021T094702Z/inference-study-002/study/trials/base-q6_growth_02_sha256_file_baseline/attempt-001"
+    },
+    {
+      "cell": "base-q6_growth_03_sha256_file_baseline",
+      "arm": "base-q6",
+      "repeat": 3,
+      "treatment": "baseline",
+      "input_protocol": "strict_preserve_visible_input",
+      "attempt": 1,
+      "state": "completed",
+      "feature_checks_passed": true,
+      "feature_check_count": 20,
+      "protected_regressions_passed": true,
+      "protected_regression_count": 50,
+      "candidate_package_valid": false,
+      "unexpected_candidate_files": [
+        "inventory.json"
+      ],
+      "verified_extension": false,
+      "earlier_capability_retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": false,
+        "submitted_source_sha256": "f0528b931bbc681ec1f0307aa96622e5ccaa33bc6d2aed268c84eb3ede5fa985"
+      },
+      "scores": {},
+      "final_source_unchanged": null,
+      "development_status": "completed",
+      "final_status": null,
+      "development_actions": 41,
+      "cumulative_actions": 41,
+      "read_actions": 10,
+      "action_errors": 4,
+      "model_reported_completion": true,
+      "seconds": 702.447,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 620924,
+          "measured_calls": 43,
+          "expected_calls": 43,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 12219,
+          "measured_calls": 43,
+          "expected_calls": 43,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 655.655,
+          "measured_calls": 43,
+          "expected_calls": 43,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 655.643,
+          "measured_calls": 43,
+          "expected_calls": 43,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "model_calls": 43,
+      "wire_requests": 43,
+      "trace_complete": true,
+      "capture_complete": true,
+      "latency_measurements": {
+        "model_load_seconds": {
+          "known_sum": null,
+          "measured_calls": 0,
+          "expected_calls": 43,
+          "complete": false,
+          "status": "unavailable"
+        },
+        "prompt_processing_seconds": {
+          "known_sum": 64.967777,
+          "measured_calls": 43,
+          "expected_calls": 43,
+          "complete": true,
+          "status": "complete"
+        },
+        "generation_seconds": {
+          "known_sum": 587.49119,
+          "measured_calls": 43,
+          "expected_calls": 43,
+          "complete": true,
+          "status": "complete"
+        },
+        "cached_input_tokens": {
+          "known_sum": 593305,
+          "measured_calls": 43,
+          "expected_calls": 43,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 702.447077,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.2e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 12219,
+        "reported_output_tokens": 12219,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "posthoc_artifact_audit": {
+        "correct": false,
+        "inventory_correct": false,
+        "receipt_correct": true
+      },
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "delete_file",
+            "edit_file",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": [
+            "sha256_file"
+          ]
+        },
+        "required_calls_observed": false
+      },
+      "secondary_route_additional_commands": 0,
+      "failure_reasons": [
+        "Unexpected candidate files: inventory.json",
+        "Did not request activation"
+      ],
+      "source_sha256": "f0528b931bbc681ec1f0307aa96622e5ccaa33bc6d2aed268c84eb3ede5fa985",
+      "operator_candidate_repairs": [],
+      "evidence_folder": ".data/lora-pilot-20261020/training/20261021T094702Z/inference-study-002/study/trials/base-q6_growth_03_sha256_file_baseline/attempt-001"
+    },
+    {
+      "cell": "base-q6_growth_03_sha256_file_staged-inputs",
+      "arm": "base-q6",
+      "repeat": 3,
+      "treatment": "staged-inputs",
+      "input_protocol": "withheld_final_input",
+      "attempt": 1,
+      "state": "completed",
+      "feature_checks_passed": true,
+      "feature_check_count": 20,
+      "protected_regressions_passed": true,
+      "protected_regression_count": 50,
+      "candidate_package_valid": true,
+      "unexpected_candidate_files": [],
+      "verified_extension": true,
+      "earlier_capability_retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": true,
+        "submitted_source_sha256": "2af66f8a4148a07541f74bfb97a67aa76a544249c7e0045f396f1d0e6a7a1edc",
+        "correct_final_use": true,
+        "explicit_finish": true
+      },
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "final_source_unchanged": true,
+      "development_status": "waiting",
+      "final_status": "completed",
+      "development_actions": 30,
+      "cumulative_actions": 39,
+      "read_actions": 5,
+      "action_errors": 7,
+      "model_reported_completion": true,
+      "seconds": 436.587,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 403783,
+          "measured_calls": 40,
+          "expected_calls": 40,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 7441,
+          "measured_calls": 40,
+          "expected_calls": 40,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 387.12,
+          "measured_calls": 40,
+          "expected_calls": 40,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 387.109,
+          "measured_calls": 40,
+          "expected_calls": 40,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "model_calls": 40,
+      "wire_requests": 40,
+      "trace_complete": true,
+      "capture_complete": true,
+      "latency_measurements": {
+        "model_load_seconds": {
+          "known_sum": null,
+          "measured_calls": 0,
+          "expected_calls": 40,
+          "complete": false,
+          "status": "unavailable"
+        },
+        "prompt_processing_seconds": {
+          "known_sum": 31.94484,
+          "measured_calls": 40,
+          "expected_calls": 40,
+          "complete": true,
+          "status": "complete"
+        },
+        "generation_seconds": {
+          "known_sum": 352.706824,
+          "measured_calls": 40,
+          "expected_calls": 40,
+          "complete": true,
+          "status": "complete"
+        },
+        "cached_input_tokens": {
+          "known_sum": 391370,
+          "measured_calls": 40,
+          "expected_calls": 40,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 436.586865,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.4e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 7441,
+        "reported_output_tokens": 7441,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "inventory_correct": true,
+        "receipt_correct": true
+      },
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "format_json",
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": true
+      },
+      "secondary_route_additional_commands": 0,
+      "failure_reasons": [],
+      "source_sha256": "2af66f8a4148a07541f74bfb97a67aa76a544249c7e0045f396f1d0e6a7a1edc",
+      "operator_candidate_repairs": [],
+      "evidence_folder": ".data/lora-pilot-20261020/training/20261021T094702Z/inference-study-002/study/trials/base-q6_growth_03_sha256_file_staged-inputs/attempt-001"
+    },
+    {
+      "cell": "adapter-q6_growth_03_sha256_file_baseline",
+      "arm": "adapter-q6",
+      "repeat": 3,
+      "treatment": "baseline",
+      "input_protocol": "strict_preserve_visible_input",
+      "attempt": 1,
+      "state": "completed",
+      "feature_checks_passed": true,
+      "feature_check_count": 20,
+      "protected_regressions_passed": true,
+      "protected_regression_count": 50,
+      "candidate_package_valid": true,
+      "unexpected_candidate_files": [],
+      "verified_extension": true,
+      "earlier_capability_retained": true,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "6bdae9351269309a9c9e48ebab1088e2deb51a955dba4ca0809bdca6464290e4"
+      },
+      "scores": {},
+      "final_source_unchanged": null,
+      "development_status": "completed",
+      "final_status": null,
+      "development_actions": 40,
+      "cumulative_actions": 40,
+      "read_actions": 11,
+      "action_errors": 6,
+      "model_reported_completion": true,
+      "seconds": 426.293,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 550531,
+          "measured_calls": 41,
+          "expected_calls": 41,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 6413,
+          "measured_calls": 41,
+          "expected_calls": 41,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 382.102,
+          "measured_calls": 41,
+          "expected_calls": 41,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 382.091,
+          "measured_calls": 41,
+          "expected_calls": 41,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "model_calls": 41,
+      "wire_requests": 41,
+      "trace_complete": true,
+      "capture_complete": true,
+      "latency_measurements": {
+        "model_load_seconds": {
+          "known_sum": null,
+          "measured_calls": 0,
+          "expected_calls": 41,
+          "complete": false,
+          "status": "unavailable"
+        },
+        "prompt_processing_seconds": {
+          "known_sum": 35.398663,
+          "measured_calls": 41,
+          "expected_calls": 41,
+          "complete": true,
+          "status": "complete"
+        },
+        "generation_seconds": {
+          "known_sum": 343.914563,
+          "measured_calls": 41,
+          "expected_calls": 41,
+          "complete": true,
+          "status": "complete"
+        },
+        "cached_input_tokens": {
+          "known_sum": 538293,
+          "measured_calls": 41,
+          "expected_calls": 41,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 426.29312,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.5e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 6413,
+        "reported_output_tokens": 6413,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "posthoc_artifact_audit": {
+        "correct": false,
+        "error": "File not found"
+      },
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "edit_file",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": [
+            "format_json",
+            "sha256_file"
+          ]
+        },
+        "required_calls_observed": true
+      },
+      "secondary_route_additional_commands": 0,
+      "failure_reasons": [
+        "Changed visible final input before activation",
+        "Did not request activation"
+      ],
+      "source_sha256": "6bdae9351269309a9c9e48ebab1088e2deb51a955dba4ca0809bdca6464290e4",
+      "operator_candidate_repairs": [],
+      "evidence_folder": ".data/lora-pilot-20261020/training/20261021T094702Z/inference-study-002/study/trials/adapter-q6_growth_03_sha256_file_baseline/attempt-001"
+    },
+    {
+      "cell": "adapter-q6_growth_03_sha256_file_staged-inputs",
+      "arm": "adapter-q6",
+      "repeat": 3,
+      "treatment": "staged-inputs",
+      "input_protocol": "withheld_final_input",
+      "attempt": 1,
+      "state": "completed",
+      "feature_checks_passed": true,
+      "feature_check_count": 20,
+      "protected_regressions_passed": true,
+      "protected_regression_count": 50,
+      "candidate_package_valid": true,
+      "unexpected_candidate_files": [],
+      "verified_extension": true,
+      "earlier_capability_retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": true,
+        "submitted_source_sha256": "e8585530b6bbb7a40e8d22f6405667081e51289552b34fc6a7cdf89cadbe07fe",
+        "correct_final_use": true,
+        "explicit_finish": true
+      },
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "final_source_unchanged": true,
+      "development_status": "waiting",
+      "final_status": "completed",
+      "development_actions": 103,
+      "cumulative_actions": 110,
+      "read_actions": 83,
+      "action_errors": 6,
+      "model_reported_completion": true,
+      "seconds": 780.898,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 2052212,
+          "measured_calls": 112,
+          "expected_calls": 112,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 11818,
+          "measured_calls": 112,
+          "expected_calls": 112,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 719.824,
+          "measured_calls": 112,
+          "expected_calls": 112,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 719.793,
+          "measured_calls": 112,
+          "expected_calls": 112,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "model_calls": 112,
+      "wire_requests": 112,
+      "trace_complete": true,
+      "capture_complete": true,
+      "latency_measurements": {
+        "model_load_seconds": {
+          "known_sum": null,
+          "measured_calls": 0,
+          "expected_calls": 112,
+          "complete": false,
+          "status": "unavailable"
+        },
+        "prompt_processing_seconds": {
+          "known_sum": 70.360963,
+          "measured_calls": 112,
+          "expected_calls": 112,
+          "complete": true,
+          "status": "complete"
+        },
+        "generation_seconds": {
+          "known_sum": 635.70582,
+          "measured_calls": 112,
+          "expected_calls": 112,
+          "complete": true,
+          "status": "complete"
+        },
+        "cached_input_tokens": {
+          "known_sum": 2031271,
+          "measured_calls": 112,
+          "expected_calls": 112,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 780.898127,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.4e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 11818,
+        "reported_output_tokens": 11818,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "posthoc_artifact_audit": {
+        "correct": true,
+        "inventory_correct": true,
+        "receipt_correct": true
+      },
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "format_json",
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": true
+      },
+      "secondary_route_additional_commands": 0,
+      "failure_reasons": [],
+      "source_sha256": "e8585530b6bbb7a40e8d22f6405667081e51289552b34fc6a7cdf89cadbe07fe",
+      "operator_candidate_repairs": [],
+      "evidence_folder": ".data/lora-pilot-20261020/training/20261021T094702Z/inference-study-002/study/trials/adapter-q6_growth_03_sha256_file_staged-inputs/attempt-001"
+    }
+  ],
+  "matched_successful_pairs": [
+    {
+      "repeat": 2,
+      "treatment": "staged-inputs",
+      "arms": {
+        "adapter-q6": {
+          "seconds": 546.385,
+          "model_calls": 29,
+          "cumulative_actions": 28,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 275283,
+              "measured_calls": 29,
+              "expected_calls": 29,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 7740,
+              "measured_calls": 29,
+              "expected_calls": 29,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 502.28,
+              "measured_calls": 29,
+              "expected_calls": 29,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 502.272,
+              "measured_calls": 29,
+              "expected_calls": 29,
+              "complete": true,
+              "status": "complete"
+            }
+          }
+        },
+        "base-q6": {
+          "seconds": 611.365,
+          "model_calls": 67,
+          "cumulative_actions": 65,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 1020793,
+              "measured_calls": 67,
+              "expected_calls": 67,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 10519,
+              "measured_calls": 67,
+              "expected_calls": 67,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 552.332,
+              "measured_calls": 67,
+              "expected_calls": 67,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 552.314,
+              "measured_calls": 67,
+              "expected_calls": 67,
+              "complete": true,
+              "status": "complete"
+            }
+          }
+        }
+      }
+    },
+    {
+      "repeat": 3,
+      "treatment": "staged-inputs",
+      "arms": {
+        "base-q6": {
+          "seconds": 436.587,
+          "model_calls": 40,
+          "cumulative_actions": 39,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 403783,
+              "measured_calls": 40,
+              "expected_calls": 40,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 7441,
+              "measured_calls": 40,
+              "expected_calls": 40,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 387.12,
+              "measured_calls": 40,
+              "expected_calls": 40,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 387.109,
+              "measured_calls": 40,
+              "expected_calls": 40,
+              "complete": true,
+              "status": "complete"
+            }
+          }
+        },
+        "adapter-q6": {
+          "seconds": 780.898,
+          "model_calls": 112,
+          "cumulative_actions": 110,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 2052212,
+              "measured_calls": 112,
+              "expected_calls": 112,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 11818,
+              "measured_calls": 112,
+              "expected_calls": 112,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 719.824,
+              "measured_calls": 112,
+              "expected_calls": 112,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 719.793,
+              "measured_calls": 112,
+              "expected_calls": 112,
+              "complete": true,
+              "status": "complete"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "audit": {
+    "source_and_trusted_files_unchanged": true,
+    "runtime_assets_and_base_gguf_unchanged": true,
+    "selected_checkpoint_and_export_hash_verified": true,
+    "driver_snapshot_verified": true,
+    "all_24_cells_complete_one_attempt_each": true,
+    "operator_candidate_repairs": 0,
+    "model_task_infrastructure_failures": 0,
+    "pre_task_infrastructure_failures": 1,
+    "pre_task_amendment": {
+      "created": "2026-10-21T11:07:45.840534+00:00",
+      "prior_preflight": ".data\\lora-pilot-20261020\\training\\20261021T094702Z\\inference-study",
+      "prior_driver_sha256": "b1f5e1761d434eb065d966566d39746712dc2d0031d399b4ef8ad53dacba9bf8",
+      "new_driver_sha256": "309f5f16fefadd4fc02fddbe7bc6e7291688a265dec3cbfa765530be9324ce01",
+      "reason": "HTTP 501 requires --slot-save-path before cache erasure; additionally verify adapter application through the actual chat endpoint before task inference.",
+      "generation_task_cells_launched_before_amendment": 0,
+      "training_checkpoint_unchanged": {
+        "best_epoch": 2,
+        "best_validation_loss": 0.17730625878872872,
+        "baseline_validation_loss": 0.22113831493774733,
+        "best_adapter": "E:\\AutoProteus-training\\lora-pilot-20261020\\training\\20261021T094702Z\\epoch-2",
+        "eligible_for_deployment": true
+      },
+      "scope": "Infrastructure preflight correction, no task instructions, model selection, sampling, budgets or graders changed."
+    },
+    "secondary_route_audit_upgrades": 0
+  },
+  "cleanup": {
+    "checkedUtc": "2026-10-21T17:29:20.0535960Z",
+    "processes": [],
+    "gpu": "NVIDIA GeForce GTX 1080 Ti, 11264 MiB, 1271 MiB, 1 %",
+    "disks": [
+      {
+        "DeviceID": "D:",
+        "Size": 1024207089664,
+        "FreeSpace": 111404089344
+      },
+      {
+        "DeviceID": "E:",
+        "Size": 500104687616,
+        "FreeSpace": 87584354304
+      }
+    ]
+  },
+  "study_completed_utc": "2026-10-21T13:28:53.890839+00:00",
+  "limitations": [
+    "Three repeats per model and input protocol; not evidence of a reliable gain.",
+    "All formatter implementations passed the feature checks. Two base candidates failed the clean package requirement because they included disallowed fixture files; do not describe these as coding failures.",
+    "Fresh scale-zero controls share the loaded adapter memory, runtime, quantization and task settings. Historical scores remain separate.",
+    "Advisory app protocol qualification failed for the base and passed after repairs for the adapter; neither demonstrated first-pass qualification. Admission was the frozen benchmark plus ordinary-task rule.",
+    "Ordinary-task families overlap training/validation and are regression checks, not held-out capability tests.",
+    "The 18 historical Unicode validation examples are a narrow checkpoint-selection set, not an independent final benchmark.",
+    "One supplied hashing parent and one familiar prescribed formatter extension; no autonomous first-upgrade or broad self-improvement credit.",
+    "Visible and withheld final input protocols include different instructions and must be reported separately.",
+    "Training used NF4 and official instruction Qwen/Qwen3.5-9B; inference used published Q6_K with an F32 LoRA. GGUF upstream ancestry metadata does not prove an identical original HF checkpoint.",
+    "Logical input-token sums include cached prefixes and are not uncached compute or financial cost.",
+    "Per-trial trace/tokens/timing completeness does not include deployment warmup and qualification overhead. Total elapsed time includes those stages.",
+    "No permanent app activation, seed edits, full model merge, commit or push was performed."
+  ]
+}

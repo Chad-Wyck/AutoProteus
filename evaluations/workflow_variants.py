@@ -5,7 +5,35 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TREATMENTS = ('edit-feedback', 'syntax-feedback', 'masked-history', 'phases', 'staged-inputs',
-              'submission-feedback', 'edit-context', 'verified-lesson', 'final-contract')
+              'submission-feedback', 'edit-context', 'verified-lesson', 'final-contract', 'short-guidance')
+
+SHORT_GUIDANCE = '''Find relevant source, make a small change, then check it.
+For upgrades, follow harness/README.md. Preserve existing tests and add focused tests.
+Keep disposable examples outside harness/. Run python3 harness/seed.py check before requesting activation.
+After activation, complete the original task using the latest human requirements and requested defaults.
+Earlier examples and overrides belong to their own step. Inspect the saved final outputs, then finish.
+Use todo.txt or a small verification script when useful; choose checks that establish the requested outcome.
+'''
+
+SHORT_WORKFLOW = '''## Upgrade workflow
+
+1. Read the relevant source. Add behavior in `Workspace.execute` and register it
+   in `TOOL_SPECS`; use `self.path` for workspace paths.
+2. Preserve existing tests and add focused tests using `workspace.execute`.
+   Inspect actual files as well as return values. Repair failures and run
+   `python3 harness/seed.py check` before requesting activation.
+3. If remaining work needs the new tools, finish `needs_input` requesting
+   activation. Development checks do not independently approve an extension.
+4. After activation, complete the original task using the latest human
+   requirements, actual paths and requested defaults. Earlier examples apply
+   to their own step. Verify saved outputs, repair mismatches and explicitly
+   finish `completed`. Avoid repeating unchanged passing checks.
+
+A task plan or independent assertion script is optional. Use the inspection
+method that establishes the requested result; derive expectations from the
+requirements, rather than copying the produced output.
+
+'''
 
 
 def replace_once(text, anchor, replacement):
@@ -18,6 +46,25 @@ def variant(source, treatment, keep=8, threshold=512):
     if treatment not in ('baseline', *TREATMENTS):
         raise ValueError('Unknown workflow treatment')
     result = copy.deepcopy(source)
+    if treatment == 'short-guidance':
+        changed = set()
+        for item in result:
+            if item['path'] not in ('autoproteus/protocol.py', 'README.md'):
+                continue
+            text = base64.b64decode(item['data']).decode('utf-8')
+            newline = '\r\n' if '\r\n' in text else '\n'
+            if item['path'] == 'autoproteus/protocol.py':
+                start = text.index("GUIDANCE = '''")
+                end = text.index('USE_GUIDANCE = ') if 'USE_GUIDANCE = ' in text else text.index('PROTOCOL = ')
+                text = text[:start] + "GUIDANCE = '''" + SHORT_GUIDANCE.replace('\n', newline) + "'''" + newline * 2 + text[end:]
+            else:
+                start, end = text.index('## Upgrade workflow'), text.index('Keep fixtures, argument JSON')
+                text = text[:start] + SHORT_WORKFLOW.replace('\n', newline) + text[end:]
+            item['data'] = base64.b64encode(text.encode('utf-8')).decode('ascii')
+            changed.add(item['path'])
+        if changed != {'autoproteus/protocol.py', 'README.md'}:
+            raise ValueError('Short guidance needs the shared prompt and upgrade recipe')
+        return result
     if treatment in ('baseline', 'phases', 'staged-inputs', 'submission-feedback', 'edit-context', 'verified-lesson', 'final-contract'):
         return result
     # Validate even when only preparing inert source packs.

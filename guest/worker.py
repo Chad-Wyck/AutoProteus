@@ -185,6 +185,12 @@ def main(native_root=None):
     from autoproteus.storage import Store
     from autoproteus.providers import ProviderError
     from types import SimpleNamespace
+    # A reusable capability for this seed and future edited tools. The guest
+    # supplies request data only; permissions, DNS and connections stay on host.
+    from types import ModuleType
+    web_bridge = ModuleType('autoproteus_web')
+    web_bridge.request = lambda request: call({'op': 'web', 'request': request})
+    sys.modules['autoproteus_web'] = web_bridge
     activation_notice = None
     human_messages = []
     human_texts = {item['text'] for item in boot['session'].get('feed', []) if item.get('kind') == 'user'}

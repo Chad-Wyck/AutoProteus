@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import queue
+import re
 import threading
 import time
 import uuid
@@ -116,7 +117,28 @@ def wire_messages(messages, ollama):
 
 def normalize_tool_response(content, calls):
     if not calls:
-        raise ValueError('A native response needs a tool call. Call finish with message and status="completed" after verification, or status="needs_input" to ask the user a required question.')
+        text = content.strip()
+        if not text:
+            raise ValueError('An empty response needs a tool call or a reply. Call finish to report completion.')
+        # Some runtimes return a complete textual finish instead of a native
+        # envelope. Do not extract calls from prose, fences or partial JSON.
+        if text.startswith('finish\n'):
+            arguments = json.loads(text.split('\n', 1)[1])
+            if (not isinstance(arguments, dict) or set(arguments) != {'message', 'status'}
+                    or not isinstance(arguments['message'], str) or arguments['status'] not in ('completed', 'needs_input')):
+                raise ValueError('Call finish with a text message and a valid status')
+            return json.dumps(arguments, ensure_ascii=False)
+        if text.startswith('{'):
+            # The seed validates this same neutral interface in both modes.
+            value = json.loads(text)
+            if not isinstance(value, dict):
+                raise ValueError('Return one complete action object')
+            return json.dumps(value, ensure_ascii=False)
+        if text.startswith(('[', '```', '<tool', '<function')) or re.match(r'^\w+\s*\n\s*\{', text):
+            raise ValueError('Use a complete supplied tool call. Call finish to report completion.')
+        # A conversational reply is useful to the user, but cannot certify
+        # completion or execute anything. Explicit finish remains necessary.
+        return json.dumps({'message': content, 'status': 'needs_input'}, ensure_ascii=False)
     if len(calls) > 32:
         raise ValueError('Too many tool calls in one response')
     decisions = []

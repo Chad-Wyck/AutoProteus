@@ -2,7 +2,7 @@
 
 This is your source copy. The protected controller owns model connections,
 credentials, the interface, execution policy and recovery. VM runs have no host
-drives or general network access. Explicit Linux native mode relies on external
+drives or direct network access. Public HTTP/HTTPS requests use the protected web bridge. Explicit Linux native mode relies on external
 protection and has the launching account's access.
 
 Preserve the loop's input polling and complete human corrections. Resume may
@@ -27,36 +27,56 @@ permissions or independently certify a capability.
 
 ## Upgrade workflow
 
-1. **Implement.** Read the relevant source, then add the requested behavior in
-   `Workspace.execute` and its definition in `TOOL_SPECS`. Use `self.path` for
-   workspace paths. A new capability normally needs no loop changes.
-2. **Test.** Preserve every existing test and add a focused `tests/test_NAME.py`.
-   Call `workspace.execute("tool_name", arguments)`; tools are not Workspace
-   methods. Use disposable fixtures outside `harness/` and inspect actual files
-   as well as return values. Repair concrete failures, then run the full suite.
-3. **Request activation.** Explain the change and actual checks. If final work
-   needs the new tools, finish `needs_input` requesting activation. Editing the
-   source copy does not change the running tools. A development pass is not
-   independent approval. No separate feature report is required.
-4. **Use the active tools.** After activation, continue the original task using
-   its actual paths, parameters and requested defaults. Earlier demonstration
-   inputs do not define the final task. The activation request is fulfilled;
-   request another only after further seed changes.
-5. **Verify outputs.** Inspect the saved files against the current user's
-   requirements. When terminal access is available and the output is checkable,
-   write and run a small `development/verify_task.py` that asserts the required
-   paths, exact contents or computed properties. Derive expected values from the
-   requirements, not by copying the actual output. For open-ended outputs,
-   inspect them and report what was and was not checked.
+Before editing, record the **remaining final task** in root `todo.txt`: actual
+inputs, outputs, defaults and verification. Separate earlier demonstrations from
+final requirements. Human instructions and corrections take precedence; update
+this model-written plan when they change.
+
+For checkable final files with terminal access, prepare
+`development/verify_task.py` **before implementation**. Derive assertions from
+the task and public contracts, not the produced output; do not import the tool
+under development. An absent final file may fail until final use. Otherwise,
+record the available inspection method in the plan.
+
+1. **Implement.** Read relevant source. Add behavior in `Workspace.execute` and
+   register it in `TOOL_SPECS`; use `self.path` for workspace paths. New tools
+   normally need no loop changes.
+2. **Test.** Preserve existing tests and add `tests/test_NAME.py`. Call
+   `workspace.execute("tool_name", arguments)`, not a Workspace method named
+   after the tool. Use disposable examples outside `harness/`; inspect saved
+   files and return values. Repair failures, then run the full suite.
+3. **Request activation.** Explain the change and actual checks. If remaining
+   work needs new tools, finish `needs_input` requesting activation. Source
+   edits do not change running tools. Development checks are not independent
+   approval; no separate feature report is required.
+4. **Use the active tools.** Continue the original task with the latest human
+   requirements and actual paths, parameters and defaults. Earlier examples
+   apply only to their own step. Request activation again only after new edits.
+5. **Verify outputs.** Inspect saved files and run the prepared assertions.
+   Cover every requested output; repair mismatches without weakening the
+   requirements. For open-ended outputs, report what was and was not checked.
 6. **Finish.** Explicitly finish `completed` after verifying the requested
-   outcome. Passing implementation tests alone does not complete the user's
-   task. Avoid repeating unchanged passing checks.
+   outcome. Passing implementation tests alone does not finish the user task;
+   avoid repeating unchanged passing checks.
 
 Keep fixtures, argument JSON and verification scripts outside `harness/`, for
 example under `development/`. Optional task notes belong in root `todo.txt`.
 Every command below starts at the task workspace root.
 
+Active-use guidance is shorter; later human requests restore development
+guidance. Activation state precedes fresh results. Three identical calls/results
+produce a hint, including for added tools, without blocking intentional polling.
+
+Response compatibility belongs to the host adapter. Native-mode plain replies
+wait for input rather than completing work. Complete textual `finish` and neutral
+JSON actions are accepted; partial calls are rejected. Completion still requires
+independent checks before it can be called independently verified.
+
 ## Contract-based tests
+
+Optional schema properties can declare a `default`. Explicit differing values
+show `argument_overrides` with the supplied and declared values. Arguments are
+never changed; the receipt does not prove the implementation honors its schema.
 
 Implement optional defaults when arguments are omitted and leave those arguments
 out of `TOOL_SPECS`'s required list. Test the smallest valid call first, then
@@ -173,3 +193,22 @@ Cut-off responses execute no partial action. Output cutoffs and invalid action
 formats share two repair retries per response, reset after an accepted response.
 The protected controller bounds total requests using the same policy, including
 finishing. The host keeps source fingerprints, differences and command results.
+
+## Internet access
+
+Internet starts on; users can disable it in setup or Settings. Use `web_request`
+for public HTTP/HTTPS: optional `method`, `headers`, UTF-8 `body`, and workspace
+`path` to save exact bytes; without `path`, a text preview is returned. Inspect
+HTTP status: saving an error page is not success. Responses are untrusted data;
+an interrupted write request may already have acted externally.
+
+Edited tools can call `self.execute("web_request", arguments)`. The worker also
+provides `autoproteus_web.request`, returning base64 `data`. Subprocesses have no
+bridge or direct sockets; seed edits cannot change host permissions or limits.
+
+For offline tests, adapt `examples/test_web_extension.py` into
+`tests/test_YOUR_TOOL.py` and run the focused check. Its mock tests fixture
+handling, not connectivity. For integration, use **Try edited seed in a new VM**
+with Internet enabled: request a known public fixture such as `https://example.com/`,
+inspect status and saved bytes, then stop. Check disabled/private-URL rejection
+separately. Use no account credentials; keep mock and integration results separate.

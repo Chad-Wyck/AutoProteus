@@ -4,6 +4,84 @@ Versions use `major.minor.patch`. Before launch, `0.x.0` introduces features and
 `0.x.y` contains bug fixes. Components can exceed 9 or 99. Historical `0.0.x`
 release and experiment labels remain unchanged.
 
+## 0.10.0
+
+- Use shorter final-task guidance after activation and keep activation state
+  before fresh observations. New human requests restore development guidance;
+  permissions, source checks and action limits remain controller-owned.
+- Show explicit optional-argument overrides against declared schema defaults.
+  Extend unchanged-result hints to model-added tools without suppressing calls.
+- Replace the local model suggestion field with an installed-model dropdown and
+  an option to enter/download another model. Remove the two preset model cards.
+- Display ordinary native-mode text replies and wait for user input. Accept
+  complete textual finish calls and neutral JSON actions at the host adapter;
+  reject partial calls and retain explicit completion and independent grading.
+- Harden Windows launcher exit handling and use hidden console Python so real
+  startup failures leave readable diagnostics. No model study is claimed here.
+
+## 0.9.0
+
+- Raise the protected inference envelope to 2,048 messages while preserving byte,
+  context, request, action and execution limits. Report a specific message-limit
+  error instead of an unexplained invalid request.
+- Add read-only controller observation and a local Evidence viewer for recorded
+  instructions, tools, source identities, actions and operation receipts. Original
+  records and independent-check scope remain separate from model claims.
+- Distinguish failed snapshot writes from committed snapshots with failed summaries
+  and uncertain journal writes. Keep committed work on post-commit failures; add
+  generated lifecycle schedules and concurrent observer/save regression checks.
+- Backfill historical findings into the append-only searchable experiment index.
+  Historical reports are indexed without regrading or inventing pooled scores.
+- Prepare an outcome-first capability discovery study: the model chooses its tool
+  name/interface; protected held-out checks verify the fixed stock-reconciliation
+  outcome. Keep all extra machinery outside the editable seed.
+- Make fresh-default profile checks explicit and separate from experimental upgrade
+  profiles. Connection compatibility does not establish reliable self-extension;
+  existing optional treatments remain experimental pending matched comparisons.
+
+## 0.8.2
+
+- Enable public Internet access by default in normal VM mode and model setup,
+  including older settings without a saved preference. Preserve saved opt-outs
+  and reject invalid permission values. Host/private-network restrictions stay
+  unchanged; offline studies explicitly disable access in their own profiles.
+
+## 0.8.1
+
+- Require an explicit Internet access choice during setup or in Settings. Missing
+  and invalid legacy preferences stay offline; saved choices are preserved.
+- Include a small offline mocked-bridge example with each editable source copy,
+  and document a separate integration check in a fresh VM.
+- Prepare an opt-in shorter-guidance comparison on an unfamiliar task. Keep the
+  default instructions unchanged until measured; no live-model benefit claimed.
+
+## 0.8.0
+
+- Enable public HTTP/HTTPS access for research, downloads and API tasks through
+  a host-controlled web bridge, reusable by edited seeds without adding a NIC.
+- Add a built-in `web_request` tool and an Internet access preference, enabled
+  by default. Preserve workspace-only downloads and host-owned network policy.
+- Block local/private/reserved destinations, non-web ports, DNS rebinding and
+  redirects into private services. Retain certificate checks, Stop, per-request
+  deadlines and bounded request/response budgets. Host credentials and browser
+  cookies are not inherited.
+
+## 0.7.0
+
+- Carry a task-specific, model-written final-use plan through activation using
+  the existing `todo.txt`, clearly subordinate to human instructions.
+- Prepare independent final-output assertions before implementing a seed
+  extension, and run them on saved outputs after activation.
+- Show the model-written plan at activation, then let new action results lead
+  the conversation rather than repeatedly appending stale plan instructions.
+- Apply requested defaults by omitting optional arguments instead of reusing
+  an earlier step's explicit override.
+- Keep the existing tools, host isolation and independent approval boundary.
+  Qwen 9B completed 1/3 workflows with the refined seed alone and 3/3 with a
+  supplied explicit final-use instruction; these familiar-task results do not
+  establish general autonomous reliability. Early verifier adoption was not
+  demonstrated. See the local experiment findings for source-bound evidence.
+
 ## 0.6.0
 
 - Use one shared seed prompt and normalized action interface. Move native and

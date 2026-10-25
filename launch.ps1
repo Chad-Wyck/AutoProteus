@@ -5,7 +5,7 @@ $taskRoot = $PSScriptRoot
 $taskPin = (Get-Content -LiteralPath (Join-Path $taskRoot 'controller\managed-runtime-lock.json') -Raw | ConvertFrom-Json).python_windows
 $taskRuntimeParent = Join-Path $taskRoot '.runtime'
 $taskRuntime = Join-Path $taskRuntimeParent ('python-' + $taskPin.version)
-$taskPython = Join-Path $taskRuntime 'pythonw.exe'
+$taskPython = Join-Path $taskRuntime 'python.exe'
 
 function Test-PrivateRuntime {
     try {
@@ -78,10 +78,15 @@ try {
     $taskLaunchId = [Guid]::NewGuid().ToString('N').Substring(0, 8)
     $taskErrorLog = Join-Path $taskData ('startup-error-' + $taskLaunchId + '.log')
     $taskOutputLog = Join-Path $taskData ('startup-' + $taskLaunchId + '.log')
+    # The console executable supplies reliable redirected diagnostics. Its
+    # window stays hidden; pythonw can discard exceptions along with stdout.
     $taskProcess = Start-Process -FilePath $taskPython -ArgumentList $taskArguments -WorkingDirectory $taskRoot -WindowStyle Hidden -PassThru -RedirectStandardError $taskErrorLog -RedirectStandardOutput $taskOutputLog
+    $taskHandle = $taskProcess.Handle
     Start-Sleep -Milliseconds 1300
-    if ($taskProcess.HasExited -and $taskProcess.ExitCode -ne 0) {
-        throw ('AutoProteus could not start. Details are in ' + $taskErrorLog)
+    if ($taskProcess.HasExited) {
+        $taskProcess.WaitForExit()
+        if ($null -eq $taskProcess.ExitCode) { throw ('AutoProteus startup status was unavailable. Details are in ' + $taskErrorLog) }
+        if ($taskProcess.ExitCode -ne 0) { throw ('AutoProteus could not start (exit ' + $taskProcess.ExitCode + '). Details are in ' + $taskErrorLog) }
     }
 } catch {
     Add-Type -AssemblyName System.Windows.Forms

@@ -1,0 +1,421 @@
+{
+  "review_date": "2026-10-21",
+  "timezone": "America/Regina",
+  "upstream": {
+    "repository": "earendil-works/pi",
+    "url": "https://github.com/earendil-works/pi",
+    "observed_branch": "main",
+    "commit": "bd3c9b823762b7383954aa49e13ee350471015fe",
+    "commit_date_utc": "2026-10-21T14:39:13Z",
+    "commit_subject": "fix(coding-agent): activate extension tools registered after the branch recorded its loadout",
+    "root_license": "MIT",
+    "package_versions_observed": {
+      "@earendil-works/pi-coding-agent": "1.3.0",
+      "@earendil-works/pi-durable": "1.3.0"
+    },
+    "files": [
+      {
+        "path": "LICENSE",
+        "git_blob_sha": "b0a8e9b81083294360c69b4ec45d3d39a2b28197",
+        "repository_bytes": 1069,
+        "fetched_characters": 1069,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "b0a8e9b81083294360c69b4ec45d3d39a2b28197",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/LICENSE"
+      },
+      {
+        "path": "packages/agent/README.md",
+        "git_blob_sha": "38625ce1191941544f1883d46a1782a120d5d4a4",
+        "repository_bytes": 21449,
+        "fetched_characters": 21317,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "38625ce1191941544f1883d46a1782a120d5d4a4",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/agent/README.md"
+      },
+      {
+        "path": "packages/ai/src/api/transform-messages.ts",
+        "git_blob_sha": "d6bbba5051021de0651d13c4c009a6bed5928685",
+        "repository_bytes": 8818,
+        "fetched_characters": 8818,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "d6bbba5051021de0651d13c4c009a6bed5928685",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/ai/src/api/transform-messages.ts"
+      },
+      {
+        "path": "packages/ai/src/utils/transcript.ts",
+        "git_blob_sha": "6f8a2691faf81b0364f2d29cb5bff812acb64d3c",
+        "repository_bytes": 11273,
+        "fetched_characters": 11273,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "6f8a2691faf81b0364f2d29cb5bff812acb64d3c",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/ai/src/utils/transcript.ts"
+      },
+      {
+        "path": "packages/coding-agent/docs/session-format.md",
+        "git_blob_sha": "715341998fb36c905508ae958727ea49cc84b4d6",
+        "repository_bytes": 15766,
+        "fetched_characters": 15726,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "715341998fb36c905508ae958727ea49cc84b4d6",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/coding-agent/docs/session-format.md"
+      },
+      {
+        "path": "packages/coding-agent/docs/llama-cpp.md",
+        "git_blob_sha": "d4c41ab2e098f6a1bf8777c85cb156ca29dc4836",
+        "repository_bytes": 7459,
+        "fetched_characters": 7405,
+        "fetch_succeeded": true,
+        "scope": "Documentation screen; no runtime tested",
+        "returned_blob_sha": "d4c41ab2e098f6a1bf8777c85cb156ca29dc4836",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/coding-agent/docs/llama-cpp.md"
+      },
+      {
+        "path": "packages/durable/src/harness/prompt.ts",
+        "git_blob_sha": "73680b4aa9a6571d84fe2c9596740f7b4f258c09",
+        "repository_bytes": 6585,
+        "fetched_characters": 6585,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "73680b4aa9a6571d84fe2c9596740f7b4f258c09",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/durable/src/harness/prompt.ts"
+      },
+      {
+        "path": "packages/durable/src/harness/submissions.ts",
+        "git_blob_sha": "0cf838a93932cac6d41ec5e209f987eda1546611",
+        "repository_bytes": 11484,
+        "fetched_characters": 11483,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "0cf838a93932cac6d41ec5e209f987eda1546611",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/durable/src/harness/submissions.ts"
+      },
+      {
+        "path": "packages/durable/src/tool-search/tool-search.ts",
+        "git_blob_sha": "ca600ae5ed2d1268de32327dc061106d7ddbd747",
+        "repository_bytes": 4295,
+        "fetched_characters": 4295,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "ca600ae5ed2d1268de32327dc061106d7ddbd747",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/durable/src/tool-search/tool-search.ts"
+      },
+      {
+        "path": "packages/coding-agent/docs/security.md",
+        "git_blob_sha": "4f0dc290fe1011883cd64c729f07bfe046feb9b1",
+        "repository_bytes": 6542,
+        "fetched_characters": 6542,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "4f0dc290fe1011883cd64c729f07bfe046feb9b1",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/coding-agent/docs/security.md"
+      },
+      {
+        "path": "packages/durable/src/harness/tool.ts",
+        "git_blob_sha": "52bc4a3ada1892645aca5a35f4d90b875edda4ca",
+        "repository_bytes": 41588,
+        "fetched_characters": 41588,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "52bc4a3ada1892645aca5a35f4d90b875edda4ca",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/durable/src/harness/tool.ts"
+      },
+      {
+        "path": "packages/durable/src/harness/generation.ts",
+        "git_blob_sha": "c8d26791cd5a2e26287f73255b75f65ec21c3f22",
+        "repository_bytes": 33884,
+        "fetched_characters": 33876,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "c8d26791cd5a2e26287f73255b75f65ec21c3f22",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/durable/src/harness/generation.ts"
+      },
+      {
+        "path": "packages/durable/src/harness/scheduler.ts",
+        "git_blob_sha": "23951e89934a6214329e7511f3fc8bca2d23f921",
+        "repository_bytes": 108573,
+        "fetched_characters": 108215,
+        "fetch_succeeded": true,
+        "scope": "Symbol scan only",
+        "returned_blob_sha": "23951e89934a6214329e7511f3fc8bca2d23f921",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/durable/src/harness/scheduler.ts"
+      },
+      {
+        "path": "packages/durable/test/harness-generation-recovery.test.ts",
+        "git_blob_sha": "ef104ac4c720a0064e83c42ff4cf46351ec920c9",
+        "repository_bytes": 14608,
+        "fetched_characters": 14608,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "ef104ac4c720a0064e83c42ff4cf46351ec920c9",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/durable/test/harness-generation-recovery.test.ts"
+      },
+      {
+        "path": "packages/agent/src/agent-loop.ts",
+        "git_blob_sha": "cfc9401e5581847f6d5a9bb1815ab0f0e663f2e5",
+        "repository_bytes": 29889,
+        "fetched_characters": 29885,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "cfc9401e5581847f6d5a9bb1815ab0f0e663f2e5",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/agent/src/agent-loop.ts"
+      },
+      {
+        "path": "packages/ai/test/tool-call-without-result.test.ts",
+        "git_blob_sha": "0223559670fe13e02d36aeaf59e3bf2150cc6cac",
+        "repository_bytes": 14162,
+        "fetched_characters": 14162,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "0223559670fe13e02d36aeaf59e3bf2150cc6cac",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/ai/test/tool-call-without-result.test.ts"
+      },
+      {
+        "path": "packages/ai/test/transcript-tool-changes.test.ts",
+        "git_blob_sha": "03127cd24ef4ddc462ccd50d68d6762bc073b699",
+        "repository_bytes": 24455,
+        "fetched_characters": 24455,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "03127cd24ef4ddc462ccd50d68d6762bc073b699",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/ai/test/transcript-tool-changes.test.ts"
+      },
+      {
+        "path": "packages/coding-agent/test/agent-session-dynamic-tools.test.ts",
+        "git_blob_sha": "afeb0f2d171c4774706f8dd492724fc8046cce74",
+        "repository_bytes": 8011,
+        "fetched_characters": 8011,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "afeb0f2d171c4774706f8dd492724fc8046cce74",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/coding-agent/test/agent-session-dynamic-tools.test.ts"
+      },
+      {
+        "path": "packages/durable/test/harness-tools-recovery.test.ts",
+        "git_blob_sha": "226bade8155d791e76ab355a17d39e77ccae99ed",
+        "repository_bytes": 15192,
+        "fetched_characters": 15192,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "226bade8155d791e76ab355a17d39e77ccae99ed",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/durable/test/harness-tools-recovery.test.ts"
+      },
+      {
+        "path": "packages/durable/test/harness-submissions.test.ts",
+        "git_blob_sha": "07afaa5476ef286677ea56008e5a99486aa90f48",
+        "repository_bytes": 12839,
+        "fetched_characters": 12839,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "07afaa5476ef286677ea56008e5a99486aa90f48",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/durable/test/harness-submissions.test.ts"
+      },
+      {
+        "path": "packages/durable/test/harness-prompt.test.ts",
+        "git_blob_sha": "40ef2e09e6351a1c89220d43677c6fb118927428",
+        "repository_bytes": 11590,
+        "fetched_characters": 11590,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "40ef2e09e6351a1c89220d43677c6fb118927428",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/durable/test/harness-prompt.test.ts"
+      },
+      {
+        "path": "packages/ai/test/transform-messages-cross-model-thinking.test.ts",
+        "git_blob_sha": "950f1fdc9189a5b223c688c5c2d59609e844678a",
+        "repository_bytes": 3501,
+        "fetched_characters": 3501,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "950f1fdc9189a5b223c688c5c2d59609e844678a",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/ai/test/transform-messages-cross-model-thinking.test.ts"
+      },
+      {
+        "path": "packages/durable/package.json",
+        "git_blob_sha": "c15e96ad439b8e727d6b41dbb500e5638bc8c53d",
+        "repository_bytes": 5726,
+        "fetched_characters": 5726,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "c15e96ad439b8e727d6b41dbb500e5638bc8c53d",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/durable/package.json"
+      },
+      {
+        "path": "packages/coding-agent/package.json",
+        "git_blob_sha": "33ac1bcfd6f15b8bcb17ea16ee42ade52421d70b",
+        "repository_bytes": 3873,
+        "fetched_characters": 3873,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "33ac1bcfd6f15b8bcb17ea16ee42ade52421d70b",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/coding-agent/package.json"
+      },
+      {
+        "path": "packages/agent/test/agent-loop.test.ts",
+        "git_blob_sha": "4a9386a131db7f24b3f309d4b9b2e545277a3fbc",
+        "repository_bytes": 67149,
+        "fetched_characters": 67149,
+        "fetch_succeeded": true,
+        "scope": "Selected source/documentation passages; selected test assertions; not a full file audit",
+        "returned_blob_sha": "4a9386a131db7f24b3f309d4b9b2e545277a3fbc",
+        "blob_identity_matches_tree": true,
+        "url": "https://github.com/earendil-works/pi/blob/bd3c9b823762b7383954aa49e13ee350471015fe/packages/agent/test/agent-loop.test.ts"
+      }
+    ]
+  },
+  "local": {
+    "head": "4d3c8f3707fc69754a86dbf580528798f831c718",
+    "version": "0.3.0",
+    "scope": "Selected application paths and latest findings, including uncommitted study reports; other work preserved.",
+    "files": [
+      {
+        "path": "README.md",
+        "sha256": "13470070d9e3d81d29074781858535f032bb1f5920312bca9748f031418ab74a",
+        "bytes": 6519
+      },
+      {
+        "path": "CHANGELOG.md",
+        "sha256": "8e431f6d9a1d86b4fa3f7edef14a4f3a8705e94fd1f538223af2f49c6cec8aab",
+        "bytes": 4256
+      },
+      {
+        "path": "autoproteus/agent.py",
+        "sha256": "c18705b9dcbd39a45f745f0fc5a9d28d69d65f1b3de45ea55470625a598643d7",
+        "bytes": 11631
+      },
+      {
+        "path": "autoproteus/context.py",
+        "sha256": "b6cbfd1f7604a890c0eacdb6e723fa9abebc6a73b55230f9cf91167f45241cc9",
+        "bytes": 7244
+      },
+      {
+        "path": "autoproteus/providers.py",
+        "sha256": "677ebbba88a342cf315c55e0bb51a41b6ca54b48e2bf1b560c819e517d54e6b1",
+        "bytes": 3234
+      },
+      {
+        "path": "controller/storage.py",
+        "sha256": "08b5b8bdc83c35f1989f1bdbfc7ca1f38e194d4874aaa71f3fbbf6cec41b8e82",
+        "bytes": 9934
+      },
+      {
+        "path": "controller/providers.py",
+        "sha256": "867e091eb121558c86c679e073ab360691428029f564d33731b27945d78af380",
+        "bytes": 22136
+      },
+      {
+        "path": "controller/isolation.py",
+        "sha256": "4954c76f3dca6c48959da22b83ec6824a6445c6ad8882a0175a537257be50465",
+        "bytes": 38008
+      },
+      {
+        "path": "controller/compatibility.py",
+        "sha256": "606abb6422529270dcb4c058e4d1f675d23cccd8ee14c906cd4d0d8471d83565",
+        "bytes": 11190
+      },
+      {
+        "path": "controller/server.py",
+        "sha256": "5321006b7d4df25a3eaf7b81653e8601c642b20a5f2e8c1af40b26b64ef49a30",
+        "bytes": 25059
+      },
+      {
+        "path": "guest/worker.py",
+        "sha256": "59b283ce6eafe14b7db8cfb3e56278beeb58fa7e7f43bb3f3fd217e681f697a4",
+        "bytes": 16243
+      },
+      {
+        "path": "web/app.js",
+        "sha256": "8ad087355fbce85db5470122495742b949e460aa6db6dd4a9946edee7b92c28e",
+        "bytes": 42122
+      },
+      {
+        "path": "evaluations/workflow_variants.py",
+        "sha256": "4aee448d4b8fba22c1d6e21e5293a5fbbf13858764bf82fc487b77ff5be47f2f",
+        "bytes": 3881
+      },
+      {
+        "path": "evaluations/seed-v0.3.0-staged-input-findings.md",
+        "sha256": "26f10f05830dacf41b8fcc224c7a52be8b75d00b4f09c9cdb0621e21c4e77368",
+        "bytes": 7309
+      },
+      {
+        "path": "evaluations/seed-v0.3.0-oxcoder-staged-input-findings.md",
+        "sha256": "10ebdc4859c75696a9243393c78d99cd35ce204470519b1800138ac06d62f094",
+        "bytes": 9294
+      },
+      {
+        "path": "evaluations/lora-pilot-2026-10-21-findings.md",
+        "sha256": "b15f8a2a5a5038095c350d6370798e5a25564897902d9e9464564b0be4f673da",
+        "bytes": 11900
+      },
+      {
+        "path": "evaluations/oxcoder-checkpoint-audit-2026-10-21.md",
+        "sha256": "cce9a4f6a28ff7912d1d2e43ece6f0edec2c2a6fe3e5e9106ab579a6ec27994b",
+        "bytes": 5654
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "pi-positional-prompt-tool-history",
+      "priority": "near term",
+      "new_scope": "Source-bound effective prompt/catalog history; current activation notices, source IDs and optional wire traces already exist."
+    },
+    {
+      "id": "pi-durable-operation-receipts",
+      "priority": "near term",
+      "new_scope": "Explicit recovery policy/receipts and interruption tests; current snapshots, file manifests and Resume uncertainty notice already exist."
+    },
+    {
+      "id": "pi-steering-followup-queues",
+      "priority": "near term",
+      "new_scope": "Human input queued during an active run; current UI requires stopping/resuming."
+    },
+    {
+      "id": "pi-deferred-tool-catalog",
+      "priority": "later experiment",
+      "new_scope": "Selective declarations as specialist tools grow; current small catalog and non-use of navigation helpers argue against immediate expansion."
+    },
+    {
+      "id": "pi-cross-model-transcript-tests",
+      "priority": "provider expansion reference",
+      "new_scope": "Broader transport/handoff conformance cases; neutral history and repeated profile qualification already exist."
+    }
+  ],
+  "limitations": [
+    "Scoped source/documentation/test-assertion inspection, not a complete repository or security audit.",
+    "Upstream tests and examples were not run.",
+    "No Pi installation, package/model downloads, inference, GPU work or app/test configuration changes.",
+    "No measured AutoProteus performance or general recursive-improvement claim.",
+    "No watch automation or watchlist changes."
+  ],
+  "report": "evaluations/pi-research-2026-10-21.md"
+}

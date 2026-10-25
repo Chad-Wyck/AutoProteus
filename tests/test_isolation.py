@@ -18,6 +18,21 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class BoundaryTests(unittest.TestCase):
+    def test_two_stage_history_fits_while_message_byte_and_request_caps_remain(self):
+        client = Mock(); client.complete.return_value = {'content': '{}'}
+        broker = Broker(self.store, self.session, client, self.settings.values, threading.Event(), 'Activation state')
+        messages = [{'role': 'user', 'content': str(i)} for i in range(402)]
+        broker.handle({'op': 'infer', 'messages': messages})
+        self.assertEqual(len(client.complete.call_args.args[0]), 403)
+        with self.assertRaisesRegex(IsolationError, '2048-message'):
+            broker.handle({'op': 'infer', 'messages': messages * 6})
+        with self.assertRaisesRegex(IsolationError, 'Invalid model request'):
+            broker.handle({'op': 'infer', 'messages': [{'role': 'user', 'content': 'x' * 1500001}]})
+        self.assertEqual(broker.requests, 1)
+        broker.requests = broker.request_limit
+        with self.assertRaisesRegex(IsolationError, 'request quota'):
+            broker.handle({'op': 'infer', 'messages': messages})
+
     def test_protocol_repairs_discard_raw_provider_data_and_keep_the_host_request_quota(self):
         from controller.providers import ProviderError
         client = Mock()
@@ -34,7 +49,7 @@ class BoundaryTests(unittest.TestCase):
         with self.assertRaisesRegex(IsolationError, 'request quota'):
             broker.handle({'op':'infer','messages':[{'role':'user','content':'test'}]})
 
-    def test_host_activation_state_is_last_without_replacing_human_requirements(self):
+    def test_host_activation_state_is_early_without_replacing_human_requirements(self):
         client = Mock()
         client.complete.return_value = {'content':'{}'}
         phase = 'CURRENT ACTIVATION STATE\nRunning seed is active.'
@@ -42,8 +57,8 @@ class BoundaryTests(unittest.TestCase):
         messages = [{'role':'user','content':'Keep the original human constraint.'}]
         broker.handle({'op':'infer','messages':messages})
         forwarded = client.complete.call_args.args[0]
-        self.assertEqual(forwarded[0], messages[0])
-        self.assertEqual(forwarded[-1]['content'], phase)
+        self.assertEqual(forwarded[-1], messages[0])
+        self.assertEqual(forwarded[0]['content'], phase)
         self.assertEqual(messages, [{'role':'user','content':'Keep the original human constraint.'}])
         broker.handle({'op':'infer','messages':forwarded})
         self.assertEqual(client.complete.call_args.args[0], forwarded)

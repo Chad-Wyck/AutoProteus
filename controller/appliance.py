@@ -175,7 +175,8 @@ class Appliance:
                     'Prepare the isolated environment' if available else
                     self.unavailable_message()),
                 'error': self.error, 'backend': 'QEMU / Linux KVM' if self.linux else 'QEMU / Windows Hypervisor Platform',
-                'memory_mb': 2048, 'cpus': 2, 'workspace_mb': 512, 'network': False}
+                'memory_mb': 2048, 'cpus': 2, 'workspace_mb': 512, 'network': False,
+                'web_access': 'host-controlled public HTTP/HTTPS'}
 
     def prepare(self):
         with self.lock:

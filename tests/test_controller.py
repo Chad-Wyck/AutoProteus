@@ -46,6 +46,22 @@ class StartupTests(unittest.TestCase):
 
 
 class HostApiTests(unittest.TestCase):
+    def test_evidence_api_observes_the_active_owner_and_rejects_writes(self):
+        from controller.inference_history import InferenceHistory
+        session = self.app.store.create('Observe active work', 'demo', 'fixture')
+        session['status'] = 'running'; self.app.store.save(session)
+        key = InferenceHistory(self.app.store, session, {}).blob({'instructions': ['fixture'], 'tools': []})
+        revision = self.app.store.revision
+        with self.request('/api/evidence?id=' + session['id']) as response:
+            value = json.load(response)
+        self.assertTrue(value['read_only']); self.assertIn('verification', value)
+        with self.request('/api/evidence/blob?id=' + session['id'] + '&key=' + key) as response:
+            self.assertEqual(json.load(response)['value']['instructions'], ['fixture'])
+        with self.assertRaises(urllib.error.HTTPError):
+            self.request('/api/evidence', {'id': session['id'], 'status': 'completed'})
+        self.assertEqual(session['status'], 'running')
+        self.assertEqual(self.app.store.revision, revision)
+
     def test_live_input_api_persists_pending_cancellation_and_refuses_inactive_tasks(self):
         from unittest.mock import Mock
         session = self.app.store.create('Input fixture', 'demo', 'fixture')

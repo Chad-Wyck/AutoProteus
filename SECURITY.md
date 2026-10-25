@@ -28,9 +28,10 @@ The guest boots into an in-memory appliance. The seed runs as UID/GID 1000 witho
 
 ## Broker
 
-The transport is bounded, newline-framed JSON, not a network server, host shell, filesystem server, or URL proxy. Protocol 2 verifies SHA-256 for every source/input file before writing it in the guest. A host file lease serializes VM runs across app, evaluator and test processes; process exit releases the lease. After the boot/input exchange it accepts only:
+The transport is bounded, newline-framed JSON, not a network server, host shell, filesystem server, or unrestricted URL proxy. Protocol 2 verifies SHA-256 for every source/input file before writing it in the guest. A host file lease serializes VM runs across app, evaluator and test processes; process exit releases the lease. After the boot/input exchange it accepts only:
 
 - `infer`: bounded history and optional guest tool schemas using the host-selected model/provider/settings. Schemas describe guest tools to the model; they never create host capabilities. Guest URL, headers, credentials, commands and environment overrides are rejected. Provider exceptions become generic guest-facing errors to avoid reflecting secrets.
+- `web`: explicit public HTTP/HTTPS request data, governed by the host's Internet access preference. This capability is separate from inference; web URLs and headers cannot redirect model-provider requests or change host policy. See Public internet access below.
 - `inputs`: poll one host-admitted human message at a time. Only the authenticated browser API can enqueue or cancel messages. Direction changes are offered between actions; follow-ups wait for reported completion. Exact saved human text and its input ID acknowledge delivery. An edited guest can ignore input or lie about following it, but cannot enqueue new human messages through this operation.
 - `file` / `checkpoint`: bounded bytes and validated relative names. The host rejects traversal, absolute paths, Windows device names, alternate data streams, control characters and links. Bytes are stored under host-computed SHA-256 blob filenames. Manifests bind files to one session. No guest archive is extracted on the host; uncommitted exports are discarded on termination.
 - `state` / `event`: bounded history/display/journal data. Identity, task, provider, storage roots and policy remain host-owned. The host keeps Stop visible until it ends the VM, even if the guest claims completion.
@@ -80,7 +81,7 @@ File imports copy bounded bytes into the same quarantine and manifest system. Th
 | Wall time / startup handshake | 1 hour / 90 seconds |
 | Frame / cumulative guest output | 4 MiB / 100 MiB |
 | Model requests | `(min(configured steps, 200) + 1) × 3`: two repairs per response, including the free final response; maximum 603 |
-| Model history | 400 messages / 1.5 MB serialized per request |
+| Model history | 2,048 messages / 1.5 MB serialized per request; the provider context budget also applies |
 | Export file / count / checkpoint | 2 MiB / 500 / 32 MiB |
 | Exported bytes per run | 32 MiB |
 | Session journal | 64 MiB |
@@ -90,11 +91,56 @@ Stop closes the Windows job or signals the Linux supervisor to kill its whole ma
 
 ## Limits of the guarantee
 
-This contains model file operations, arbitrary guest commands/code, malicious upgrades, networking attempts and malformed broker requests. It cannot promise protection from vulnerabilities in the host operating system, hypervisor, emulated devices, trusted host code, or upstream packages. QEMU's website links to the Windows build provider used here; pinned hashes identify downloads, not an independent security audit. Relevant runtime fixes require reviewed pin updates.
+This contains model file operations, arbitrary guest commands/code, malicious upgrades, unauthorized networking attempts and malformed broker requests. It cannot promise protection from vulnerabilities in the host operating system, hypervisor, emulated devices, trusted host code, or upstream packages. QEMU's website links to the Windows build provider used here; pinned hashes identify downloads, not an independent security audit. Relevant runtime fixes require reviewed pin updates.
 
 The inference engine/provider is trusted and configured separately. A bad seed may waste its bounded requests or produce incorrect results. User-opened downloads, manually launched code, host plugins and human edits to controller/runtime files are outside the boundary. Quarantine/journal storage is bounded per session; many user-created sessions still consume disk space. Passing a task does not make its output trusted.
 
-No email, arbitrary internet, user-selected host folder or other service access exists. Future host capabilities need explicit authorization, narrow broker operations, scopes, quotas and secrets outside the guest. A general host command/URL endpoint or writable mount would change this security model.
+No host email-account integration, user-selected host folder or arbitrary socket access exists. Other host capabilities need explicit authorization, narrow broker operations, scopes, quotas and secrets outside the guest. Public web APIs can be used with explicitly supplied credentials, but host account credentials are never extracted or forwarded automatically. A host command endpoint, unrestricted URL proxy or writable mount would change this security model.
+
+## Public internet access
+
+Internet access is enabled by default, including for legacy settings without
+a saved preference. Users can turn it off during setup or in Settings. Saved
+boolean choices are preserved; invalid non-boolean values stay off. Changes
+apply to the next run. The host snapshots the permission at run start; edited seeds cannot
+enable it. Stop ends a current run. The VM still has no network adapter. Its
+`web_request` tool and the running worker's `autoproteus_web.request` bridge
+submit HTTP request data to a dedicated protected host client. The preference
+controls this bridge only; native mode retains the account's network access.
+
+Only public HTTP on port 80 and HTTPS on port 443 are allowed. The client rejects
+URL credentials, local names, loopback/private/link-local/shared/reserved and
+multicast destinations, known IPv6 transition addresses, and Azure's host
+infrastructure address. Every DNS answer must be public; connections use the
+validated numeric address without resolving it again. HTTPS keeps the original
+hostname for SNI and normal certificate verification. Host proxy environment
+variables are ignored. Each redirect repeats destination and DNS validation.
+HTTPS downgrades are rejected. Cross-origin redirects drop custom headers
+except Accept, Accept-Language and User-Agent. Only GET/HEAD follow redirects;
+write requests return the redirect response without automatically replaying.
+
+Requests have a 20-second total deadline (including DNS), at most five redirects,
+64 KiB UTF-8 bodies, 8 KiB request headers and 2 MiB response bodies. Each run has
+200 requests and 32 MiB of received response-body allowance, including failed
+oversize reads. Stop/deadlines close active sockets; DNS workers are daemonized
+and globally bounded to four so a blocked OS resolver cannot block shutdown or
+create unbounded threads. The run's existing host wall deadline still applies.
+Transport and routing headers are host-owned. Results include status, response
+headers and bytes; HTTP error responses are returned for inspection. The host
+stores bounded request receipts without request bodies, headers or URLs. Normal
+guest journals can include URLs, explicit credentials or returned task data;
+treat journal exports as sensitive.
+
+No host browser sessions, cookies, provider keys, proxy credentials or files are
+attached. Requests may send workspace contents to public services, and write
+methods can cause external effects. A stopped/timed-out request may already have
+taken effect; recovery must inspect it before retrying. Remote content remains
+untrusted input. This changes the previous offline policy: isolation protects
+host resources, but does not promise privacy for data available to a seed that
+has Internet access. The tool does not provide JavaScript browsing, unrestricted
+package-manager networking, raw TCP/UDP or access to private services. Public
+HTTP proxy/tunnel services are still public destinations; granting Internet
+access is not a restriction on which public information the agent may obtain.
 
 ## References
 
@@ -103,3 +149,18 @@ No email, arbitrary internet, user-selected host folder or other service access 
 - [QEMU Windows Hypervisor Platform prerequisites](https://www.qemu.org/docs/master/system/whpx.html)
 - [Microsoft hypervisor capability probe](https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvgetcapability)
 - [Windows job resource controls](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-setinformationjobobject)
+
+### Observation and save failures
+
+Observers use the owning controller API and its storage lock. They do not open
+a second recovering Store, schedule work, acknowledge input or replay actions.
+The Evidence view renders bounded text; original evidence blobs are checked
+against their SHA-256 identity before display. External monitors should use the
+API or closed trace exports rather than reading mutable live snapshot files.
+
+The session snapshot is authoritative; summary files are rebuildable indexes.
+A failed snapshot replacement restores the last readable committed state. A
+failure after replacement does not roll back the committed snapshot. Summary
+failures retain the new snapshot, while journal write/sync failures have an
+explicit uncertain outcome. These distinctions describe process recovery; they
+do not promise multi-file transactional durability under sudden power loss.

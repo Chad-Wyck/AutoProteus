@@ -1,0 +1,1064 @@
+{
+  "scope": "Three exploratory conditions/paired comparisons, 18 actual attempts. Do not pool their outcomes into a default-seed success rate.",
+  "studies": [
+    {
+      "name": "initial",
+      "result": "evaluations/seed-v0.7.0-final-task-2026-10-23-results.json",
+      "result_sha256": "8488ad27e2a2ae68f1ae1bb425f17d9037c82161c549255fba05c18ec9ab8adb",
+      "protocol_sha256": "aabd6738ff0dec88a594864ad52809de5f20d21b6ffefb258fb6e0cb048b3d09",
+      "manifest_sha256": "055b5b851b208429d09fb2397bbc1fd0fc4b42ce3df2c27356e07585601009b9",
+      "arms": {
+        "v060-runtime": {
+          "scored_attempts": 3,
+          "actual_launches": 3,
+          "completed_records": 3,
+          "verified_extensions": 3,
+          "accepted": 0,
+          "activated": 3,
+          "correct_final_artifacts": 0,
+          "complete_workflows": 0,
+          "selected_costs": {
+            "attempts": 3,
+            "calls": 201,
+            "trace_complete": true,
+            "trial_seconds": 1683.979,
+            "trial_seconds_complete": true,
+            "measurements": {
+              "input_tokens": {
+                "known_sum": 2003429,
+                "measured_calls": 201,
+                "expected_calls": 201,
+                "complete": true
+              },
+              "output_tokens": {
+                "known_sum": 26211,
+                "measured_calls": 201,
+                "expected_calls": 201,
+                "complete": true
+              },
+              "call_seconds": {
+                "known_sum": 1524.352,
+                "measured_calls": 201,
+                "expected_calls": 201,
+                "complete": true
+              },
+              "transport_seconds": {
+                "known_sum": 1524.024,
+                "measured_calls": 201,
+                "expected_calls": 201,
+                "complete": true
+              }
+            }
+          },
+          "all_launch_costs": {
+            "attempts": 3,
+            "calls": 201,
+            "trace_complete": true,
+            "trial_seconds": 1683.979,
+            "trial_seconds_complete": true,
+            "measurements": {
+              "input_tokens": {
+                "known_sum": 2003429,
+                "measured_calls": 201,
+                "expected_calls": 201,
+                "complete": true
+              },
+              "output_tokens": {
+                "known_sum": 26211,
+                "measured_calls": 201,
+                "expected_calls": 201,
+                "complete": true
+              },
+              "call_seconds": {
+                "known_sum": 1524.352,
+                "measured_calls": 201,
+                "expected_calls": 201,
+                "complete": true
+              },
+              "transport_seconds": {
+                "known_sum": 1524.024,
+                "measured_calls": 201,
+                "expected_calls": 201,
+                "complete": true
+              }
+            }
+          }
+        },
+        "v070-runtime": {
+          "scored_attempts": 3,
+          "actual_launches": 3,
+          "completed_records": 3,
+          "verified_extensions": 3,
+          "accepted": 0,
+          "activated": 3,
+          "correct_final_artifacts": 0,
+          "complete_workflows": 0,
+          "selected_costs": {
+            "attempts": 3,
+            "calls": 363,
+            "trace_complete": false,
+            "trial_seconds": 5400.865,
+            "trial_seconds_complete": true,
+            "measurements": {
+              "input_tokens": {
+                "known_sum": 4097386,
+                "measured_calls": 360,
+                "expected_calls": 363,
+                "complete": false
+              },
+              "output_tokens": {
+                "known_sum": 43538,
+                "measured_calls": 360,
+                "expected_calls": 363,
+                "complete": false
+              },
+              "call_seconds": {
+                "known_sum": 5203.6,
+                "measured_calls": 363,
+                "expected_calls": 363,
+                "complete": false
+              },
+              "transport_seconds": {
+                "known_sum": 5172.781,
+                "measured_calls": 360,
+                "expected_calls": 363,
+                "complete": false
+              }
+            }
+          },
+          "all_launch_costs": {
+            "attempts": 3,
+            "calls": 363,
+            "trace_complete": false,
+            "trial_seconds": 5400.865,
+            "trial_seconds_complete": true,
+            "measurements": {
+              "input_tokens": {
+                "known_sum": 4097386,
+                "measured_calls": 360,
+                "expected_calls": 363,
+                "complete": false
+              },
+              "output_tokens": {
+                "known_sum": 43538,
+                "measured_calls": 360,
+                "expected_calls": 363,
+                "complete": false
+              },
+              "call_seconds": {
+                "known_sum": 5203.6,
+                "measured_calls": 363,
+                "expected_calls": 363,
+                "complete": false
+              },
+              "transport_seconds": {
+                "known_sum": 5172.781,
+                "measured_calls": 360,
+                "expected_calls": 363,
+                "complete": false
+              }
+            }
+          }
+        }
+      },
+      "attempts": [
+        {
+          "cell": "repeat-01-v060-runtime",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": false,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": false,
+            "truncated": true
+          },
+          "actual_rows": 2,
+          "explicit_finish": true,
+          "final_status": "completed",
+          "timed_out": false,
+          "steps": 45,
+          "csv_native_calls": 1,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": true,
+          "verifier_before_observed_edit": false,
+          "seconds": 499.121,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-handoff-v070-20261023\\execution-01\\trials\\repeat-01-v060-runtime\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-01-v070-runtime",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": false,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": false,
+            "truncated": true
+          },
+          "actual_rows": 2,
+          "explicit_finish": false,
+          "final_status": "paused",
+          "timed_out": true,
+          "steps": 114,
+          "csv_native_calls": 59,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 1800.311,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-handoff-v070-20261023\\execution-01\\trials\\repeat-01-v070-runtime\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-02-v070-runtime",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": false,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": false,
+            "truncated": true
+          },
+          "actual_rows": 2,
+          "explicit_finish": false,
+          "final_status": "paused",
+          "timed_out": true,
+          "steps": 125,
+          "csv_native_calls": 84,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 1800.272,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-handoff-v070-20261023\\execution-01\\trials\\repeat-02-v070-runtime\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-02-v060-runtime",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": false,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": false,
+            "truncated": true
+          },
+          "actual_rows": 2,
+          "explicit_finish": false,
+          "final_status": "paused",
+          "timed_out": false,
+          "steps": 128,
+          "csv_native_calls": 98,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": true,
+          "verifier_before_observed_edit": false,
+          "seconds": 918.859,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-handoff-v070-20261023\\execution-01\\trials\\repeat-02-v060-runtime\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-03-v060-runtime",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": false,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": false,
+            "truncated": true
+          },
+          "actual_rows": 2,
+          "explicit_finish": true,
+          "final_status": "completed",
+          "timed_out": false,
+          "steps": 22,
+          "csv_native_calls": 1,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 265.999,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-handoff-v070-20261023\\execution-01\\trials\\repeat-03-v060-runtime\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-03-v070-runtime",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": false,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": false,
+            "truncated": true
+          },
+          "actual_rows": 2,
+          "explicit_finish": false,
+          "final_status": "paused",
+          "timed_out": true,
+          "steps": 118,
+          "csv_native_calls": 87,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 1800.282,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-handoff-v070-20261023\\execution-01\\trials\\repeat-03-v070-runtime\\attempt-001\\result.json"
+        }
+      ]
+    },
+    {
+      "name": "handoff",
+      "result": "evaluations/seed-v0.7.0-handoff-followup-2026-10-23-results.json",
+      "result_sha256": "a93d2e5e5871467e3b97676b38316d8499ac0813315955e54359158b12ee1c0f",
+      "protocol_sha256": "f43ef8042a6927ecd2ce06b5974b9ede35d00a877dadd22d8c60c07913f59c20",
+      "manifest_sha256": "ba802895b77b1c1f1e46976edd5966e050d43fd16199a69bccdf3587d3895980",
+      "arms": {
+        "handoff-once": {
+          "scored_attempts": 3,
+          "actual_launches": 3,
+          "completed_records": 3,
+          "verified_extensions": 3,
+          "accepted": 1,
+          "activated": 3,
+          "correct_final_artifacts": 1,
+          "complete_workflows": 0,
+          "selected_costs": {
+            "attempts": 3,
+            "calls": 184,
+            "trace_complete": true,
+            "trial_seconds": 2185.522,
+            "trial_seconds_complete": true,
+            "measurements": {
+              "input_tokens": {
+                "known_sum": 2768234,
+                "measured_calls": 184,
+                "expected_calls": 184,
+                "complete": true
+              },
+              "output_tokens": {
+                "known_sum": 33641,
+                "measured_calls": 184,
+                "expected_calls": 184,
+                "complete": true
+              },
+              "call_seconds": {
+                "known_sum": 2028.495,
+                "measured_calls": 184,
+                "expected_calls": 184,
+                "complete": true
+              },
+              "transport_seconds": {
+                "known_sum": 2028.191,
+                "measured_calls": 184,
+                "expected_calls": 184,
+                "complete": true
+              }
+            }
+          },
+          "all_launch_costs": {
+            "attempts": 3,
+            "calls": 184,
+            "trace_complete": true,
+            "trial_seconds": 2185.522,
+            "trial_seconds_complete": true,
+            "measurements": {
+              "input_tokens": {
+                "known_sum": 2768234,
+                "measured_calls": 184,
+                "expected_calls": 184,
+                "complete": true
+              },
+              "output_tokens": {
+                "known_sum": 33641,
+                "measured_calls": 184,
+                "expected_calls": 184,
+                "complete": true
+              },
+              "call_seconds": {
+                "known_sum": 2028.495,
+                "measured_calls": 184,
+                "expected_calls": 184,
+                "complete": true
+              },
+              "transport_seconds": {
+                "known_sum": 2028.191,
+                "measured_calls": 184,
+                "expected_calls": 184,
+                "complete": true
+              }
+            }
+          }
+        },
+        "focused-final": {
+          "scored_attempts": 3,
+          "actual_launches": 3,
+          "completed_records": 3,
+          "verified_extensions": 3,
+          "accepted": 0,
+          "activated": 3,
+          "correct_final_artifacts": 0,
+          "complete_workflows": 0,
+          "selected_costs": {
+            "attempts": 3,
+            "calls": 90,
+            "trace_complete": true,
+            "trial_seconds": 1027.115,
+            "trial_seconds_complete": true,
+            "measurements": {
+              "input_tokens": {
+                "known_sum": 831496,
+                "measured_calls": 90,
+                "expected_calls": 90,
+                "complete": true
+              },
+              "output_tokens": {
+                "known_sum": 14698,
+                "measured_calls": 90,
+                "expected_calls": 90,
+                "complete": true
+              },
+              "call_seconds": {
+                "known_sum": 900.672,
+                "measured_calls": 90,
+                "expected_calls": 90,
+                "complete": true
+              },
+              "transport_seconds": {
+                "known_sum": 900.527,
+                "measured_calls": 90,
+                "expected_calls": 90,
+                "complete": true
+              }
+            }
+          },
+          "all_launch_costs": {
+            "attempts": 3,
+            "calls": 90,
+            "trace_complete": true,
+            "trial_seconds": 1027.115,
+            "trial_seconds_complete": true,
+            "measurements": {
+              "input_tokens": {
+                "known_sum": 831496,
+                "measured_calls": 90,
+                "expected_calls": 90,
+                "complete": true
+              },
+              "output_tokens": {
+                "known_sum": 14698,
+                "measured_calls": 90,
+                "expected_calls": 90,
+                "complete": true
+              },
+              "call_seconds": {
+                "known_sum": 900.672,
+                "measured_calls": 90,
+                "expected_calls": 90,
+                "complete": true
+              },
+              "transport_seconds": {
+                "known_sum": 900.527,
+                "measured_calls": 90,
+                "expected_calls": 90,
+                "complete": true
+              }
+            }
+          }
+        }
+      },
+      "attempts": [
+        {
+          "cell": "repeat-01-handoff-once",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": true,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": true,
+            "truncated": true
+          },
+          "actual_rows": 5,
+          "explicit_finish": false,
+          "final_status": "paused",
+          "timed_out": false,
+          "steps": 128,
+          "csv_native_calls": 24,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 1552.411,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-handoff-once-v070-20261023\\execution-01\\trials\\repeat-01-handoff-once\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-01-focused-final",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": false,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": false,
+            "truncated": true
+          },
+          "actual_rows": 2,
+          "explicit_finish": true,
+          "final_status": "completed",
+          "timed_out": false,
+          "steps": 27,
+          "csv_native_calls": 1,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 320.943,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-handoff-once-v070-20261023\\execution-01\\trials\\repeat-01-focused-final\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-02-focused-final",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": false,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": false,
+            "truncated": true
+          },
+          "actual_rows": 2,
+          "explicit_finish": true,
+          "final_status": "completed",
+          "timed_out": false,
+          "steps": 21,
+          "csv_native_calls": 1,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 292.536,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-handoff-once-v070-20261023\\execution-01\\trials\\repeat-02-focused-final\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-02-handoff-once",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": false,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": false,
+            "truncated": true
+          },
+          "actual_rows": 2,
+          "explicit_finish": true,
+          "final_status": "completed",
+          "timed_out": false,
+          "steps": 21,
+          "csv_native_calls": 1,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 257.531,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-handoff-once-v070-20261023\\execution-01\\trials\\repeat-02-handoff-once\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-03-handoff-once",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": false,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": false,
+            "truncated": true
+          },
+          "actual_rows": 2,
+          "explicit_finish": true,
+          "final_status": "completed",
+          "timed_out": false,
+          "steps": 29,
+          "csv_native_calls": 1,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 375.58,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-handoff-once-v070-20261023\\execution-01\\trials\\repeat-03-handoff-once\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-03-focused-final",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": false,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": false,
+            "truncated": true
+          },
+          "actual_rows": 2,
+          "explicit_finish": true,
+          "final_status": "completed",
+          "timed_out": false,
+          "steps": 36,
+          "csv_native_calls": 1,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 413.636,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-handoff-once-v070-20261023\\execution-01\\trials\\repeat-03-focused-final\\attempt-001\\result.json"
+        }
+      ]
+    },
+    {
+      "name": "defaults",
+      "result": "evaluations/seed-v0.7.0-default-followup-2026-10-23-results.json",
+      "result_sha256": "219c970c1cda0239ba0a32e7a0ad2749b87065c229c0726f384def29d732e664",
+      "protocol_sha256": "42adc8136aaca3947761697f7d70f7913f1920f32fdf9505ee86bf75c7f94399",
+      "manifest_sha256": "9865c8845b0f7bd2f395dfdb12041cabf0cff7d7660423d41523555e8e8b1df4",
+      "arms": {
+        "default-rule": {
+          "scored_attempts": 3,
+          "actual_launches": 3,
+          "completed_records": 3,
+          "verified_extensions": 3,
+          "accepted": 1,
+          "activated": 3,
+          "correct_final_artifacts": 1,
+          "complete_workflows": 1,
+          "selected_costs": {
+            "attempts": 3,
+            "calls": 86,
+            "trace_complete": true,
+            "trial_seconds": 1013.304,
+            "trial_seconds_complete": true,
+            "measurements": {
+              "input_tokens": {
+                "known_sum": 753178,
+                "measured_calls": 86,
+                "expected_calls": 86,
+                "complete": true
+              },
+              "output_tokens": {
+                "known_sum": 14581,
+                "measured_calls": 86,
+                "expected_calls": 86,
+                "complete": true
+              },
+              "call_seconds": {
+                "known_sum": 890.295,
+                "measured_calls": 86,
+                "expected_calls": 86,
+                "complete": true
+              },
+              "transport_seconds": {
+                "known_sum": 890.119,
+                "measured_calls": 86,
+                "expected_calls": 86,
+                "complete": true
+              }
+            }
+          },
+          "all_launch_costs": {
+            "attempts": 3,
+            "calls": 86,
+            "trace_complete": true,
+            "trial_seconds": 1013.304,
+            "trial_seconds_complete": true,
+            "measurements": {
+              "input_tokens": {
+                "known_sum": 753178,
+                "measured_calls": 86,
+                "expected_calls": 86,
+                "complete": true
+              },
+              "output_tokens": {
+                "known_sum": 14581,
+                "measured_calls": 86,
+                "expected_calls": 86,
+                "complete": true
+              },
+              "call_seconds": {
+                "known_sum": 890.295,
+                "measured_calls": 86,
+                "expected_calls": 86,
+                "complete": true
+              },
+              "transport_seconds": {
+                "known_sum": 890.119,
+                "measured_calls": 86,
+                "expected_calls": 86,
+                "complete": true
+              }
+            }
+          }
+        },
+        "explicit-default": {
+          "scored_attempts": 3,
+          "actual_launches": 3,
+          "completed_records": 3,
+          "verified_extensions": 3,
+          "accepted": 1,
+          "activated": 3,
+          "correct_final_artifacts": 3,
+          "complete_workflows": 3,
+          "selected_costs": {
+            "attempts": 3,
+            "calls": 87,
+            "trace_complete": true,
+            "trial_seconds": 987.994,
+            "trial_seconds_complete": true,
+            "measurements": {
+              "input_tokens": {
+                "known_sum": 813621,
+                "measured_calls": 87,
+                "expected_calls": 87,
+                "complete": true
+              },
+              "output_tokens": {
+                "known_sum": 13721,
+                "measured_calls": 87,
+                "expected_calls": 87,
+                "complete": true
+              },
+              "call_seconds": {
+                "known_sum": 860.845,
+                "measured_calls": 87,
+                "expected_calls": 87,
+                "complete": true
+              },
+              "transport_seconds": {
+                "known_sum": 860.702,
+                "measured_calls": 87,
+                "expected_calls": 87,
+                "complete": true
+              }
+            }
+          },
+          "all_launch_costs": {
+            "attempts": 3,
+            "calls": 87,
+            "trace_complete": true,
+            "trial_seconds": 987.994,
+            "trial_seconds_complete": true,
+            "measurements": {
+              "input_tokens": {
+                "known_sum": 813621,
+                "measured_calls": 87,
+                "expected_calls": 87,
+                "complete": true
+              },
+              "output_tokens": {
+                "known_sum": 13721,
+                "measured_calls": 87,
+                "expected_calls": 87,
+                "complete": true
+              },
+              "call_seconds": {
+                "known_sum": 860.845,
+                "measured_calls": 87,
+                "expected_calls": 87,
+                "complete": true
+              },
+              "transport_seconds": {
+                "known_sum": 860.702,
+                "measured_calls": 87,
+                "expected_calls": 87,
+                "complete": true
+              }
+            }
+          }
+        }
+      },
+      "attempts": [
+        {
+          "cell": "repeat-01-default-rule",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": false,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": false,
+            "truncated": true
+          },
+          "actual_rows": 2,
+          "explicit_finish": true,
+          "final_status": "completed",
+          "timed_out": false,
+          "steps": 20,
+          "csv_native_calls": 1,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 285.853,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-default-v070-20261023\\execution-01\\trials\\repeat-01-default-rule\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-01-explicit-default",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": true,
+          "workflow": true,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": true,
+            "truncated": true
+          },
+          "actual_rows": 5,
+          "explicit_finish": true,
+          "final_status": "completed",
+          "timed_out": false,
+          "steps": 32,
+          "csv_native_calls": 1,
+          "last_native_csv_omitted_limit": true,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 345.564,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-default-v070-20261023\\execution-01\\trials\\repeat-01-explicit-default\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-02-explicit-default",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": true,
+          "workflow": true,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": true,
+            "truncated": true
+          },
+          "actual_rows": 5,
+          "explicit_finish": true,
+          "final_status": "completed",
+          "timed_out": false,
+          "steps": 25,
+          "csv_native_calls": 1,
+          "last_native_csv_omitted_limit": true,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 321.775,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-default-v070-20261023\\execution-01\\trials\\repeat-02-explicit-default\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-02-default-rule",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": false,
+          "workflow": false,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": false,
+            "truncated": true
+          },
+          "actual_rows": 2,
+          "explicit_finish": true,
+          "final_status": "completed",
+          "timed_out": false,
+          "steps": 25,
+          "csv_native_calls": 1,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 313.221,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-default-v070-20261023\\execution-01\\trials\\repeat-02-default-rule\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-03-default-rule",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": true,
+          "workflow": true,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": true,
+            "truncated": true
+          },
+          "actual_rows": 5,
+          "explicit_finish": true,
+          "final_status": "completed",
+          "timed_out": false,
+          "steps": 35,
+          "csv_native_calls": 1,
+          "last_native_csv_omitted_limit": false,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 414.23,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-default-v070-20261023\\execution-01\\trials\\repeat-03-default-rule\\attempt-001\\result.json"
+        },
+        {
+          "cell": "repeat-03-explicit-default",
+          "verified": true,
+          "activated": true,
+          "artifacts_correct": true,
+          "workflow": true,
+          "source_unchanged": true,
+          "input_unchanged": true,
+          "field_matches": {
+            "path": true,
+            "bytes": true,
+            "sha256": true,
+            "rows": true,
+            "truncated": true
+          },
+          "actual_rows": 5,
+          "explicit_finish": true,
+          "final_status": "completed",
+          "timed_out": false,
+          "steps": 24,
+          "csv_native_calls": 1,
+          "last_native_csv_omitted_limit": true,
+          "early_verifier_present": false,
+          "verifier_before_observed_edit": null,
+          "seconds": 320.655,
+          "source_result": "D:\\AI_New\\AP\\.data\\task-default-v070-20261023\\execution-01\\trials\\repeat-03-explicit-default\\attempt-001\\result.json"
+        }
+      ]
+    }
+  ],
+  "actual_attempts": 18,
+  "independently_verified": 18,
+  "trial_costs": {
+    "input_tokens": {
+      "known_sum": 11267344,
+      "measured_calls": 1008,
+      "expected_calls": 1011,
+      "complete": false
+    },
+    "output_tokens": {
+      "known_sum": 146390,
+      "measured_calls": 1008,
+      "expected_calls": 1011,
+      "complete": false
+    },
+    "call_seconds": {
+      "known_sum": 11408.259,
+      "measured_calls": 1011,
+      "expected_calls": 1011,
+      "complete": false
+    },
+    "transport_seconds": {
+      "known_sum": 11376.344,
+      "measured_calls": 1008,
+      "expected_calls": 1011,
+      "complete": false
+    }
+  },
+  "trace_complete": false,
+  "trial_seconds": 12298.779,
+  "qualification_calls": 24,
+  "qualification_all_first_pass": true,
+  "final_validation": {
+    "created": "2026-10-23T17:41:36.421043+00:00",
+    "version": "0.7.0",
+    "state": "local_uncommitted",
+    "base_commit": "532e36bcc9fcf7a1eb2b69015eef2558c965c13f",
+    "seed_sha256": "db12975dfd60e02ae342be6b5ba3cf3d634d092c4824a0e4f96692dfdb032f51",
+    "implementation": {
+      "autoproteus/agent.py": "e6a4288e00097d37aaec0e9ed2076417e8f8c577a1e0cbd5f7d0c133ffb28c32",
+      "autoproteus/context.py": "0553eb6bcd4a26d5e1c281a8e4fd038e6be7d89461c79cd9e478cebefa837b37",
+      "autoproteus/file_ops.py": "cdfc1e4034bca3fed2bea1b4b965a4f2cdaa6aff96aa1be6e7f16ec9d899137b",
+      "autoproteus/protocol.py": "4a899e670173a67b491887e1465245bebd43cb3bc6a6905c63b82b0ac6affcd7",
+      "autoproteus/providers.py": "1f70d72e16f3f492bb143249d362e4ad19f67eb6766aeb3b32c8b1cddf649bcd",
+      "autoproteus/search.py": "1883ae6f496909593fc37bac544090040c8d6738c39d0ff67bc1f823b3ff3c1f",
+      "autoproteus/storage.py": "ad21d2acc29ae5647be2a9f9d5e615fa8b2cd0919901d733fbfa6f86bb2c727b",
+      "autoproteus/terminal.py": "2b124798cf385b236de9963888544648f3d71ce7b5359180b84583a1ee389f27",
+      "autoproteus/tools.py": "3a1bf580cdc0e08753b77ac1c864b3e546af5d1145d20ef5a4ee8d2efcb2194f",
+      "autoproteus/__init__.py": "f8de13850db88f7764c7cf512c64f9ad5c145555441f83eb6cde91c244c955dd",
+      "controller/__init__.py": "f8de13850db88f7764c7cf512c64f9ad5c145555441f83eb6cde91c244c955dd",
+      "SEED.md": "628e77d75bf6633ec3b8520a91460e5d96a78a3d7857edf62557c23a2f1fa39a",
+      "tests/test_task_handoff.py": "4b6909102007424915713b802ffb265fc926279dad45acccefde64e8d4030b05",
+      "tests/test_vm_isolation.py": "827315c923c7d02380db7367d9ac22b32a35128363ae5bdf57238fa3da7ad39c",
+      "CHANGELOG.md": "e889d7bd773efd158ef3477a31f29413bc5f514ed80fda97a157bfebc561ab0a"
+    },
+    "validation": {
+      "v070-final-regression-tests.log": {
+        "tests": 338,
+        "skipped": 46,
+        "seconds": 43.323,
+        "sha256": "0555f269db16bda5f5106272d5ddd00cc5407760e051d4696fd1e3fed7d021e4"
+      },
+      "v070-final-activation-vm-tests.log": {
+        "tests": 1,
+        "skipped": 0,
+        "seconds": 12.067,
+        "sha256": "412b3dd26bbaf6b68711427090c7a3a32df7efe968adf5a14ca9a08bbda614b7"
+      }
+    },
+    "tested_context_and_prompt_exactly_match_final_model_variant": true,
+    "live_scope": "All live tasks started from supplied CSV parents with common portable protected fixtures, not the unextended starter.",
+    "python_bytes": 54529,
+    "seed_readme_characters": 10414
+  },
+  "preflight_driver_errors": [
+    {
+      "stage": "driver initialization",
+      "error": "NameError: datetime import missing",
+      "model_requests": 0,
+      "trial_launches": 0,
+      "failed_launcher": "preflight-launcher-01.py",
+      "resolution": "Added the missing standard-library import before the execution manifest was frozen."
+    }
+  ]
+}

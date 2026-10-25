@@ -1,0 +1,173 @@
+{
+  "created": "2026-10-23T08:03:30.590914+00:00",
+  "release": "v0.5.1",
+  "commit": "70a98697e4facb8a120142623439874e97fc28ac",
+  "status": "Stopped at production connection qualification; paired model study not started.",
+  "scope": "Replay of known CSV final-use failures, not unseen generalization. Shared corrected protected fixtures and identical supplied CSV feature bytes; no first-upgrade credit. No model or training result is a seed qualification.",
+  "protocol_sha256": "b7a6567707ee7ff92ed1f81b0bd45cdfb6f8d2b9c691a5da8acf0caf9908a36e",
+  "source_sha256": "433947ede4cb90bcb9be66ccb473064a990d0ec4b7116a3f91edd35a605e0f0a",
+  "ordinary": {
+    "run": 323,
+    "skipped": 46,
+    "seconds": 42.344,
+    "log": "D:\\AI_New\\AP\\.data\\v051-night-regression-tests.log",
+    "sha256": "7ad486311177405fbc1e5d49c442cf61369414fcdbc0f11b4d82392eb3287656"
+  },
+  "real_vm": {
+    "run": 23,
+    "skipped": 0,
+    "seconds": 219.997,
+    "log": "D:\\AI_New\\AP\\.data\\v051-night-vm-tests.log",
+    "sha256": "352a895c928440f0089c52a6b528ed615a21fedc5ce7c04d7c9fd746ba7bc227"
+  },
+  "ui": {
+    "passed": true,
+    "checks": 7,
+    "scope": "Pending, active-offer, stopped-offer, delivered and unchanged-revision UI behavior"
+  },
+  "qualification_attempts": [
+    {
+      "attempt": 1,
+      "folder": "D:\\AI_New\\AP\\.data\\final-task-v051-20261022\\execution-20261023-qualified",
+      "passed": false,
+      "classification": "Diagnostic exact-answer mismatch; no normalization or transport error observed.",
+      "first_round_echo_and_rejected_call_recovery_correct": true,
+      "finish_status_completed": true,
+      "expected_message": "fbb5f5525de0fa60",
+      "actual_message": "{\"receipt\": \"fbb5f5525de0fa60\"}",
+      "response_shape_valid": true,
+      "finished_rounds": 0,
+      "required_rounds": 3,
+      "model_calls": 3,
+      "reported_prompt_tokens": 3843,
+      "reported_generated_tokens": 137,
+      "measured_call_seconds": 140.71463130001212,
+      "trace_sha256": "5d91d6907993b829bf61dcbaa626e93175811936dac0476e815be3e2641cb715",
+      "manifest_sha256": "6c62704477b78a7e129cffbe58a58894302643485d1bb601268a4be831e8c1b9",
+      "stopped": {
+        "time": "2026-10-23T07:56:54.000109+00:00",
+        "disk_free": 110696665088
+      },
+      "gates": {
+        "v040-runtime": {
+          "passed": true,
+          "tests": 50,
+          "csv_feature": true,
+          "csv_public": true,
+          "hashing_absent": true
+        },
+        "v051-runtime": {
+          "passed": true,
+          "tests": 50,
+          "csv_feature": true,
+          "csv_public": true,
+          "hashing_absent": true
+        }
+      },
+      "grader_controls": {
+        "reference_features": [
+          "sha256_file",
+          "csv_preview",
+          "format_json"
+        ],
+        "fault_matrix": {
+          "missing_default": true,
+          "boolean_integer": true,
+          "exact_hash_limit": true,
+          "byte_character_limit": true,
+          "false_write_success": true,
+          "damage_rejected_input": true,
+          "exact_output_limit": true,
+          "required_default_schema": true
+        },
+        "csv_one_extra_rejected": true,
+        "format_path_bypass_rejected": true
+      }
+    },
+    {
+      "attempt": 2,
+      "folder": "D:\\AI_New\\AP\\.data\\final-task-v051-20261022\\execution-20261023-connection-recheck",
+      "passed": false,
+      "classification": "Diagnostic exact-answer mismatch; no normalization or transport error observed.",
+      "first_round_echo_and_rejected_call_recovery_correct": true,
+      "finish_status_completed": true,
+      "expected_message": "2e0123d986b63402",
+      "actual_message": "{\"receipt\": \"2e0123d986b63402\"}",
+      "response_shape_valid": true,
+      "finished_rounds": 0,
+      "required_rounds": 3,
+      "model_calls": 3,
+      "reported_prompt_tokens": 3843,
+      "reported_generated_tokens": 138,
+      "measured_call_seconds": 10.891799299919512,
+      "trace_sha256": "ccfdb42288845385c8072669a6f8a5f7410ad05e0dfe7c4472e84d1413a60872",
+      "manifest_sha256": "f223712bfeb0a8c0788cdee70dea84706f6a571b04f4e5de83c8a6cc5cf18ea1",
+      "stopped": {
+        "time": "2026-10-23T08:00:56.466065+00:00",
+        "disk_free": 110661394432
+      },
+      "gates": {
+        "v040-runtime": {
+          "passed": true,
+          "tests": 50,
+          "csv_feature": true,
+          "csv_public": true,
+          "hashing_absent": true
+        },
+        "v051-runtime": {
+          "passed": true,
+          "tests": 50,
+          "csv_feature": true,
+          "csv_public": true,
+          "hashing_absent": true
+        }
+      },
+      "grader_controls": {
+        "reference_features": [
+          "sha256_file",
+          "csv_preview",
+          "format_json"
+        ],
+        "fault_matrix": {
+          "missing_default": true,
+          "boolean_integer": true,
+          "exact_hash_limit": true,
+          "byte_character_limit": true,
+          "false_write_success": true,
+          "damage_rejected_input": true,
+          "exact_output_limit": true,
+          "required_default_schema": true
+        },
+        "csv_one_extra_rejected": true,
+        "format_path_bypass_rejected": true
+      }
+    }
+  ],
+  "scheduled_extension_attempts": 6,
+  "launched_extension_attempts": 0,
+  "extension_outcomes": null,
+  "full_workflow_outcomes": null,
+  "source_and_frozen_inputs_unchanged": true,
+  "operator_interventions": [
+    {
+      "stage": "Before inference",
+      "detail": "Private launcher static lookup did not recognize the supplied parent dictionary union. Frozen source unchanged; mandatory VM positive/public/absence gates used instead.",
+      "evidence": "D:\\AI_New\\AP\\.data\\final-task-v051-20261022\\execution-20261023\\attention.json"
+    },
+    {
+      "stage": "After first qualification failure",
+      "detail": "One announced fresh qualification with unchanged settings and fresh model service; full VM/calibration gates rerun. Both failures retained. No further retries or candidate edits."
+    }
+  ],
+  "resources": {
+    "disk_free": 110661251072,
+    "disk_total": 1024207089664,
+    "free_percent": 10.804577725419122,
+    "reserve_preserved": true,
+    "cleanup": "Owned model and VM processes stopped; no listener on port 47841; GPU returned to desktop baseline."
+  },
+  "recommendation": "Clarify that the diagnostic finish message must be exactly the string in result.receipt, retaining exact equality, random receipts, rejected-call recovery and three rounds. Regression-check that change, then explicitly requalify before admitting the frozen six-attempt seed comparison. No comparison outcome is inferred from these failures.",
+  "application_source_changed": false,
+  "committed": false,
+  "pushed": false
+}

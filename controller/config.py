@@ -14,7 +14,7 @@ DEFAULTS = {
     "model": "qwen3:4b-instruct", "context_tokens": 32768, "response_tokens": 8192,
     "temperature": 0.2, "max_steps": 128, "request_timeout": 300,
     "command_timeout": 60, "terminal": False, "json_mode": False, "thinking": None,
-    "protocol": "native",
+    "protocol": "native", "internet": True,
 }
 
 
@@ -47,6 +47,9 @@ class Settings:
                 self.values.update(json.loads(self.path.read_text(encoding="utf-8")))
             except (OSError, ValueError):
                 pass
+        # Missing preferences inherit the default. Saved False stays off;
+        # invalid non-boolean values fail closed instead of becoming truthy.
+        self.values['internet'] = self.values.get('internet') is True
         self.memory_key = ""
 
     def key(self):
@@ -105,7 +108,7 @@ class Settings:
         candidate["temperature"] = float(candidate["temperature"])
         if not 0 <= candidate["temperature"] <= 2:
             raise ValueError("Temperature must be between 0 and 2")
-        for key in ("configured", "terminal", "json_mode"):
+        for key in ("configured", "terminal", "json_mode", "internet"):
             if not isinstance(candidate[key], bool):
                 raise ValueError(f"{key} must be true or false")
         if candidate["thinking"] not in (None, True, False):

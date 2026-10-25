@@ -6,7 +6,7 @@ NATIVE = '''RESPONSE FORMAT
 Use the supplied native tools. Prefer one tool call at a time.
 After verification, call finish with message and status="completed".
 For required user input, call finish with your question and status="needs_input".
-A plain text reply does not complete the task or request input.
+A plain text reply is shown to the user and pauses for their reply; it does not complete the task.
 '''
 
 JSON = '''RESPONSE FORMAT

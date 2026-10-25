@@ -29,6 +29,7 @@ from .evaluation import candidate_source
 from .submissions import repair_ticket, ticket_message
 from .execution import ExecutionPolicy
 from .interactions import Inputs
+from .observation import Observer
 
 
 class Application:
@@ -37,6 +38,7 @@ class Application:
         self.data = Path(data or self.root / ".data")
         self.settings = Settings(self.data)
         self.store = Store(self.data / "sessions")
+        self.observer = Observer(self.store)
         self.execution = execution or ExecutionPolicy()
         self.agent = IsolatedAgent(self.root, self.store, self.settings, client_factory, self.execution)
         self.local = LocalRuntime(self.root, self.settings)
@@ -224,6 +226,13 @@ def handler_for(app):
                     return self.send(app.storage_usage())
                 if path == '/api/trash':
                     return self.send(app.store.trash())
+                if path == '/api/evidence':
+                    identifier = query.get('id', [''])[0]
+                    evidence = app.observer.timeline(identifier, int(query.get('offset', ['0'])[0]),
+                                                      int(query.get('limit', ['40'])[0]))
+                    return self.send({**evidence, 'verification': app.evaluations.status_for(app.store.get(identifier))})
+                if path == '/api/evidence/blob':
+                    return self.send(app.observer.blob(query.get('id', [''])[0], query.get('key', [''])[0]))
                 if path == '/api/seed-check':
                     return self.send(app.evaluations.load(query.get('id', [''])[0]))
                 if path == "/api/local":
@@ -235,7 +244,7 @@ def handler_for(app):
                 if path in ("/api/session", "/api/files", "/api/file", "/api/export", "/api/download"):
                     session = app.store.get(query.get("id", [""])[0])
                     if path == "/api/session":
-                        view = app.store.view(session['id'], int(query.get('after', ['0'])[0]),
+                        view = app.observer.session(session['id'], int(query.get('after', ['0'])[0]),
                             int(query['revision'][0]) if 'revision' in query else None)
                         return self.send({**view, 'verification': app.evaluations.status_for(session)})
                     if path == "/api/files":
@@ -265,7 +274,7 @@ def handler_for(app):
                 if path == "/":
                     page = (app.root / "web" / "index.html").read_text(encoding="utf-8").replace("__APP_TOKEN__", app.token)
                     return self.send(page.encode(), mime="text/html")
-                if path in ("/app.js", "/theme.js", "/style.css", "/favicon.svg"):
+                if path in ("/app.js", "/evidence.js", "/theme.js", "/style.css", "/favicon.svg"):
                     target = app.root / "web" / path.lstrip("/")
                     return self.send(target.read_bytes(), mime=mimetypes.guess_type(str(target))[0] or "application/octet-stream")
                 self.send({"error": "Page not found"}, 404)

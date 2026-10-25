@@ -67,7 +67,7 @@ def seed_files(root):
     result = []
     for name in ('autoproteus',):
         result.extend(packed_files(Path(root) / name, name + '/'))
-    for name in ('seed.py', 'SEED.md', *SEED_TESTS):
+    for name in ('seed.py', 'SEED.md', 'examples/test_web_extension.py', *SEED_TESTS):
         data = (Path(root) / name).read_bytes()
         result.append({'path': 'README.md' if name == 'SEED.md' else name, 'data': base64.b64encode(data).decode()})
     return result

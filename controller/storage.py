@@ -5,12 +5,24 @@ import json
 import os
 import threading
 import uuid
+from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 
 
 def now():
     return datetime.now(timezone.utc).isoformat()
+
+
+class PersistenceError(OSError):
+    """A save failure with an explicit durable outcome, never a replay request."""
+    def __init__(self, stage, committed):
+        self.stage, self.committed = stage, committed
+        outcome = ('The session snapshot was saved.' if committed is True else
+                   'The session snapshot was not saved.' if committed is False else
+                   'The save outcome is uncertain.')
+        super().__init__(outcome + ' Storage failed during ' + stage +
+                         '; inspect saved work before retrying. No operation was replayed.')
 
 
 def atomic_json(path: Path, value):
@@ -23,7 +35,12 @@ def atomic_json(path: Path, value):
             os.fsync(stream.fileno())
         os.replace(temporary, path)
     finally:
-        temporary.unlink(missing_ok=True)
+        # Cleanup cannot turn a successful replacement into an apparent failed
+        # commit, or hide the original write error.
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError:
+            pass
 
 
 class Store:
@@ -34,10 +51,11 @@ class Store:
         self.sessions = {}
         self.summaries = {}
         self.revision = 0
+        self.failures = {}
         for path in self.root.glob("*/session.json"):
             try:
                 summary_path = path.with_name('summary.json')
-                fresh_summary = summary_path.exists() and summary_path.stat().st_mtime_ns >= path.stat().st_mtime_ns
+                fresh_summary = summary_path.exists() and summary_path.stat().st_mtime_ns > path.stat().st_mtime_ns
                 session = json.loads((summary_path if fresh_summary else path).read_text(encoding="utf-8"))
                 if session['id'] != path.parent.name or path.parent.is_symlink() or getattr(path.parent.lstat(), 'st_file_attributes', 0) & 0x400:
                     continue
@@ -98,21 +116,67 @@ class Store:
 
     def save(self, session):
         with self.lock:
-            session["updated"] = now()
-            self.revision += 1
-            session['_revision'] = self.revision
-            atomic_json(self.directory(session["id"]) / "session.json", session)
-            self.summaries[session['id']] = self.summary(session)
-            atomic_json(self.directory(session['id']) / 'summary.json', self.summaries[session['id']])
+            identifier = session['id']
+            path = self.directory(identifier) / 'session.json'
+            candidate = deepcopy(session)
+            candidate.update(updated=now(), _revision=self.revision + 1)
+            try:
+                atomic_json(path, candidate)
+            except OSError as error:
+                # Faults may be reported after replace succeeded. Inspect the
+                # authoritative snapshot; do not infer rollback from an error.
+                try:
+                    saved = json.loads(path.read_text(encoding='utf-8')) if path.exists() else None
+                    committed = saved == candidate
+                    if saved is not None:
+                        session.clear(); session.update(saved)
+                        self.sessions[identifier] = session
+                        self.summaries[identifier] = self.summary(saved)
+                        self.revision = max(self.revision, saved.get('_revision', 0))
+                    else:
+                        self.sessions.pop(identifier, None)
+                        self.summaries.pop(identifier, None)
+                except (OSError, ValueError):
+                    committed = None
+                self._failed(identifier, 'snapshot', committed)
+                raise PersistenceError('snapshot', committed) from error
+            # Keep references held by queue/receipt handlers valid on success.
+            session.update(updated=candidate['updated'], _revision=candidate['_revision'])
+            self.sessions[identifier] = session
+            self.revision = candidate['_revision']
+            self.summaries[identifier] = self.summary(candidate)
+            try:
+                atomic_json(path.with_name('summary.json'), self.summaries[identifier])
+            except OSError as error:
+                # This file is a disposable index. The session is already
+                # committed; remove a stale index when possible for recovery.
+                try:
+                    path.with_name('summary.json').unlink(missing_ok=True)
+                except OSError:
+                    pass
+                self._failed(identifier, 'summary', True)
+                raise PersistenceError('summary', True) from error
+            if self.failures.get(identifier, {}).get('stage') != 'journal':
+                self.failures.pop(identifier, None)
+
+    def _failed(self, identifier, stage, committed):
+        self.failures[identifier] = {'stage': stage, 'snapshot_committed': committed,
+                                    'message': str(PersistenceError(stage, committed))}
 
     def event(self, session, kind, data):
         with self.lock:
             event = {"id": uuid.uuid4().hex, "time": now(), "type": kind, "data": data}
             path = self.directory(session["id"]) / "events.jsonl"
-            with path.open("a", encoding="utf-8") as stream:
-                stream.write(json.dumps(event, ensure_ascii=False) + "\n")
-                stream.flush()
-                os.fsync(stream.fileno())
+            try:
+                with path.open("a", encoding="utf-8") as stream:
+                    stream.write(json.dumps(event, ensure_ascii=False) + "\n")
+                    stream.flush()
+                    os.fsync(stream.fileno())
+            except OSError as error:
+                # Append/fsync errors can leave a whole, partial, or absent
+                # record. A saved snapshot is not proof of a durable journal.
+                self._failed(session['id'], 'journal', None)
+                raise PersistenceError('journal', None) from error
             return event
 
     def feed(self, session, kind, text, **details):
@@ -143,7 +207,8 @@ class Store:
     def view(self, session_id, after=0, revision=None):
         with self.lock:
             session = self.get(session_id)
-            if revision == session.get('_revision'):
+            warning = deepcopy(self.failures.get(session_id))
+            if revision == session.get('_revision') and warning is None:
                 return {'id': session_id, 'unchanged': True, 'revision': revision}
             if type(after) is not int or after < 0:
                 raise ValueError('Invalid feed position')
@@ -152,7 +217,8 @@ class Store:
             start = 0 if reset else after
             omitted = {'messages', 'artifacts', 'workspace', 'feed', '_revision'}
             return {**{k: v for k, v in session.items() if k not in omitted}, 'feed': feed[start:],
-                    'feed_start': start, 'feed_count': len(feed), 'reset': reset, 'revision': session.get('_revision', 0)}
+                    'feed_start': start, 'feed_count': len(feed), 'reset': reset, 'revision': session.get('_revision', 0),
+                    'storage_warning': warning}
 
     def rename(self, session_id, title):
         if not isinstance(title, str) or not title.strip() or len(title) > 120 or any(ord(c) < 32 for c in title):

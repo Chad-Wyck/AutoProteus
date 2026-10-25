@@ -1,0 +1,297 @@
+{
+  "review_date": "2026-10-24",
+  "timezone": "America/Regina",
+  "repository": "https://github.com/earendil-works/pi",
+  "reviewed_commit": "bdb151774ed6bef2b5676bbff4669f20a0c233fe",
+  "previous_reviewed_commit": "bd3c9b823762b7383954aa49e13ee350471015fe",
+  "comparison": {
+    "ahead_by": 63,
+    "behind_by": 0,
+    "changed_paths": 284,
+    "status": "ahead",
+    "coverage": "Selected implementation, test and documentation sections only"
+  },
+  "source_package_version": "1.4.0",
+  "unreleased_changes_included": true,
+  "published_release_verified": false,
+  "local_head": "532e36bcc9fcf7a1eb2b69015eef2558c965c13f",
+  "local_state": "Uncommitted v0.8.2 working tree plus newer research preparation/results",
+  "upstream_sources": [
+    {
+      "path": "packages/coding-agent/CHANGELOG.md",
+      "git_blob_sha1": "246c1225e0b497036a60d98a7100ed84ab3e8164",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/coding-agent/CHANGELOG.md",
+      "coverage": "unreleased and current-version sections"
+    },
+    {
+      "path": "packages/durable/CHANGELOG.md",
+      "git_blob_sha1": "41abda5198a3f6c90ba57ed7c7226d46ce60ced9",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/durable/CHANGELOG.md",
+      "coverage": "unreleased and current-version sections"
+    },
+    {
+      "path": "packages/ai/CHANGELOG.md",
+      "git_blob_sha1": "9ea77c63b91ea17a3bf2fa406b4467e83a156018",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/ai/CHANGELOG.md",
+      "coverage": "unreleased and current-version sections"
+    },
+    {
+      "path": "packages/chord/CHANGELOG.md",
+      "git_blob_sha1": "bbd4759bce032de390b5c631a4d667e3d4802ca9",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/chord/CHANGELOG.md",
+      "coverage": "unreleased and current-version sections"
+    },
+    {
+      "path": "packages/durable/test/harness-read-only.test.ts",
+      "git_blob_sha1": "da653978987549f4b836910417c6553eac535754",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/durable/test/harness-read-only.test.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/durable/test/session-adoption.test.ts",
+      "git_blob_sha1": "205c30066252660775862babc24a97448d259f3d",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/durable/test/session-adoption.test.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/chord/src/delta/pending.ts",
+      "git_blob_sha1": "4657c000aa4065722063e9b80282ecae11bb94c8",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/chord/src/delta/pending.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/ai/test/streaming-tool-arguments.test.ts",
+      "git_blob_sha1": "5b685e577cfd4501d34e288c078b8d59300e4dca",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/ai/test/streaming-tool-arguments.test.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/coding-agent/docs/packages.md",
+      "git_blob_sha1": "a4f609db8e3325ee3c8b13571790c47d69b14da5",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/coding-agent/docs/packages.md",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/coding-agent/test/suite/regressions/11227-recovery-omits-tool-results.test.ts",
+      "git_blob_sha1": "3fa03d4bc25e8be43db068f8893fa7548fbcc32e",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/coding-agent/test/suite/regressions/11227-recovery-omits-tool-results.test.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/coding-agent/test/export-html-system-messages.test.ts",
+      "git_blob_sha1": "ee931a75006b14f86a7cd85fbb961db6683fc691",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/coding-agent/test/export-html-system-messages.test.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/durable/src/harness/harness.ts",
+      "git_blob_sha1": "d22f368cc2b669c9103a46cc6ae986995267aa27",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/durable/src/harness/harness.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/durable/src/session/session.ts",
+      "git_blob_sha1": "4a6563b7075ec8969daf1c6a978263e71b17dc2f",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/durable/src/session/session.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/coding-agent/src/core/resource-loader.ts",
+      "git_blob_sha1": "5957abf27fcdc951c980132a01e0cca56ca05ac3",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/coding-agent/src/core/resource-loader.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/coding-agent/test/resource-loader.test.ts",
+      "git_blob_sha1": "e68b4cfea52ac87c3e0e80e2cbbae1f882188580",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/coding-agent/test/resource-loader.test.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/coding-agent/src/core/session-manager.ts",
+      "git_blob_sha1": "57f9655baa2cfd84a2a0c152d424c62c6c75296d",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/coding-agent/src/core/session-manager.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/ai/src/utils/streaming-json.ts",
+      "git_blob_sha1": "9f71ae7ec31d45a766872e0672da0db6f0731d00",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/ai/src/utils/streaming-json.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/coding-agent/src/core/agent-session.ts",
+      "git_blob_sha1": "3a9174cf6ea4cdce791c08a84f6ac25b95b6fb01",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/coding-agent/src/core/agent-session.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/durable/src/harness/events.ts",
+      "git_blob_sha1": "5d5d638ce621ccbf3051b5f291fa9b4ba42b916b",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/durable/src/harness/events.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/chord/src/watch.ts",
+      "git_blob_sha1": "76373de2f7dc2529ae55b2276629d3369cff56c4",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/chord/src/watch.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/chord/test/delta-pending.test.ts",
+      "git_blob_sha1": "dcf3c067daa07f67728ccb343a0061238a0fdfb3",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/chord/test/delta-pending.test.ts",
+      "coverage": "selected implementation/test/documentation sections"
+    },
+    {
+      "path": "packages/coding-agent/package.json",
+      "git_blob_sha1": "616d6a4757e18812116fa02f5cc5d9c669dc19d3",
+      "url": "https://github.com/earendil-works/pi/blob/bdb151774ed6bef2b5676bbff4669f20a0c233fe/packages/coding-agent/package.json",
+      "coverage": "selected implementation/test/documentation sections"
+    }
+  ],
+  "local_inputs": [
+    {
+      "path": "README.md",
+      "sha256": "7fa67ecc0ad9096d20b28019615be5115c13e677768ef7356f7d23a4d8c3348a"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "78589c396e9092aa7217a8eb688a85ebc3a86a9d05b83c692935ddec2b570631"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "891b01fa90c6534a8d06d387e074097b9eb98954b7d4b44b52c12ac1e7f0b82d"
+    },
+    {
+      "path": "SEED.md",
+      "sha256": "31fcc5860d4f652261142ec6a6c7d7b159b292da1ccdaf5842d7d684dccf206f"
+    },
+    {
+      "path": "autoproteus/context.py",
+      "sha256": "773cdaee420cd1799e62b1fabb5e8b2aa79e63d0cc183756fd156d6212872c23"
+    },
+    {
+      "path": "autoproteus/protocol.py",
+      "sha256": "4a899e670173a67b491887e1465245bebd43cb3bc6a6905c63b82b0ac6affcd7"
+    },
+    {
+      "path": "controller/storage.py",
+      "sha256": "08b5b8bdc83c35f1989f1bdbfc7ca1f38e194d4874aaa71f3fbbf6cec41b8e82"
+    },
+    {
+      "path": "controller/interactions.py",
+      "sha256": "36933202897524fe8b6ac8b2b8d182d9bc987a97c4afcc2af0ef81a8980ce964"
+    },
+    {
+      "path": "controller/inference_history.py",
+      "sha256": "7f9c120e25fd6e6ead5b03c89f651bac48b421c757550c16d6ff7adc4060e3a8"
+    },
+    {
+      "path": "controller/providers.py",
+      "sha256": "9333b4b1297bbcdfe27e9cc89090183983c9d3f6a6bbdc5ede8c00e8665cf3fd"
+    },
+    {
+      "path": "controller/compatibility.py",
+      "sha256": "22ea72b21f9dcfdde3f1309746942fecbfc035bb5f4be1f174ffab3c01599985"
+    },
+    {
+      "path": "controller/isolation.py",
+      "sha256": "a148dfb2ffc42c09eb742375d281a3ad3869d8412877d9b34126ce32014cc1bd"
+    },
+    {
+      "path": "controller/server.py",
+      "sha256": "e64a4c9f19b5db9d548264478bd1554e5696204c88791e3de171ead752aba1cf"
+    },
+    {
+      "path": "web/app.js",
+      "sha256": "86436959e0b506f2b3f92da3cb614f7058d5c8655dfda26a04b82f8e3d8100c6"
+    },
+    {
+      "path": "web/index.html",
+      "sha256": "122c4cd982852d8608dde249be28197884e0839a1d5af5640ad2c256a97b7c9e"
+    },
+    {
+      "path": "tests/test_providers.py",
+      "sha256": "4608e3bff1f66f7f7dc47d43f69a825da58de24d8dbfd9016d497f0f5a7e8648"
+    },
+    {
+      "path": "tests/test_task_handoff.py",
+      "sha256": "4b6909102007424915713b802ffb265fc926279dad45acccefde64e8d4030b05"
+    },
+    {
+      "path": "evaluations/pi-research-2026-10-21.md",
+      "sha256": "ccb67f690899945255bb22783dafb6a4449e4ac53ea291d9e3e5e5daccd84ff9"
+    },
+    {
+      "path": "evaluations/seed-v0.8.2-guidance-2026-10-24-findings.md",
+      "sha256": "1c0236c838bdf06821fdbeda6c0c535f49d0acdef5e2cb1eb7ee8a9aaf57d22f"
+    },
+    {
+      "path": "evaluations/activation-comparison.md",
+      "sha256": "83fedbb72d63d3f85a9c44e3e4e858009502875497b055e8c288ae963f140591"
+    },
+    {
+      "path": "evaluations/vultr-a16-activation-2026-10-24-findings.md",
+      "sha256": "e603a43a865f0fc8034828d6e2e8308dff0104755c1fd109b6f47951ce6cb83c"
+    },
+    {
+      "path": "evaluations/experiment-index.md",
+      "sha256": "7e7233e5dfa1a46e4171ac3bc63c9a1b5274aff66f44bbbf08713977550cb5d2"
+    }
+  ],
+  "already_present": [
+    "source/profile-bound inference evidence",
+    "steer/followup input queues",
+    "interrupted-operation receipts without automatic replay",
+    "native/JSON model adaptation and qualification",
+    "revision-based UI feed",
+    "frozen studies and experiment index"
+  ],
+  "recommendations": [
+    {
+      "priority": "high",
+      "idea": "Formal read-only observation boundary",
+      "local_overlap": "Existing controller session API and stdout monitoring; Store startup recovery is intentionally mutable",
+      "status": "proposed_hardening"
+    },
+    {
+      "priority": "high",
+      "idea": "Explicit durable-commit/failure semantics with fault tests",
+      "status": "proposed_hardening_no_bug_reproduced"
+    },
+    {
+      "priority": "medium",
+      "idea": "Readable source-bound inference and activation evidence viewer",
+      "local_overlap": "Evidence already exported as ZIP",
+      "status": "proposed_UI"
+    },
+    {
+      "priority": "post_v1",
+      "idea": "Pinned, manifest-based optional extension library using current guest isolation and activation",
+      "status": "design_reference_only"
+    },
+    {
+      "priority": "later",
+      "idea": "Incremental streamed previews and bounded/coalesced display updates",
+      "local_overlap": "Current Prism path is nonstreaming; UI already uses revisions",
+      "status": "conditional_optimization_no_benchmark"
+    },
+    {
+      "priority": "as_needed",
+      "idea": "Expanded recovery/provider-history fixtures",
+      "status": "existing_behavior_plus_test_reference"
+    }
+  ],
+  "limitations": [
+    "No upstream tests executed",
+    "No dependency installation or external code execution",
+    "No model/GPU/VM trials",
+    "No AP performance benefit demonstrated",
+    "No AP corruption bug reproduced",
+    "Pi logical readOnly is not an OS storage permission",
+    "Future extension metadata is an AP proposal",
+    "No source/default/watchlist/timer modifications"
+  ],
+  "report": "evaluations/pi-research-2026-10-24.md"
+}

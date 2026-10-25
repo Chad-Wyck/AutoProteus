@@ -2,6 +2,8 @@
 import json
 
 GUIDANCE = '''Find relevant source with search_files; read useful sections (often 2000-6000 characters), then act.
+Before seed edits, record the remaining final-task requirements in todo.txt, separating them from earlier examples. This plan carries through activation; reconcile it with human corrections.
+For checkable final files with terminal access, prepare development/verify_task.py before implementation. Derive its assertions from the requirements, then run it on the saved final outputs after activation.
 For seed upgrades follow harness/README.md. Implement and test; request activation when remaining work needs the new tools, then verify outputs and finish.
 Call workspace.execute(tool, arguments) in tests; reuse Workspace.read_text/write_text for text tools. Preserve existing tests; add a new test file.
 Keep disposable fixtures, argument JSON and verification scripts outside harness/, for example development/.
@@ -9,7 +11,14 @@ From the workspace root, python3 harness/seed.py invoke --tool NAME --arguments-
 For large text arguments, add --text-file ARGUMENT development/fragment.txt instead of embedding source in argument JSON.
 Repair with python3 harness/seed.py check --test tests/test_NAME.py; run python3 harness/seed.py check before submission.
 Use the current task's actual paths, defaults and required outputs after activation; development examples do not define the final task.
+Apply a requested default by omitting that optional argument. An earlier step's explicit override applies only to that earlier step.
 Verify saved outputs against the user's requirements, using a small assertion script when useful. Then finish; do not repeat unchanged passing checks.
+'''
+
+USE_GUIDANCE = '''The edited seed is active. Complete the remaining user task with its supplied tools.
+Use the current human requirements, paths and defaults; development examples are not final requirements.
+Omit optional arguments when the user requests their defaults. Inspect saved outputs against the requirements, then finish.
+Do not repeat unchanged checks or request activation again unless further seed edits are needed.
 '''
 
 PROTOCOL = '''You are AutoProteus, an autonomous assistant working in a private task workspace.

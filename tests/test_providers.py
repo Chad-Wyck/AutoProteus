@@ -62,6 +62,21 @@ class FakeModelServer:
 
 
 class HostProviderTests(unittest.TestCase):
+    def test_text_compatibility_keeps_complete_calls_and_rejects_partial_or_ambiguous_calls(self):
+        reply = 'I am ready to assist. Please provide the specific request.'
+        decision = parse_action(normalize_tool_response('finish\n' + json.dumps({'message': reply, 'status': 'needs_input'}), []))
+        self.assertEqual(decision, {'message': reply, 'status': 'needs_input'})
+        action = {'action': {'tool': 'write_file', 'arguments': {'path': 'x', 'content': 'literal " and \\ text'}}}
+        self.assertEqual(parse_action(normalize_tool_response(json.dumps(action), [])), action)
+        for text in ('finish\n{"message":"partial', 'finish\n{"message":"x","status":"bad"}',
+                     'finish\n{"message":"x","status":"completed"}\nextra', '```json\n{}\n```',
+                     'write_file\n{"path":"x"}', '{"action":'):
+            with self.subTest(text=text):
+                self.assertIn('normalization_error', model_response(text, [], True))
+        # Native calls take precedence over commentary; a finish cannot hide a
+        # partial/malformed native call and no text is executed as a command.
+        self.assertIn('normalization_error', model_response('All done.', [{'function': {'name':'write_file','arguments':'{'}}], True))
+
     def test_bad_native_arguments_and_oversized_batches_are_repairable_protocol_errors(self):
         call = {'function': {'name': 'write_file', 'arguments': {'path': 'partial.txt', 'content': 'must not run'}}}
         fixtures = [([{'message': {'tool_calls': [call] * 33}}], 'tool_batch'),
@@ -184,12 +199,12 @@ class HostProviderTests(unittest.TestCase):
         normalized = json.loads(normalize_tool_response('', [call, finish]))
         self.assertEqual(len(normalized['actions']), 1)
         self.assertTrue(normalized['deferred_finish'])
-        for prose in ('All done.', 'Which filename?', ''):
-            with self.subTest(prose=prose), self.assertRaisesRegex(ValueError, 'Call finish'):
-                normalize_tool_response(prose, [])
-            response = model_response(prose, [], True)
-            self.assertEqual(response['raw_content'], prose)
-            self.assertIn('Call finish', response['normalization_error'])
+        for prose in ('All done.', 'Which filename?'):
+            with self.subTest(prose=prose):
+                response = model_response(prose, [], True)
+                self.assertEqual(response['raw_content'], prose)
+                self.assertEqual(parse_action(response['content']), {'message': prose, 'status': 'needs_input'})
+        self.assertIn('normalization_error', model_response('', [], True))
         decision = parse_action(normalize_tool_response('', [{'function': {'name': 'finish',
             'arguments': {'message': 'Which filename?', 'status': 'needs_input'}}}]))
         self.assertEqual(decision, {'message': 'Which filename?', 'status': 'needs_input'})

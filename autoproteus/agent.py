@@ -7,7 +7,7 @@ import threading
 from pathlib import Path
 
 from . import __version__
-from .providers import ProviderError, tool_definitions
+from .providers import ProviderError, tool_definitions, argument_overrides
 from .context import build_messages
 from .storage import snapshot_seed
 # Preserve imports used by existing edited seeds and checks.
@@ -86,8 +86,9 @@ class Agent:
     def _run(self, session, config, client, cancel):
         workspace = Workspace(Path(session["workspace"]), config["terminal"], cancel, config["command_timeout"])
         repairs = 0
-        previous_read, repeated_reads = None, 0
+        previous_result, repeats = None, 0
         read_streak = 0
+        argument_schemas = {item['function']['name']: item['function']['parameters'] for item in tool_definitions(config['terminal'])}
         try:
             steps = 0
             while True:
@@ -160,24 +161,22 @@ class Agent:
                         result, ok = {"error": str(error)}, False
                         if isinstance(error, EditConflict):
                             result.update(error.details)
-                    self.store.event(session, "action_result", {"action": action, "result": result, "ok": ok})
-                    if ok and action['tool'] in ('read_file', 'read_section', 'search_files'):
-                        read_streak += 1
-                        signature = (action['tool'], json.dumps(action['arguments'], sort_keys=True),
-                                     hashlib.sha256(json.dumps(result, sort_keys=True).encode()).hexdigest())
-                        repeated_reads = repeated_reads + 1 if signature == previous_read else 1
-                        previous_read = signature
-                        if repeated_reads == 3:
-                            result = {**result, 'progress_hint': 'This unchanged material has been read three times. Use search_files or proceed to a concrete edit and verification.'}
-                            self.store.feed(session, 'notice', 'The same unchanged material is being read repeatedly. The agent received a progress hint.')
-                        elif read_streak % 8 == 0:
-                            result = {**result, 'progress_hint': f'{read_streak} consecutive source reads without an edit or check. If you have enough context, make a small change and test it. Otherwise search for the missing detail and read a useful section.'}
-                    else:
-                        previous_read, repeated_reads = None, 0
-                        read_streak = 0
+                    overrides = argument_overrides(action['tool'], action['arguments'], argument_schemas)
+                    feedback = {'argument_overrides': overrides} if overrides else {}
+                    signature = (action['tool'], json.dumps(action['arguments'], sort_keys=True),
+                                 hashlib.sha256(json.dumps(result, sort_keys=True).encode()).hexdigest())
+                    repeats = repeats + 1 if signature == previous_result else 1
+                    previous_result = signature
+                    read_streak = read_streak + 1 if ok and action['tool'] in ('read_file', 'read_section', 'search_files') else 0
+                    if repeats == 3:
+                        result = {**result, 'progress_hint': 'The same arguments produced the same result three times. Compare the saved outcome with the remaining user requirements; finish if verified, otherwise change the approach. Repeat only when intentional, such as polling.'}
+                        self.store.feed(session, 'notice', 'Repeated identical results received a progress hint. Tools remain available.')
+                    elif read_streak and read_streak % 8 == 0:
+                        result = {**result, 'progress_hint': f'{read_streak} consecutive source reads without an edit or check. If you have enough context, make a small change and test it. Otherwise search for the missing detail and read a useful section.'}
+                    self.store.event(session, "action_result", {"action": action, "result": result, "ok": ok, **feedback})
                     session.pop("pending_action", None)
-                    session["messages"].append({"role": "user", "content": "ACTION RESULT\n" + json.dumps({"tool": action["tool"], "ok": ok, "result": result}, ensure_ascii=False), "origin": "tool"})
-                    self.store.feed(session, "result", "Done" if ok else "Action needs attention", result=result, ok=ok)
+                    session["messages"].append({"role": "user", "content": "ACTION RESULT\n" + json.dumps({"tool": action["tool"], "ok": ok, "result": result, **feedback}, ensure_ascii=False), "origin": "tool"})
+                    self.store.feed(session, "result", "Done" if ok else "Action needs attention", result=result, ok=ok, **feedback)
                     self.messages(session, config, steps)
                     self.store.save(session)
                     if self.receive_inputs(session, client, 'steer'):

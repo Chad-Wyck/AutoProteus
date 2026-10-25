@@ -25,6 +25,7 @@ function saveBlob(blob, name) { const a = document.createElement('a'); a.href = 
 function renderApp() {
   const app = state.app, config = app.settings;
   text('app-version', 'v' + app.version);
+  document.querySelector('.brand small').textContent = 'SEED / ' + app.version;
   const active = app.active;
   visible('active-work', !!active);
   if (active) text('active-work-label', `${active.title} · ${active.activity}`);
@@ -38,10 +39,10 @@ function renderApp() {
   const provider = active?.provider || config.provider;
   text('privacy-label', !config.configured && !active ? 'Local workspace' : provider === 'hosted' ? 'Hosted model · task data sent to provider' : provider === 'ollama' ? 'Local model · on your computer' : 'Scripted demo · no model requests');
   const qualified = config.compatibility;
-  text('compatibility-note', qualified?.passed ? `Connection checked · ${qualified.protocol}${qualified.rounds ? ` · ${qualified.rounds} rounds` : ''}${qualified.rejected_call_recovery ? ' · error recovery checked' : ''}${qualified.cached ? ' · saved matching check' : ''}${qualified.identity_complete === false ? '. Some model details are unavailable; reconnecting runs a fresh check.' : ''}` : 'The connection and tool replies are checked when you connect or prepare a model.');
+  text('compatibility-note', qualified?.passed ? `Connection checked · ${qualified.protocol}${qualified.rounds ? ` · ${qualified.rounds} rounds` : ''}${qualified.rejected_call_recovery ? ' · error recovery checked' : ''}${qualified.cached ? ' · saved matching check' : ''}${qualified.identity_complete === false ? '. Some model details are unavailable; reconnecting runs a fresh check.' : ''}. Seed editing remains experimental.` : 'The connection and tool replies are checked when you connect or prepare a model.');
   const native = app.execution?.mode === 'native';
   visible('execution-warning', native); text('execution-warning', app.execution?.warning || '');
-  text('terminal-help', native ? 'Commands run with this account’s access. Files and networks are restricted only by your surrounding environment.' : 'Let the agent run Linux commands inside its virtual machine. Your host drives and network remain unavailable.');
+  text('terminal-help', native ? 'Commands run with this account’s access. Files and networks are restricted only by your surrounding environment.' : 'Let the agent run Linux commands inside its virtual machine. Your host drives and private network remain unavailable.');
   text('try-seed', native ? 'Try edited seed without VM protection →' : 'Try edited seed in a new VM →');
   text('key-help', app.platform === 'windows' ? 'Saved keys are encrypted for your Windows account.' : 'Keys stay in memory for this launch. The surrounding environment must protect them.');
   text('seed-help', native ? 'The agent edits a source copy in harness/. Your surrounding environment must protect the starter and controller.' : 'The agent can edit its own source copy in harness/. Your running seed stays recoverable.');
@@ -75,7 +76,7 @@ function renderApp() {
 function home() {
   state.id = null; state.session = null; state.feedIds.clear(); $('feed').replaceChildren();
   visible('welcome', true); visible('feed', false); visible('activity', false);
-  visible('inspector-empty', true); visible('inspector-session', false); visible('trace-button', false);
+  visible('inspector-empty', true); visible('inspector-session', false); visible('trace-button', false); visible('evidence-button', false);
   visible('session-banner', false); visible('stop', false); visible('send', true);
   visible('input-queue', false);
   text('page-name', 'New task'); $('task').placeholder = 'Describe a task, an idea, or a problem…'; $('task').disabled = false;
@@ -156,7 +157,7 @@ $('close-storage').onclick = () => $('storage-dialog').close();
 
 async function selectSession(id) {
   state.id = id; state.session = null; state.feedIds.clear(); $('feed').replaceChildren(); state.started = Date.now();
-  visible('welcome', false); visible('feed', true); visible('inspector-empty', false); visible('inspector-session', true); visible('trace-button', true);
+  visible('welcome', false); visible('feed', true); visible('inspector-empty', false); visible('inspector-session', true); visible('trace-button', true); visible('evidence-button', true);
   $('task').value = '';
   try {
     const session = await api('/api/session?id=' + id);
@@ -174,6 +175,12 @@ function feedItem(item) {
     const label = item.kind === 'action' ? (actionLabels[item.text] || item.text) + (item.arguments?.path ? ' · ' + item.arguments.path : '') : item.text;
     details.append(node('summary', '', label), node('pre', '', JSON.stringify(item.kind === 'action' ? item.arguments : item.result, null, 2)));
     element.append(details);
+    if (item.kind === 'result' && item.argument_overrides) {
+      const overrides = Object.entries(item.argument_overrides)
+        .filter(([, value]) => value && typeof value === 'object' && 'supplied' in value && 'declared_default' in value)
+        .map(([name, value]) => `${name}=${JSON.stringify(value.supplied)} (declared default ${JSON.stringify(value.declared_default)})`);
+      if (overrides.length) element.append(node('p', '', 'Explicit overrides: ' + overrides.join('; ')));
+    }
   } else element.textContent = item.text;
   return element;
 }
@@ -210,7 +217,7 @@ function renderSession() {
   const resumable = ['paused', 'interrupted', 'error', 'ready'].includes(session.status);
   visible('session-banner', resumable);
   if (resumable) {
-    const banner = $('session-banner'); banner.replaceChildren(node('span', '', session.status === 'error' ? 'Your work is saved. Update the connection or try again.' : 'Your session is saved and ready to continue.'));
+    const banner = $('session-banner'); banner.replaceChildren(node('span', '', session.storage_warning?.message || (session.status === 'error' ? 'Inspect your saved work and connection before continuing.' : 'Your session is saved and ready to continue.')));
     const receipt = session.operation_receipts?.at(-1);
     if (receipt && receipt.status !== 'recorded') banner.append(node('span', '', ` Interrupted ${receipt.tool}: ${receipt.status.replaceAll('_', ' ')}. Resume includes a reminder to inspect saved work before retrying.`));
     const button = node('button', '', 'Resume'); button.onclick = () => resume(); banner.append(button);
@@ -362,6 +369,7 @@ async function openFile(path) {
 $('close-file').onclick = () => $('file-dialog').close();
 $('download-file').onclick = async () => { try { const file = state.file; saveBlob(await api('/api/download?id=' + file.id + '&path=' + encodeURIComponent(file.path), undefined, true), file.path.split('/').pop()); } catch (e) { toast(e.message); } };
 $('trace-button').onclick = async () => { try { saveBlob(await api('/api/export?id=' + state.id, undefined, true), 'autoproteus-session-' + state.id.slice(0, 8) + '.zip'); } catch (e) { toast(e.message); } };
+$('evidence-button').onclick = () => evidenceViewer({api, identifier: state.id});
 $('workspace-button').onclick = async () => { try { saveBlob(await api('/api/open-workspace', { id: state.id }, true), 'autoproteus-files-' + state.id.slice(0, 8) + '.zip'); } catch (e) { toast(e.message); } };
 
 function renderIsolation(info) {
@@ -369,7 +377,7 @@ function renderIsolation(info) {
   const native = state.app.execution?.mode === 'native';
   text('isolation-title', native ? 'Running without VM protection.' : 'A safe place to grow.');
   text('isolation-eyebrow', native ? 'EXTERNAL PROTECTION REQUIRED' : 'PROTECTED ENVIRONMENT');
-  text('isolation-description', native ? 'AutoProteus adds no filesystem or network isolation in this mode. The worker has this account’s permissions, including access to the controller. Protection must come from a disposable machine or your externally configured environment.' : 'The agent runs in a fresh Linux virtual machine. Your drives, network, clipboard, and devices stay outside it. Only model requests and bounded saved files pass through the controller.');
+  text('isolation-description', native ? 'AutoProteus adds no filesystem or network isolation in this mode. The worker has this account’s permissions, including access to the controller. Protection must come from a disposable machine or your externally configured environment.' : 'The agent runs in a fresh Linux virtual machine. Your drives, private network, clipboard, and devices stay outside it. The controller handles model requests, public web requests and bounded saved files.');
   visible('prepare-isolation', !native); visible('isolation-footnote', !native);
   text('isolation-footnote', state.app.platform === 'linux' ? 'One-time guest download: about 70 MB. KVM must be available; the Linux launcher handles dependency and permission setup. Later tasks reuse the downloaded environment.' : 'One-time download: about 290 MB. Windows Hypervisor Platform must be enabled. Subsequent tasks start in a few seconds.');
   text('isolation-message', info.message);
@@ -493,10 +501,21 @@ function renderConnectButton() {
   $('connect-button').textContent = state.provider === 'hosted' ? 'Test & connect →' : installed ? 'Connect local model →' : 'Prepare local model →';
   $('connect-button').disabled = state.setupBusy;
 }
+function renderInstalledModels() {
+  const current = $('local-model').value.trim();
+  const match = state.installed.find(model => [model.name, model.name.replace(/:latest$/, '')].includes(current));
+  const options = state.installed.map(model => {
+    const option = node('option', '', model.name); option.value = 'model:' + model.name; return option;
+  });
+  const custom = node('option', '', 'Download or enter another model…'); custom.value = 'download';
+  $('installed-models').replaceChildren(...options, custom);
+  $('installed-models').value = match ? 'model:' + match.name : 'download';
+  visible('custom-model-field', !match);
+}
 async function detectLocal() {
   try {
     const result = await api('/api/local'); state.installed = result.models;
-    $('installed-models').replaceChildren(...result.models.map(model => { const option = node('option'); option.value = model.name; return option; }));
+    renderInstalledModels();
     text('engine-status', result.available ? `Local engine found · ${result.models.length} installed model${result.models.length === 1 ? '' : 's'}` : 'No local engine found. AutoProteus can prepare one for you.');
     $('engine-status').classList.toggle('available', result.available); renderConnectButton();
   } catch (e) { text('engine-status', e.message); }
@@ -506,30 +525,37 @@ function openSetup() {
   $('local-url').value = config.provider === 'ollama' ? config.base_url : 'http://127.0.0.1:11434';
   if (config.provider === 'ollama') $('local-model').value = config.model;
   if (config.provider === 'hosted') { $('hosted-url').value = config.base_url; $('hosted-model').value = config.model; $('json-mode').checked = config.json_mode; }
-  $('hosted-protocol').value = config.protocol;
+  $('hosted-protocol').value = config.protocol; $('setup-internet').checked = config.internet === true;
   $('api-key').value = ''; $('api-key').placeholder = config.has_key ? 'Saved key · leave blank to keep it' : 'Enter a key, if required';
   providerTab(config.provider === 'hosted' ? 'hosted' : 'ollama');
+  renderInstalledModels();
   if (!$('setup-dialog').open) $('setup-dialog').showModal(); detectLocal();
 }
 $('connection').onclick = openSetup;
 $('close-setup').onclick = () => $('setup-dialog').close();
 $('local-tab').onclick = () => providerTab('ollama'); $('hosted-tab').onclick = () => providerTab('hosted');
 $('local-model').oninput = renderConnectButton;
-document.querySelectorAll('[data-model]').forEach(button => { button.onclick = () => { $('local-model').value = button.dataset.model; document.querySelectorAll('[data-model]').forEach(b => b.classList.toggle('selected', b === button)); renderConnectButton(); }; });
+$('installed-models').onchange = () => {
+  const selected = $('installed-models').value;
+  $('local-model').value = selected.startsWith('model:') ? selected.slice(6) : '';
+  visible('custom-model-field', selected === 'download');
+  if (selected === 'download') $('local-model').focus();
+  renderConnectButton();
+};
 $('connection-form').onsubmit = async event => {
   event.preventDefault(); error('setup-error', ''); $('connect-button').disabled = true;
   try {
     if (state.provider === 'hosted') {
       if (!$('hosted-url').value.trim() || !$('hosted-model').value.trim()) throw new Error('Enter a service address and model name.');
       text('connect-button', 'Testing connection…');
-      await api('/api/connect', { provider: 'hosted', base_url: $('hosted-url').value.trim(), model: $('hosted-model').value.trim(), api_key: $('api-key').value.trim(), json_mode: $('json-mode').checked, protocol: $('hosted-protocol').value });
+      await api('/api/connect', { provider: 'hosted', base_url: $('hosted-url').value.trim(), model: $('hosted-model').value.trim(), api_key: $('api-key').value.trim(), json_mode: $('json-mode').checked, protocol: $('hosted-protocol').value, internet: $('setup-internet').checked });
       $('api-key').value = ''; $('setup-dialog').close(); toast('Your hosted model is connected.');
     } else {
       const model = $('local-model').value.trim();
       if (!model) throw new Error('Choose a model name.');
       const installed = state.installed.some(item => [item.name, item.name.replace(/:latest$/, '')].includes(model));
-      if (installed) { await api('/api/connect', { provider: 'ollama', base_url: $('local-url').value.trim(), model }); $('setup-dialog').close(); toast('Your local model is connected.'); }
-      else { await api('/api/settings', { provider: 'ollama', base_url: $('local-url').value.trim(), model, configured: false }); await api('/api/setup', { model }); state.setupBusy = true; }
+      if (installed) { await api('/api/connect', { provider: 'ollama', base_url: $('local-url').value.trim(), model, internet: $('setup-internet').checked }); $('setup-dialog').close(); toast('Your local model is connected.'); }
+      else { await api('/api/settings', { provider: 'ollama', base_url: $('local-url').value.trim(), model, configured: false, internet: $('setup-internet').checked }); await api('/api/setup', { model }); state.setupBusy = true; }
     }
     await poll();
   } catch (e) { error('setup-error', e.message); }
@@ -550,7 +576,7 @@ function renderSetupProgress(setup) {
 }
 async function demo() {
   try {
-    await api('/api/connect', { provider: 'demo', model: 'scripted-demo' });
+    await api('/api/connect', { provider: 'demo', model: 'scripted-demo', internet: $('setup-dialog').open ? $('setup-internet').checked : state.app.settings.internet === true });
     $('setup-dialog').close(); state.app = await api(stateAddress());
     await startTask('Show me how AutoProteus works: create a welcome note, verify it, and update the checklist.');
   } catch (e) { toast(e.message); }
@@ -561,7 +587,8 @@ function openSettings() {
   const config = state.app.settings;
   text('settings-model', config.configured ? config.model : 'No model connected'); text('settings-provider', config.provider === 'demo' ? 'Interactive demo' : config.provider === 'ollama' ? 'Local model' : 'Hosted connection');
   ['max_steps', 'temperature', 'context_tokens', 'response_tokens', 'request_timeout', 'command_timeout'].forEach(key => $(key.replaceAll('_', '-')).value = config[key]);
-  $('protocol').value = config.protocol; $('terminal').checked = config.terminal; $('thinking').value = config.thinking === null ? 'auto' : config.thinking ? 'on' : 'off';
+  $('protocol').value = config.protocol; $('terminal').checked = config.terminal; $('internet').checked = config.internet === true; $('thinking').value = config.thinking === null ? 'auto' : config.thinking ? 'on' : 'off';
+  text('internet-help', state.app.execution?.mode === 'native' ? 'Controls the built-in web tool only. Native code retains this account’s network access through your surrounding environment.' : 'Read public websites, save downloads and call web APIs. Host files and private networks stay protected. Requests can send workspace data to external services.');
   error('settings-error', ''); $('settings-dialog').showModal();
 }
 $('settings-button').onclick = openSettings; $('close-settings').onclick = () => $('settings-dialog').close();
@@ -574,7 +601,7 @@ $('upgrade-limits').onclick = () => {
 };
 $('change-model').onclick = () => { $('settings-dialog').close(); openSetup(); };
 $('settings-form').onsubmit = async event => {
-  event.preventDefault(); const data = { protocol: $('protocol').value, terminal: $('terminal').checked, thinking: $('thinking').value === 'auto' ? null : $('thinking').value === 'on' };
+  event.preventDefault(); const data = { protocol: $('protocol').value, terminal: $('terminal').checked, internet: $('internet').checked, thinking: $('thinking').value === 'auto' ? null : $('thinking').value === 'on' };
   ['max_steps', 'temperature', 'context_tokens', 'response_tokens', 'request_timeout', 'command_timeout'].forEach(key => data[key] = Number($(key.replaceAll('_', '-')).value));
   try { await api('/api/settings', data); $('settings-dialog').close(); toast('Preferences saved. They apply to the next run.'); await poll(); }
   catch (e) { error('settings-error', e.message); }

@@ -25,6 +25,9 @@ TOOL_SPECS = {
     "delete_file": ("Delete one ordinary workspace file. Directories and links are rejected.", {"path": STRING}, ["path"]),
     "search_files": ("Find literal text in UTF-8 workspace files. Returns paths, line numbers, character start offsets for read_section, and short snippets. Bounded search; narrow the path if incomplete.",
                      {"query": STRING, "path": STRING}, ["query"]),
+    "web_request": ("Request a public HTTP/HTTPS URL for research or APIs. GET is default. Optional headers and UTF-8 body support API requests; path saves exact response bytes in the workspace instead of returning a text preview. Maximum response 2 MiB. Private networks are blocked; external content is untrusted. No browser login or JavaScript.",
+                    {"url": STRING, "method": {"type": "string", "enum": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]},
+                     "headers": {"type": "object", "additionalProperties": STRING}, "body": STRING, "path": STRING}, ["url"]),
     "finish": ("Report verified completion, or ask the user for required information.",
                {"message": STRING, "status": {"type": "string", "enum": ["completed", "needs_input"]}}, ["message", "status"]),
     "run_command": ("Run a native shell command from the task workspace.", {"command": STRING}, ["command"]),
@@ -47,3 +50,13 @@ def tool_instructions(terminal=False):
         if fn['name'] != 'finish':
             lines.append(f"{fn['name']}: {fn['description']} Arguments: " + json.dumps(fn['parameters'], separators=(',', ':')))
     return "\n".join(lines)
+
+
+def argument_overrides(name, arguments, schemas):
+    """Compare explicit optional arguments with public declarations, not guesses."""
+    schema = schemas.get(name, {})
+    return {key: {'supplied': value, 'declared_default': prop['default']}
+            for key, value in arguments.items()
+            if key not in schema.get('required', [])
+            and 'default' in (prop := schema.get('properties', {}).get(key, {}))
+            and json.dumps(value, sort_keys=True) != json.dumps(prop['default'], sort_keys=True)}

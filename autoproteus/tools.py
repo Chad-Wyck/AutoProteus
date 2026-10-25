@@ -95,6 +95,9 @@ class Workspace:
             return {'path': value, 'deleted': True}
         if tool == 'search_files':
             return search_files(self, args)
+        if tool == 'web_request':
+            from .web import web_request
+            return web_request(self, args)
         if tool in ("read_file", "read_section"):
             from .file_ops import read_file
             return read_file(self, tool, args)

@@ -1,0 +1,392 @@
+{
+  "started": "2026-10-24T19:50:20.948595+00:00",
+  "finished": "2026-10-24T20:02:56.291809+00:00",
+  "config": {
+    "configured": true,
+    "provider": "ollama",
+    "base_url": "http://127.0.0.1:11435",
+    "model": "qwen3:4b-instruct",
+    "context_tokens": 32768,
+    "response_tokens": 8192,
+    "temperature": 0.2,
+    "max_steps": 128,
+    "request_timeout": 300,
+    "command_timeout": 60,
+    "terminal": false,
+    "json_mode": false,
+    "thinking": null,
+    "protocol": "native",
+    "internet": true
+  },
+  "source_sha256": "d60e859037b92b32393f71435cc6110a0a050a097d4730d8c888ec1bb5a51a26",
+  "model_identity": {
+    "provider": "ollama",
+    "model": "qwen3:4b-instruct",
+    "engine_version": "0.40.4",
+    "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+    "size": 2497293803,
+    "details": {
+      "family": "qwen3",
+      "parameter_size": "4.0B",
+      "quantization_level": "Q4_K_M"
+    },
+    "template_sha256": "40c21f34cf67d8c760ef72f8ad3ae5afad514299d4b06e91dd9a8d705af7b541",
+    "parameters_sha256": "103b39681c0eaa4d98603462819f9161236e6ecc0234c48d957ce0d6653eae4e"
+  },
+  "transport_qualification": {
+    "passed": true,
+    "protocol": "native",
+    "model": "qwen3:4b-instruct",
+    "checked": "2026-10-24T19:52:05.928239+00:00",
+    "requests": 9,
+    "rounds": 3,
+    "rejected_call_recovery": true,
+    "format_repairs": 1,
+    "first_pass": false,
+    "response_retries": 2,
+    "receipt_check": "Exact diagnostic_confirm.receipt argument; completion prose is unrestricted.",
+    "scope": "Bounded transport qualification, not a seed-editing or capability benchmark.",
+    "profile": {
+      "provider": "ollama",
+      "model": "qwen3:4b-instruct",
+      "protocol": "native",
+      "context_tokens": 32768,
+      "response_tokens": 8192,
+      "temperature": 0.2,
+      "thinking": null,
+      "json_mode": false,
+      "terminal": false,
+      "request_timeout": 300,
+      "identity": {
+        "provider": "ollama",
+        "model": "qwen3:4b-instruct",
+        "engine_version": "0.40.4",
+        "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+        "size": 2497293803,
+        "details": {
+          "family": "qwen3",
+          "parameter_size": "4.0B",
+          "quantization_level": "Q4_K_M"
+        },
+        "template_sha256": "40c21f34cf67d8c760ef72f8ad3ae5afad514299d4b06e91dd9a8d705af7b541",
+        "parameters_sha256": "103b39681c0eaa4d98603462819f9161236e6ecc0234c48d957ce0d6653eae4e"
+      },
+      "endpoint_sha256": "7e17659853212fae1a14d3b55d651aa8ecd6ff5fc343619102ba8f0a1a622f52",
+      "catalog_sha256": "617c7dac889eaa5a11951d34110fc961badab3a4e8d106201829e9e03464d76a",
+      "adapter_sha256": "9333b4b1297bbcdfe27e9cc89090183983c9d3f6a6bbdc5ede8c00e8665cf3fd",
+      "response_format_sha256": "be21d74766161569c9aac262aa7141990f051844005822a58daecf56ce2c2a86",
+      "qualifier_sha256": "22ea72b21f9dcfdde3f1309746942fecbfc035bb5f4be1f174ffab3c01599985",
+      "qualification_version": 3,
+      "response_retries": 2
+    },
+    "profile_sha256": "70724baea98987171340fe8089eb8a402c59aa51e3f46fe5f3836f4deb8efd06",
+    "identity_complete": true,
+    "unknown_identity": [],
+    "cached": false,
+    "checked_unix": 1792871525.991057,
+    "requests_this_check": 9
+  },
+  "profile_kind": "fresh_install_defaults",
+  "requested_repeats": 1,
+  "extension_status": "not_run: fresh defaults do not grant terminal access for development checks",
+  "seed_extension_qualified": false,
+  "failure": null,
+  "source_unchanged": true,
+  "ordinary": [
+    {
+      "run": {
+        "task": "exact-file",
+        "session": "7cf9fc5fb389401da627236b34ffb57e",
+        "status": "error",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": false,
+        "checks": [
+          {
+            "path": "greeting.txt",
+            "passed": true
+          }
+        ],
+        "steps": 2,
+        "seconds": 19.47,
+        "model_requests": 5,
+        "timed_out": false,
+        "format_repairs": 3,
+        "action_errors": 0,
+        "read_actions": 1,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": "compatibility",
+        "detail": "Needs attention"
+      },
+      "calls": {
+        "calls": 5,
+        "wire_requests": 5,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 8668,
+            "measured_calls": 5,
+            "expected_calls": 5,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 244,
+            "measured_calls": 5,
+            "expected_calls": 5,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 13.647,
+            "measured_calls": 5,
+            "expected_calls": 5,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 13.637,
+            "measured_calls": 5,
+            "expected_calls": 5,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "trace_read_errors": 0,
+        "finished_calls": 5,
+        "transport_finished_calls": 5,
+        "provider_responses": 5,
+        "statuses": {
+          "returned": 5
+        },
+        "error_categories": {},
+        "token_usage_measured_calls": 5,
+        "output_token_usage_measured_calls": 5,
+        "input_tokens": 8668,
+        "output_tokens": 244,
+        "call_seconds": 13.647,
+        "transport_seconds": 13.637,
+        "host_history_omissions": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "budget": {
+        "limit": 32768,
+        "charged_output_tokens": 244,
+        "reported_output_tokens": 244,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      }
+    },
+    {
+      "run": {
+        "task": "nested-directory",
+        "session": "9b94b10589e643cda97cf9fef1180f12",
+        "status": "paused",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": false,
+        "checks": [
+          {
+            "path": "notes/idea.md",
+            "passed": false
+          }
+        ],
+        "steps": 22,
+        "seconds": 600.17,
+        "model_requests": 24,
+        "timed_out": true,
+        "format_repairs": 1,
+        "action_errors": 18,
+        "read_actions": 6,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": "timeout",
+        "detail": "Stopped. The last saved checkpoint is ready to resume."
+      },
+      "calls": {
+        "calls": 24,
+        "wire_requests": 24,
+        "trace_complete": false,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 78055,
+            "measured_calls": 23,
+            "expected_calls": 24,
+            "complete": false,
+            "status": "partial"
+          },
+          "output_tokens": {
+            "known_sum": 7389,
+            "measured_calls": 23,
+            "expected_calls": 24,
+            "complete": false,
+            "status": "partial"
+          },
+          "call_seconds": {
+            "known_sum": 586.41,
+            "measured_calls": 24,
+            "expected_calls": 24,
+            "complete": false,
+            "status": "partial"
+          },
+          "transport_seconds": {
+            "known_sum": 359.898,
+            "measured_calls": 23,
+            "expected_calls": 24,
+            "complete": false,
+            "status": "partial"
+          }
+        },
+        "trace_read_errors": 0,
+        "finished_calls": 24,
+        "transport_finished_calls": 23,
+        "provider_responses": 23,
+        "statuses": {
+          "returned": 23,
+          "cancelled": 1
+        },
+        "error_categories": {},
+        "token_usage_measured_calls": 23,
+        "output_token_usage_measured_calls": 23,
+        "input_tokens": 78055,
+        "output_tokens": 7389,
+        "call_seconds": 586.41,
+        "transport_seconds": 359.898,
+        "host_history_omissions": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "budget": {
+        "limit": 32768,
+        "charged_output_tokens": 15581,
+        "reported_output_tokens": 7389,
+        "unmeasured_sent_calls": 1,
+        "usage_complete": false,
+        "exhausted": false
+      }
+    },
+    {
+      "run": {
+        "task": "precise-edit",
+        "session": "d1b90528a5ee42cf8e6c179678d76f6f",
+        "status": "completed",
+        "execution_mode": "vm",
+        "isolated": true,
+        "passed": true,
+        "checks": [
+          {
+            "path": "settings.json",
+            "passed": true
+          }
+        ],
+        "steps": 3,
+        "seconds": 30.24,
+        "model_requests": 6,
+        "timed_out": false,
+        "format_repairs": 2,
+        "action_errors": 0,
+        "read_actions": 2,
+        "repeated_reads": 0,
+        "interrupted": false,
+        "failure_kind": null,
+        "detail": ""
+      },
+      "calls": {
+        "calls": 6,
+        "wire_requests": 6,
+        "trace_complete": true,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 10944,
+            "measured_calls": 6,
+            "expected_calls": 6,
+            "complete": true,
+            "status": "complete"
+          },
+          "output_tokens": {
+            "known_sum": 456,
+            "measured_calls": 6,
+            "expected_calls": 6,
+            "complete": true,
+            "status": "complete"
+          },
+          "call_seconds": {
+            "known_sum": 24.509,
+            "measured_calls": 6,
+            "expected_calls": 6,
+            "complete": true,
+            "status": "complete"
+          },
+          "transport_seconds": {
+            "known_sum": 24.496,
+            "measured_calls": 6,
+            "expected_calls": 6,
+            "complete": true,
+            "status": "complete"
+          }
+        },
+        "trace_read_errors": 0,
+        "finished_calls": 6,
+        "transport_finished_calls": 6,
+        "provider_responses": 6,
+        "statuses": {
+          "returned": 6
+        },
+        "error_categories": {},
+        "token_usage_measured_calls": 6,
+        "output_token_usage_measured_calls": 6,
+        "input_tokens": 10944,
+        "output_tokens": 456,
+        "call_seconds": 24.509,
+        "transport_seconds": 24.496,
+        "host_history_omissions": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "budget": {
+        "limit": 32768,
+        "charged_output_tokens": 456,
+        "reported_output_tokens": 456,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      }
+    }
+  ],
+  "evidence": "D:\\AI_New\\AP\\.data\\default-profile-v090-20261024\\results.json"
+}

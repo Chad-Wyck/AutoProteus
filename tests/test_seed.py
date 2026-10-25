@@ -35,6 +35,32 @@ def wait_session(agent, session, seconds=8):
 
 
 class WorkspaceTests(unittest.TestCase):
+    def test_web_tool_saves_exact_bytes_within_workspace_and_reports_untrusted_content(self):
+        import base64
+        import sys
+        data = b'public\x00\xff'
+        def request(arguments):
+            return {'url': arguments['url'], 'status': 200, 'headers': {}, 'bytes': len(data),
+                    'data': base64.b64encode(data).decode()}
+        with temporary_directory() as directory, patch.dict(sys.modules, {'autoproteus_web': SimpleNamespace(request=request)}):
+            workspace = Workspace(Path(directory))
+            result = workspace.execute('web_request', {'url': 'https://example.com', 'path': 'downloads/input.bin'})
+            self.assertEqual((workspace.root / 'downloads/input.bin').read_bytes(), data)
+            self.assertEqual(result['bytes'], len(data))
+            self.assertTrue(result['saved'])
+            self.assertIn('untrusted', result['notice'])
+            with self.assertRaises(ValueError):
+                workspace.execute('web_request', {'url': 'https://example.com', 'path': '../outside'})
+
+    def test_web_tool_preserves_controller_denials_without_creating_a_file(self):
+        import sys
+        bridge = SimpleNamespace(request=lambda arguments: {'error': 'Internet access is disabled in Settings.'})
+        with temporary_directory() as directory, patch.dict(sys.modules, {'autoproteus_web': bridge}):
+            workspace = Workspace(Path(directory))
+            with self.assertRaisesRegex(ValueError, 'Internet access is disabled'):
+                workspace.execute('web_request', {'url': 'https://example.com', 'path': 'should-not-exist'})
+            self.assertFalse((workspace.root / 'should-not-exist').exists())
+
     def test_edit_conflict_locations_count_overlaps_and_preserve_bytes(self):
         with temporary_directory() as directory:
             workspace = Workspace(Path(directory))
@@ -282,6 +308,43 @@ def model_response(content, calls, native):
 
 
 class AgentTests(unittest.TestCase):
+    def test_new_tool_repetition_and_declared_defaults_are_visible_without_blocking_calls(self):
+        from unittest.mock import patch
+        seen = []
+        calls = []
+        class Client:
+            def complete(client, messages, cancel):
+                if calls:
+                    seen.append(json.loads(messages[-1]['content'].split('\n', 1)[1]))
+                if len(calls) < 4:
+                    args = {'limit': 2}
+                    calls.append(args)
+                    return {'content': json.dumps({'action': {'tool': 'added_tool', 'arguments': args}})}
+                return {'content': json.dumps({'status': 'completed'})}
+        spec = ('Test a newly registered capability.', {'limit': {'type': 'integer', 'default': 5}}, [])
+        with patch.dict(TOOL_SPECS, {'added_tool': spec}), patch.object(Workspace, 'execute', return_value={'rows': [1, 2]}) as execute:
+            agent = Agent(ROOT, self.store, self.settings, lambda _: Client())
+            try:
+                session = self.store.create('Use a new capability.', 'demo', 'fixture')
+                agent.start(session)
+                self.assertEqual(wait_session(agent, session), 'completed')
+                self.assertEqual(execute.call_count, 4)
+                self.assertEqual(seen[0]['argument_overrides']['limit'], {'supplied': 2, 'declared_default': 5})
+                self.assertEqual(seen[0]['result'], {'rows': [1, 2]})
+                self.assertIn('same result three times', seen[2]['result']['progress_hint'])
+                self.assertNotIn('progress_hint', seen[3]['result'])
+                self.assertTrue(all(args == {'limit': 2} for args in calls))
+            finally:
+                agent.close()
+
+    def test_default_receipts_do_not_infer_defaults_or_treat_required_arguments_as_overrides(self):
+        from autoproteus.providers import argument_overrides
+        schema = {'custom': {'properties': {'required': {'default': 1}, 'optional': {'default': False}, 'unknown': {}}, 'required': ['required']}}
+        self.assertEqual(argument_overrides('custom', {'required': 2, 'unknown': 3}, schema), {})
+        self.assertEqual(argument_overrides('custom', {}, schema), {})
+        self.assertEqual(argument_overrides('custom', {'optional': False}, schema), {})
+        self.assertEqual(argument_overrides('custom', {'optional': 0}, schema)['optional']['supplied'], 0)
+
     def test_activation_context_uses_runtime_budget_and_preserves_the_prompt_prefix_and_user(self):
         agent = Agent(ROOT, self.store, self.settings, lambda _: None)
         try:

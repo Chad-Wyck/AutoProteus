@@ -119,6 +119,18 @@ class WorkflowTests(unittest.TestCase):
             before, after = ({row['path']: row['data'] for row in pack} for pack in (source, changed))
             self.assertTrue(all(after[key] == value for key, value in before.items() if key.startswith('tests/')))
             if name in ('phases', 'staged-inputs', 'submission-feedback', 'edit-context', 'verified-lesson', 'final-contract'): self.assertEqual(changed, source)
+            elif name == 'short-guidance':
+                self.assertEqual({key for key in before if before[key] != after[key]},
+                                 {'autoproteus/protocol.py', 'README.md'})
+                for key in ('autoproteus/protocol.py', 'README.md'):
+                    self.assertLess(len(after[key]), len(before[key]))
+                self.assertNotIn(b'before implementation', base64.b64decode(after['README.md']))
+                compile(base64.b64decode(after['autoproteus/protocol.py']), 'protocol.py', 'exec')
+                import ast
+                protocol = ast.parse(base64.b64decode(after['autoproteus/protocol.py']))
+                names = {target.id for item in protocol.body if isinstance(item, ast.Assign)
+                         for target in item.targets if isinstance(target, ast.Name)}
+                self.assertTrue({'GUIDANCE', 'USE_GUIDANCE', 'PROTOCOL'}.issubset(names))
             else: self.assertIn('autoproteus/workflow_support.py', after)
         self.assertEqual(source_identity(seed_files(ROOT)), fingerprint)
         self.assertEqual(source_identity(source), fingerprint)

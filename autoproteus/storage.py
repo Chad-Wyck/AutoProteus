@@ -114,7 +114,7 @@ def snapshot_seed(root, session, version):
         return
     target.mkdir()
     digest = hashlib.sha256()
-    for name in ("autoproteus", "tests", "seed.py", "README.md"):
+    for name in ("autoproteus", "tests", "examples", "seed.py", "README.md"):
         path = Path(root) / name
         if path.is_dir():
             shutil.copytree(path, target / name, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))

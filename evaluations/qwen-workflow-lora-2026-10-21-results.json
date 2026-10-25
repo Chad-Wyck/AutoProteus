@@ -1,0 +1,3129 @@
+{
+  "created": "2026-10-22T00:43:18.403144+00:00",
+  "commit": "4d3c8f3707fc69754a86dbf580528798f831c718",
+  "source_sha256": "870a6b523a5d771cc931eca8b7a343e35d27a92aa35943cfcccf6a0d4f6dc304",
+  "protocol": {
+    "created": "2026-10-21T22:39:18.168912+00:00",
+    "training": "D:\\AI_New\\AP\\.data\\qwen-workflow-20261021\\training\\20261021T192833Z",
+    "selected": {
+      "best_epoch": 2,
+      "best_validation_loss": 0.17592644068866864,
+      "baseline_validation_loss": 0.22127446065057443,
+      "best_adapter": "E:\\AutoProteus-training\\qwen-workflow-20261021\\training\\20261021T192833Z\\epoch-2",
+      "eligible_for_deployment": true
+    },
+    "study_plan_sha256": {
+      "formatter": "0cd7f13f150f5aee16f08156d489b6dc8411b93cc4348f5249c318767d4a7101",
+      "csv-transfer": "3f023ea8bba19b9aec4379a60e6eadc7014e11da5babedc59a34ab3737f1f855"
+    },
+    "driver_sha256": "37d30761263b37aa715351af1f90d2358ad018ec32d9c7b6da254d51bf55d0af",
+    "dataset_manifest_sha256": "98153f60fd145e07d59159a4d2ca9f0261b8b6f2fd412ed7089fdabbe153054c",
+    "arms": [
+      {
+        "id": "base-q6",
+        "scale": 0
+      },
+      {
+        "id": "adapter-q6",
+        "scale": 1
+      }
+    ],
+    "order": [
+      [
+        "base-q6",
+        "adapter-q6"
+      ],
+      [
+        "adapter-q6",
+        "base-q6"
+      ],
+      [
+        "base-q6",
+        "adapter-q6"
+      ]
+    ],
+    "growth_tasks": "Three visible-input formatter attempts and three visible-input CSV-parent-to-hashing attempts per model. Fresh public input bytes per repeat, identical within each model pair.",
+    "admission": "One benchmark and >=4/5 ordinary tasks; one advisory app diagnostic per arm, never success-selected repeated",
+    "overlap": "Formatter family and ordinary tasks are training-exposed. CSV parent/task format is absent from training; hashing calls are familiar. Unicode validation remains historical.",
+    "scope": "12 directed second-extension attempts from human-supplied independently checked parents. No autonomous first-upgrade or unseen hashing capability claim. No seed/prompt treatment changes."
+  },
+  "training": {
+    "status": "three_complete_passes_verified",
+    "created": "2026-10-21T22:37:14.329103+00:00",
+    "plan_sha256": "a67b3a42f2c49fa6cc1b7983fcaf5f6928689f29c0700ce07c959f79d5f35fae",
+    "model_lock_sha256": "92a5255773d771458e5fd4fe36176f01b81529dd88b7a7b61726e4de9dfd5797",
+    "dataset_manifest_sha256": "98153f60fd145e07d59159a4d2ca9f0261b8b6f2fd412ed7089fdabbe153054c",
+    "training_examples": 141,
+    "ordinary_examples": 98,
+    "workflow_examples": 43,
+    "validation_examples": 18,
+    "complete_passes": 3,
+    "updates": 423,
+    "every_example_used_exactly_three_times": true,
+    "order_matches_frozen_plan": true,
+    "fresh_adapter": true,
+    "configuration": {
+      "rank": 8,
+      "alpha": 16,
+      "learning_rate": 5e-05,
+      "batch": 1,
+      "gradient_checkpointing": true,
+      "nf4_compute": "float32",
+      "frozen_vocab": "float16",
+      "normalization": "float32",
+      "loss": "Only supervised target positions; full untruncated context retained",
+      "loss_scale_initial": 1,
+      "gradient_scaler_enabled": false,
+      "gradient_clip": 1.0,
+      "cpu_offload": "Frozen input embedding only",
+      "cpu_input_embedding": true,
+      "allocator_policy": "Release unused cache after every update; include cost in step timing; preserve peak statistics",
+      "first_adapter_layer": null,
+      "adapter_scope": "All 32 text decoder layers; same projection types, rank 8",
+      "warmup_steps": 10,
+      "schedule": "Linear warmup for ten updates, then linear decay to 10% of peak at update 423",
+      "epoch_count": 3,
+      "fresh_adapter": true,
+      "training_attention_backend": "sdpa",
+      "checkpoint_saved_inputs": "pinned_cpu",
+      "attention_kernel": "PyTorch EFFICIENT_ATTENTION only; Flash, cudnn and math fallback disabled; explicit KV repetition for GQA"
+    },
+    "packages": {
+      "torch": "2.6.0+cu124",
+      "transformers": "5.20.2",
+      "peft": "0.21.2",
+      "bitsandbytes": "0.50.2",
+      "accelerate": "1.15.0",
+      "safetensors": "0.8.0"
+    },
+    "checkpoint_offload": {
+      "modules": 61,
+      "offload": "checkpoint saved inputs to pinned CPU RAM",
+      "recomputation": "unchanged CUDA checkpoint function"
+    },
+    "training_interruptions": 1,
+    "recovery_launcher_stale_heartbeat_failures": 1,
+    "resume_from_update": 375,
+    "completed_updates_discarded_and_replayed": 5,
+    "training_code_data_math_and_order_changed_during_recovery": false,
+    "calendar_seconds": 11283.425201,
+    "canonical_update_seconds": {
+      "mean": 23.40849172576832,
+      "median": 18.359,
+      "maximum": 161.719,
+      "sum": 9901.792
+    },
+    "discarded_completed_update_seconds": 119.063,
+    "peak_allocated_mib": 9174.01,
+    "evaluations": [
+      {
+        "label": "untrained-base",
+        "examples": 18,
+        "supervised_tokens": 1156,
+        "token_weighted_loss": 0.22127446065057443,
+        "teacher_forced_token_accuracy": 0.9273356401384083,
+        "seconds": 82.016
+      },
+      {
+        "label": "epoch-1",
+        "examples": 18,
+        "supervised_tokens": 1156,
+        "token_weighted_loss": 0.1790559235748764,
+        "teacher_forced_token_accuracy": 0.9342560553633218,
+        "seconds": 75.563
+      },
+      {
+        "label": "epoch-2",
+        "examples": 18,
+        "supervised_tokens": 1156,
+        "token_weighted_loss": 0.17592644068866864,
+        "teacher_forced_token_accuracy": 0.9351211072664359,
+        "seconds": 71.093
+      },
+      {
+        "label": "epoch-3",
+        "examples": 18,
+        "supervised_tokens": 1156,
+        "token_weighted_loss": 0.18360990311613687,
+        "teacher_forced_token_accuracy": 0.9411764705882353,
+        "seconds": 75.062
+      }
+    ],
+    "selected": {
+      "best_epoch": 2,
+      "best_validation_loss": 0.17592644068866864,
+      "baseline_validation_loss": 0.22127446065057443,
+      "best_adapter": "E:\\AutoProteus-training\\qwen-workflow-20261021\\training\\20261021T192833Z\\epoch-2",
+      "eligible_for_deployment": true
+    },
+    "epoch_checkpoints": [
+      {
+        "epoch": 1,
+        "path": "E:\\AutoProteus-training\\qwen-workflow-20261021\\training\\20261021T192833Z\\epoch-1",
+        "adapter_sha256": "057df22d405f232330cd4d88fbfd8fa532f2123d6fd20e705d94552cf84b84aa",
+        "validation_loss": 0.1790559235748764
+      },
+      {
+        "epoch": 2,
+        "path": "E:\\AutoProteus-training\\qwen-workflow-20261021\\training\\20261021T192833Z\\epoch-2",
+        "adapter_sha256": "9c5e8912b3622458aa91648cdbee213f7c618b05b1ee2c1878a655adf2b4264a",
+        "validation_loss": 0.17592644068866864
+      },
+      {
+        "epoch": 3,
+        "path": "E:\\AutoProteus-training\\qwen-workflow-20261021\\training\\20261021T192833Z\\epoch-3",
+        "adapter_sha256": "c1974b235f5d1a1f59ee51bed2c61e4ec75f2e955a8dc31732f283d18e3c4c84",
+        "validation_loss": 0.18360990311613687
+      }
+    ],
+    "selection_scope": "Reused historical Unicode validation; not independent workflow or generalization evidence.",
+    "readiness": "Five full-model readiness attempts: four failed, fifth completed two updates. Missing-import launch failure occurred before those. All retained separately."
+  },
+  "selected_export": {
+    "path": "E:\\AutoProteus-training\\qwen-workflow-20261021\\training\\20261021T192833Z\\selected-adapter-f32.gguf",
+    "bytes": 86591264,
+    "sha256": "a32d90477948cebcb5a3ecc20c98e6800b47b49dcda28ec84ebf5dabb54558ca",
+    "adapter_checkpoint": {
+      "epoch": 2,
+      "path": "E:\\AutoProteus-training\\qwen-workflow-20261021\\training\\20261021T192833Z\\epoch-2",
+      "adapter_sha256": "9c5e8912b3622458aa91648cdbee213f7c618b05b1ee2c1878a655adf2b4264a",
+      "validation_loss": 0.17592644068866864
+    },
+    "merge_required": false
+  },
+  "model": {
+    "id": "qwen35-9b-q6_k",
+    "family": "qwen35-9b",
+    "repo": "bartowski/Qwen_Qwen3.5-9B-GGUF",
+    "revision": "182be2fd6c7bc44887d88a91cb03ff009cc9f549",
+    "file": "Qwen_Qwen3.5-9B-Q6_K.gguf",
+    "expected_bytes": 7958818848,
+    "sha256": "073a9275e65d9c8cd2819cf5f77b99fbaa6e87ba591da6bbaa86ec073a64bfef",
+    "quantization": "Q6_K",
+    "path": "D:\\AI_New\\AP\\.data\\models\\gguf\\Qwen_Qwen3.5-9B-Q6_K.gguf",
+    "url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-9B-GGUF/resolve/182be2fd6c7bc44887d88a91cb03ff009cc9f549/Qwen_Qwen3.5-9B-Q6_K.gguf",
+    "staged": true,
+    "previous_removed_staging_path": "D:\\AI_New\\AP\\.data\\overnight-v020-20261019\\staged-weights\\qwen35-9b\\Qwen_Qwen3.5-9B-Q6_K.gguf"
+  },
+  "configuration": {
+    "configured": true,
+    "provider": "hosted",
+    "base_url": "http://127.0.0.1:47841/v1",
+    "model": "qwen35-9b-q6_k",
+    "protocol": "native",
+    "context_tokens": 131072,
+    "response_tokens": 4096,
+    "temperature": 0.6,
+    "thinking": false,
+    "max_steps": 128,
+    "request_timeout": 600,
+    "command_timeout": 60,
+    "terminal": true,
+    "json_mode": false
+  },
+  "parent_sha256": {
+    "formatter": "ad5fbe47ceede347406880a6378ee008d970e92b5481ab5ca5e17078c62fde33",
+    "csv-transfer": "92c91eea6034f80b298e82f2fbe9e23c9a0afb38163334d58f6d5a4e67e617e9"
+  },
+  "arms": {
+    "base-q6": {
+      "formatter": {
+        "attempts": 3,
+        "behavior_checks_available": 3,
+        "behavior_checks_passed": 3,
+        "candidate_tests_passed": 3,
+        "feature_passed": 3,
+        "regressions_passed": 3,
+        "verified_extension": 2,
+        "retained": 3,
+        "stage_order_preserved": 1,
+        "activated": 1,
+        "activation_requested": 1,
+        "capabilities_used": 1,
+        "direct_tool_use": 1,
+        "correct_artifacts": 3,
+        "complete_workflow": 1,
+        "strict_native_route": 1,
+        "model_reported_completion": 3,
+        "calls": 124,
+        "actions": 120,
+        "read_actions": 27,
+        "seconds": 1921.967,
+        "median_seconds": 537.83,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 1755753,
+            "complete": true,
+            "status": "complete",
+            "measured_calls": 124,
+            "expected_calls": 124
+          },
+          "output_tokens": {
+            "known_sum": 26611,
+            "complete": true,
+            "status": "complete",
+            "measured_calls": 124,
+            "expected_calls": 124
+          },
+          "call_seconds": {
+            "known_sum": 1770.395,
+            "complete": true,
+            "status": "complete",
+            "measured_calls": 124,
+            "expected_calls": 124
+          }
+        }
+      },
+      "csv-transfer": {
+        "attempts": 3,
+        "behavior_checks_available": 3,
+        "behavior_checks_passed": 3,
+        "candidate_tests_passed": 2,
+        "feature_passed": 2,
+        "regressions_passed": 3,
+        "verified_extension": 2,
+        "retained": 2,
+        "stage_order_preserved": 3,
+        "activated": 2,
+        "activation_requested": 0,
+        "capabilities_used": 1,
+        "direct_tool_use": 1,
+        "correct_artifacts": 0,
+        "complete_workflow": 0,
+        "strict_native_route": 0,
+        "model_reported_completion": 2,
+        "calls": 262,
+        "actions": 257,
+        "read_actions": 205,
+        "seconds": 1781.025,
+        "median_seconds": 679.91,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 4346947,
+            "complete": true,
+            "status": "complete",
+            "measured_calls": 262,
+            "expected_calls": 262
+          },
+          "output_tokens": {
+            "known_sum": 23200,
+            "complete": true,
+            "status": "complete",
+            "measured_calls": 262,
+            "expected_calls": 262
+          },
+          "call_seconds": {
+            "known_sum": 1619.995,
+            "complete": true,
+            "status": "complete",
+            "measured_calls": 262,
+            "expected_calls": 262
+          }
+        }
+      }
+    },
+    "adapter-q6": {
+      "formatter": {
+        "attempts": 3,
+        "behavior_checks_available": 3,
+        "behavior_checks_passed": 3,
+        "candidate_tests_passed": 3,
+        "feature_passed": 3,
+        "regressions_passed": 3,
+        "verified_extension": 3,
+        "retained": 3,
+        "stage_order_preserved": 1,
+        "activated": 1,
+        "activation_requested": 1,
+        "capabilities_used": 1,
+        "direct_tool_use": 1,
+        "correct_artifacts": 3,
+        "complete_workflow": 1,
+        "strict_native_route": 1,
+        "model_reported_completion": 3,
+        "calls": 137,
+        "actions": 132,
+        "read_actions": 32,
+        "seconds": 2214.894,
+        "median_seconds": 469.528,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 2395083,
+            "complete": true,
+            "status": "complete",
+            "measured_calls": 137,
+            "expected_calls": 137
+          },
+          "output_tokens": {
+            "known_sum": 30411,
+            "complete": true,
+            "status": "complete",
+            "measured_calls": 137,
+            "expected_calls": 137
+          },
+          "call_seconds": {
+            "known_sum": 2058.7619999999997,
+            "complete": true,
+            "status": "complete",
+            "measured_calls": 137,
+            "expected_calls": 137
+          }
+        }
+      },
+      "csv-transfer": {
+        "attempts": 3,
+        "behavior_checks_available": 3,
+        "behavior_checks_passed": 3,
+        "candidate_tests_passed": 3,
+        "feature_passed": 3,
+        "regressions_passed": 3,
+        "verified_extension": 3,
+        "retained": 3,
+        "stage_order_preserved": 3,
+        "activated": 3,
+        "activation_requested": 1,
+        "capabilities_used": 3,
+        "direct_tool_use": 3,
+        "correct_artifacts": 0,
+        "complete_workflow": 0,
+        "strict_native_route": 0,
+        "model_reported_completion": 3,
+        "calls": 76,
+        "actions": 70,
+        "read_actions": 18,
+        "seconds": 1085.214,
+        "median_seconds": 367.584,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 554771,
+            "complete": true,
+            "status": "complete",
+            "measured_calls": 76,
+            "expected_calls": 76
+          },
+          "output_tokens": {
+            "known_sum": 13442,
+            "complete": true,
+            "status": "complete",
+            "measured_calls": 76,
+            "expected_calls": 76
+          },
+          "call_seconds": {
+            "known_sum": 950.328,
+            "complete": true,
+            "status": "complete",
+            "measured_calls": 76,
+            "expected_calls": 76
+          }
+        }
+      }
+    }
+  },
+  "trials": [
+    {
+      "family": "formatter",
+      "cell": "base-q6_growth_01_sha256_file_visible",
+      "arm": "base-q6",
+      "repeat": 1,
+      "behavior_checks_passed": true,
+      "behavior_checks_available": true,
+      "candidate_tests_passed": true,
+      "feature_probe": {
+        "feature": "format_json",
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "object": true,
+          "object_idempotent": true,
+          "array": true,
+          "array_idempotent": true,
+          "scalar": true,
+          "scalar_idempotent": true,
+          "exact_output_limit": true,
+          "unicode_output_exact": true,
+          "unicode_output_exact_idempotent": true,
+          "preserve_invalid": true,
+          "preserve_utf8": true,
+          "preserve_large": true,
+          "preserve_expanded": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 78, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "passed": true
+      },
+      "feature_evaluation": {
+        "passed": true,
+        "probe": {
+          "feature": "format_json",
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": true,
+            "object_idempotent": true,
+            "array": true,
+            "array_idempotent": true,
+            "scalar": true,
+            "scalar_idempotent": true,
+            "exact_output_limit": true,
+            "unicode_output_exact": true,
+            "unicode_output_exact_idempotent": true,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 78, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "passed": true
+        },
+        "run": {
+          "task": "independent-format_json",
+          "session": "a241a4811cc04fe7abf2f3b5f566beba",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.35,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "feature_passed": true,
+      "regressions_passed": true,
+      "regression_count": 50,
+      "clean_package": true,
+      "unexpected_files": [],
+      "verified_extension": true,
+      "retained": true,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "55f4768cd2ebfc88573b7e2e153069e51f7a4a8aea1b8f2edae018b2c8b9b5c9"
+      },
+      "activated": false,
+      "activation_requested": false,
+      "correct_artifacts": true,
+      "artifact_audit": {
+        "correct": true,
+        "file_correct": true,
+        "receipt_correct": true
+      },
+      "complete_workflow": false,
+      "strict_native_route": false,
+      "capabilities_used": false,
+      "direct_tool_use": false,
+      "scores": {},
+      "final_source_unchanged": null,
+      "development_status": "completed",
+      "final_status": null,
+      "development_error": null,
+      "final_error": null,
+      "model_reported_completion": true,
+      "actions": 43,
+      "read_actions": 12,
+      "action_errors": 7,
+      "calls": 44,
+      "seconds": 537.83,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 618534,
+          "measured_calls": 44,
+          "expected_calls": 44,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 8148,
+          "measured_calls": 44,
+          "expected_calls": 44,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 487.857,
+          "measured_calls": 44,
+          "expected_calls": 44,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 487.844,
+          "measured_calls": 44,
+          "expected_calls": 44,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "trace_complete": true,
+      "capture_complete": true,
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 537.829579,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.1e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 8148,
+        "reported_output_tokens": 8148,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "operator_candidate_repairs": [],
+      "source_sha256": "55f4768cd2ebfc88573b7e2e153069e51f7a4a8aea1b8f2edae018b2c8b9b5c9",
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "edit_file",
+            "list_files",
+            "read_file",
+            "read_section",
+            "search_files",
+            "write_file"
+          ],
+          "development": [
+            "format_json",
+            "sha256_file"
+          ]
+        },
+        "required_calls_observed": true,
+        "additional_command_evidence": []
+      },
+      "evidence_folder": ".data/qwen-workflow-20261021/training/20261021T192833Z/inference-study/study-formatter/trials/base-q6_growth_01_sha256_file_visible/attempt-001"
+    },
+    {
+      "family": "formatter",
+      "cell": "adapter-q6_growth_01_sha256_file_visible",
+      "arm": "adapter-q6",
+      "repeat": 1,
+      "behavior_checks_passed": true,
+      "behavior_checks_available": true,
+      "candidate_tests_passed": true,
+      "feature_probe": {
+        "feature": "format_json",
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "object": true,
+          "object_idempotent": true,
+          "array": true,
+          "array_idempotent": true,
+          "scalar": true,
+          "scalar_idempotent": true,
+          "exact_output_limit": true,
+          "unicode_output_exact": true,
+          "unicode_output_exact_idempotent": true,
+          "preserve_invalid": true,
+          "preserve_utf8": true,
+          "preserve_large": true,
+          "preserve_expanded": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 77, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "passed": true
+      },
+      "feature_evaluation": {
+        "passed": true,
+        "probe": {
+          "feature": "format_json",
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": true,
+            "object_idempotent": true,
+            "array": true,
+            "array_idempotent": true,
+            "scalar": true,
+            "scalar_idempotent": true,
+            "exact_output_limit": true,
+            "unicode_output_exact": true,
+            "unicode_output_exact_idempotent": true,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 77, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "passed": true
+        },
+        "run": {
+          "task": "independent-format_json",
+          "session": "cc712c625c5f41d8971bb81b43cb0c7f",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.45,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "feature_passed": true,
+      "regressions_passed": true,
+      "regression_count": 50,
+      "clean_package": true,
+      "unexpected_files": [],
+      "verified_extension": true,
+      "retained": true,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "530fa2593607d413e9150a9eb683c0107bf715cf6d1cd022c51ea64184610575"
+      },
+      "activated": false,
+      "activation_requested": false,
+      "correct_artifacts": true,
+      "artifact_audit": {
+        "correct": true,
+        "file_correct": true,
+        "receipt_correct": true
+      },
+      "complete_workflow": false,
+      "strict_native_route": false,
+      "capabilities_used": false,
+      "direct_tool_use": false,
+      "scores": {},
+      "final_source_unchanged": null,
+      "development_status": "completed",
+      "final_status": null,
+      "development_error": null,
+      "final_error": null,
+      "model_reported_completion": true,
+      "actions": 34,
+      "read_actions": 14,
+      "action_errors": 3,
+      "calls": 35,
+      "seconds": 396.921,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 405870,
+          "measured_calls": 35,
+          "expected_calls": 35,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 5298,
+          "measured_calls": 35,
+          "expected_calls": 35,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 356.303,
+          "measured_calls": 35,
+          "expected_calls": 35,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 356.294,
+          "measured_calls": 35,
+          "expected_calls": 35,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "trace_complete": true,
+      "capture_complete": true,
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 396.920519,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.2e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 5298,
+        "reported_output_tokens": 5298,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "operator_candidate_repairs": [],
+      "source_sha256": "530fa2593607d413e9150a9eb683c0107bf715cf6d1cd022c51ea64184610575",
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "edit_file",
+            "list_files",
+            "read_file",
+            "read_section",
+            "search_files",
+            "write_file"
+          ],
+          "development": [
+            "format_json",
+            "sha256_file"
+          ]
+        },
+        "required_calls_observed": true,
+        "additional_command_evidence": []
+      },
+      "evidence_folder": ".data/qwen-workflow-20261021/training/20261021T192833Z/inference-study/study-formatter/trials/adapter-q6_growth_01_sha256_file_visible/attempt-001"
+    },
+    {
+      "family": "formatter",
+      "cell": "adapter-q6_growth_02_sha256_file_visible",
+      "arm": "adapter-q6",
+      "repeat": 2,
+      "behavior_checks_passed": true,
+      "behavior_checks_available": true,
+      "candidate_tests_passed": true,
+      "feature_probe": {
+        "feature": "format_json",
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "object": true,
+          "object_idempotent": true,
+          "array": true,
+          "array_idempotent": true,
+          "scalar": true,
+          "scalar_idempotent": true,
+          "exact_output_limit": true,
+          "unicode_output_exact": true,
+          "unicode_output_exact_idempotent": true,
+          "preserve_invalid": true,
+          "preserve_utf8": true,
+          "preserve_large": true,
+          "preserve_expanded": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 75, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "passed": true
+      },
+      "feature_evaluation": {
+        "passed": true,
+        "probe": {
+          "feature": "format_json",
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": true,
+            "object_idempotent": true,
+            "array": true,
+            "array_idempotent": true,
+            "scalar": true,
+            "scalar_idempotent": true,
+            "exact_output_limit": true,
+            "unicode_output_exact": true,
+            "unicode_output_exact_idempotent": true,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 75, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "passed": true
+        },
+        "run": {
+          "task": "independent-format_json",
+          "session": "da50f84b28ed4363abdf606c433f47af",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.52,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "feature_passed": true,
+      "regressions_passed": true,
+      "regression_count": 50,
+      "clean_package": true,
+      "unexpected_files": [],
+      "verified_extension": true,
+      "retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": true,
+        "submitted_source_sha256": "fa8ce0ffe96aafef5f4c30b3b543c26ceb876ad3a7b8b5879cef9676b304cadf",
+        "correct_final_use": true,
+        "explicit_finish": true
+      },
+      "activated": true,
+      "activation_requested": true,
+      "correct_artifacts": true,
+      "artifact_audit": {
+        "correct": true,
+        "file_correct": true,
+        "receipt_correct": true
+      },
+      "complete_workflow": true,
+      "strict_native_route": true,
+      "capabilities_used": true,
+      "direct_tool_use": true,
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "final_source_unchanged": true,
+      "development_status": "waiting",
+      "final_status": "completed",
+      "development_error": null,
+      "final_error": null,
+      "model_reported_completion": true,
+      "actions": 29,
+      "read_actions": 5,
+      "action_errors": 4,
+      "calls": 31,
+      "seconds": 469.528,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 254626,
+          "measured_calls": 31,
+          "expected_calls": 31,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 5626,
+          "measured_calls": 31,
+          "expected_calls": 31,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 421.457,
+          "measured_calls": 31,
+          "expected_calls": 31,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 421.448,
+          "measured_calls": 31,
+          "expected_calls": 31,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "trace_complete": true,
+      "capture_complete": true,
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 469.527981,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.3e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 5626,
+        "reported_output_tokens": 5626,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "operator_candidate_repairs": [],
+      "source_sha256": "fa8ce0ffe96aafef5f4c30b3b543c26ceb876ad3a7b8b5879cef9676b304cadf",
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "format_json",
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": true,
+        "additional_command_evidence": []
+      },
+      "evidence_folder": ".data/qwen-workflow-20261021/training/20261021T192833Z/inference-study/study-formatter/trials/adapter-q6_growth_02_sha256_file_visible/attempt-001"
+    },
+    {
+      "family": "formatter",
+      "cell": "base-q6_growth_02_sha256_file_visible",
+      "arm": "base-q6",
+      "repeat": 2,
+      "behavior_checks_passed": true,
+      "behavior_checks_available": true,
+      "candidate_tests_passed": true,
+      "feature_probe": {
+        "feature": "format_json",
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "object": true,
+          "object_idempotent": true,
+          "array": true,
+          "array_idempotent": true,
+          "scalar": true,
+          "scalar_idempotent": true,
+          "exact_output_limit": true,
+          "unicode_output_exact": true,
+          "unicode_output_exact_idempotent": true,
+          "preserve_invalid": true,
+          "preserve_utf8": true,
+          "preserve_large": true,
+          "preserve_expanded": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 81, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "passed": true
+      },
+      "feature_evaluation": {
+        "passed": true,
+        "probe": {
+          "feature": "format_json",
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": true,
+            "object_idempotent": true,
+            "array": true,
+            "array_idempotent": true,
+            "scalar": true,
+            "scalar_idempotent": true,
+            "exact_output_limit": true,
+            "unicode_output_exact": true,
+            "unicode_output_exact_idempotent": true,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 81, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "passed": true
+        },
+        "run": {
+          "task": "independent-format_json",
+          "session": "c7a32d0178ed4e17b9b1c3cc77fed18f",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 7.02,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "feature_passed": true,
+      "regressions_passed": true,
+      "regression_count": 50,
+      "clean_package": true,
+      "unexpected_files": [],
+      "verified_extension": true,
+      "retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": true,
+        "submitted_source_sha256": "006e76f09c95db74ee1ebbf5558528e33ee73334f4efafe8321f6f6a6fcd3106",
+        "correct_final_use": true,
+        "explicit_finish": true
+      },
+      "activated": true,
+      "activation_requested": true,
+      "correct_artifacts": true,
+      "artifact_audit": {
+        "correct": true,
+        "file_correct": true,
+        "receipt_correct": true
+      },
+      "complete_workflow": true,
+      "strict_native_route": true,
+      "capabilities_used": true,
+      "direct_tool_use": true,
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "final_source_unchanged": true,
+      "development_status": "waiting",
+      "final_status": "completed",
+      "development_error": null,
+      "final_error": null,
+      "model_reported_completion": true,
+      "actions": 27,
+      "read_actions": 6,
+      "action_errors": 2,
+      "calls": 29,
+      "seconds": 533.935,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 247243,
+          "measured_calls": 29,
+          "expected_calls": 29,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 6671,
+          "measured_calls": 29,
+          "expected_calls": 29,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 487.485,
+          "measured_calls": 29,
+          "expected_calls": 29,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 487.476,
+          "measured_calls": 29,
+          "expected_calls": 29,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "trace_complete": true,
+      "capture_complete": true,
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 533.934873,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.5e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 6671,
+        "reported_output_tokens": 6671,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "operator_candidate_repairs": [],
+      "source_sha256": "006e76f09c95db74ee1ebbf5558528e33ee73334f4efafe8321f6f6a6fcd3106",
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "format_json",
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": true,
+        "additional_command_evidence": []
+      },
+      "evidence_folder": ".data/qwen-workflow-20261021/training/20261021T192833Z/inference-study/study-formatter/trials/base-q6_growth_02_sha256_file_visible/attempt-001"
+    },
+    {
+      "family": "formatter",
+      "cell": "base-q6_growth_03_sha256_file_visible",
+      "arm": "base-q6",
+      "repeat": 3,
+      "behavior_checks_passed": true,
+      "behavior_checks_available": true,
+      "candidate_tests_passed": true,
+      "feature_probe": {
+        "feature": "format_json",
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "object": true,
+          "object_idempotent": true,
+          "array": true,
+          "array_idempotent": true,
+          "scalar": true,
+          "scalar_idempotent": true,
+          "exact_output_limit": true,
+          "unicode_output_exact": true,
+          "unicode_output_exact_idempotent": true,
+          "preserve_invalid": true,
+          "preserve_utf8": true,
+          "preserve_large": true,
+          "preserve_expanded": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 81, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "passed": true
+      },
+      "feature_evaluation": {
+        "passed": true,
+        "probe": {
+          "feature": "format_json",
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": true,
+            "object_idempotent": true,
+            "array": true,
+            "array_idempotent": true,
+            "scalar": true,
+            "scalar_idempotent": true,
+            "exact_output_limit": true,
+            "unicode_output_exact": true,
+            "unicode_output_exact_idempotent": true,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 81, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "passed": true
+        },
+        "run": {
+          "task": "independent-format_json",
+          "session": "bf59439ea88740ccb3687babc86ad32d",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.18,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "feature_passed": true,
+      "regressions_passed": true,
+      "regression_count": 50,
+      "clean_package": false,
+      "unexpected_files": [
+        "development/args_inventory.json",
+        "development/test_args.json"
+      ],
+      "verified_extension": false,
+      "retained": true,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": false,
+        "submitted_source_sha256": "d15e5d9e3e54f26c3d7e814d94d7e76f8e887d416bbca8d006d78db5ba6e0ae9"
+      },
+      "activated": false,
+      "activation_requested": false,
+      "correct_artifacts": true,
+      "artifact_audit": {
+        "correct": true,
+        "file_correct": true,
+        "receipt_correct": true
+      },
+      "complete_workflow": false,
+      "strict_native_route": false,
+      "capabilities_used": false,
+      "direct_tool_use": false,
+      "scores": {},
+      "final_source_unchanged": null,
+      "development_status": "completed",
+      "final_status": null,
+      "development_error": null,
+      "final_error": null,
+      "model_reported_completion": true,
+      "actions": 50,
+      "read_actions": 9,
+      "action_errors": 9,
+      "calls": 51,
+      "seconds": 850.202,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 889976,
+          "measured_calls": 51,
+          "expected_calls": 51,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 11792,
+          "measured_calls": 51,
+          "expected_calls": 51,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 795.053,
+          "measured_calls": 51,
+          "expected_calls": 51,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 795.038,
+          "measured_calls": 51,
+          "expected_calls": 51,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "trace_complete": true,
+      "capture_complete": true,
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 850.202178,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.6e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 11792,
+        "reported_output_tokens": 11792,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "operator_candidate_repairs": [],
+      "source_sha256": "d15e5d9e3e54f26c3d7e814d94d7e76f8e887d416bbca8d006d78db5ba6e0ae9",
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "edit_file",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": [
+            "format_json"
+          ]
+        },
+        "required_calls_observed": false,
+        "additional_command_evidence": []
+      },
+      "evidence_folder": ".data/qwen-workflow-20261021/training/20261021T192833Z/inference-study/study-formatter/trials/base-q6_growth_03_sha256_file_visible/attempt-001"
+    },
+    {
+      "family": "formatter",
+      "cell": "adapter-q6_growth_03_sha256_file_visible",
+      "arm": "adapter-q6",
+      "repeat": 3,
+      "behavior_checks_passed": true,
+      "behavior_checks_available": true,
+      "candidate_tests_passed": true,
+      "feature_probe": {
+        "feature": "format_json",
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "object": true,
+          "object_idempotent": true,
+          "array": true,
+          "array_idempotent": true,
+          "scalar": true,
+          "scalar_idempotent": true,
+          "exact_output_limit": true,
+          "unicode_output_exact": true,
+          "unicode_output_exact_idempotent": true,
+          "preserve_invalid": true,
+          "preserve_utf8": true,
+          "preserve_large": true,
+          "preserve_expanded": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 80, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "passed": true
+      },
+      "feature_evaluation": {
+        "passed": true,
+        "probe": {
+          "feature": "format_json",
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "object": true,
+            "object_idempotent": true,
+            "array": true,
+            "array_idempotent": true,
+            "scalar": true,
+            "scalar_idempotent": true,
+            "exact_output_limit": true,
+            "unicode_output_exact": true,
+            "unicode_output_exact_idempotent": true,
+            "preserve_invalid": true,
+            "preserve_utf8": true,
+            "preserve_large": true,
+            "preserve_expanded": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 80, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "passed": true
+        },
+        "run": {
+          "task": "independent-format_json",
+          "session": "8b3806d396e5494e972650f26081078a",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.29,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "feature_passed": true,
+      "regressions_passed": true,
+      "regression_count": 50,
+      "clean_package": true,
+      "unexpected_files": [],
+      "verified_extension": true,
+      "retained": true,
+      "stage_order_preserved": false,
+      "stages": {
+        "activated": false,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "e946013c4a1732fa5fcaefe5a4faf96173a42964e0e9517ee0ba976b9752a9f0"
+      },
+      "activated": false,
+      "activation_requested": false,
+      "correct_artifacts": true,
+      "artifact_audit": {
+        "correct": true,
+        "file_correct": true,
+        "receipt_correct": true
+      },
+      "complete_workflow": false,
+      "strict_native_route": false,
+      "capabilities_used": false,
+      "direct_tool_use": false,
+      "scores": {},
+      "final_source_unchanged": null,
+      "development_status": "completed",
+      "final_status": null,
+      "development_error": null,
+      "final_error": null,
+      "model_reported_completion": true,
+      "actions": 69,
+      "read_actions": 13,
+      "action_errors": 14,
+      "calls": 71,
+      "seconds": 1348.445,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 1734587,
+          "measured_calls": 71,
+          "expected_calls": 71,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 19487,
+          "measured_calls": 71,
+          "expected_calls": 71,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 1281.002,
+          "measured_calls": 71,
+          "expected_calls": 71,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 1280.981,
+          "measured_calls": 71,
+          "expected_calls": 71,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "trace_complete": true,
+      "capture_complete": true,
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 1348.444905,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.6e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 19487,
+        "reported_output_tokens": 19487,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "operator_candidate_repairs": [],
+      "source_sha256": "e946013c4a1732fa5fcaefe5a4faf96173a42964e0e9517ee0ba976b9752a9f0",
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "delete_file",
+            "edit_file",
+            "list_files",
+            "read_file",
+            "read_section",
+            "write_file"
+          ],
+          "development": [
+            "format_json",
+            "sha256_file"
+          ]
+        },
+        "required_calls_observed": true,
+        "additional_command_evidence": []
+      },
+      "evidence_folder": ".data/qwen-workflow-20261021/training/20261021T192833Z/inference-study/study-formatter/trials/adapter-q6_growth_03_sha256_file_visible/attempt-001"
+    },
+    {
+      "family": "csv-transfer",
+      "cell": "base-q6_growth_01_csv_preview_visible",
+      "arm": "base-q6",
+      "repeat": 1,
+      "behavior_checks_passed": true,
+      "behavior_checks_available": true,
+      "candidate_tests_passed": true,
+      "feature_probe": {
+        "feature": "sha256_file",
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "empty": true,
+          "binary": true,
+          "exact": true,
+          "oversized": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 61, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "passed": true
+      },
+      "feature_evaluation": {
+        "passed": true,
+        "probe": {
+          "feature": "sha256_file",
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 61, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "passed": true
+        },
+        "run": {
+          "task": "independent-sha256_file",
+          "session": "4a8ab805055f43aba9f0fa41e53415a0",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.21,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "feature_passed": true,
+      "regressions_passed": true,
+      "regression_count": 50,
+      "clean_package": true,
+      "unexpected_files": [],
+      "verified_extension": true,
+      "retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "b41b306cd715d959d71c1f26d5941f27ff1813786cb8d05f3190c2c65b453a28",
+        "correct_final_use": false,
+        "explicit_finish": true
+      },
+      "activated": true,
+      "activation_requested": false,
+      "correct_artifacts": false,
+      "artifact_audit": {
+        "correct": false,
+        "file_correct": true,
+        "receipt_correct": false
+      },
+      "complete_workflow": false,
+      "strict_native_route": false,
+      "capabilities_used": false,
+      "direct_tool_use": false,
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": false,
+        "capabilities_used": false,
+        "functional_growth": false,
+        "direct_tool_use": false,
+        "strict_route_success": false
+      },
+      "final_source_unchanged": true,
+      "development_status": "completed",
+      "final_status": "completed",
+      "development_error": null,
+      "final_error": null,
+      "model_reported_completion": true,
+      "actions": 26,
+      "read_actions": 8,
+      "action_errors": 2,
+      "calls": 28,
+      "seconds": 349.611,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 253177,
+          "measured_calls": 28,
+          "expected_calls": 28,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 4356,
+          "measured_calls": 28,
+          "expected_calls": 28,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 306.044,
+          "measured_calls": 28,
+          "expected_calls": 28,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 306.035,
+          "measured_calls": 28,
+          "expected_calls": 28,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "trace_complete": true,
+      "capture_complete": true,
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 349.610723,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.2e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 4356,
+        "reported_output_tokens": 4356,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "operator_candidate_repairs": [],
+      "source_sha256": "b41b306cd715d959d71c1f26d5941f27ff1813786cb8d05f3190c2c65b453a28",
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": false,
+        "additional_command_evidence": []
+      },
+      "evidence_folder": ".data/qwen-workflow-20261021/training/20261021T192833Z/inference-study/study-csv-transfer/trials/base-q6_growth_01_csv_preview_visible/attempt-001"
+    },
+    {
+      "family": "csv-transfer",
+      "cell": "adapter-q6_growth_01_csv_preview_visible",
+      "arm": "adapter-q6",
+      "repeat": 1,
+      "behavior_checks_passed": true,
+      "behavior_checks_available": true,
+      "candidate_tests_passed": true,
+      "feature_probe": {
+        "feature": "sha256_file",
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "empty": true,
+          "binary": true,
+          "exact": true,
+          "oversized": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 61, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "passed": true
+      },
+      "feature_evaluation": {
+        "passed": true,
+        "probe": {
+          "feature": "sha256_file",
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 61, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "passed": true
+        },
+        "run": {
+          "task": "independent-sha256_file",
+          "session": "5fab0e807656449d9f13bb82651abb5d",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 7.28,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "feature_passed": true,
+      "regressions_passed": true,
+      "regression_count": 50,
+      "clean_package": true,
+      "unexpected_files": [],
+      "verified_extension": true,
+      "retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "c1b794b69297ba9fdf1c739f178b8941000a5b761f7cb769dc3f068ced246afc",
+        "correct_final_use": false,
+        "explicit_finish": true
+      },
+      "activated": true,
+      "activation_requested": false,
+      "correct_artifacts": false,
+      "artifact_audit": {
+        "correct": false,
+        "file_correct": true,
+        "receipt_correct": false
+      },
+      "complete_workflow": false,
+      "strict_native_route": false,
+      "capabilities_used": true,
+      "direct_tool_use": true,
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": false,
+        "capabilities_used": true,
+        "functional_growth": false,
+        "direct_tool_use": true,
+        "strict_route_success": false
+      },
+      "final_source_unchanged": true,
+      "development_status": "completed",
+      "final_status": "completed",
+      "development_error": null,
+      "final_error": null,
+      "model_reported_completion": true,
+      "actions": 28,
+      "read_actions": 6,
+      "action_errors": 5,
+      "calls": 30,
+      "seconds": 426.005,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 236035,
+          "measured_calls": 30,
+          "expected_calls": 30,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 5407,
+          "measured_calls": 30,
+          "expected_calls": 30,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 377.684,
+          "measured_calls": 30,
+          "expected_calls": 30,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 377.675,
+          "measured_calls": 30,
+          "expected_calls": 30,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "trace_complete": true,
+      "capture_complete": true,
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 426.005065,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.5e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 5407,
+        "reported_output_tokens": 5407,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "operator_candidate_repairs": [],
+      "source_sha256": "c1b794b69297ba9fdf1c739f178b8941000a5b761f7cb769dc3f068ced246afc",
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": true,
+        "additional_command_evidence": []
+      },
+      "evidence_folder": ".data/qwen-workflow-20261021/training/20261021T192833Z/inference-study/study-csv-transfer/trials/adapter-q6_growth_01_csv_preview_visible/attempt-001"
+    },
+    {
+      "family": "csv-transfer",
+      "cell": "adapter-q6_growth_02_csv_preview_visible",
+      "arm": "adapter-q6",
+      "repeat": 2,
+      "behavior_checks_passed": true,
+      "behavior_checks_available": true,
+      "candidate_tests_passed": true,
+      "feature_probe": {
+        "feature": "sha256_file",
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "empty": true,
+          "binary": true,
+          "exact": true,
+          "oversized": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 60, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "passed": true
+      },
+      "feature_evaluation": {
+        "passed": true,
+        "probe": {
+          "feature": "sha256_file",
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 60, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "passed": true
+        },
+        "run": {
+          "task": "independent-sha256_file",
+          "session": "dc35acfa64384e66917704ac2921e4d7",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.15,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "feature_passed": true,
+      "regressions_passed": true,
+      "regression_count": 50,
+      "clean_package": true,
+      "unexpected_files": [],
+      "verified_extension": true,
+      "retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": true,
+        "independently_verified": true,
+        "submitted_source_sha256": "c8c290669f6a6e3b4e81a086ef06375b2a3206d8c9ba21b887e55fa8888fe778",
+        "correct_final_use": false,
+        "explicit_finish": true
+      },
+      "activated": true,
+      "activation_requested": true,
+      "correct_artifacts": false,
+      "artifact_audit": {
+        "correct": false,
+        "file_correct": true,
+        "receipt_correct": false
+      },
+      "complete_workflow": false,
+      "strict_native_route": false,
+      "capabilities_used": true,
+      "direct_tool_use": true,
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": false,
+        "capabilities_used": true,
+        "functional_growth": false,
+        "direct_tool_use": true,
+        "strict_route_success": false
+      },
+      "final_source_unchanged": true,
+      "development_status": "waiting",
+      "final_status": "completed",
+      "development_error": null,
+      "final_error": null,
+      "model_reported_completion": true,
+      "actions": 24,
+      "read_actions": 6,
+      "action_errors": 2,
+      "calls": 26,
+      "seconds": 367.584,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 191844,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 4370,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 321.589,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 321.58,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "trace_complete": true,
+      "capture_complete": true,
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 367.584315,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.2e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 4370,
+        "reported_output_tokens": 4370,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "operator_candidate_repairs": [],
+      "source_sha256": "c8c290669f6a6e3b4e81a086ef06375b2a3206d8c9ba21b887e55fa8888fe778",
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "list_files",
+            "read_file",
+            "sha256_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": true,
+        "additional_command_evidence": []
+      },
+      "evidence_folder": ".data/qwen-workflow-20261021/training/20261021T192833Z/inference-study/study-csv-transfer/trials/adapter-q6_growth_02_csv_preview_visible/attempt-001"
+    },
+    {
+      "family": "csv-transfer",
+      "cell": "base-q6_growth_02_csv_preview_visible",
+      "arm": "base-q6",
+      "repeat": 2,
+      "behavior_checks_passed": true,
+      "behavior_checks_available": true,
+      "candidate_tests_passed": true,
+      "feature_probe": {
+        "feature": "sha256_file",
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "empty": true,
+          "binary": true,
+          "exact": true,
+          "oversized": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 62, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "passed": true
+      },
+      "feature_evaluation": {
+        "passed": true,
+        "probe": {
+          "feature": "sha256_file",
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 62, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "passed": true
+        },
+        "run": {
+          "task": "independent-sha256_file",
+          "session": "72c7ace04af54306b16053d2a45db8ad",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.09,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "feature_passed": true,
+      "regressions_passed": true,
+      "regression_count": 50,
+      "clean_package": true,
+      "unexpected_files": [],
+      "verified_extension": true,
+      "retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "9325fe7614f5a2c14500218f1807bb90c6b2f8d12969cd54f81982b28326e38c",
+        "correct_final_use": false,
+        "explicit_finish": true
+      },
+      "activated": true,
+      "activation_requested": false,
+      "correct_artifacts": false,
+      "artifact_audit": {
+        "correct": false,
+        "file_correct": true,
+        "receipt_correct": false
+      },
+      "complete_workflow": false,
+      "strict_native_route": false,
+      "capabilities_used": true,
+      "direct_tool_use": true,
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": false,
+        "capabilities_used": true,
+        "functional_growth": false,
+        "direct_tool_use": true,
+        "strict_route_success": false
+      },
+      "final_source_unchanged": true,
+      "development_status": "completed",
+      "final_status": "completed",
+      "development_error": null,
+      "final_error": null,
+      "model_reported_completion": true,
+      "actions": 103,
+      "read_actions": 78,
+      "action_errors": 4,
+      "calls": 105,
+      "seconds": 679.91,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 1742584,
+          "measured_calls": 105,
+          "expected_calls": 105,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 9220,
+          "measured_calls": 105,
+          "expected_calls": 105,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 617.223,
+          "measured_calls": 105,
+          "expected_calls": 105,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 617.192,
+          "measured_calls": 105,
+          "expected_calls": 105,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "trace_complete": true,
+      "capture_complete": true,
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 679.910142,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.4e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 9220,
+        "reported_output_tokens": 9220,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "operator_candidate_repairs": [],
+      "source_sha256": "9325fe7614f5a2c14500218f1807bb90c6b2f8d12969cd54f81982b28326e38c",
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": true,
+        "additional_command_evidence": []
+      },
+      "evidence_folder": ".data/qwen-workflow-20261021/training/20261021T192833Z/inference-study/study-csv-transfer/trials/base-q6_growth_02_csv_preview_visible/attempt-001"
+    },
+    {
+      "family": "csv-transfer",
+      "cell": "base-q6_growth_03_csv_preview_visible",
+      "arm": "base-q6",
+      "repeat": 3,
+      "behavior_checks_passed": true,
+      "behavior_checks_available": true,
+      "candidate_tests_passed": false,
+      "feature_probe": {
+        "feature": "sha256_file",
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "empty": true,
+          "binary": true,
+          "exact": true,
+          "oversized": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 1,
+          "output": "{\"check\": \"candidate tests\", \"passed\": false, \"tests\": 60, \"failures\": 0, \"errors\": 1, \"skipped\": 0}\ntest_sha256_file_missing (test_sha256_file.SuppliedSha256FileTests.test_sha256_file_missing)\nTraceback (most recent call last):\n  File \"/work/task/harness/tests/test_sha256_file.py\", line 53, in test_sha256_file_missing\n    Workspace(root).execute('sha256_file', {'path': 'missing.bin'})\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/work/task/harness/autoproteus/tools.py\", line 122, in execute\n    raise ValueError(\"sha256_file requires an existing ordinary file\")\nValueError: sha256_file requires an existing ordinary file\n\n"
+        },
+        "passed": false
+      },
+      "feature_evaluation": {
+        "passed": false,
+        "probe": {
+          "feature": "sha256_file",
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 1,
+            "output": "{\"check\": \"candidate tests\", \"passed\": false, \"tests\": 60, \"failures\": 0, \"errors\": 1, \"skipped\": 0}\ntest_sha256_file_missing (test_sha256_file.SuppliedSha256FileTests.test_sha256_file_missing)\nTraceback (most recent call last):\n  File \"/work/task/harness/tests/test_sha256_file.py\", line 53, in test_sha256_file_missing\n    Workspace(root).execute('sha256_file', {'path': 'missing.bin'})\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/work/task/harness/autoproteus/tools.py\", line 122, in execute\n    raise ValueError(\"sha256_file requires an existing ordinary file\")\nValueError: sha256_file requires an existing ordinary file\n\n"
+          },
+          "passed": false
+        },
+        "run": {
+          "task": "independent-sha256_file",
+          "session": "f94f6ae1596f4a8c94650f6c64d78b90",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.49,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "feature_passed": false,
+      "regressions_passed": true,
+      "regression_count": 50,
+      "clean_package": true,
+      "unexpected_files": [],
+      "verified_extension": false,
+      "retained": false,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": false,
+        "submitted": false,
+        "activation_requested": false,
+        "independently_verified": false,
+        "submitted_source_sha256": "7390cab437814f3f96db40f8fd4470494947c8f7ec75087c8949447ef05f4fd7"
+      },
+      "activated": false,
+      "activation_requested": false,
+      "correct_artifacts": false,
+      "artifact_audit": {
+        "correct": false,
+        "error": "File not found"
+      },
+      "complete_workflow": false,
+      "strict_native_route": false,
+      "capabilities_used": false,
+      "direct_tool_use": false,
+      "scores": {},
+      "final_source_unchanged": null,
+      "development_status": "paused",
+      "final_status": null,
+      "development_error": null,
+      "final_error": null,
+      "model_reported_completion": false,
+      "actions": 128,
+      "read_actions": 119,
+      "action_errors": 3,
+      "calls": 129,
+      "seconds": 751.504,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 2351186,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 9624,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 696.728,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 696.688,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "trace_complete": true,
+      "capture_complete": true,
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 751.503586,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.7e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 9624,
+        "reported_output_tokens": 9624,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "operator_candidate_repairs": [],
+      "source_sha256": "7390cab437814f3f96db40f8fd4470494947c8f7ec75087c8949447ef05f4fd7",
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "edit_file",
+            "list_files",
+            "read_file",
+            "read_section",
+            "write_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": false,
+        "additional_command_evidence": []
+      },
+      "evidence_folder": ".data/qwen-workflow-20261021/training/20261021T192833Z/inference-study/study-csv-transfer/trials/base-q6_growth_03_csv_preview_visible/attempt-001"
+    },
+    {
+      "family": "csv-transfer",
+      "cell": "adapter-q6_growth_03_csv_preview_visible",
+      "arm": "adapter-q6",
+      "repeat": 3,
+      "behavior_checks_passed": true,
+      "behavior_checks_available": true,
+      "candidate_tests_passed": true,
+      "feature_probe": {
+        "feature": "sha256_file",
+        "checks": {
+          "registered": true,
+          "schema": true,
+          "empty": true,
+          "binary": true,
+          "exact": true,
+          "oversized": true,
+          "reject_path_directory": true,
+          "reject_path_missing": true,
+          "reject_path_../outside-heldout.txt": true,
+          "reject_path_escape": true,
+          "outside_preserved": true
+        },
+        "errors": {},
+        "suite": {
+          "exit_code": 0,
+          "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 61, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+        },
+        "passed": true
+      },
+      "feature_evaluation": {
+        "passed": true,
+        "probe": {
+          "feature": "sha256_file",
+          "checks": {
+            "registered": true,
+            "schema": true,
+            "empty": true,
+            "binary": true,
+            "exact": true,
+            "oversized": true,
+            "reject_path_directory": true,
+            "reject_path_missing": true,
+            "reject_path_../outside-heldout.txt": true,
+            "reject_path_escape": true,
+            "outside_preserved": true
+          },
+          "errors": {},
+          "suite": {
+            "exit_code": 0,
+            "output": "{\"check\": \"candidate tests\", \"passed\": true, \"tests\": 61, \"failures\": 0, \"errors\": 0, \"skipped\": 0}\nThese are development checks, not independent upgrade approval. Inspect the result and test boundary cases.\n"
+          },
+          "passed": true
+        },
+        "run": {
+          "task": "independent-sha256_file",
+          "session": "48339ad3f2e44db4b58747c1d71c4428",
+          "status": "completed",
+          "execution_mode": "vm",
+          "isolated": true,
+          "passed": true,
+          "checks": [
+            {
+              "path": "heldout-result.json",
+              "passed": true
+            }
+          ],
+          "steps": 1,
+          "seconds": 6.34,
+          "model_requests": 2,
+          "timed_out": false,
+          "format_repairs": 0,
+          "action_errors": 0,
+          "read_actions": 0,
+          "repeated_reads": 0,
+          "interrupted": false,
+          "failure_kind": null,
+          "detail": ""
+        }
+      },
+      "feature_passed": true,
+      "regressions_passed": true,
+      "regression_count": 50,
+      "clean_package": true,
+      "unexpected_files": [],
+      "verified_extension": true,
+      "retained": true,
+      "stage_order_preserved": true,
+      "stages": {
+        "activated": true,
+        "submitted": true,
+        "activation_requested": false,
+        "independently_verified": true,
+        "submitted_source_sha256": "ad70ffed8c0543061f7b9815af37932dbb8d83710c6784cf011306fce1dc8e1e",
+        "correct_final_use": false,
+        "explicit_finish": true
+      },
+      "activated": true,
+      "activation_requested": false,
+      "correct_artifacts": false,
+      "artifact_audit": {
+        "correct": false,
+        "file_correct": true,
+        "receipt_correct": false
+      },
+      "complete_workflow": false,
+      "strict_native_route": false,
+      "capabilities_used": true,
+      "direct_tool_use": true,
+      "scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": false,
+        "capabilities_used": true,
+        "functional_growth": false,
+        "direct_tool_use": true,
+        "strict_route_success": false
+      },
+      "final_source_unchanged": true,
+      "development_status": "completed",
+      "final_status": "completed",
+      "development_error": null,
+      "final_error": null,
+      "model_reported_completion": true,
+      "actions": 18,
+      "read_actions": 6,
+      "action_errors": 0,
+      "calls": 20,
+      "seconds": 291.625,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 126892,
+          "measured_calls": 20,
+          "expected_calls": 20,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 3665,
+          "measured_calls": 20,
+          "expected_calls": 20,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 251.055,
+          "measured_calls": 20,
+          "expected_calls": 20,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 251.049,
+          "measured_calls": 20,
+          "expected_calls": 20,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "trace_complete": true,
+      "capture_complete": true,
+      "wall_budget": {
+        "allowance_seconds": 1800.0,
+        "work_seconds": 291.625271,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 2.1e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "token_budget": {
+        "limit": 65536,
+        "charged_output_tokens": 3665,
+        "reported_output_tokens": 3665,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "operator_candidate_repairs": [],
+      "source_sha256": "ad70ffed8c0543061f7b9815af37932dbb8d83710c6784cf011306fce1dc8e1e",
+      "secondary_route_audit": {
+        "scope": "Posthoc observation only; frozen scores unchanged. Exact literal cd prefix and unconditional top-level calls through a variable assigned Workspace(...). Not a security proof.",
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "required_calls_observed": true,
+        "additional_command_evidence": []
+      },
+      "evidence_folder": ".data/qwen-workflow-20261021/training/20261021T192833Z/inference-study/study-csv-transfer/trials/adapter-q6_growth_03_csv_preview_visible/attempt-001"
+    }
+  ],
+  "ordinary_and_benchmark": [
+    {
+      "cell": "base-q6_benchmark_01",
+      "arm": "base-q6",
+      "passed": true,
+      "seconds": 20.036
+    },
+    {
+      "cell": "base-q6_basic_exact-file",
+      "arm": "base-q6",
+      "passed": true,
+      "seconds": 16.277
+    },
+    {
+      "cell": "base-q6_basic_precise-edit",
+      "arm": "base-q6",
+      "passed": true,
+      "seconds": 24.315
+    },
+    {
+      "cell": "base-q6_basic_recovery",
+      "arm": "base-q6",
+      "passed": true,
+      "seconds": 18.676
+    },
+    {
+      "cell": "base-q6_basic_unicode",
+      "arm": "base-q6",
+      "passed": true,
+      "seconds": 18.311
+    },
+    {
+      "cell": "base-q6_basic_bug-fix",
+      "arm": "base-q6",
+      "passed": true,
+      "seconds": 27.049
+    },
+    {
+      "cell": "adapter-q6_benchmark_01",
+      "arm": "adapter-q6",
+      "passed": true,
+      "seconds": 23.465
+    },
+    {
+      "cell": "adapter-q6_basic_exact-file",
+      "arm": "adapter-q6",
+      "passed": true,
+      "seconds": 17.821
+    },
+    {
+      "cell": "adapter-q6_basic_precise-edit",
+      "arm": "adapter-q6",
+      "passed": true,
+      "seconds": 25.926
+    },
+    {
+      "cell": "adapter-q6_basic_recovery",
+      "arm": "adapter-q6",
+      "passed": true,
+      "seconds": 19.204
+    },
+    {
+      "cell": "adapter-q6_basic_unicode",
+      "arm": "adapter-q6",
+      "passed": true,
+      "seconds": 16.201
+    },
+    {
+      "cell": "adapter-q6_basic_bug-fix",
+      "arm": "adapter-q6",
+      "passed": true,
+      "seconds": 28.305
+    }
+  ],
+  "matched_successful_pairs": [
+    {
+      "family": "formatter",
+      "repeat": 2,
+      "arms": {
+        "adapter-q6": {
+          "calls": 31,
+          "actions": 29,
+          "seconds": 469.528,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 254626,
+              "measured_calls": 31,
+              "expected_calls": 31,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 5626,
+              "measured_calls": 31,
+              "expected_calls": 31,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 421.457,
+              "measured_calls": 31,
+              "expected_calls": 31,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 421.448,
+              "measured_calls": 31,
+              "expected_calls": 31,
+              "complete": true,
+              "status": "complete"
+            }
+          }
+        },
+        "base-q6": {
+          "calls": 29,
+          "actions": 27,
+          "seconds": 533.935,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 247243,
+              "measured_calls": 29,
+              "expected_calls": 29,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 6671,
+              "measured_calls": 29,
+              "expected_calls": 29,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 487.485,
+              "measured_calls": 29,
+              "expected_calls": 29,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 487.476,
+              "measured_calls": 29,
+              "expected_calls": 29,
+              "complete": true,
+              "status": "complete"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "cleanup": {
+    "time": "2026-10-22T00:43:04.4066299Z",
+    "processes": [],
+    "listeners": [],
+    "disks": [
+      {
+        "DeviceID": "D:",
+        "Size": 1024207089664,
+        "FreeSpace": 111209025536
+      },
+      {
+        "DeviceID": "E:",
+        "Size": 500104687616,
+        "FreeSpace": 62632783872
+      }
+    ],
+    "gpu_free_used_mib_and_utilization": [
+      "9954, 1153, 4"
+    ],
+    "scope": "Read-only ownership, private port, GPU and disk checks; no user processes terminated."
+  },
+  "study_completed_utc": "2026-10-22T00:41:43.746344+00:00",
+  "advisory_app_qualification": {
+    "base-q6": {
+      "passed": true,
+      "protocol": "native",
+      "model": "qwen35-9b-q6_k",
+      "checked": "2026-10-21T22:40:14.619939+00:00",
+      "requests": 8,
+      "rounds": 3,
+      "rejected_call_recovery": true,
+      "format_repairs": 1,
+      "first_pass": false,
+      "response_retries": 2,
+      "scope": "Bounded transport qualification, not a seed-editing or capability benchmark.",
+      "profile": {
+        "provider": "hosted",
+        "model": "qwen35-9b-q6_k",
+        "protocol": "native",
+        "context_tokens": 131072,
+        "response_tokens": 4096,
+        "temperature": 0.6,
+        "thinking": false,
+        "json_mode": false,
+        "terminal": true,
+        "request_timeout": 600,
+        "identity": {
+          "provider": "hosted",
+          "model": "qwen35-9b-q6_k"
+        },
+        "endpoint_sha256": "ef8446fdf41adfca4d3d7add10b4774f9a0903153097308325abd68d468bd148",
+        "catalog_sha256": "4c85ba891b6162155bfe030e73f1547195f123323a0c15c54ad744c77100a046",
+        "adapter_sha256": "867e091eb121558c86c679e073ab360691428029f564d33731b27945d78af380",
+        "qualifier_sha256": "606abb6422529270dcb4c058e4d1f675d23cccd8ee14c906cd4d0d8471d83565",
+        "qualification_version": 2,
+        "response_retries": 2
+      },
+      "profile_sha256": "21082c2328955249ff40531eed36e2b7a30be11218e1fd508ece77a2e0bfbd47",
+      "identity_complete": false,
+      "unknown_identity": [
+        "Complete weights, engine and template identity could not be verified; receipt is not reusable."
+      ],
+      "cached": false,
+      "checked_unix": 1792622414.6199574,
+      "requests_this_check": 8
+    },
+    "adapter-q6": {
+      "passed": true,
+      "protocol": "native",
+      "model": "qwen35-9b-q6_k",
+      "checked": "2026-10-21T22:42:47.433485+00:00",
+      "requests": 8,
+      "rounds": 3,
+      "rejected_call_recovery": true,
+      "format_repairs": 1,
+      "first_pass": false,
+      "response_retries": 2,
+      "scope": "Bounded transport qualification, not a seed-editing or capability benchmark.",
+      "profile": {
+        "provider": "hosted",
+        "model": "qwen35-9b-q6_k",
+        "protocol": "native",
+        "context_tokens": 131072,
+        "response_tokens": 4096,
+        "temperature": 0.6,
+        "thinking": false,
+        "json_mode": false,
+        "terminal": true,
+        "request_timeout": 600,
+        "identity": {
+          "provider": "hosted",
+          "model": "qwen35-9b-q6_k"
+        },
+        "endpoint_sha256": "ef8446fdf41adfca4d3d7add10b4774f9a0903153097308325abd68d468bd148",
+        "catalog_sha256": "4c85ba891b6162155bfe030e73f1547195f123323a0c15c54ad744c77100a046",
+        "adapter_sha256": "867e091eb121558c86c679e073ab360691428029f564d33731b27945d78af380",
+        "qualifier_sha256": "606abb6422529270dcb4c058e4d1f675d23cccd8ee14c906cd4d0d8471d83565",
+        "qualification_version": 2,
+        "response_retries": 2
+      },
+      "profile_sha256": "21082c2328955249ff40531eed36e2b7a30be11218e1fd508ece77a2e0bfbd47",
+      "identity_complete": false,
+      "unknown_identity": [
+        "Complete weights, engine and template identity could not be verified; receipt is not reusable."
+      ],
+      "cached": false,
+      "checked_unix": 1792622567.4335124,
+      "requests_this_check": 8
+    }
+  },
+  "audit": {
+    "source_and_trusted_files_unchanged": true,
+    "runtime_assets_and_base_gguf_unchanged": true,
+    "export_and_selected_checkpoint_hashes_verified": true,
+    "all_24_cells_completed_once": true,
+    "operator_candidate_repairs": 0,
+    "queue_cell_errors": 0,
+    "secondary_route_audit_sha256": "e04cee84c1ae3ded4beb490485dd16ce04102cb38410255348ba56f954f861dd"
+  },
+  "limitations": [
+    "Three repeats per arm/family; exploratory results, no reliability guarantee.",
+    "Formatter workflows and the hashing API are training-exposed. CSV parent/task format is absent from training; this is transfer, not a novel hashing API.",
+    "Both parents were supplied and independently checked; no autonomous first-upgrade credit.",
+    "43 workflow decisions came from seven related successful formatter workflows sharing one prescribed lineage. Only one source workflow used visible final inputs.",
+    "Historical Unicode validation and ordinary tasks overlap previous preparation; they are not independent final benchmarks.",
+    "Training used explicit context reduction, efficient SDPA and CPU checkpoint-input offloading; improvement cannot be attributed to one dataset detail alone.",
+    "One training watchdog interruption and one stale-heartbeat resume launch failure; completed five updates were discarded and replayed from update 375.",
+    "Four failed full-model readiness checks preceded the successful fifth; a missing-import preparation launch and a missing-import export launcher also failed before inference.",
+    "Official frozen scores remain authoritative; extra AST-based route observations are diagnostics only.",
+    "Published Q6 metadata does not prove byte-identical upstream HF ancestry. Runtime adapter effect and control restoration were verified.",
+    "Known token sums include cached prefixes and are not financial cost. Measurement completeness is tracked separately.",
+    "No permanent seed activation, application/default change, model merge, commit or push."
+  ]
+}

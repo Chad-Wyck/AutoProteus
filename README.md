@@ -52,6 +52,8 @@ and action loop.
 - **Stop and resume.** Stop ends the VM. Resume restores the last saved checkpoint in a fresh VM; changes made after that checkpoint may be lost.
 - **Keep your work.** Search, rename or archive sessions. Deleted sessions can be restored from **Saved work & storage**.
 
+Internet access starts on, including for older settings without a saved preference. Turn it off during setup or in Settings for offline use. Any saved choice to turn it off is preserved. The agent can read public websites, save downloads and call HTTP/HTTPS APIs through `web_request`. Use **Internet access** in Settings to change this; the preference applies to the next run. Websites receive requests and any task data the agent sends. JavaScript browsing and existing browser logins are not included.
+
 Terminal access starts off. Enable it in Settings when a task needs Linux commands inside the VM. Use **Settings → Quit AutoProteus** to close the background controller.
 
 The interface defaults to dark mode, with a light-mode toggle in the top bar.
@@ -79,7 +81,7 @@ For implementation and testing details, see the [seed upgrade recipe](SEED.md). 
 
 ## Isolation
 
-By default, code and commands run in a disposable Linux VM with no host-drive mounts or general network access. The controller handles inference and bounded file transfers from outside the VM. Edited seed code is never imported on the host.
+By default, code and commands run in a disposable Linux VM with no host-drive mounts or direct network interface. The controller handles inference, bounded public HTTP/HTTPS requests and file transfers from outside the VM. Loopback, private networks, cloud metadata and non-web ports are blocked by the controller, including on redirects. Edited seed code is never imported on the host.
 
 VM isolation has limits, and running a downloaded program yourself is outside that boundary. See [SECURITY.md](SECURITY.md) for the threat model, resource limits and recovery behavior.
 
@@ -126,3 +128,9 @@ Real VM checks require a prepared WHPX/KVM host and `AUTOPROTEUS_VM_TESTS=1`. Gi
 - [Evaluation guides and recorded results](evaluations/README.md)
 - [Security and execution limits](SECURITY.md)
 - [Release notes](CHANGELOG.md)
+
+Saved sessions offer an **Evidence** view of recorded model inputs, tools,
+source versions and operation receipts. It observes the owning controller
+without restarting work. **Save trace** keeps the original records for review.
+A working model connection does not establish reliable autonomous seed editing;
+that remains experimental, including with the starter model.
