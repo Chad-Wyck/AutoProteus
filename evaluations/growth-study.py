@@ -18,6 +18,7 @@ from controller.runtime import LocalRuntime
 from controller.storage import Store, atomic_json, now
 from observations import CallRecorder, call_metrics, navigation_metrics, read_events
 from run_budget import BudgetModelClient, GeneratedTokenBudget, DEFAULT_OUTPUT_TOKENS, DEFAULT_TASK_SECONDS
+from research_limits import research_config, resource_limits
 
 
 def private(value):
@@ -32,14 +33,16 @@ def prepare(args):
         raise ValueError('First complete an accepted upgrade through the normal app connection')
     source = json.loads(private(args.source).read_text())
     output = private(args.output); output.mkdir(parents=True, exist_ok=False)
-    plan = {'created': now(), 'config': profile['config'], 'model_identity': profile['model_identity'],
+    config = research_config(profile['config'])
+    plan = {'created': now(), 'config': config, 'model_identity': profile['model_identity'],
+        'resource_limits':resource_limits(config, args.timeout, args.output_token_budget),
         'source': source, 'source_sha256': source_identity(source), 'timeout': args.timeout,
         'output_token_budget': args.output_token_budget, 'procedure': (ROOT / 'evaluations/upgrade-procedure.md').read_text(),
         'invoke_tool': (ROOT / 'evaluations/invoke_tool.py').read_text(), 'schedule': [],
         'scope': 'Same frozen SHA seed, normal ModelClient, same helper in both arms; only optional procedure differs. No candidate repairs/promotions.',
         'trusted_sha256': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in (
             'evaluations/growth-study.py', 'evaluations/generalization.py', 'evaluations/generalization-probe.py', 'evaluations/grader_faults.py',
-            'evaluations/local-model-benchmark.py', 'evaluations/run_budget.py', 'evaluations/upgrade-procedure.md',
+            'evaluations/local-model-benchmark.py', 'evaluations/run_budget.py', 'evaluations/research_limits.py', 'evaluations/upgrade-procedure.md',
             'evaluations/invoke_tool.py', 'controller/providers.py', 'controller/evaluation.py', 'controller/isolation.py',
             'controller/artifacts.py', 'controller/transport.py',
             'controller/config.py', 'controller/runtime.py', 'guest/worker.py', 'tests/test_seed.py', 'tests/test_text_helpers.py')}}

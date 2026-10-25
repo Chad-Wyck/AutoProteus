@@ -62,6 +62,31 @@ class FakeModelServer:
 
 
 class HostProviderTests(unittest.TestCase):
+    def test_local_reasoning_chunks_reach_the_live_preview_callback_separately_from_content(self):
+        class Progress:
+            def __init__(self): self.text = []; self.counts = []
+            def __call__(self, count): self.counts.append(count)
+            def thinking(self, text): self.text.append(text)
+        progress = Progress()
+        server = FakeModelServer(frames=[{'message':{'thinking':'Inspect '},'done':False},
+            {'message':{'thinking':'the file.'},'done':False},
+            {'message':{'content':'{"status":"completed"}'},'done':True,'done_reason':'stop'}])
+        try:
+            client = ModelClient({**DEFAULTS, 'provider':'ollama','base_url':server.url,'protocol':'json'})
+            response = client.complete([{'role':'user','content':'Check.'}], threading.Event(), progress=progress)
+            self.assertEqual(progress.text[:2], ['Inspect ', 'Inspect the file.'])
+            self.assertEqual(response['thinking'], 'Inspect the file.')
+            self.assertNotIn('Inspect', response['content'])
+        finally:
+            server.close()
+
+    def test_missing_model_weights_are_not_reported_as_a_connection_failure(self):
+        from controller.providers import model_service_error, ERROR_MESSAGES
+        for native in (False, True):
+            error = model_service_error('read GGUF metadata: model blobs: The system cannot find the file specified.', native)
+            self.assertEqual(error.category, 'model')
+            self.assertIn('files are missing', ERROR_MESSAGES[error.category])
+
     def test_text_compatibility_keeps_complete_calls_and_rejects_partial_or_ambiguous_calls(self):
         reply = 'I am ready to assist. Please provide the specific request.'
         decision = parse_action(normalize_tool_response('finish\n' + json.dumps({'message': reply, 'status': 'needs_input'}), []))

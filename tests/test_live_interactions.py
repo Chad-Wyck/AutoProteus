@@ -148,7 +148,7 @@ class LiveLoopTests(unittest.TestCase):
     def run_loop(self, client, max_steps=3):
         directory = temporary_directory(); self.addCleanup(directory.cleanup)
         store = SeedStore(Path(directory.name) / 'sessions')
-        config = {**DEFAULTS, 'provider': 'demo', 'max_steps': max_steps}
+        config = {**DEFAULTS, 'provider': 'demo', 'max_steps': max_steps, 'action_limit':True}
         session = store.create('Original task', 'demo', 'fixture')
         agent = Agent(ROOT, store, SimpleNamespace(values=config), lambda _: client)
         self.addCleanup(agent.close)

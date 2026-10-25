@@ -22,6 +22,8 @@ from observations import CallRecorder, call_metrics, read_events
 from run_budget import BudgetModelClient, GeneratedTokenBudget
 from study_support import file_identity, identity
 import generalization as study
+from research_limits import research_config, resource_limits
+from submission_preflight import structural_issues, EXAMPLE
 
 
 TASK = {
@@ -36,7 +38,8 @@ TASK = {
             'The output path and both input paths must be caller-selectable. No new dependencies. '
             'Implement and register the capability in harness/autoproteus/tools.py and providers.py; preserve '
             'all existing files and tests and add a separate focused test file. Run the full seed check and '
-            'try a small example. Save capability.json containing {"tool":YOUR_TOOL_NAME,"arguments":YOUR_ARGUMENT_OBJECT}. '
+            'try a small example. Save capability.json in the workspace root, alongside harness/, containing '
+            '{"tool":YOUR_TOOL_NAME,"arguments":YOUR_ARGUMENT_OBJECT}. '
             'Within that argument object use the exact strings @INPUT_A, @INPUT_B and @OUTPUT in place of the '
             'two caller input paths and output path. These placeholders describe invocation only; choose all '
             'parameter names and structure yourself. Finish needs_input requesting independent checking and activation. '
@@ -51,6 +54,9 @@ def declaration(value, source, starter):
         raise ValueError('Invalid capability declaration')
     if value['tool'] == 'finish' or value['tool'] in declared_tools(starter) or value['tool'] not in declared_tools(source):
         raise ValueError('Choose a newly registered capability')
+    issues = structural_issues(value)
+    if issues:
+        raise ValueError(' '.join(issues))
     def leaves(item):
         if isinstance(item, str): return [item]
         if isinstance(item, list): return [leaf for entry in item for leaf in leaves(entry)]
@@ -69,11 +75,11 @@ def submitted_declaration(files, source, starter):
         return None, {'valid': False, 'reason': 'missing_root_declaration', 'expected_path': 'capability.json'}
     try:
         value = json.loads(raw)
-    except (ValueError, UnicodeError):
+    except (ValueError, UnicodeError, RecursionError):
         return None, {'valid': False, 'reason': 'invalid_json', 'expected_path': 'capability.json'}
     try:
         return declaration(value, source, starter), {'valid': True, 'path': 'capability.json'}
-    except ValueError as error:
+    except (ValueError, RecursionError) as error:
         return None, {'valid': False, 'reason': 'invalid_declaration', 'detail': str(error)}
 
 
@@ -122,13 +128,21 @@ def prepare(args):
         raise ValueError('Keep evidence under .data')
     output.mkdir(parents=True, exist_ok=False)
     profile = json.loads(Path(args.profile).read_text())
-    config = {**DEFAULTS, **profile['config'], 'internet': False}
+    config = research_config({**profile['config'], 'internet':False})
     source = seed_files(ROOT)
+    task = copy.deepcopy(TASK)
+    preflight = not getattr(args, 'no_submission_preflight', False)
+    if preflight:
+        task['fixtures']['development/check_submission.py'] = (ROOT/'evaluations/submission_preflight.py').read_text(encoding='utf-8')
+        task['task'] += (' Optional public preflight: run python3 development/check_submission.py from the workspace root '
+                         'before requesting activation. It checks your handoff structure without executing your code. '
+                         'Example shape only; choose your own names: ' + json.dumps(EXAMPLE))
     plan = {'created': now(), 'source': source, 'source_sha256': source_identity(source), 'config': config,
-            'task': TASK, 'trusted': trusted_files(), 'environment': environment(),
+            'task': task, 'trusted': trusted_files(), 'environment': environment(), 'submission_preflight':preflight,
+            'preserve_inputs':sorted(TASK['fixtures']),
             'probe_sha256': file_identity(ROOT / 'evaluations/discovery_probe.py'),
             'runner_sha256': file_identity(__file__), 'assets': profile.get('assets', {}),
-            'deadline': 3600, 'generated_tokens': 65536,
+            'deadline': 3600, 'generated_tokens': 65536, 'resource_limits':resource_limits(config, 3600, 65536),
             'scope': 'Model chooses capability/interface for a fixed business outcome. One directed discovery task, not broad discovery qualification.'}
     atomic_json(output / 'plan.json', plan); (output / 'plan.sha256').write_text(identity(plan))
 
@@ -193,7 +207,8 @@ def run(args):
             lambda root, store, frozen: study.run_regressions(root, store, frozen, deadline=deadline))
         result['verified_extension'] = study.verified(result['review'])
         remaining = config['max_steps'] - session['steps']
-        development_preserved = all(Artifacts(store, session).read(path) == text.encode() for path, text in TASK['fixtures'].items())
+        development_preserved = all(Artifacts(store, session).read(path) == plan['task']['fixtures'][path].encode()
+                                    for path in plan.get('preserve_inputs', TASK['fixtures']))
         result['development_inputs_preserved'] = development_preserved
         if (result['verified_extension'] and development_preserved and session['status'] in ('waiting', 'completed') and
                 not result['run']['timed_out'] and remaining > 0 and time.monotonic() < deadline and not budget.summary()['exhausted']):
@@ -226,6 +241,6 @@ def run(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__); commands = parser.add_subparsers(dest='command', required=True)
-    p = commands.add_parser('prepare'); p.add_argument('--profile', required=True); p.add_argument('--output', required=True)
+    p = commands.add_parser('prepare'); p.add_argument('--profile', required=True); p.add_argument('--output', required=True); p.add_argument('--no-submission-preflight', action='store_true')
     p = commands.add_parser('run'); p.add_argument('--input', required=True); p.add_argument('--check-only', action='store_true')
     args = parser.parse_args(); {'prepare': prepare, 'run': run}[args.command](args)

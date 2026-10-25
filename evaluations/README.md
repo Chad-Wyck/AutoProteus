@@ -13,11 +13,18 @@ Normal application setup does not require them.
 | [Navigation comparison](navigation-study.md) | Measure whether source navigation reduces repeated inspection. |
 | [Experience experiments](experience-study.md) | Compare supplied procedures, history retrieval and inspection programs. |
 | [Growth studies](growth-study.md) | Compare extension and later use while preserving earlier capabilities. |
+| [Capability discovery](discovery-study.md) | Let the model choose an interface for a fixed outcome, with a public handoff preflight. |
+| [Final-task completion](completion-study.md) | Separately compare requirement restatement or shorter guidance on unfamiliar defaults and scopes. |
 
 Use a new private output folder under `.data/` for each frozen study. Reuse or
 resume a plan only while its source, trusted runner and model identities match.
 After a controller refactor, prepare a new plan instead of changing old records.
 Study preparation and ordinary regression tests do not start live-model trials.
+
+Research plans explicitly enable action limits, regardless of the normal app's
+optional allowance. Frozen plans record action, shared wall-time and generated-
+token budgets. Changing application preferences does not extend an experiment.
+Regenerate plans after runner or grader changes; never rewrite historical scores.
 
 ## Code map
 

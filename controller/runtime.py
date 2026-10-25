@@ -14,11 +14,14 @@ import threading
 import time
 import urllib.request
 import zipfile
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from pathlib import Path
 
 from .providers import request_json, ProviderError, ERROR_MESSAGES
 from .compatibility import qualify_profile as check_protocol
 from .integrity import record_runtime, verify_runtime
+from .local_import import local_files, import_file
 
 
 ENGINE_PORT = 11435
@@ -33,6 +36,55 @@ class LocalRuntime:
         self.process = None
         self.job = None
         self.closed = threading.Event()
+        self.used_models = set()
+        self.checking = 0
+
+    @contextmanager
+    def connection_check(self, config):
+        with self.lock:
+            self.checking += 1
+        self.note_model(config)
+        try:
+            yield
+        finally:
+            with self.lock:
+                self.checking -= 1
+
+    def preparing(self):
+        with self.lock:
+            return self.state['busy'] or self.checking > 0
+
+    def note_model(self, config):
+        from urllib.parse import urlparse
+        if config['provider'] == 'ollama' and urlparse(config['base_url']).hostname in ('127.0.0.1', 'localhost', '::1'):
+            with self.lock:
+                self.used_models.add((config['base_url'].rstrip('/'), config['model']))
+
+    def model_loaded(self, config):
+        from urllib.parse import urlparse
+        if config['provider'] != 'ollama' or urlparse(config['base_url']).hostname not in ('127.0.0.1', 'localhost', '::1'):
+            return False
+        try:
+            reply = request_json(config['base_url'].rstrip('/') + '/api/ps', timeout=2)
+            if not isinstance(reply, dict) or not isinstance(reply.get('models'), list):
+                return False
+            return any(item.get('name', '').removesuffix(':latest') == config['model'].removesuffix(':latest')
+                       for item in reply['models'] if isinstance(item, dict))
+        except (ProviderError, ValueError, TypeError):
+            return False
+
+    def unload_models(self):
+        with self.lock:
+            used = set(self.used_models)
+        for base, name in used:
+            reply = request_json(base + '/api/ps', timeout=2)
+            if not isinstance(reply, dict) or not isinstance(reply.get('models'), list):
+                raise ValueError('The local engine did not report loaded models')
+            if any(item.get('name', '').removesuffix(':latest') == name.removesuffix(':latest')
+                   for item in reply['models'] if isinstance(item, dict)):
+                request_json(base + '/api/generate', {'model':name, 'keep_alive':0}, timeout=30)
+                if self.model_loaded({'provider':'ollama', 'base_url':base, 'model':name}):
+                    raise ValueError('The local model has not unloaded yet')
 
     def pin(self):
         pins = json.loads((self.root / 'controller/managed-runtime-lock.json').read_text(encoding='utf-8'))
@@ -47,6 +99,7 @@ class LocalRuntime:
         try:
             base = self.ensure_service(allow_download=False)
             self.settings.update({'base_url': base})
+            self.note_model(self.settings.values)
             self.update(busy=False, phase='ready', message='Your local model is ready', progress=100)
         except Exception as error:
             self.settings.update({'configured': False})
@@ -64,6 +117,89 @@ class LocalRuntime:
         base = base or self.settings.values["base_url"]
         result = request_json(base.rstrip("/") + "/api/tags", timeout=3)
         return [{"name": item["name"], "bytes": item.get("size", 0)} for item in result.get("models", [])]
+
+    def inventory(self, base=None):
+        """Check metadata without loading weights or trusting stale tag listings."""
+        base = (base or self.settings.values['base_url']).rstrip('/')
+        downloaded = local_files(self.root)
+        try:
+            entries = self.models(base)
+        except (ProviderError, ValueError, KeyError, TypeError):
+            return {'available': False, 'models': [], 'unavailable': [], 'downloaded': downloaded,
+                    'message': 'The local model service could not be reached. Downloaded files are listed separately.'}
+        deadline = time.monotonic() + 8
+
+        def inspect(item):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return {**item, 'reason': 'Availability check timed out. Refresh to check again.'}
+            try:
+                metadata = request_json(base + '/api/show', {'model': item['name']}, timeout=min(3, remaining))
+                if not isinstance(metadata, dict) or metadata.get('error') or not isinstance(metadata.get('model_info'), dict) or not metadata['model_info']:
+                    raise ValueError('Invalid model metadata')
+                return {**item, 'status': 'available'}
+            except (ProviderError, ValueError, OSError):
+                return {**item, 'reason': 'Model files could not be verified. Re-import or download the model again.'}
+
+        # Bound both concurrency and total waiting; these calls read metadata,
+        # not /api/chat or /api/generate, and never occupy the GPU.
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            checked = list(pool.map(inspect, entries[:128]))
+        ready = {item['name'] for item in checked if item.get('status') == 'available'}
+        try:
+            receipts = json.loads((self.root / '.data/local-model-imports.json').read_text())
+        except (OSError, ValueError):
+            receipts = {}
+        if isinstance(receipts, dict):
+            for path, receipt in receipts.items():
+                if not isinstance(receipt, dict) or receipt.get('model') not in ready:
+                    continue
+                for item in checked:
+                    if item['name'] == receipt['model']:
+                        item['display_name'] = Path(path).name.removesuffix('.gguf') + ' · local file'
+                downloaded = [item for item in downloaded if item['path'] != path]
+        return {'available': True, 'models': [item for item in checked if item.get('status') == 'available'],
+                'unavailable': [item for item in checked if item.get('status') != 'available'],
+                'downloaded': downloaded, 'unchecked': max(0, len(entries) - 128)}
+
+    def prepare_file(self, relative, base=None, internet=None):
+        if not any(item['path'] == relative for item in local_files(self.root)):
+            raise ValueError('This local model file is no longer available. Refresh the model list.')
+        changes = {'provider':'ollama', 'base_url':base or self.settings.values['base_url']}
+        if internet is not None:
+            changes['internet'] = internet
+        config = self.settings.preview(changes)
+        from urllib.parse import urlparse
+        if urlparse(config['base_url']).hostname not in ('127.0.0.1', 'localhost', '::1'):
+            raise ValueError('Local model files can only be imported into a local engine.')
+        with self.lock:
+            if self.state['busy']:
+                raise ValueError('A model is already being prepared')
+            self.state = {'busy':True, 'phase':'import', 'message':'Preparing your downloaded model…', 'progress':0}
+        threading.Thread(target=self._prepare_file, args=(relative, config), daemon=True).start()
+
+    def _prepare_file(self, relative, config):
+        try:
+            base = config['base_url']
+            try:
+                self.models(base)
+            except ProviderError:
+                base = self.ensure_service()
+            model = import_file(self.root, base, relative, self.update, self.closed)
+            self.update(model=model)
+            self._connect_model(base, model, {'internet':config['internet']})
+        except Exception as error:
+            self.update(busy=False, phase='error', message=ERROR_MESSAGES[error.category] if isinstance(error, ProviderError) else str(error), progress=None)
+
+    def _connect_model(self, base, model, changes=None):
+        changes = {'provider':'ollama', 'base_url':base, 'model':model, **(changes or {})}
+        config = self.settings.preview(changes)
+        self.update(phase='check', message='Checking model replies and tool compatibility…', progress=None, model=model)
+        with self.connection_check(config):
+            compatibility = check_protocol(config, self.settings.key())
+        self.settings.update({**changes, 'configured':True})
+        self.settings.record_compatibility(compatibility)
+        self.update(busy=False, phase='ready', message='Your local model is connected.', progress=100)
 
     def prepare(self, model):
         if not isinstance(model, str) or not model.strip() or len(model) > 160 or any(c.isspace() for c in model):
@@ -261,13 +397,7 @@ class LocalRuntime:
                         completed = True
             if not completed:
                 raise ValueError("The model download was interrupted. Try again; Ollama can reuse downloaded layers.")
-            config = self.settings.preview({'provider': 'ollama', 'base_url': base, 'model': model, 'thinking': None})
-            self.update(phase='check', message='Checking repeated tool replies and error recovery…', progress=None)
-            compatibility = check_protocol(config, self.settings.key())
-            self.settings.update({"provider": "ollama", "base_url": base, "model": model, "configured": True,
-                                  "thinking": None})
-            self.settings.record_compatibility(compatibility)
-            self.update(busy=False, phase="ready", message=f"{model} is ready", progress=100)
+            self._connect_model(base, model, {'thinking':None})
         except Exception as error:
             self.update(busy=False, phase="error", message=ERROR_MESSAGES[error.category] if isinstance(error, ProviderError) else str(error), progress=None)
 

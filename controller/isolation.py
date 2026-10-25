@@ -25,6 +25,8 @@ from .storage import atomic_json
 from .interactions import Inputs, Operations
 from .inference_history import attach_history
 from .web_access import WebAccess
+from .thinking import Thinking
+from .warm_vm import WarmVM
 
 MAX_JOURNAL = 64 * 1024 * 1024
 MAX_SECONDS = 3600
@@ -37,7 +39,7 @@ class VMLease:
         self.path = safe_path(directory, 'active-vm.lock')
         self.stream = None
 
-    def acquire(self, cancel, deadline):
+    def acquire(self, cancel, deadline, on_wait=None):
         self.stream = self.path.open('a+b')
         if not self.path.stat().st_size:
             self.stream.write(b'0'); self.stream.flush()
@@ -56,6 +58,9 @@ class VMLease:
                     fcntl.flock(self.stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 return
             except OSError:
+                if on_wait:
+                    on_wait()
+                    on_wait = None
                 cancel.wait(.1)
 
     def close(self):
@@ -134,7 +139,8 @@ class Broker:
         self.requests, self.frames = 0, 0
         # Each action response and the free final response can need two repairs.
         # This ceiling stays host-owned even if an edited seed ignores its policy.
-        self.request_limit = (min(config['max_steps'], 200) + 1) * (RESPONSE_RETRIES + 1)
+        self.request_limit = ((min(config['max_steps'], 200) + 1) * (RESPONSE_RETRIES + 1)
+                              if config.get('action_limit', True) else None)
         self.finished = False
         self.last_status = 'running'
         self.activation_context, self.context_config = activation_context, config
@@ -195,7 +201,7 @@ class Broker:
                         for m in messages) or len(json.dumps(messages).encode()) > 1500000):
                 raise IsolationError('Invalid model request')
             self.requests += 1
-            if self.requests > self.request_limit:
+            if self.request_limit is not None and self.requests > self.request_limit:
                 raise IsolationError('Model request quota exceeded')
             tools = frame.get('tools')
             if tools is not None:
@@ -228,7 +234,18 @@ class Broker:
                     # Schemas are data for the model, never host-executable capabilities.
                     forwarded = [{**item, **({'origin': 'human'} if item['role'] == 'user' and
                         item['content'] in self.human_texts else {})} for item in messages]
-                    return self.client.complete(forwarded, self.cancel, tools=tools)
+                    thinking = Thinking(self.store, self.session, self.cancel, self.client.key, self.context_config.get('thinking'))
+                    outcome = 'failed'
+                    try:
+                        answer = self.client.complete(forwarded, self.cancel, progress=thinking, tools=tools)
+                        thinking.thinking(answer.get('thinking', ''))
+                        outcome = 'completed'
+                        return answer
+                    except Cancelled:
+                        outcome = 'interrupted'
+                        raise
+                    finally:
+                        thinking.finish(outcome)
                 return self.client.complete(messages, self.cancel)
             except Cancelled:
                 raise
@@ -345,6 +362,45 @@ class IsolatedAgent:
         self.client_factory = client_factory
         self.workers, self.vms = {}, {}
         self.lock = threading.RLock()
+        # Enabled only by the interactive app. Graders and study drivers retain
+        # their fresh-VM lifecycle; the seed cannot enable retention itself.
+        self.can_retain = None
+        self.idle = None
+        self.warm = WarmVM(self.appliance, VM, VMLease)
+
+    def keep_ready(self, config):
+        if self.execution.mode != 'vm' or not self.can_retain:
+            return
+        loaded = bool(config.get('configured')) and self.can_retain(config)
+        with self.lock:
+            if not loaded:
+                self.discard_idle()
+                self.warm.close()
+                return
+            if self.idle:
+                self.reap_idle()
+            if (not self.idle and not any(thread.is_alive() for _, thread in self.workers.values())
+                    and self.appliance.public()['ready']):
+                self.warm.prepare()
+
+    def discard_idle(self):
+        with self.lock:
+            idle, self.idle = self.idle, None
+            if idle:
+                try:
+                    idle['vm'].close()
+                finally:
+                    idle['lease'].close()
+
+    def retained_session(self):
+        with self.lock:
+            return self.idle['session'] if self.idle else None
+
+    def reap_idle(self):
+        with self.lock:
+            if self.idle and (self.idle['vm'].closed.is_set() or not self.can_retain
+                              or not self.can_retain(self.idle['config'])):
+                self.discard_idle()
 
     def start(self, session, message=None, candidate=None, verification=False, handoff='full', deadline=None):
         if handoff not in ('full', 'concise'):
@@ -374,6 +430,11 @@ class IsolatedAgent:
                         (self.root / name).read_bytes()).decode()})
             guest_config = {key: value for key, value in config.items() if key not in ('base_url', 'api_key')}
             guest_config['response_retries'] = RESPONSE_RETRIES
+            if config.get('action_limit') is False:
+                # Older edited loops understand max_steps but not the optional
+                # switch. This value is unreachable within the independent
+                # 10,000-frame host envelope, so those loops also stay uncapped.
+                guest_config['max_steps'] = 100000
             guest_config.pop('activation_context', None)
             if candidate is session or session.get('candidate_from') == session['id']:
                 bundle_hash = hashlib.sha256(json.dumps(source, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
@@ -384,7 +445,7 @@ class IsolatedAgent:
                     'to request activation of this same version. Further source edits require another activation. '
                     'All original human requirements still apply.')
             boot = {'op': 'boot', 'seed': source, 'files': inputs,
-                    'session': {k: v for k, v in session.items() if k not in ('input_queue', 'operation_receipts')},
+                    'session': {k: v for k, v in session.items() if k not in ('input_queue', 'operation_receipts', 'thinking_spans')},
                     'config': guest_config, 'message': message, 'seed_activated': candidate is session,
                     'handoff': handoff}
             boot['verification'] = bool(verification)
@@ -398,23 +459,37 @@ class IsolatedAgent:
             boot['session'].pop('isolation', None)
             if len(json.dumps({key: value for key, value in boot.items() if key not in ('seed', 'files')}).encode()) > MAX_FRAME - 100:
                 raise IsolationError('Session history exceeds the restore limit')
+            signature = hashlib.sha256(json.dumps({'source': source, 'config': guest_config,
+                'artifacts': session.get('artifacts'), 'handoff': handoff}, sort_keys=True).encode()).hexdigest()
+            retained = None
+            if self.idle:
+                if (not verification and candidate is None and self.idle['session'] == session['id']
+                        and self.idle['signature'] == signature and not self.idle['vm'].closed.is_set()
+                        and self.can_retain and self.can_retain(config)):
+                    retained = self.idle
+                else:
+                    self.discard_idle()
+            boot['allow_retention'] = not verification
             if candidate:
                 # Freeze only after input validation; candidate bytes never run here.
                 atomic_json(self.store.directory(session['id']) / 'candidate.json', source)
             from .submissions import source_hash
             session['selected_seed'] = {'source_sha256': source_hash(source)}
-            session.update(status='running', activity='Starting the virtual machine…' if self.execution.mode == 'vm'
+            prepared = self.warm.public()
+            session.update(status='running', activity='Continuing in your virtual machine…' if retained else 'Preparing your workspace…' if prepared['ready'] else 'Starting the virtual machine…' if self.execution.mode == 'vm'
                            else 'Starting without AutoProteus VM protection…',
                            isolation=self.execution.mode == 'vm', execution_mode=self.execution.mode)
             history = session.setdefault('execution_history', [])
             history.append({'mode': self.execution.mode, 'isolated': session['isolation']})
             del history[:-200]
             self.store.save(session)
-            self.store.event(session, 'execution_started', self.execution.public())
+            self.store.event(session, 'execution_started', {**self.execution.public(), 'vm_reused':bool(retained)})
             cancel = threading.Event()
-            thread = threading.Thread(target=self._run, args=(session, boot, client, config, cancel, deadline), daemon=True)
+            thread = threading.Thread(target=self._run, args=(session, boot, client, config, cancel, deadline, retained), daemon=True)
             self.workers[session['id']] = cancel, thread
             thread.start()
+            if retained:
+                self.idle = None
 
     def restart_seed(self, session, handoff='full', deadline=None):
         """Explicit controller action: activate this checkpoint in the same task."""
@@ -430,7 +505,7 @@ class IsolatedAgent:
                     session['candidate_from'] = previous
                 raise
 
-    def _run(self, session, boot, client, config, cancel, run_deadline=None):
+    def _run(self, session, boot, client, config, cancel, run_deadline=None, retained=None):
         vm, broker = None, Broker(self.store, session, client, config, cancel, boot['config'].get('activation_context', ''), boot.get('message'))
         lease = None
         # Host deadline covers boot, inference, commands and all guest code.
@@ -438,12 +513,29 @@ class IsolatedAgent:
         if run_deadline is not None:
             deadline = min(deadline, run_deadline)
         broker.web.deadline = deadline
+        watching = threading.Event()
+        watcher = None
+        successful = False
+        prepared = None
         try:
-            lease = VMLease(self.appliance.directory)
-            lease.acquire(cancel, deadline)
+            if retained:
+                vm, lease = retained['vm'], retained['lease']
+            else:
+                prepared = self.warm.take(cancel, deadline)
+                if prepared:
+                    vm, lease = prepared['vm'], prepared['lease']
+                else:
+                    lease = VMLease(self.appliance.directory)
+                    def waiting():
+                        with self.store.lock:
+                            session['activity'] = 'Waiting for another AutoProteus VM to finish…'
+                            self.store.save(session)
+                    lease.acquire(cancel, deadline, waiting)
             if time.monotonic() >= deadline:
                 raise IsolationError('The shared task deadline expired before worker startup')
-            if self.execution.mode == 'native':
+            if retained or prepared:
+                pass
+            elif self.execution.mode == 'native':
                 from .native import NativeWorker
                 vm = NativeWorker(self.root, self.execution)
             else:
@@ -452,22 +544,27 @@ class IsolatedAgent:
                 self.vms[session['id']] = vm
                 if cancel.is_set():
                     raise Cancelled()
-            ready = vm.next(cancel, min(deadline, time.monotonic() + 90))
-            if ready != {'op': 'ready', 'protocol': 2}:
-                raise IsolationError('Guest handshake failed')
+            if not retained and not prepared:
+                ready = vm.next(cancel, min(deadline, time.monotonic() + 90))
+                if ready != {'op': 'ready', 'protocol': 2}:
+                    raise IsolationError('Guest handshake failed')
             # A blocked guest reader cannot stall the external watchdog or Stop.
-            threading.Thread(target=lambda: self._watchdog(vm, cancel, deadline), daemon=True).start()
-            vm.send({key: value for key, value in boot.items() if key not in ('seed', 'files')})
-            if vm.next(cancel, deadline) != {'op': 'input_ready'}:
-                raise IsolationError('Guest did not accept the boot request')
-            for area, files in (('seed', boot['seed']), ('workspace', boot['files'])):
-                for item in files:
-                    checksum = hashlib.sha256(base64.b64decode(item['data'], validate=True)).hexdigest()
-                    vm.send({'op': 'input', 'area': area, **item, 'sha256': checksum})
-                    reply = vm.next(cancel, deadline)
-                    if reply != {'op': 'input_saved'}:
-                        raise IsolationError('Guest input transfer failed: ' + str(reply)[:1500])
-            vm.send({'op': 'inputs_done'})
+            watcher = threading.Thread(target=self._watchdog, args=(vm, cancel, deadline, watching), daemon=True)
+            watcher.start()
+            if retained:
+                vm.send({'op': 'continue', 'message': boot.get('message') or ''})
+            else:
+                vm.send({key: value for key, value in boot.items() if key not in ('seed', 'files', 'allow_retention')})
+                if vm.next(cancel, deadline) != {'op': 'input_ready'}:
+                    raise IsolationError('Guest did not accept the boot request')
+                for area, files in (('seed', boot['seed']), ('workspace', boot['files'])):
+                    for item in files:
+                        checksum = hashlib.sha256(base64.b64decode(item['data'], validate=True)).hexdigest()
+                        vm.send({'op': 'input', 'area': area, **item, 'sha256': checksum})
+                        reply = vm.next(cancel, deadline)
+                        if reply != {'op': 'input_saved'}:
+                            raise IsolationError('Guest input transfer failed: ' + str(reply)[:1500])
+                vm.send({'op': 'inputs_done'})
             while not broker.finished:
                 frame = vm.next(cancel, deadline)
                 value = broker.handle(frame)
@@ -475,6 +572,7 @@ class IsolatedAgent:
             if broker.last_status in ('running', 'stopping', 'ready'):
                 raise IsolationError('The guest exited without a final session status')
             session['status'] = broker.last_status
+            successful = broker.last_status in ('completed', 'waiting', 'paused')
         except Cancelled:
             session.update(status='paused', activity='Stopped. The last saved checkpoint is ready to resume.')
         except Exception as error:
@@ -484,7 +582,21 @@ class IsolatedAgent:
                 session.update(status='error', activity='The isolated run stopped')
                 self.store.feed(session, 'notice', str(error)[:3000])
         finally:
+            watching.set()
+            if watcher:
+                watcher.join(timeout=1)
             try:
+                with self.lock:
+                    if (vm and successful and not cancel.is_set() and not vm.closed.is_set()
+                            and self.execution.mode == 'vm' and boot['allow_retention']
+                            and self.can_retain and self.can_retain(config)):
+                        # Compare the final committed manifest on the next turn;
+                        # an import or source/config change must force a reboot.
+                        signature = hashlib.sha256(json.dumps({'source': boot['seed'], 'config': boot['config'],
+                            'artifacts': session.get('artifacts'), 'handoff': boot['handoff']}, sort_keys=True).encode()).hexdigest()
+                        self.idle = {'vm':vm, 'lease':lease, 'session':session['id'],
+                                     'signature':signature, 'config':dict(config)}
+                        vm, lease = None, None
                 if vm:
                     vm.close()
             finally:
@@ -497,14 +609,18 @@ class IsolatedAgent:
             session['model_requests'] = broker.requests
             self.store.save(session)
 
-    def _watchdog(self, vm, cancel, deadline):
-        while not vm.closed.wait(0.1):
+    def _watchdog(self, vm, cancel, deadline, finished=None):
+        while not (finished and finished.wait(0.1)) and not vm.closed.is_set():
+            if finished is None:
+                vm.closed.wait(0.1)
             if cancel.is_set() or time.monotonic() > deadline:
                 vm.close()
                 return
 
     def stop(self, session_id):
         with self.lock:
+            if self.idle and self.idle['session'] == session_id:
+                self.discard_idle()
             worker = self.workers.get(session_id)
             if worker and worker[1].is_alive():
                 worker[0].set()
@@ -521,6 +637,8 @@ class IsolatedAgent:
             path.write_bytes(artifacts.read(name))
 
     def close(self):
+        self.warm.close()
+        self.discard_idle()
         for session_id in list(self.workers):
             self.stop(session_id)
         for _, thread in list(self.workers.values()):

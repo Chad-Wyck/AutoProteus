@@ -70,7 +70,10 @@ def prepare(args):
     output.mkdir(parents=True, exist_ok=False)
     baseline = seed_files(ROOT)
     sources = {'baseline': baseline, 'outline': navigation_variant(baseline)}
-    plan = {'status': 'prepared', 'created': now(), 'config': study.profile_configs()['qwen9b'],
+    from research_limits import research_config, resource_limits
+    config = research_config(study.profile_configs()['qwen9b'])
+    plan = {'status': 'prepared', 'created': now(), 'config': config,
+            'resource_limits':resource_limits(config, args.timeout, getattr(args, 'output_token_budget', DEFAULT_OUTPUT_TOKENS)),
             'repeats': args.repeats, 'timeout': args.timeout,
             'output_token_budget': getattr(args, 'output_token_budget', DEFAULT_OUTPUT_TOKENS), 'contracts': study.CONTRACTS,
             'primary': 'Full accepted upgrades; independent behavior and candidate tests reported separately.',
@@ -91,7 +94,7 @@ def prepare(args):
         'controller/compatibility.py', 'controller/execution.py', 'controller/runtime-lock.json',
         'controller/managed-runtime-lock.json', 'guest/worker.py', 'tests/test_seed.py', 'tests/test_text_helpers.py',
         'evaluations/navigation-study.py', 'evaluations/navigation_probe.py', 'evaluations/source_navigation.py',
-        'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/generalization.py', 'evaluations/generalization-probe.py',
+        'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/research_limits.py', 'evaluations/generalization.py', 'evaluations/generalization-probe.py',
         'evaluations/grader_faults.py',
         'evaluations/local-model-benchmark.py')
     for name in trusted:

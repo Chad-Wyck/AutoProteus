@@ -88,7 +88,7 @@ def run(args):
     if {item['slug'] for item in models} != set(args.models):
         raise ValueError('Unknown model slug; use one from local-model-round2-plan.json')
     source = seed_files(ROOT)
-    settings = SimpleNamespace(values={**DEFAULTS, 'configured': True}, key=lambda: '')
+    settings = SimpleNamespace(values={**DEFAULTS, 'action_limit':True, 'configured': True}, key=lambda: '')
     engine, store = LocalRuntime(ROOT, settings), Store(data / 'sessions')
     agent = None
     report = {'started': now(), 'question': QUESTION, 'source_sha256': source_identity(source),
@@ -100,7 +100,7 @@ def run(args):
         frozen = freeze_source(store, source, 'Unchanged seed for optional role diagnostic')
         for model in models:
             large = model['slug'] == 'qwen35-9b'
-            settings.values = {**DEFAULTS, 'configured': True, 'provider': 'ollama',
+            settings.values = {**DEFAULTS, 'action_limit':True, 'configured': True, 'provider': 'ollama',
                 'base_url': base, 'model': model['model'], 'protocol': args.protocol,
                 'context_tokens': 32768 if large else 8192,
                 'response_tokens': 4096 if large else 2048, 'temperature': .6,

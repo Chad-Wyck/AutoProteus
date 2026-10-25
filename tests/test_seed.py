@@ -308,6 +308,24 @@ def model_response(content, calls, native):
 
 
 class AgentTests(unittest.TestCase):
+    def test_disabling_the_optional_action_allowance_allows_work_beyond_max_steps(self):
+        self.settings.update({'max_steps':1, 'action_limit':False})
+        class Client:
+            calls = 0
+            def complete(client, messages, cancel):
+                self.assertFalse(any('allowance is exhausted' in item['content'] for item in messages))
+                client.calls += 1
+                return {'content':json.dumps({'action':{'tool':'write_file','arguments':{
+                    'path':f'file-{client.calls}.txt', 'content':'saved'}}} if client.calls <= 3 else {'status':'completed'})}
+        agent = Agent(ROOT, self.store, self.settings, lambda _:Client())
+        try:
+            session = self.store.create('Save three files.', 'demo', 'fixture')
+            agent.start(session)
+            self.assertEqual(wait_session(agent, session), 'completed')
+            self.assertEqual(session['steps'], 3)
+        finally:
+            agent.close()
+
     def test_new_tool_repetition_and_declared_defaults_are_visible_without_blocking_calls(self):
         from unittest.mock import patch
         seen = []

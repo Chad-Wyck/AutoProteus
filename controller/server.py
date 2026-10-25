@@ -30,6 +30,8 @@ from .submissions import repair_ticket, ticket_message
 from .execution import ExecutionPolicy
 from .interactions import Inputs
 from .observation import Observer
+from .presence import BrowserPresence
+from .practical import PracticalCheck
 
 
 class Application:
@@ -43,12 +45,33 @@ class Application:
         self.agent = IsolatedAgent(self.root, self.store, self.settings, client_factory, self.execution)
         self.local = LocalRuntime(self.root, self.settings)
         self.evaluations = EvaluationService(self.root, self.data / 'evaluations', self.settings, self.agent)
+        self.practical = PracticalCheck(self.root,self.data/'model-checks',self.settings,self.agent,self.evaluations.gate)
         self.token = secrets.token_urlsafe(32)
         self.identity = hashlib.sha256(str(self.root).encode()).hexdigest()[:20]
         self.server = None
         self.usage_cache = None
         self.usage_time = 0
+        self.agent.can_retain = self.local.model_loaded
+        self.presence = BrowserPresence(self.release_browser_resources, self.maintain_resources)
+        self.presence.start()
         self.local.restore()
+
+    def maintain_resources(self):
+        if self.evaluations.busy or self.practical.busy or self.presence.public()['released']:
+            self.agent.discard_idle()
+            self.agent.warm.close()
+        else:
+            self.agent.keep_ready(self.settings.values)
+
+    def release_browser_resources(self):
+        # Same Stop/checkpoint semantics as the visible Stop control. Keep the
+        # controller alive so a new tab can reconnect without relaunching it.
+        if self.local.preparing():
+            raise ValueError('Model setup is still finishing')
+        self.evaluations.close()
+        self.practical.close()
+        self.agent.close()
+        self.local.unload_models()
 
     def active(self):
         with self.agent.lock:
@@ -65,9 +88,13 @@ class Application:
                 'tasks_count': len(json.loads((self.root / 'evaluations/tasks.json').read_text(encoding='utf-8'))),
                 "setup": self.local.public(), "isolation": self.agent.appliance.public(),
                 "evaluation": self.evaluations.public(), "execution": self.execution.public(),
+                'model_check':self.practical.public(),
+                'resources':{'browser':self.presence.public(), 'retained_vm':self.agent.retained_session(), **self.agent.warm.public()},
                 "platform": 'windows' if os.name == 'nt' else 'linux', "root": str(self.root)}
 
     def ensure_idle(self, session_id=None):
+        if self.practical.busy:
+            raise ValueError('Stop the practical model check before changing this task')
         if self.evaluations.busy:
             raise ValueError('Stop the seed checks before changing this task')
         active = self.active()
@@ -145,8 +172,11 @@ class Application:
 
     def start_run(self, session, message=None, candidate=None):
         with self.evaluations.gate:
+            if self.practical.busy:
+                raise ValueError('Stop the practical model check before starting a task')
             if self.evaluations.busy:
                 raise ValueError('Stop the seed checks before starting another task')
+            self.local.note_model(self.settings.values)
             self.agent.start(session, message, candidate=candidate)
 
     def files(self, session):
@@ -166,8 +196,14 @@ class Application:
         return sorted(files, key=lambda item: (item["path"].startswith("harness/"), item["path"]))
 
     def close(self):
+        self.presence.close()
+        self.practical.close()
         self.evaluations.close()
         self.agent.close()
+        try:
+            self.local.unload_models()
+        except (ProviderError, ValueError):
+            pass
         self.local.close()
 
 
@@ -213,17 +249,40 @@ def handler_for(app):
         def do_GET(self):
             parsed = urllib.parse.urlparse(self.path)
             path, query = parsed.path, urllib.parse.parse_qs(parsed.query)
-            if not self.allowed(path.startswith("/api/")):
+            if not self.allowed(path.startswith("/api/") and path != '/api/browser/watch'):
                 return
             try:
                 if path == "/health":
                     return self.send({"app": "AutoProteus", "identity": app.identity, "version": __version__,
                                       "isolation_required": app.execution.mode == 'vm',
                                       "execution_mode": app.execution.mode})
+                if path == '/api/browser/watch':
+                    identifier = query.get('id', [''])[0]
+                    connection = app.presence.open_watch(identifier, query.get('watch', [''])[0])
+                    try:
+                        self.send_response(200)
+                        self.send_header('Content-Type', 'text/event-stream')
+                        self.send_header('Cache-Control', 'no-store')
+                        self.send_header('X-Content-Type-Options', 'nosniff')
+                        self.end_headers()
+                        self.connection.settimeout(5)
+                        while not app.presence.closed.is_set() and app.presence.watch_alive(identifier, connection):
+                            self.wfile.write(b': connected\n\n')
+                            self.wfile.flush()
+                            app.presence.closed.wait(2)
+                    except OSError:
+                        pass
+                    finally:
+                        app.presence.close_watch(identifier, connection)
+                    return
                 if path == "/api/state":
+                    if self.headers.get('Sec-Fetch-Site') == 'same-origin' and not self.headers.get('X-AutoProteus-Browser'):
+                        app.presence.legacy_pulse()
                     return self.send(app.state(query.get('query', [''])[0], int(query.get('offset', ['0'])[0]), query.get('archived', ['false'])[0] == 'true'))
                 if path == '/api/storage':
                     return self.send(app.storage_usage())
+                if path == '/api/model-check':
+                    return self.send(app.practical.public())
                 if path == '/api/trash':
                     return self.send(app.store.trash())
                 if path == '/api/evidence':
@@ -236,11 +295,10 @@ def handler_for(app):
                 if path == '/api/seed-check':
                     return self.send(app.evaluations.load(query.get('id', [''])[0]))
                 if path == "/api/local":
-                    try:
-                        models = app.local.models()
-                        return self.send({"available": True, "models": models})
-                    except Exception as error:
-                        return self.send({"available": False, "models": [], "message": str(error)})
+                    address = query.get('base_url', [None])[0]
+                    if address is not None:
+                        address = app.settings.preview({'provider': 'ollama', 'base_url': address})['base_url']
+                    return self.send(app.local.inventory(address))
                 if path in ("/api/session", "/api/files", "/api/file", "/api/export", "/api/download"):
                     session = app.store.get(query.get("id", [""])[0])
                     if path == "/api/session":
@@ -282,11 +340,13 @@ def handler_for(app):
                 self.send({"error": str(error)}, 400)
 
         def do_POST(self):
-            if self.path in ('/api/start', '/api/resume', '/api/reset', '/api/try-seed', '/api/restart-seed', '/api/import', '/api/session/manage'):
+            if self.path in ('/api/start', '/api/resume', '/api/reset', '/api/try-seed', '/api/restart-seed',
+                    '/api/import', '/api/session/manage','/api/seed-check','/api/settings','/api/connect',
+                    '/api/setup','/api/setup/local-file','/api/isolation/setup'):
                 with app.evaluations.gate:
-                    if app.evaluations.busy:
+                    if app.evaluations.busy or app.practical.busy:
                         if self.allowed(api=True):
-                            self.send({'error': 'Stop the seed checks before starting another task'}, 400)
+                            self.send({'error': 'Stop the practical model check before changing tasks or model settings' if app.practical.busy else 'Stop the seed checks before starting another task'}, 400)
                         return
                     return self.handle_post()
             return self.handle_post()
@@ -301,6 +361,17 @@ def handler_for(app):
                 data = json.loads(self.rfile.read(size))
                 if not isinstance(data, dict):
                     raise ValueError("Provide a JSON object")
+                if self.path == '/api/model-check':
+                    with app.evaluations.gate:
+                        if app.evaluations.busy or app.local.preparing():
+                            raise ValueError('Wait for the current model setup or seed comparison to finish')
+                        return self.send(app.practical.start())
+                if self.path == '/api/model-check/stop':
+                    app.practical.stop()
+                    return self.send({'ok':True})
+                if self.path == '/api/browser':
+                    watch = app.presence.pulse(data.get('id'), data.get('sequence'), data.get('closing', False))
+                    return self.send({'ok':True, 'watch':watch})
                 if self.path == '/api/input':
                     with app.evaluations.gate, app.agent.lock:
                         active = app.active()
@@ -327,8 +398,11 @@ def handler_for(app):
                     if data.get('api_key') or data.get('clear_key'):
                         candidate.pop('compatibility', None)
                     connection_key = data.get('api_key') or (os.environ.get('AUTOPROTEUS_API_KEY', '') if data.get('clear_key') else app.settings.key())
-                    compatibility = check_protocol(candidate, connection_key) if candidate['configured'] and changed else None
+                    with app.local.connection_check(candidate):
+                        compatibility = check_protocol(candidate, connection_key) if candidate['configured'] and changed else None
                     result = app.settings.update(data)
+                    if changed:
+                        app.agent.discard_idle()
                     if compatibility:
                         result = app.settings.record_compatibility(compatibility)
                     return self.send(result)
@@ -337,14 +411,32 @@ def handler_for(app):
                     if data.get('api_key'):
                         config.pop('compatibility', None)
                     if config["provider"] == "ollama":
-                        names = [item["name"] for item in app.local.models(config["base_url"])]
+                        inventory = app.local.inventory(config['base_url'])
+                        if not inventory['available']:
+                            raise ProviderError('The local model service could not be reached')
+                        matches = lambda item: config['model'] in (item['name'], item['name'].removesuffix(':latest'))
+                        if any(matches(item) for item in inventory['unavailable']):
+                            raise ValueError('This model is listed by the engine, but its files could not be verified. Re-import or download it again, or choose an available model.')
+                        names = [item["name"] for item in inventory['models']]
                         if config["model"] not in names and config["model"] + ":latest" not in names:
                             raise ValueError("This model is not installed yet. Use Prepare local model to download it.")
-                    compatibility = check_protocol(config, data.get('api_key') or app.settings.key())
+                    with app.local.connection_check(config):
+                        compatibility = check_protocol(config, data.get('api_key') or app.settings.key())
                     app.settings.update({**data, "configured": True})
-                    return self.send(app.settings.record_compatibility(compatibility))
+                    app.agent.discard_idle()
+                    self_check = app.settings.record_compatibility(compatibility)
+                    app.maintain_resources()
+                    return self.send(self_check)
                 if self.path == "/api/setup":
+                    app.agent.discard_idle()
                     app.local.prepare(data.get("model", "qwen3:4b-instruct"))
+                    return self.send(app.local.public())
+                if self.path == '/api/setup/local-file':
+                    with app.evaluations.gate, app.agent.lock:
+                        if app.active() or app.evaluations.busy:
+                            raise ValueError('Stop the current task or comparison before changing the model.')
+                        app.agent.discard_idle()
+                        app.local.prepare_file(data.get('path'), data.get('base_url'), data.get('internet'))
                     return self.send(app.local.public())
                 if self.path == '/api/isolation/setup':
                     app.agent.appliance.prepare()

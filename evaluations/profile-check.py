@@ -31,7 +31,7 @@ def main(args):
     if not output.is_relative_to((ROOT / '.data').resolve()):
         raise ValueError('Keep evidence under .data')
     output.mkdir(parents=True, exist_ok=False)
-    config = {**DEFAULTS, 'configured': True, 'base_url': 'http://127.0.0.1:11435'}
+    config = {**DEFAULTS, 'action_limit':True, 'configured': True, 'base_url': 'http://127.0.0.1:11435'}
     if not args.defaults:
         config.update(model=args.model, context_tokens=131072, response_tokens=4096, temperature=0.6,
                       thinking=False, terminal=True, protocol='native', max_steps=128)

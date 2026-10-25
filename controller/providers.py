@@ -24,6 +24,7 @@ class ProviderError(Exception):
 ERROR_MESSAGES = {
     'budget': 'The experiment exhausted its generated-token allowance. Saved work can still be independently checked.',
     'connection': 'The model service could not be reached. Check the connection and retry.',
+    'model': 'The selected model is unavailable or its files are missing. Re-import or download it again, then refresh the model list.',
     'timeout': 'The model response timed out. Retry or choose a smaller model.',
     'cutoff': 'The model response was cut short. Increase the response budget or retry; no partial action ran.',
     'protocol': 'The model did not follow the selected action protocol. Try JSON fallback or another model.',
@@ -42,6 +43,9 @@ def model_service_error(detail, native):
     text = detail.lower()
     if native and any(marker in text for marker in ('invalid tool call arguments', 'failed to parse tool call')):
         return ProviderError(detail, {'protocol_reason': 'tool_arguments'}, category='protocol')
+    if (any(marker in text for marker in ('no such file', 'cannot find the file', 'file does not exist'))
+            and any(marker in text for marker in ('model', 'gguf', 'blobs'))):
+        return ProviderError(detail, category='model')
     return ProviderError(detail)
 
 
@@ -393,6 +397,8 @@ class ModelClient:
                                                 {'protocol_reason': 'tool_batch'}, category='protocol')
                         if progress:
                             progress(len(text))
+                            if hasattr(progress, 'thinking'):
+                                progress.thinking(thinking)
                         if len(text) + len(thinking) > 300000:
                             raise ProviderError("The model response exceeded the maximum size.")
                         if item.get("done"):
@@ -440,7 +446,12 @@ class ModelClient:
             if not isinstance(content, str):
                 raise ProviderError("The provider did not return a text response.")
             calls = choice['message'].get('tool_calls', [])
-            return model_response(content, calls, native, usage=data.get('usage', {}), **context_metadata)
+            thinking = choice['message'].get('reasoning_content', choice['message'].get('reasoning', ''))
+            if not isinstance(thinking, str):
+                thinking = ''
+            if progress and hasattr(progress, 'thinking'):
+                progress.thinking(thinking)
+            return model_response(content, calls, native, thinking=thinking, usage=data.get('usage', {}), **context_metadata)
         except (KeyError, IndexError, TypeError):
             raise ProviderError("The provider returned an unexpected response format.") from None
 

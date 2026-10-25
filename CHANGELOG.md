@@ -4,6 +4,56 @@ Versions use `major.minor.patch`. Before launch, `0.x.0` introduces features and
 `0.x.y` contains bug fixes. Components can exceed 9 or 99. Historical `0.0.x`
 release and experiment labels remain unchanged.
 
+## 0.14.0
+
+- Make action, wall-time and generated-token limits explicit in research plans,
+  independently of the optional action allowance in normal use.
+- Provide a public, optional capability-submission preflight for discovery
+  experiments. Check declaration structure without executing candidate code;
+  keep independent behavior checks and activation authoritative.
+- Add separate frozen final-task comparisons for a concise requirement
+  restatement and shorter guidance, with exact-output and stale-override controls.
+  Preparation and calibration start no live-model trials.
+- Offer an optional practical model check in setup and Settings: exact files,
+  a follow-up correction and missing-file recovery in fresh VMs. Save results
+  with the tested profile and source; leave the connection usable after failures.
+
+## 0.13.0
+
+- Show expandable thinking entries in tool-call order, with a live spinner and
+  provider-supplied reasoning previews. Keep previews out of prompts and preserve
+  disclosure state while streaming. Providers without reasoning remain usable.
+- Format all tool labels consistently, including new snake_case, kebab-case and
+  camelCase names, without changing tool identifiers or arguments.
+- Make normal-use action allowances optional and off by default; retain explicit
+  evaluation budgets and independent host time/frame/transfer safeguards.
+- Prewarm a clean VM when the selected local Ollama model becomes resident;
+  adopt it for the first task and retain healthy sessions between replies.
+  Report shared VM-slot waits separately from startup.
+
+## 0.12.0
+
+- Retain a session VM between ordinary replies while its local Ollama model is
+  loaded. Reuse requires matching source, configuration and checkpoint identities.
+  Stop, task/input/settings changes, activation and independent checks close it.
+  Retention belongs to the host; graders keep their fresh-VM lifecycle.
+- Track browser tabs with authenticated heartbeats, live connections and ordered close hints.
+  Release task VMs and app-used local models 5 seconds after the last tab closes,
+  with a five-minute heartbeat expiry for crashes and suspended tabs. Refreshes
+  and other open tabs preserve work; saved files and model weights remain.
+
+## 0.11.0
+
+- Check Ollama model metadata before listing a model as available or connecting;
+  stale entries with missing weights move into separate diagnostics.
+- Refresh discovery when setup opens or the local service address changes, with
+  a manual refresh button. Discover retained GGUF models in application and
+  experiment caches, excluding vocabulary files and LoRA adapters.
+- Add **Use downloaded model** to register a local GGUF with the local engine
+  and qualify the connection. Reuse file bytes through a hard link when possible,
+  with a checked local-copy fallback. Preserve the previous connection on failure.
+- Report missing model-file failures separately from unreachable services.
+
 ## 0.10.0
 
 - Use shorter final-task guidance after activation and keep activation state

@@ -18,6 +18,25 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class BoundaryTests(unittest.TestCase):
+    def test_optional_request_cap_can_be_off_without_disabling_the_frame_limit(self):
+        broker = Broker(self.store, self.session, self.client,
+                        {**self.settings.values, 'action_limit':False, 'max_steps':1}, self.cancel)
+        self.assertIsNone(broker.request_limit)
+        broker.requests = 1000
+        self.client.complete.return_value = {'content':'{}'}
+        broker.handle({'op':'infer','messages':[{'role':'user','content':'Continue.'}]})
+        self.assertEqual(broker.requests, 1001)
+        broker.frames = 10000
+        with self.assertRaisesRegex(IsolationError, 'message quota'):
+            broker.handle({'op':'infer','messages':[{'role':'user','content':'Continue.'}]})
+
+    def test_finished_run_watchdog_cannot_kill_a_retained_vm_at_its_old_deadline(self):
+        vm = Mock(); vm.closed = threading.Event()
+        finished = threading.Event(); finished.set()
+        agent = IsolatedAgent(ROOT, self.store, self.settings)
+        agent._watchdog(vm, threading.Event(), 0, finished)
+        vm.close.assert_not_called()
+
     def test_two_stage_history_fits_while_message_byte_and_request_caps_remain(self):
         client = Mock(); client.complete.return_value = {'content': '{}'}
         broker = Broker(self.store, self.session, client, self.settings.values, threading.Event(), 'Activation state')
@@ -90,7 +109,7 @@ class BoundaryTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.store = Store(self.root / 'sessions')
         self.settings = Settings(self.root)
-        self.settings.values.update(configured=True, provider='demo', model='scripted-demo')
+        self.settings.values.update(configured=True, provider='demo', model='scripted-demo', action_limit=True)
         self.session = self.store.create('task', 'demo', 'scripted-demo')
         self.client, self.cancel = Mock(), threading.Event()
         self.broker = Broker(self.store, self.session, self.client, self.settings.values, self.cancel)

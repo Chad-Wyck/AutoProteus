@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from autoproteus.providers import tool_definitions
 from controller.config import DEFAULTS
+from research_limits import research_config, resource_limits
 from controller.evaluation import freeze_source, source_identity
 from controller.isolation import seed_files
 from controller.storage import atomic_json, now
@@ -32,7 +33,8 @@ def trusted_files():
         'evaluations/edit_context.py', 'evaluations/lessons/verified-submission.md',
         'evaluations/generalization-probe.py', 'evaluations/local-model-benchmark.py',
         'evaluations/local-feature-probe.py', 'evaluations/local-upgrade-tasks.json',
-        'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/invoke_tool.py', 'evaluations/tasks.json')]
+        'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/research_limits.py',
+        'evaluations/submission_preflight.py', 'evaluations/completion_study.py', 'evaluations/invoke_tool.py', 'evaluations/tasks.json')]
     return {p.relative_to(ROOT).as_posix(): file_identity(p) for p in paths}
 
 
@@ -58,7 +60,8 @@ def prepare(args):
         if not isinstance(slug, str) or not slug or len(slug) > 60 or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789-_' for c in slug) or slug in seen:
             raise ValueError('Profiles need unique lowercase IDs')
         seen.add(slug)
-        config = profile['config'] = {**DEFAULTS, 'configured': True, 'terminal': True, **profile['config']}
+        config = profile['config'] = research_config({'configured': True, 'terminal': True, **profile['config']})
+        profile['resource_limits'] = resource_limits(config, args.timeout, args.output_token_budget)
         if config['provider'] not in ('ollama', 'hosted') or urlparse(config['base_url']).hostname not in ('localhost', '127.0.0.1', '::1'):
             raise ValueError('This runner accepts local inference endpoints only')
         if config['response_tokens'] >= config['context_tokens']:

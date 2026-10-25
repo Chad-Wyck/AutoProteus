@@ -102,3 +102,14 @@ button { color: inherit; }
 .trash-item { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 9px 0; border-bottom: 1px solid var(--line); }
 @media (max-width: 600px) { .privacy { max-width: 120px; overflow: hidden; font-size: 10px; } .active-work { padding: 8px 12px; } }
 .input-queue{padding:8px 12px;max-height:160px;overflow:auto}.queued-input{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:12px}.queued-input span{white-space:pre-wrap;overflow-wrap:anywhere;flex:1}#input-mode{max-width:160px;font-size:12px;padding:5px;background:var(--paper);color:inherit;border:1px solid var(--line);border-radius:7px}
+
+/* Model reasoning stays optional and in the same sequence as tool calls. */
+.feed-item.thinking{margin:0 0 12px 33px;color:var(--accent);font-size:11px}
+.feed-item.thinking details{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:8px 12px}
+.feed-item.thinking summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none}
+.feed-item.thinking summary::before{content:'›';display:inline-block;transition:transform .15s}
+.feed-item.thinking details[open] summary::before{transform:rotate(90deg)}
+.feed-item.thinking summary::-webkit-details-marker{display:none}
+.thinking-icon{flex-shrink:0}.thinking-time{margin-left:auto;color:var(--muted);font-size:10px}
+.thinking-text{max-height:260px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.75 Consolas,monospace;color:var(--muted);margin:12px 0 0}
+@media(max-width:600px){.feed-item.thinking{margin-left:29px}}

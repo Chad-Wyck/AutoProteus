@@ -78,7 +78,7 @@ def enrich(store,result):
     return result
 
 def verify_feature(store,source,feature):
-    settings=SimpleNamespace(values={**DEFAULTS,'configured':True,'provider':'demo','model':'independent feature verifier','protocol':'json','terminal':True,'max_steps':5},key=lambda:'')
+    settings=SimpleNamespace(values={**DEFAULTS, 'action_limit':True,'configured':True,'provider':'demo','model':'independent feature verifier','protocol':'json','terminal':True,'max_steps':5},key=lambda:'')
     actions=[{'message':'Run independent guest checks','action':{'tool':'run_command','arguments':{'command':'python3 benchmark_probe.py '+feature}}},{'message':'Checks recorded','status':'completed'}]
     agent=IsolatedAgent(ROOT,store,settings,lambda _:ScriptedClient(actions))
     try:
@@ -93,7 +93,7 @@ def verify_feature(store,source,feature):
     finally:agent.close()
 
 def verify_public(store,source,feature):
-    settings=SimpleNamespace(values={**DEFAULTS,'configured':True,'provider':'demo','model':'independent public-tool verifier','protocol':'json','terminal':False,'max_steps':4},key=lambda:'')
+    settings=SimpleNamespace(values={**DEFAULTS, 'action_limit':True,'configured':True,'provider':'demo','model':'independent public-tool verifier','protocol':'json','terminal':False,'max_steps':4},key=lambda:'')
     content='café\r\n猫 and dog\n'
     arguments={'path':'sample.txt'} if feature=='file_summary' else {'path':'sample.txt','content':'élan\r\n'}
     actions=[{'message':'Invoke the requested public tool','action':{'tool':feature,'arguments':arguments}},{'message':'Read resulting bytes','action':{'tool':'read_file','arguments':{'path':'sample.txt'}}},{'message':'Public check finished','status':'completed'}]
@@ -284,7 +284,7 @@ def run(args):
     host_files=list((ROOT/'controller').glob('*.py'))+list((ROOT/'web').glob('*'))+[ROOT/'guest/worker.py',ROOT/'app.py']
     report.setdefault('host_file_hashes',{p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in host_files if p.is_file()})
     atomic_json(report_path,report)
-    settings=SimpleNamespace(values={**DEFAULTS,'base_url':'http://127.0.0.1:11435','configured':True},key=lambda:'')
+    settings=SimpleNamespace(values={**DEFAULTS, 'action_limit':True,'base_url':'http://127.0.0.1:11435','configured':True},key=lambda:'')
     engine=LocalRuntime(ROOT,settings)
     store=Store(DATA/'sessions')
     agent=None
@@ -316,7 +316,7 @@ def run(args):
             if args.thinking == 'on' and 'thinking' not in capabilities:
                 raise ValueError('This model does not advertise thinking support')
             thinking=(args.thinking != 'off') if 'thinking' in capabilities else None
-            config={**DEFAULTS,'configured':True,'provider':'ollama','base_url':base,'model':model['model'],'context_tokens':args.context_tokens,'response_tokens':args.response_tokens,'temperature':args.temperature,'max_steps':args.upgrade_steps,'request_timeout':300,'command_timeout':60,'terminal':True,'protocol':protocol,'thinking':thinking}
+            config={**DEFAULTS, 'action_limit':True,'configured':True,'provider':'ollama','base_url':base,'model':model['model'],'context_tokens':args.context_tokens,'response_tokens':args.response_tokens,'temperature':args.temperature,'max_steps':args.upgrade_steps,'request_timeout':300,'command_timeout':60,'terminal':True,'protocol':protocol,'thinking':thinking}
             settings.values=config
             report['models'][slug]={'model':model['model'],'capabilities':capabilities,'details':show.get('details'),'config':{k:v for k,v in config.items() if k!='base_url'},'gpu_before':gpu()}
             tags=request_json(base+'/api/tags')['models']

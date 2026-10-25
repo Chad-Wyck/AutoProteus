@@ -211,7 +211,8 @@ class SeedRevisionTests(unittest.TestCase):
         from controller.storage import Store
         store = Store(self.workspace / 'sessions')
         session = store.create('Quota check', 'demo', 'fixture')
-        broker = Broker(store, session, None, {**restored.values, 'max_steps': 1}, threading.Event())
+        self.assertFalse(restored.values['action_limit'])
+        broker = Broker(store, session, None, {**restored.values, 'max_steps': 1, 'action_limit':True}, threading.Event())
         self.assertEqual(broker.request_limit, 6)  # one tool and finish, each with two repairs
 
 

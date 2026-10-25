@@ -15,6 +15,7 @@ DEFAULTS = {
     "temperature": 0.2, "max_steps": 128, "request_timeout": 300,
     "command_timeout": 60, "terminal": False, "json_mode": False, "thinking": None,
     "protocol": "native", "internet": True,
+    "action_limit": False,
 }
 
 
@@ -108,7 +109,7 @@ class Settings:
         candidate["temperature"] = float(candidate["temperature"])
         if not 0 <= candidate["temperature"] <= 2:
             raise ValueError("Temperature must be between 0 and 2")
-        for key in ("configured", "terminal", "json_mode", "internet"):
+        for key in ("configured", "terminal", "json_mode", "internet", "action_limit"):
             if not isinstance(candidate[key], bool):
                 raise ValueError(f"{key} must be true or false")
         if candidate["thinking"] not in (None, True, False):

@@ -1,11 +1,28 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const token = document.querySelector('meta[name="app-token"]').content;
-const state = { app: null, session: null, id: null, provider: 'ollama', installed: [], feedIds: new Set(), polling: false, file: null, started: 0, setupBusy: false };
+const browserId = crypto.randomUUID();
+let browserSequence = 0;
+let browserWatch = null;
+let browserLeaving = false;
+function browserPulse(closing = false) {
+  return fetch('/api/browser', {method:'POST', keepalive:true,
+    headers:{'X-AutoProteus-Token':token, 'Content-Type':'application/json'},
+    body:JSON.stringify({id:browserId, sequence:++browserSequence, closing})})
+    .then(response => response.ok ? response.json() : null).then(reply => {
+      if (reply?.watch && !closing && !browserLeaving && (!browserWatch || browserWatch.readyState === EventSource.CLOSED)) {
+        browserWatch = new EventSource('/api/browser/watch?' + new URLSearchParams({id:browserId, watch:reply.watch}));
+      }
+    }).catch(() => {});
+}
+window.addEventListener('pagehide', () => { browserLeaving = true; browserWatch?.close(); browserWatch = null; browserPulse(true); });
+window.addEventListener('pageshow', () => { browserLeaving = false; browserPulse(); });
+setInterval(() => browserPulse(), 15000);
+const state = { app: null, session: null, id: null, provider: 'ollama', installed: [], unavailable: [], downloaded: [], checkingLocal: false, connecting: false, feedIds: new Set(), polling: false, file: null, started: 0, setupBusy: false };
 Object.assign(state, {query: '', offset: 0, archived: false, attachments: []});
 
 async function api(path, data, binary = false) {
-  const response = await fetch(path, { method: data === undefined ? 'GET' : 'POST', headers: { 'X-AutoProteus-Token': token, 'Content-Type': 'application/json' }, body: data === undefined ? undefined : JSON.stringify(data) });
+  const response = await fetch(path, { method: data === undefined ? 'GET' : 'POST', headers: { 'X-AutoProteus-Token': token, 'X-AutoProteus-Browser':browserId, 'Content-Type': 'application/json' }, body: data === undefined ? undefined : JSON.stringify(data) });
   if (!response.ok) {
     let message = `Request failed (${response.status})`;
     try { message = (await response.json()).error || message; } catch (_) {}
@@ -27,10 +44,12 @@ function renderApp() {
   text('app-version', 'v' + app.version);
   document.querySelector('.brand small').textContent = 'SEED / ' + app.version;
   const active = app.active;
-  visible('active-work', !!active);
+  visible('active-work', !!active || !!app.model_check?.busy);
   if (active) text('active-work-label', `${active.title} · ${active.activity}`);
+  else if (app.model_check?.busy) text('active-work-label', app.model_check.message);
+  text('view-active', app.model_check?.busy ? 'View model check' : 'View task');
   const canSteer = active?.id === state.id && active.status !== 'stopping';
-  $('send').disabled = state.sending || (!!active && !canSteer);
+  $('send').disabled = state.sending || !!app.model_check?.busy || (!!active && !canSteer);
   $('send').setAttribute('aria-label', canSteer ? 'Send message' : state.id ? 'Send reply' : 'Start task');
   visible('input-mode', !!canSteer);
   $('restart-seed').disabled = !!active || app.evaluation?.status === 'running';
@@ -67,6 +86,7 @@ function renderApp() {
   text('composer-model', config.configured ? (current.provider === 'demo' ? 'Demo · scripted tour' : current.model + (current.provider === 'ollama' ? ' · local' : ' · hosted')) : 'Choose a model to begin');
   renderSetupProgress(app.setup);
   renderIsolation(app.isolation);
+  renderPractical(app.model_check);
   if (app.evaluation?.id && state.checkSession === app.evaluation.session &&
       (app.evaluation.busy || state.checkReport?.id === app.evaluation.id)) renderEvaluation(app.evaluation);
   visible('evaluation-status', !!app.evaluation?.id);
@@ -166,13 +186,56 @@ async function selectSession(id) {
   } catch (e) { toast(e.message); }
 }
 
-const actionLabels = { list_files: 'Looking through files', read_file: 'Reading a file', read_section: 'Reading a section', write_file: 'Writing a file', edit_file: 'Editing a file', update_todo: 'Updating the checklist', run_command: 'Running a command' };
+function toolLabel(name) {
+  return String(name).replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_.-]+/g, ' ')
+    .trim().replace(/\b[a-z]/g, letter => letter.toUpperCase());
+}
+function thinkingItem(item, element = null) {
+  if (!element) {
+    element = node('div', 'feed-item thinking'); element.dataset.feedId = item.id;
+    const details = node('details'), summary = node('summary');
+    summary.append(node('span', 'thinking-icon'), node('span', 'thinking-label'), node('span', 'thinking-time'));
+    details.append(summary, node('pre', 'thinking-text')); element.append(details);
+    details.addEventListener('toggle', () => {
+      if (details.open && element === $('feed').lastElementChild) $('feed').scrollTop = $('feed').scrollHeight;
+    });
+  }
+  const running = item.state === 'running' && state.app?.active?.id === state.session?.id;
+  const icon = element.querySelector('.thinking-icon');
+  icon.className = 'thinking-icon' + (running ? ' spinner' : '');
+  icon.textContent = running ? '' : item.state === 'completed' ? '✓' : '·';
+  icon.setAttribute('aria-hidden', 'true');
+  element.querySelector('.thinking-label').textContent = running ? 'Thinking…' : item.state === 'completed' ? 'Thought' : item.state === 'failed' ? 'Thinking failed' : 'Thinking interrupted';
+  const seconds = running ? Math.max(0, (Date.now() - Date.parse(item.time)) / 1000) : item.seconds;
+  element.querySelector('.thinking-time').textContent = Math.floor(seconds || 0) + 's';
+  const pre = element.querySelector('pre'), following = pre.scrollHeight - pre.scrollTop - pre.clientHeight < 40;
+  const message = item.text || (item.shortened ? 'This older reasoning preview was omitted to keep the chat bounded.' : item.enabled === false ? 'Thinking is disabled for this connection.' : running ? 'Waiting for reasoning text from the model…' : 'This response did not include separate reasoning text.');
+  const content = message + (item.shortened && item.text ? '\n[Preview shortened; see the saved provider trace for the original.]' : '');
+  if (pre.textContent !== content) {
+    pre.textContent = content;
+    if (following) pre.scrollTop = pre.scrollHeight;
+  }
+  return element;
+}
+function conversationItems(session) {
+  const ids = new Set(session.feed.map(item => item.id)), after = new Map();
+  for (const span of session.thinking_spans || []) {
+    const anchor = ids.has(span.after) ? span.after : null;
+    if (!after.has(anchor)) after.set(anchor, []);
+    after.get(anchor).push({...span, kind:'thinking'});
+  }
+  const items = [...(after.get(null) || [])];
+  for (const item of session.feed) items.push(item, ...(after.get(item.id) || []));
+  return items;
+}
 function feedItem(item) {
+  if (item.kind === 'thinking') return thinkingItem(item);
   const element = node('div', 'feed-item ' + item.kind + (item.kind === 'result' && !item.ok ? ' failed' : ''));
   element.dataset.feedId = item.id;
   if (item.kind === 'action' || item.kind === 'result') {
     const details = node('details');
-    const label = item.kind === 'action' ? (actionLabels[item.text] || item.text) + (item.arguments?.path ? ' · ' + item.arguments.path : '') : item.text;
+    const label = item.kind === 'action' ? toolLabel(item.text) + (item.arguments?.path ? ' · ' + item.arguments.path : '') : item.text;
     details.append(node('summary', '', label), node('pre', '', JSON.stringify(item.kind === 'action' ? item.arguments : item.result, null, 2)));
     element.append(details);
     if (item.kind === 'result' && item.argument_overrides) {
@@ -189,13 +252,21 @@ function renderSession() {
   text('page-name', session.title);
   const feed = $('feed'), nearBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 130;
   // Keep display memory bounded even when a candidate replaces its whole feed.
-  const currentIds = new Set(session.feed.map(item => item.id));
+  const items = conversationItems(session), currentIds = new Set(items.map(item => item.id));
   Array.from(feed.children).forEach(element => { if (!currentIds.has(element.dataset.feedId)) element.remove(); });
   state.feedIds.forEach(id => { if (!currentIds.has(id)) state.feedIds.delete(id); });
   let added = false;
-  session.feed.forEach(item => { if (!state.feedIds.has(item.id)) { feed.append(feedItem(item)); state.feedIds.add(item.id); added = true; } });
+  const elements = new Map(Array.from(feed.children, element => [element.dataset.feedId, element]));
+  items.forEach((item, index) => {
+    let element = elements.get(item.id);
+    if (!element) { element = feedItem(item); state.feedIds.add(item.id); added = true; }
+    else if (item.kind === 'thinking') thinkingItem(item, element);
+    if (feed.children[index] !== element) feed.insertBefore(element, feed.children[index] || null);
+  });
   if (added && (nearBottom || state.feedIds.size < 5)) feed.scrollTop = feed.scrollHeight;
-  const active = state.app?.active?.id === session.id; visible('activity', active); text('activity-label', session.activity);
+  const active = state.app?.active?.id === session.id;
+  const thinking = (session.thinking_spans || []).some(item => item.state === 'running');
+  visible('activity', active && !thinking); text('activity-label', session.activity);
   text('elapsed', active ? Math.floor((Date.now() - state.started) / 1000) + 's' : '');
   visible('stop', active); visible('send', true); $('stop').disabled = session.status === 'stopping';
   $('task').disabled = session.status === 'stopping'; $('task').placeholder = active ? 'Change direction, or queue something for afterwards…' : 'Add a reply, clarify the task, or request a change…';
@@ -352,8 +423,8 @@ $('task-form').onsubmit = async event => {
 };
 $('task').onkeydown = event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); $('task-form').requestSubmit(); } };
 $('stop').onclick = async () => { try { await api('/api/stop', { id: state.id }); await poll(); } catch (e) { toast(e.message); } };
-$('stop-active').onclick = async () => { try { const id = state.app?.active?.id; if (id) await api('/api/stop', {id}); await poll(); } catch (e) { toast(e.message); } };
-$('view-active').onclick = () => { if (state.app.active) selectSession(state.app.active.id); };
+$('stop-active').onclick = async () => { try { const id = state.app?.active?.id; if (id) await api('/api/stop', {id}); else if (state.app.model_check?.busy) await api('/api/model-check/stop', {}); await poll(); } catch (e) { toast(e.message); } };
+$('view-active').onclick = () => { if (state.app.active) selectSession(state.app.active.id); else if (state.app.model_check?.busy) openPractical(); };
 $('new-task').onclick = home;
 $('details-toggle').onclick = () => { const inspector = document.querySelector('.inspector'); inspector.classList.toggle('open'); $('details-toggle').setAttribute('aria-expanded', inspector.classList.contains('open')); };
 document.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'n') { event.preventDefault(); home(); } });
@@ -384,7 +455,7 @@ function renderIsolation(info) {
   error('isolation-error', info.error);
   $('prepare-isolation').disabled = info.busy || !info.available;
   text('prepare-isolation', info.busy ? 'Preparing…' : info.ready ? 'Prepare again' : 'Prepare isolated environment');
-  text('isolation-status', native ? 'VM protection off' : info.ready ? 'VM isolation ready' : info.busy ? 'Preparing isolation…' : 'Set up isolation');
+  text('isolation-status', native ? 'VM protection off' : state.app.resources?.warming ? 'Warming up VM…' : state.app.resources?.ready || state.app.resources?.retained_vm ? 'VM ready' : info.ready ? 'VM isolation ready' : info.busy ? 'Preparing isolation…' : 'Set up isolation');
   if (info.ready && state.pendingTask && $('isolation-dialog').open) {
     const task = state.pendingTask; state.pendingTask = null; $('isolation-dialog').close();
     startTask(task).catch(e => toast(e.message));
@@ -497,28 +568,56 @@ function providerTab(provider) {
   error('setup-error', ''); renderConnectButton();
 }
 function renderConnectButton() {
+  const localFile = state.downloaded.find(model => 'file:' + model.path === $('installed-models').value);
   const installed = state.installed.some(model => [model.name, model.name.replace(/:latest$/, '')].includes($('local-model').value.trim()));
-  $('connect-button').textContent = state.provider === 'hosted' ? 'Test & connect →' : installed ? 'Connect local model →' : 'Prepare local model →';
-  $('connect-button').disabled = state.setupBusy;
+  const unavailable = state.unavailable.some(model => [model.name, model.name.replace(/:latest$/, '')].includes($('local-model').value.trim()));
+  $('connect-button').textContent = state.connecting ? 'Checking connection…' : state.provider === 'hosted' ? 'Test & connect →' : state.checkingLocal ? 'Checking local models…' : localFile ? 'Use downloaded model →' : unavailable ? 'Model files unavailable' : installed ? 'Connect local model →' : 'Prepare local model →';
+  $('connect-button').disabled = state.connecting || state.setupBusy || (state.provider === 'ollama' && (state.checkingLocal || (!localFile && unavailable)));
 }
 function renderInstalledModels() {
+  const selectedFile = $('installed-models').value;
   const current = $('local-model').value.trim();
   const match = state.installed.find(model => [model.name, model.name.replace(/:latest$/, '')].includes(current));
   const options = state.installed.map(model => {
-    const option = node('option', '', model.name); option.value = 'model:' + model.name; return option;
+    const option = node('option', '', model.display_name || model.name); option.value = 'model:' + model.name; return option;
   });
+  $('unavailable-model-list').replaceChildren(...state.unavailable.map(model => node('li', '', model.name + ': ' + model.reason)));
+  visible('unavailable-models', !!state.unavailable.length);
+  if (state.downloaded.length) {
+    const group = node('optgroup'); group.label = 'Downloaded model files';
+    state.downloaded.forEach(model => { const option = node('option', '', model.name.replace(/\.gguf$/i, '')); option.value = 'file:' + model.path; option.title = model.path; group.append(option); });
+    options.push(group);
+  }
   const custom = node('option', '', 'Download or enter another model…'); custom.value = 'download';
   $('installed-models').replaceChildren(...options, custom);
-  $('installed-models').value = match ? 'model:' + match.name : 'download';
-  visible('custom-model-field', !match);
+  const hasFile = state.downloaded.some(model => 'file:' + model.path === selectedFile);
+  $('installed-models').value = hasFile ? selectedFile : match ? 'model:' + match.name : 'download';
+  $('installed-models').disabled = state.checkingLocal;
+  visible('custom-model-field', !hasFile && !match);
+  visible('local-file-help', hasFile);
 }
+let localDetection = 0;
 async function detectLocal() {
+  const detection = ++localDetection;
+  state.checkingLocal = true; state.installed = []; state.unavailable = [];
+  $('refresh-models').disabled = true; $('installed-models').disabled = true;
+  text('engine-status', 'Checking local model files…'); renderConnectButton();
   try {
-    const result = await api('/api/local'); state.installed = result.models;
-    renderInstalledModels();
-    text('engine-status', result.available ? `Local engine found · ${result.models.length} installed model${result.models.length === 1 ? '' : 's'}` : 'No local engine found. AutoProteus can prepare one for you.');
-    $('engine-status').classList.toggle('available', result.available); renderConnectButton();
-  } catch (e) { text('engine-status', e.message); }
+    const result = await api('/api/local?base_url=' + encodeURIComponent($('local-url').value.trim()));
+    if (detection !== localDetection) return;
+    state.installed = result.models; state.unavailable = result.unavailable || []; state.downloaded = result.downloaded || [];
+    let status = result.available ? `Local engine found · ${result.models.length} available model${result.models.length === 1 ? '' : 's'}` : 'No local engine found. AutoProteus can prepare one for you.';
+    if (state.unavailable.length) status += ` · ${state.unavailable.length} unavailable`;
+    if (state.downloaded.length) status += ` · ${state.downloaded.length} downloaded model file${state.downloaded.length === 1 ? '' : 's'}`;
+    if (result.unchecked) status += ` · ${result.unchecked} entries were not checked`;
+    text('engine-status', status); $('engine-status').classList.toggle('available', result.available);
+  } catch (e) { if (detection === localDetection) { state.downloaded = []; text('engine-status', e.message); } }
+  finally {
+    if (detection === localDetection) {
+      state.checkingLocal = false; $('refresh-models').disabled = false;
+      renderInstalledModels(); renderConnectButton();
+    }
+  }
 }
 function openSetup() {
   const config = state.app.settings;
@@ -535,15 +634,20 @@ $('connection').onclick = openSetup;
 $('close-setup').onclick = () => $('setup-dialog').close();
 $('local-tab').onclick = () => providerTab('ollama'); $('hosted-tab').onclick = () => providerTab('hosted');
 $('local-model').oninput = renderConnectButton;
+$('refresh-models').onclick = detectLocal;
+$('local-url').onchange = detectLocal;
 $('installed-models').onchange = () => {
   const selected = $('installed-models').value;
   $('local-model').value = selected.startsWith('model:') ? selected.slice(6) : '';
   visible('custom-model-field', selected === 'download');
+  visible('local-file-help', selected.startsWith('file:'));
   if (selected === 'download') $('local-model').focus();
   renderConnectButton();
 };
 $('connection-form').onsubmit = async event => {
-  event.preventDefault(); error('setup-error', ''); $('connect-button').disabled = true;
+  event.preventDefault();
+  if (state.connecting) return;
+  state.connecting = true; error('setup-error', ''); renderConnectButton();
   try {
     if (state.provider === 'hosted') {
       if (!$('hosted-url').value.trim() || !$('hosted-model').value.trim()) throw new Error('Enter a service address and model name.');
@@ -551,6 +655,11 @@ $('connection-form').onsubmit = async event => {
       await api('/api/connect', { provider: 'hosted', base_url: $('hosted-url').value.trim(), model: $('hosted-model').value.trim(), api_key: $('api-key').value.trim(), json_mode: $('json-mode').checked, protocol: $('hosted-protocol').value, internet: $('setup-internet').checked });
       $('api-key').value = ''; $('setup-dialog').close(); toast('Your hosted model is connected.');
     } else {
+      const localFile = state.downloaded.find(model => 'file:' + model.path === $('installed-models').value);
+      if (localFile) {
+        await api('/api/setup/local-file', {path:localFile.path, base_url:$('local-url').value.trim(), internet:$('setup-internet').checked});
+        state.setupBusy = true; await poll(); return;
+      }
       const model = $('local-model').value.trim();
       if (!model) throw new Error('Choose a model name.');
       const installed = state.installed.some(item => [item.name, item.name.replace(/:latest$/, '')].includes(model));
@@ -559,7 +668,7 @@ $('connection-form').onsubmit = async event => {
     }
     await poll();
   } catch (e) { error('setup-error', e.message); }
-  finally { renderConnectButton(); }
+  finally { state.connecting = false; renderConnectButton(); }
 };
 function renderSetupProgress(setup) {
   const wasBusy = state.setupBusy; state.setupBusy = setup.busy;
@@ -569,8 +678,9 @@ function renderSetupProgress(setup) {
     $('progress-bar').style.width = (setup.progress ?? 0) + '%';
   }
   if (wasBusy && !setup.busy) {
+    if (setup.model) $('local-model').value = setup.model;
     if (setup.phase === 'ready') { $('setup-dialog').close(); toast(setup.message); detectLocal(); }
-    else if (setup.phase === 'error') error('setup-error', setup.message);
+    else if (setup.phase === 'error') { error('setup-error', setup.message); detectLocal(); }
   }
   renderConnectButton();
 }
@@ -587,11 +697,17 @@ function openSettings() {
   const config = state.app.settings;
   text('settings-model', config.configured ? config.model : 'No model connected'); text('settings-provider', config.provider === 'demo' ? 'Interactive demo' : config.provider === 'ollama' ? 'Local model' : 'Hosted connection');
   ['max_steps', 'temperature', 'context_tokens', 'response_tokens', 'request_timeout', 'command_timeout'].forEach(key => $(key.replaceAll('_', '-')).value = config[key]);
+  $('action-limit').checked = config.action_limit === true; renderActionLimit();
   $('protocol').value = config.protocol; $('terminal').checked = config.terminal; $('internet').checked = config.internet === true; $('thinking').value = config.thinking === null ? 'auto' : config.thinking ? 'on' : 'off';
   text('internet-help', state.app.execution?.mode === 'native' ? 'Controls the built-in web tool only. Native code retains this account’s network access through your surrounding environment.' : 'Read public websites, save downloads and call web APIs. Host files and private networks stay protected. Requests can send workspace data to external services.');
   error('settings-error', ''); $('settings-dialog').showModal();
 }
 $('settings-button').onclick = openSettings; $('close-settings').onclick = () => $('settings-dialog').close();
+function renderActionLimit() {
+  visible('action-allowance-field', $('action-limit').checked);
+  $('max-steps').disabled = !$('action-limit').checked;
+}
+$('action-limit').onchange = renderActionLimit;
 $('upgrade-limits').onclick = () => {
   $('max-steps').value = 128; $('response-tokens').value = 8192;
   $('context-tokens').value = Math.max(32768, Number($('context-tokens').value));
@@ -601,7 +717,7 @@ $('upgrade-limits').onclick = () => {
 };
 $('change-model').onclick = () => { $('settings-dialog').close(); openSetup(); };
 $('settings-form').onsubmit = async event => {
-  event.preventDefault(); const data = { protocol: $('protocol').value, terminal: $('terminal').checked, internet: $('internet').checked, thinking: $('thinking').value === 'auto' ? null : $('thinking').value === 'on' };
+  event.preventDefault(); const data = { protocol: $('protocol').value, terminal: $('terminal').checked, internet: $('internet').checked, action_limit:$('action-limit').checked, thinking: $('thinking').value === 'auto' ? null : $('thinking').value === 'on' };
   ['max_steps', 'temperature', 'context_tokens', 'response_tokens', 'request_timeout', 'command_timeout'].forEach(key => data[key] = Number($(key.replaceAll('_', '-')).value));
   try { await api('/api/settings', data); $('settings-dialog').close(); toast('Preferences saved. They apply to the next run.'); await poll(); }
   catch (e) { error('settings-error', e.message); }
@@ -621,6 +737,10 @@ async function poll() {
         const feed = update.reset || update.feed_start === 0 ? update.feed : [...previous.slice(0, update.feed_start), ...update.feed];
         state.session = {...update, feed}; renderSession(); await refreshFiles();
       } else if (state.id === id && state.session) {
+        for (const item of state.session.thinking_spans || []) {
+          const element = Array.from($('feed').children).find(element => element.dataset.feedId === item.id);
+          if (element) thinkingItem(item, element);
+        }
         // Worker liveness can change after the last saved session revision.
         if (previousWorker !== state.app.active?.id) renderInputQueue(state.session);
         state.session.verification = update.verification; renderVerification();
@@ -629,8 +749,46 @@ async function poll() {
   } catch (e) { if (!poll.warned) { toast('The app disconnected. Reopen AutoProteus or refresh this page.'); poll.warned = true; } }
   finally { state.polling = false; }
 }
+function renderPractical(report = {}) {
+  const config = state.app.settings, running = report.busy === true;
+  text('model-check-model', `${config.model} · ${config.provider === 'ollama' ? 'local connection' : config.provider === 'hosted' ? 'hosted connection' : 'connect a real model first'}`);
+  let message = report.message || 'This optional check uses the currently saved model connection.';
+  if (report.selection_matches === false || report.source_matches === false) message += ' These saved results apply to an earlier profile or seed.';
+  text('model-check-message', message);
+  const results = $('model-check-results'); results.replaceChildren();
+  for (const row of report.results || []) {
+    const item = node('p', row.passed ? 'check-pass' : 'check-fail');
+    item.textContent = `${row.passed ? '✓' : '·'} ${row.name} · files ${row.artifacts_correct ? 'correct' : 'not verified'} · ${row.completed ? 'finished' : 'not completed'}${row.initial_artifacts_correct === false ? ' · initial output failed' : ''}${row.read_error_observed === false ? ' · missing-file recovery not observed' : ''}${row.error ? ' · ' + row.error : ''}`;
+    results.append(item);
+  }
+  text('model-check-profile', JSON.stringify({profile:report.selection || {}, limits:report.limits || {},
+    identity:report.model_identity || {}, source:report.source_sha256 || null, scope:report.scope || ''}, null, 2));
+  visible('stop-model-check', running);
+  const ready = config.configured && config.provider !== 'demo' && state.app.execution?.mode === 'vm' && state.app.isolation?.ready;
+  $('run-model-check').disabled = !ready || running || !!state.app.active || state.app.evaluation?.busy || state.app.setup?.busy;
+  $('run-model-check').textContent = running ? 'Checking…' : !state.app.isolation?.ready ? 'Prepare VM isolation first' : 'Run practical check';
+  visible('setup-practical-check', config.configured && config.provider !== 'demo');
+}
+async function openPractical() {
+  if ($('settings-dialog').open) $('settings-dialog').close();
+  if ($('setup-dialog').open) $('setup-dialog').close();
+  error('model-check-error', '');
+  renderPractical(state.app.model_check);
+  if (!$('model-check-dialog').open) $('model-check-dialog').showModal();
+  try { renderPractical(await api('/api/model-check')); }
+  catch (e) { error('model-check-error', e.message); }
+}
+$('practical-check').onclick = openPractical; $('setup-practical-check').onclick = openPractical;
+$('close-model-check').onclick = () => $('model-check-dialog').close();
+$('run-model-check').onclick = async () => {
+  $('run-model-check').disabled = true; error('model-check-error', '');
+  try { renderPractical(await api('/api/model-check', {})); await poll(); }
+  catch (e) { error('model-check-error', e.message); renderPractical(state.app.model_check); }
+};
+$('stop-model-check').onclick = async () => { try { await api('/api/model-check/stop', {}); await poll(); } catch (e) { error('model-check-error', e.message); } };
 async function initialize() {
   try {
+    await browserPulse();
     state.app = await api('/api/state'); renderApp();
     const recent = state.app.sessions.find(session => ['running', 'interrupted', 'paused', 'waiting', 'error'].includes(session.status));
     if (recent) await selectSession(recent.id);

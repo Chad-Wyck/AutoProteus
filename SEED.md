@@ -184,15 +184,17 @@ only when needed. Newlines are preserved; CRLF counts as two characters.
 `edit_file` replaces one unique exact fragment; conflicts return locations and
 a hint without changing bytes. Writes and edits are limited to 100000 characters.
 
-Failed actions and each tool in a batch consume the action allowance; finishing
-is free. Resume preserves the checkpoint and gives a fresh allowance. Opening
+The action allowance is optional and off for ordinary use. When enabled,
+failed actions and each tool in a batch consume it; finishing is free.
+Evaluations enable explicit budgets. Resume preserves the checkpoint and gives a fresh allowance. Opening
 instructions stay stable; current todo notes follow the conversation. Report
 unfinished work rather than rushing an unverified finish.
 
 Cut-off responses execute no partial action. Output cutoffs and invalid action
 formats share two repair retries per response, reset after an accepted response.
-The protected controller bounds total requests using the same policy, including
-finishing. The host keeps source fingerprints, differences and command results.
+With an allowance enabled, the controller also bounds total requests, including
+finishing. Host time and transfer safeguards always apply. Source fingerprints,
+differences and command results remain recorded.
 
 ## Internet access
 

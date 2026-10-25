@@ -29,6 +29,165 @@ class ScriptedClient:
 
 @unittest.skipUnless(os.environ.get('AUTOPROTEUS_VM_TESTS') == '1', 'Real VM checks require explicit opt in')
 class RealVMTests(unittest.TestCase):
+    def test_practical_check_runs_all_cases_through_production_connection_without_weights(self):
+        from controller.practical import PracticalCheck
+        from controller.execution import ExecutionPolicy
+        from types import SimpleNamespace
+        def call(tool, **arguments): return {'function':{'name':tool,'arguments':arguments}}
+        actions = [
+            call('write_file',path='notes/greeting.txt',content='Hello, AutoProteus!\n'),
+            call('read_file',path='notes/greeting.txt'),call('finish',status='completed',message='Checked.'),
+            call('edit_file',path='settings.json',old_text='light',new_text='dark'),call('read_file',path='settings.json'),
+            call('finish',status='needs_input',message='Confirm?'),
+            call('edit_file',path='settings.json',old_text='dark',new_text='blue'),call('read_file',path='settings.json'),
+            call('finish',status='completed',message='Corrected.'),
+            call('read_file',path='incoming.txt'),call('finish',status='needs_input',message='Contents?'),
+            call('write_file',path='incoming.txt',content='Recovered safely.\n'),call('read_file',path='incoming.txt'),
+            call('finish',status='completed',message='Recovered.')]
+        payloads=[]
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self,*_): pass
+            def do_POST(self):
+                payloads.append(json.loads(self.rfile.read(int(self.headers['Content-Length']))))
+                index=len(payloads)-1
+                self.send_response(200);self.send_header('Content-Type','application/json');self.end_headers()
+                self.wfile.write(json.dumps({'choices':[{'message':{'content':'','tool_calls':[actions[index]]},
+                    'finish_reason':'tool_calls'}],'usage':{'prompt_tokens':100,'completion_tokens':1}}).encode())
+        server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
+        thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+        self.settings.values.update(protocol='native',base_url=f'http://127.0.0.1:{server.server_port}',action_limit=False)
+        original=dict(self.settings.values)
+        owner=SimpleNamespace(execution=ExecutionPolicy(),workers={},appliance=SimpleNamespace(verify=lambda:None),
+            discard_idle=lambda:None,warm=SimpleNamespace(close=lambda:None))
+        check=PracticalCheck(ROOT,self.data/'practical',self.settings,owner,threading.RLock())
+        try:
+            check.start();check.thread.join(timeout=120)
+            self.assertFalse(check.busy)
+            report=check.public()
+            self.assertTrue(report['passed'],report)
+            self.assertEqual(len(report['results']),3)
+            self.assertTrue(report['results'][2]['read_error_observed'])
+            self.assertEqual(sum(row['tokens']['reported_output_tokens'] for row in report['results']),14)
+            self.assertEqual(self.settings.values,original)
+            self.assertEqual(len(payloads),14)
+            self.assertTrue(all('tools' in payload for payload in payloads))
+            self.assertTrue(any('Correction: change theme to blue' in message.get('content','')
+                for payload in payloads for message in payload['messages']))
+        finally:
+            check.close();server.shutdown();server.server_close();thread.join()
+
+    def test_reasoning_previews_stay_host_owned_and_follow_each_model_request(self):
+        from controller.providers import ModelClient, model_response
+        count = [0]
+        class Client(ModelClient):
+            def _complete(client, messages, cancel, progress=None, tools=None, observe=None):
+                count[0] += 1
+                reasoning = 'Reasoning-only preview ' + str(count[0])
+                self.assertFalse(any('Reasoning-only preview' in item['content'] for item in messages))
+                progress.thinking(reasoning)
+                function = ({'name':'write_file','arguments':{'path':'checked.txt','content':'safe'}} if count[0] == 1
+                            else {'name':'finish','arguments':{'status':'completed','message':'Verified.'}})
+                return model_response('', [{'function':function}], True, thinking=reasoning)
+        agent = IsolatedAgent(ROOT, self.store, self.settings, lambda config:Client(config))
+        self.agents.append(agent)
+        self.settings.values['protocol'] = 'native'
+        session = self.store.create('Write a file and finish.', 'hosted', 'fixture')
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session), 'completed', session['feed'][-3:])
+        self.assertEqual([row['text'] for row in session['thinking_spans']],
+                         ['Reasoning-only preview 1', 'Reasoning-only preview 2'])
+        self.assertTrue(all(row['state'] == 'completed' for row in session['thinking_spans']))
+        anchors = [row['after'] for row in session['thinking_spans']]
+        self.assertTrue(all(any(item['id'] == anchor for item in session['feed']) for anchor in anchors))
+        self.assertNotIn('Reasoning-only preview', json.dumps(session['messages']))
+
+    def test_loaded_model_prewarms_a_vm_before_the_first_task_and_reuses_that_process(self):
+        agent = self.agent([{'status':'needs_input'}, {'status':'completed'}])
+        loaded = True
+        agent.can_retain = lambda config:loaded
+        agent.keep_ready(self.settings.values)
+        slot = agent.warm.slot
+        self.assertIsNotNone(slot)
+        slot['thread'].join(timeout=20)
+        self.assertTrue(agent.warm.public()['ready'])
+        vm = slot['vm']
+        session = self.store.create('Wait.', 'hosted', 'fixture')
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session), 'waiting', session['feed'][-3:])
+        self.assertIs(agent.idle['vm'], vm)
+        agent.start(session, 'Finish.')
+        self.assertEqual(self.wait(agent, session), 'completed')
+        self.assertIs(agent.idle['vm'], vm)
+        loaded = False
+        agent.keep_ready(self.settings.values)
+        self.assertTrue(vm.closed.is_set())
+        self.assertIsNone(agent.idle)
+        self.assertFalse(agent.warm.public()['ready'])
+
+    def test_followup_reuses_the_same_vm_and_committed_files_until_the_model_unloads(self):
+        agent = self.agent([
+            {'action': {'tool':'write_file', 'arguments':{'path':'kept.txt','content':'survived'}}},
+            {'message':'Ready for a follow-up.', 'status':'needs_input'},
+            {'action': {'tool':'read_file', 'arguments':{'path':'kept.txt'}}},
+            {'message':'Verified the retained file.', 'status':'completed'}])
+        loaded = True
+        agent.can_retain = lambda config: loaded
+        session = self.store.create('Save a file and wait.', 'hosted', 'fixture')
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session), 'waiting', session['feed'][-3:])
+        self.assertIsNotNone(agent.idle)
+        vm = agent.idle['vm']; pid = vm.process.pid
+        agent.start(session, 'Read the saved file and finish.')
+        self.assertEqual(self.wait(agent, session), 'completed', session['feed'][-3:])
+        self.assertIs(agent.idle['vm'], vm)
+        self.assertEqual(agent.idle['vm'].process.pid, pid)
+        self.assertEqual(Artifacts(self.store, session).read('kept.txt'), b'survived')
+        self.assertTrue(any(item.get('origin') == 'human' and item.get('content') == 'Read the saved file and finish.'
+                            for item in session['messages']))
+        loaded = False
+        agent.reap_idle()
+        self.assertIsNone(agent.idle)
+        self.assertTrue(vm.closed.is_set())
+
+    def test_stop_discards_a_retained_vm_and_the_next_reply_boots_fresh(self):
+        agent = self.agent([{'status':'needs_input'}, {'status':'completed'}])
+        agent.can_retain = lambda config: True
+        session = self.store.create('Wait.', 'hosted', 'fixture')
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session), 'waiting')
+        vm = agent.idle['vm']
+        agent.stop(session['id'])
+        self.assertIsNone(agent.idle)
+        self.assertTrue(vm.closed.is_set())
+        agent.start(session, 'Finish.')
+        self.assertEqual(self.wait(agent, session), 'completed')
+        self.assertIsNot(agent.idle['vm'], vm)
+
+    def test_changed_inputs_settings_and_seed_activation_discard_the_retained_vm(self):
+        agent = self.agent([{'status':'needs_input'}])
+        agent.can_retain = lambda config: True
+        session = self.store.create('Wait for more instructions.', 'hosted', 'fixture')
+        agent.start(session)
+        self.assertEqual(self.wait(agent, session), 'waiting')
+        original = agent.idle['vm']
+        files = Artifacts(self.store, session)
+        files.put('new-input.txt', base64.b64encode(b'imported').decode())
+        files.checkpoint([*session['artifacts'], 'new-input.txt'])
+        agent.start(session, 'Inspect the new input.')
+        self.assertEqual(self.wait(agent, session), 'waiting')
+        self.assertTrue(original.closed.is_set())
+        self.assertIsNot(agent.idle['vm'], original)
+        original = agent.idle['vm']
+        self.settings.values['temperature'] = 0.7
+        agent.start(session, 'Wait again.')
+        self.assertEqual(self.wait(agent, session), 'waiting')
+        self.assertTrue(original.closed.is_set())
+        original = agent.idle['vm']
+        agent.restart_seed(session)
+        self.assertEqual(self.wait(agent, session), 'waiting', session['feed'][-3:])
+        self.assertTrue(original.closed.is_set())
+        self.assertIsNot(agent.idle['vm'], original)
+
     def test_default_override_receipt_preserves_tool_data_and_operation_acknowledgement(self):
         agent = self.agent([
             {'action': {'tool': 'write_file', 'arguments': {'path': 'input.txt', 'content': 'abc'}}},
@@ -592,7 +751,7 @@ Path('proof.json').write_text(json.dumps({'invoked':True,'tests_passed':False}))
         self.store = Store(self.data / 'sessions')
         self.settings = Settings(self.data)
         self.settings.values.update(configured=True, provider='hosted', model='offline-boundary-test',
-                                    protocol='json', terminal=True, max_steps=8)
+                                    protocol='json', terminal=True, max_steps=8, action_limit=True)
         self.agents = []
 
     def tearDown(self):

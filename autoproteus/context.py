@@ -38,7 +38,7 @@ def build_messages(session, config, steps=0, measure=None):
     # Keep the opening prefix stable so local runtimes can reuse its cache.
     # _run still enforces the action cap, including failed calls.
     runtime = []
-    if steps >= config['max_steps']:
+    if config.get('action_limit', True) and steps >= config['max_steps']:
         runtime.append({'role': 'user', 'content':
                         'Runtime notice: The tool action allowance is exhausted. Finishing or asking for input uses no tool action. '
                         'Finish only if verified; further tool requests pause saved work for Resume. '

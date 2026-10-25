@@ -77,7 +77,7 @@ REFERENCE = '''        if tool == "sha256_file":
 
 def profile_configs():
     # This compares inference profiles, with terminal explicitly enabled in both.
-    common = {**DEFAULTS, 'configured': True, 'terminal': True, 'base_url': 'http://127.0.0.1:11435'}
+    common = {**DEFAULTS, 'configured': True, 'terminal': True, 'base_url': 'http://127.0.0.1:11435', 'action_limit':True}
     return {'default': dict(common), 'qwen9b': {**common,
             'model': 'hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M', 'context_tokens': 65536,
             'response_tokens': 4096, 'temperature': 0.6, 'thinking': False}}

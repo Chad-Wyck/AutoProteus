@@ -80,14 +80,33 @@ File imports copy bounded bytes into the same quarantine and manifest system. Th
 | Guest user processes / open files | 128 / 256 |
 | Wall time / startup handshake | 1 hour / 90 seconds |
 | Frame / cumulative guest output | 4 MiB / 100 MiB |
-| Model requests | `(min(configured steps, 200) + 1) × 3`: two repairs per response, including the free final response; maximum 603 |
+| Model requests | With the optional action allowance enabled: `(min(configured steps, 200) + 1) × 3`, maximum 603; ordinary use defaults off. Time, frame and transfer limits always apply. |
 | Model history | 2,048 messages / 1.5 MB serialized per request; the provider context budget also applies |
 | Export file / count / checkpoint | 2 MiB / 500 / 32 MiB |
 | Exported bytes per run | 32 MiB |
 | Session journal | 64 MiB |
 | Guest state / protocol messages | 1.5 MB / 10,000 messages per run |
 
-Stop closes the Windows job or signals the Linux supervisor to kill its whole managed process group. Controller exit/crash closes the Windows job handle or is detected by the Linux supervisor, which terminates the VM. Linux has no Windows-style percentage CPU cap; its two virtual CPUs, CPU-time limit and the broker wall deadline bound execution. An external watchdog also ends blocked or noncooperating guests. Every Resume boots a fresh VM and restores committed files/history. Candidate trials freeze source separately and never install it over the protected starter. Starter recovery drops candidate selection while preserving saved task data.
+Stop closes the Windows job or signals the Linux supervisor to kill its whole managed process group. Controller exit/crash closes the Windows job handle or is detected by the Linux supervisor, which terminates the VM. Linux has no Windows-style percentage CPU cap; its two virtual CPUs, CPU-time limit and the broker wall deadline bound execution. An external watchdog also ends blocked or noncooperating guests during each active run. After an ordinary completed/waiting turn, the interactive app can retain that session's VM and exclusive lease while its local Ollama model is resident. Follow-ups reuse it only if source, configuration and committed input identities still match. Stop, different sessions, changes, edited-seed activation and independent checks discard it; Resume after Stop restores committed files/history in a fresh VM. The host polls residency; the seed cannot enable retention. Idle guest processes remain bounded by the VM's host quotas. Candidate trials freeze source separately and never install it over the protected starter. Starter recovery drops candidate selection while preserving saved task data.
+
+The interactive app can prewarm one clean VM after detecting the selected local
+Ollama model in memory. It holds the same exclusive VM lease and waits for a task
+without any source or task files. Host-owned residency checks close it on model
+unload. Graders disable prewarming and retain their independent fresh-VM policy.
+
+Reasoning previews are host-owned display data, separate from guest history and
+prompts. The UI renders them as plain text, retaining at most 200 spans and 256,000
+characters total, up to 64,000 per span. Cancelled/finished previews reject late
+transport updates. The raw provider trace retains its existing storage limits.
+
+Authenticated per-page heartbeats and per-page event streams track AutoProteus tabs.
+Stream access uses an expiring page nonce issued by the authenticated heartbeat;
+it grants no task or model operations. The last closed tab
+starts a 5-second cleanup grace period; a missed-heartbeat lease expires after
+five minutes. Cleanup applies Stop semantics, closes idle VMs, and unloads only
+local model names recorded by this app, without deleting weights. Browser crashes,
+tab suspension and dropped close notifications make this best-effort detection.
+No browser registration means headless runs are not automatically stopped.
 
 ## Limits of the guarantee
 
@@ -151,6 +170,17 @@ access is not a restriction on which public information the agent may obtain.
 - [Windows job resource controls](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-setinformationjobobject)
 
 ### Observation and save failures
+
+The optional practical model check uses synthetic inputs in fresh VMs through
+the saved production connection. It runs only when explicitly requested, shares
+finite action/time/token budgets across follow-ups, and cannot run alongside
+normal tasks or seed evaluations. It saves source/profile-bound receipts in the
+controller data directory. Provider keys remain host-owned; hosted providers
+still receive the diagnostic task data. Stop or closing the last browser tab
+cancels the check. Passing ordinary tasks does not approve a seed upgrade.
+
+Discovery's public submission preflight parses JSON and Python source as data.
+It grants no permission and cannot replace protected independent checking.
 
 Observers use the owning controller API and its storage lock. They do not open
 a second recovering Store, schedule work, acknowledge input or replay actions.

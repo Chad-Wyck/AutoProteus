@@ -92,7 +92,7 @@ class Agent:
         try:
             steps = 0
             while True:
-                final_request = steps >= config['max_steps']
+                final_request = config.get('action_limit', True) and steps >= config['max_steps']
                 if cancel.is_set():
                     raise Cancelled()
                 self.receive_inputs(session, client, 'steer')
@@ -130,7 +130,7 @@ class Agent:
                 for decision in decisions:
                     if cancel.is_set():
                         raise Cancelled()
-                    if 'action' in decision and steps >= config['max_steps']:
+                    if 'action' in decision and config.get('action_limit', True) and steps >= config['max_steps']:
                         break
                     if "status" in decision:
                         mode = 'finish' if decision['status'] == 'completed' and not final_request else 'steer'
@@ -189,7 +189,7 @@ class Agent:
                 if final_request:
                     break
             session.update(status="paused", activity="Action allowance reached")
-            self.store.feed(session, "notice", "The run used its action allowance. Your work is saved; Resume gives a fresh allowance in the same workspace.")
+            self.store.feed(session, "notice", "The optional action allowance was reached. Your work is saved. Resume to continue, or raise or turn off the allowance in Settings.")
         except Cancelled:
             session.update(status="paused", activity="Stopped")
             self.store.event(session, "run_stopped", {"pending_action": session.get("pending_action")})

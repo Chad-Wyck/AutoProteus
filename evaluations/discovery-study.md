@@ -25,7 +25,18 @@ shops. Reference and duplicate-overwrite controls run only during calibration.
 Existing protected tests, a separate new candidate test file, source scope,
 retained input bytes and a full candidate-suite pass are still required.
 
-Checking and final use share 3,600 seconds, 128 configured actions and 65,536
+Write `capability.json` at the workspace root, alongside `harness/`, rather than
+inside it. Its `arguments` keys are your tool's parameter names; `@INPUT_A`,
+`@INPUT_B` and `@OUTPUT` are values to be substituted for held-out paths. An
+example shape is supplied without prescribing a tool name or parameter names.
+The optional `python3 development/check_submission.py` checks this public shape
+and statically visible argument declarations. It parses source as data and never
+imports or executes candidate code. A passing preflight does not approve behavior
+or activation. Use `--no-submission-preflight` when preparing a separate control
+plan; the normal seed is unchanged. The helper is not a protected task input.
+
+Checking and final use share 3,600 seconds, the profile's explicitly enabled
+action allowance (128 by default), and 65,536
 generated tokens with development. Only the controller activates a checked
 candidate. Final scoring requires the exact saved summary, preserved inputs,
 unchanged activated source, observed use after activation and explicit completion.

@@ -67,6 +67,9 @@ class Store:
                     session = self.get(session['id'])
                     session["status"] = "interrupted"
                     session["activity"] = "Ready to resume"
+                    for item in session.get('thinking_spans', []):
+                        if item.get('state') == 'running':
+                            item['state'] = 'interrupted'
                     self.save(session)
                 elif not fresh_summary:
                     atomic_json(summary_path, self.summary(session))

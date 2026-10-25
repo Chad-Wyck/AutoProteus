@@ -46,6 +46,109 @@ class StartupTests(unittest.TestCase):
 
 
 class HostApiTests(unittest.TestCase):
+    def test_practical_model_check_is_authenticated_and_blocks_conflicting_operations(self):
+        from unittest.mock import Mock
+        with self.request('/api/model-check') as response:
+            self.assertEqual(json.load(response)['status'],'idle')
+        with self.assertRaises(urllib.error.HTTPError):
+            self.request('/api/model-check',{},token=False)
+        with patch.object(self.app.practical,'start',return_value={'status':'running'}) as start:
+            with self.request('/api/model-check',{}) as response:
+                self.assertEqual(json.load(response)['status'],'running')
+            start.assert_called_once()
+        self.app.practical.thread=Mock()
+        self.app.practical.thread.is_alive.return_value=True
+        try:
+            for path,data in (('/api/settings',{'temperature':.4}),('/api/start',{'task':'blocked'}),('/api/seed-check',{})):
+                with self.assertRaises(urllib.error.HTTPError): self.request(path,data)
+            with patch.object(self.app.practical,'stop') as stop:
+                with self.request('/api/model-check/stop',{}) as response: self.assertTrue(json.load(response)['ok'])
+                stop.assert_called_once()
+        finally: self.app.practical.thread=None
+
+    def test_action_allowance_defaults_off_and_can_be_enabled_without_inference(self):
+        self.assertFalse(self.app.settings.values['action_limit'])
+        with patch('controller.server.check_protocol') as qualify:
+            with self.request('/api/settings', {'action_limit':True,'max_steps':4}) as response:
+                value = json.load(response)
+                self.assertTrue(value['action_limit']); self.assertEqual(value['max_steps'], 4)
+            with self.request('/api/settings', {'action_limit':False}) as response:
+                self.assertFalse(json.load(response)['action_limit'])
+            qualify.assert_not_called()
+
+    def test_browser_stream_disconnect_closes_its_lease_without_a_close_post(self):
+        import time
+        with self.request('/api/browser', {'id':'c'*32,'sequence':1}) as response:
+            token = json.load(response)['watch']
+        with self.assertRaises(urllib.error.HTTPError):
+            self.request('/api/browser/watch?id='+'c'*32+'&watch=wrong', token=False)
+        stream = self.request('/api/browser/watch?id='+'c'*32+'&watch='+token, token=False)
+        self.assertEqual(stream.headers['Content-Type'], 'text/event-stream')
+        self.assertEqual(stream.readline(), b': connected\n')
+        self.assertEqual(self.app.presence.public()['tabs'], 1)
+        stream.close()
+        deadline = time.monotonic()+8
+        while self.app.presence.public()['tabs'] and time.monotonic() < deadline:
+            time.sleep(.05)
+        self.assertEqual(self.app.presence.public()['tabs'], 0)
+
+    def test_browser_heartbeat_tracks_tabs_and_last_close_releases_resources(self):
+        now = [0]
+        self.app.presence.clock = lambda:now[0]
+        def pulse(identifier, sequence, closing=False):
+            with self.request('/api/browser', {'id':identifier, 'sequence':sequence, 'closing':closing}) as response:
+                self.assertTrue(json.load(response)['ok'])
+        with patch.object(self.app.evaluations, 'close') as checks, patch.object(self.app.agent, 'close') as stop, patch.object(self.app.local, 'unload_models') as unload:
+            pulse('a'*32, 1); pulse('b'*32, 1)
+            pulse('a'*32, 2, True)
+            self.app.presence.tick()
+            stop.assert_not_called(); unload.assert_not_called()
+            pulse('b'*32, 2, True)
+            self.app.presence.tick()
+            now[0] += 5
+            self.app.presence.tick()
+            checks.assert_called_once(); stop.assert_called_once(); unload.assert_called_once()
+            with self.request('/api/state') as response:
+                self.assertTrue(json.load(response)['resources']['browser']['released'])
+
+    def test_browser_heartbeat_requires_authentication_and_valid_identity(self):
+        for data, token in (({'id':'x'*32,'sequence':1},False), ({'id':'bad','sequence':1},True)):
+            with self.subTest(data=data), self.assertRaises(urllib.error.HTTPError):
+                self.request('/api/browser', data, token=token)
+
+    def test_local_file_setup_delegates_to_managed_runtime_and_blocks_active_tasks(self):
+        with patch.object(self.app.local, 'prepare_file') as prepare:
+            with self.request('/api/setup/local-file', {'path':'.data/models/gguf/model.gguf',
+                    'base_url':'http://localhost:11435','internet':False}) as response:
+                self.assertEqual(response.status,200)
+            prepare.assert_called_once_with('.data/models/gguf/model.gguf','http://localhost:11435',False)
+            with patch.object(self.app,'active',return_value={'id':'active'}):
+                with self.assertRaises(urllib.error.HTTPError):
+                    self.request('/api/setup/local-file',{'path':'.data/models/gguf/model.gguf'})
+            self.assertEqual(prepare.call_count,1)
+
+    def test_local_inventory_uses_selected_address_and_keeps_unavailable_models_out_of_ready_list(self):
+        inventory = {'available': True, 'models':[{'name':'valid:latest'}],
+                     'unavailable':[{'name':'missing:9b','reason':'Model files unavailable'}], 'downloaded':[]}
+        with patch.object(self.app.local, 'inventory', return_value=inventory) as inspect:
+            with self.request('/api/local?base_url=http%3A%2F%2Flocalhost%3A11434') as response:
+                self.assertEqual(json.load(response), inventory)
+            inspect.assert_called_once_with('http://localhost:11434')
+            with self.assertRaises(urllib.error.HTTPError):
+                self.request('/api/local?base_url=http%3A%2F%2Fremote.example')
+            self.assertEqual(inspect.call_count, 1)
+
+    def test_unavailable_model_is_rejected_before_inference_or_settings_changes(self):
+        original = dict(self.app.settings.values)
+        inventory = {'available':True, 'models':[], 'unavailable':[{'name':'missing:9b'}], 'downloaded':[]}
+        with patch.object(self.app.local, 'inventory', return_value=inventory), patch('controller.server.check_protocol') as infer:
+            with self.assertRaises(urllib.error.HTTPError) as failure:
+                self.request('/api/connect', {'provider':'ollama','base_url':'http://localhost:11435','model':'missing:9b'})
+            body = json.load(failure.exception)
+            self.assertIn('files could not be verified', body['error'])
+            infer.assert_not_called()
+            self.assertEqual(self.app.settings.values, original)
+
     def test_evidence_api_observes_the_active_owner_and_rejects_writes(self):
         from controller.inference_history import InferenceHistory
         session = self.app.store.create('Observe active work', 'demo', 'fixture')

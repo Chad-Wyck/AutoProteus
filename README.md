@@ -40,6 +40,20 @@ Linux ARM and macOS are not supported yet.
 
 Model size, available memory and inference speed affect the experience. A successful connection check confirms communication with the model, not its ability to complete a task or improve the seed.
 
+For an optional check of everyday use, choose **Practical model check** in
+Settings after connecting. It tries three small tasks with synthetic files,
+including a correction and recovery from a missing file. Results stay linked to
+the tested model settings and seed. This does not qualify self-extension, and a
+failed check leaves your connection available. Allow up to nine minutes; hosted
+providers may charge for the calls.
+
+The local model picker checks the selected Ollama service and finds downloaded
+GGUF models in project caches. Select a file and choose **Use downloaded model**
+to register it with the engine and check the connection, without downloading it
+again. Engine support varies by model and quantization; connection checks run
+before saving the selection. Stale engine entries appear under **Unavailable
+saved entries**, outside the picker. Use **Refresh model list** after changing files.
+
 Native tool calling is the default, with JSON fallback available in Settings.
 The controller handles these formats; the editable seed uses one tool catalog
 and action loop.
@@ -49,12 +63,24 @@ and action loop.
 - **Describe a task.** Attach inputs with **Files**, or use **Add files** in a stopped session. Imports copy files into the workspace without granting access to the original folder.
 - **Review the results.** Preview or download saved files. A model reporting completion is different from an independently checked result.
 - **Send a correction while it works.** Choose **Change direction** for the next action boundary, or **Do this afterwards** for a follow-up after completion. Pending messages can be cancelled. After the task stops, an unconfirmed delivery can also be cancelled to prevent it being sent again.
-- **Stop and resume.** Stop ends the VM. Resume restores the last saved checkpoint in a fresh VM; changes made after that checkpoint may be lost.
+- **Continue a conversation.** AutoProteus warms up a VM when the selected local Ollama model is loaded, then reuses the session VM for ordinary follow-ups. Model unloading releases it. A different task, changed settings or inputs, seed activation and independent checks use a fresh VM. Hosted, demo and native runs retain their existing lifecycle; remote model residency cannot be detected.
+- **Inspect thinking.** Expand a **Thinking…** entry to see reasoning supplied by the model as it arrives. Entries remain in sequence with tool calls; the spinner shows an active request. Providers that do not expose reasoning show a short explanation. Preview text is bounded, with original provider data in the saved trace.
+- **Stop and resume.** Stop ends the VM. Resume after Stop restores the last saved checkpoint in a fresh VM; changes made after that checkpoint may be lost.
 - **Keep your work.** Search, rename or archive sessions. Deleted sessions can be restored from **Saved work & storage**.
 
 Internet access starts on, including for older settings without a saved preference. Turn it off during setup or in Settings for offline use. Any saved choice to turn it off is preserved. The agent can read public websites, save downloads and call HTTP/HTTPS APIs through `web_request`. Use **Internet access** in Settings to change this; the preference applies to the next run. Websites receive requests and any task data the agent sends. JavaScript browsing and existing browser logins are not included.
 
+The **Action allowance** in Settings is optional and starts off, including existing settings without that switch. Enable it to pause after a chosen number of tool actions. Stop and live interruptions remain available either way; host time, transfer and resource safeguards still apply. Controlled evaluations enable their own action budgets.
+
 Terminal access starts off. Enable it in Settings when a task needs Linux commands inside the VM. Use **Settings → Quit AutoProteus** to close the background controller.
+
+Closing every AutoProteus tab stops work and releases its VM and the local models
+used by this app after about 5 seconds. Other open AutoProteus tabs keep it running;
+refreshing or reopening during that grace period preserves resources. If the browser
+disconnection cannot be detected, cleanup follows five minutes without a
+heartbeat, plus the grace period. A suspended tab can also expire. Keep a tab open
+for unattended work. Model files and committed checkpoints remain on disk; models
+loaded only by other applications are left alone.
 
 The interface defaults to dark mode, with a light-mode toggle in the top bar.
 

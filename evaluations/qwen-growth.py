@@ -39,7 +39,7 @@ def main(args):
     directory.mkdir(parents=True, exist_ok=False)
     source = json.loads(data_path(args.candidate).read_text(encoding='utf-8'))
     store = Store(directory / 'sessions')
-    config = {**DEFAULTS, 'configured': True, 'base_url': 'http://127.0.0.1:11435',
+    config = {**DEFAULTS, 'action_limit':True, 'configured': True, 'base_url': 'http://127.0.0.1:11435',
               'model': 'hf.co/bartowski/Qwen_Qwen3.5-9B-GGUF:Q4_K_M',
               'context_tokens': args.context_tokens, 'response_tokens': args.response_tokens, 'temperature': args.temperature,
               'max_steps': 128, 'request_timeout': 300, 'terminal': True,

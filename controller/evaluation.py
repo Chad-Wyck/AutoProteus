@@ -472,9 +472,12 @@ class EvaluationService:
             if type(repeats) is not int or not 1 <= repeats <= 3:
                 raise ValueError('Repeat each task between one and three times')
             config = dict(self.settings.values)
+            config['action_limit'] = True
             if not config['configured'] or config['provider'] == 'demo':
                 raise ValueError('Connect a real model before checking an edited seed')
             self.task_agent.appliance.verify()
+            self.task_agent.discard_idle()
+            self.task_agent.warm.close()
             candidate = candidate_source(self.task_agent.store, session)
             starter = seed_files(self.root)
             tasks = json.loads((self.root / 'evaluations/tasks.json').read_text(encoding='utf-8'))

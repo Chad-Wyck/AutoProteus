@@ -308,14 +308,21 @@ def main(native_root=None):
         store.feed(session, 'notice', boot['recovery_notice'])
     settings = SimpleNamespace(values=config, key=lambda: '')
     import seed
-    agent = seed.run(source, store, settings, lambda _: Client(), session, boot.get('message'))
-    worker = agent.workers[session['id']][1]
-    worker.join()
-    store.sync(session)
-    call({'op': 'done'})
-    # The host terminates the VM after the final checkpoint.
+    message = boot.get('message')
     while True:
-        time.sleep(1)
+        agent = seed.run(source, store, settings, lambda _: Client(), session, message)
+        worker = agent.workers[session['id']][1]
+        worker.join()
+        store.sync(session)
+        call({'op': 'done'})
+        # Only this session may continue here. The controller closes the VM on
+        # Stop, configuration/source changes or activation of another seed.
+        continuation = receive()
+        if set(continuation) != {'op', 'message'} or continuation['op'] != 'continue':
+            raise ValueError('Expected continuation of this session')
+        message = continuation['message']
+        if not isinstance(message, str) or len(message) > 12000:
+            raise ValueError('Invalid continuation message')
 
 
 def entrypoint():
