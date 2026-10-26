@@ -60,8 +60,10 @@ Example profile (replace the model with an already installed checkpoint):
 ]
 ```
 
-Run with Python from the project directory (on Windows the bundled executable is
-`.runtime/python/python.exe`):
+Run with Python from the project directory. The current Windows launcher installs
+`.runtime/python-<pinned-version>/python.exe`; Linux installs
+`.runtime/python-linux/bin/python3`. See [the model-testing handoff](local-model-test-handoff.md)
+for commands resolving the pinned Windows path and a profile template.
 
 ```text
 python evaluations/model_study.py prepare --profiles profiles.json --output .data/model-study --mode full --repeats 1

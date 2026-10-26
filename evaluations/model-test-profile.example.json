@@ -1,0 +1,21 @@
+[
+  {
+    "id": "friend-model",
+    "config": {
+      "provider": "ollama",
+      "base_url": "http://127.0.0.1:11435",
+      "model": "REPLACE_WITH_EXACT_MODEL_ID",
+      "protocol": "native",
+      "context_tokens": 131072,
+      "response_tokens": 4096,
+      "temperature": 0.6,
+      "thinking": false,
+      "action_limit": true,
+      "max_steps": 128,
+      "request_timeout": 600,
+      "command_timeout": 60,
+      "terminal": true,
+      "internet": false
+    }
+  }
+]

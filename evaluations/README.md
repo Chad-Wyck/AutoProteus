@@ -8,6 +8,7 @@ Normal application setup does not require them.
 
 | Guide | Purpose |
 | --- | --- |
+| [Test your own model](local-model-test-handoff.md) | Copyable Windows/Linux instructions for first and second extensions on the current starter. |
 | [Model studies](model-study.md) | Prepare a frozen model comparison, screen first upgrades, then test growth from accepted parents. |
 | [Workflow experiments](workflow-experiments.md) | Compare opt-in edit feedback, context handling and completion support. |
 | [Navigation comparison](navigation-study.md) | Measure whether source navigation reduces repeated inspection. |
