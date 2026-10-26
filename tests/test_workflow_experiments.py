@@ -119,7 +119,7 @@ class WorkflowTests(unittest.TestCase):
             before, after = ({row['path']: row['data'] for row in pack} for pack in (source, changed))
             self.assertTrue(all(after[key] == value for key, value in before.items() if key.startswith('tests/')))
             if name in ('phases', 'staged-inputs', 'submission-feedback', 'edit-context', 'verified-lesson', 'final-contract'): self.assertEqual(changed, source)
-            elif name == 'short-guidance':
+            elif name in ('short-guidance', 'optional-planning'):
                 self.assertEqual({key for key in before if before[key] != after[key]},
                                  {'autoproteus/protocol.py', 'README.md'})
                 for key in ('autoproteus/protocol.py', 'README.md'):
@@ -131,6 +131,18 @@ class WorkflowTests(unittest.TestCase):
                 names = {target.id for item in protocol.body if isinstance(item, ast.Assign)
                          for target in item.targets if isinstance(target, ast.Name)}
                 self.assertTrue({'GUIDANCE', 'USE_GUIDANCE', 'PROTOCOL'}.issubset(names))
+                if name == 'optional-planning':
+                    old = ast.parse(base64.b64decode(before['autoproteus/protocol.py']))
+                    def constants(tree):
+                        return {node.targets[0].id:ast.literal_eval(node.value) for node in tree.body
+                            if isinstance(node,ast.Assign) and isinstance(node.targets[0],ast.Name)
+                            and node.targets[0].id in ('GUIDANCE','USE_GUIDANCE','PROTOCOL')}
+                    original, revised = constants(old), constants(protocol)
+                    self.assertEqual(original['USE_GUIDANCE'],revised['USE_GUIDANCE'])
+                    self.assertEqual(original['PROTOCOL'],revised['PROTOCOL'])
+                    self.assertIn('when useful',revised['GUIDANCE'])
+                    self.assertNotIn('Before seed edits, record',revised['GUIDANCE'])
+            elif name=='source-outline': self.assertIn('autoproteus/source_navigation.py', after)
             else: self.assertIn('autoproteus/workflow_support.py', after)
         self.assertEqual(source_identity(seed_files(ROOT)), fingerprint)
         self.assertEqual(source_identity(source), fingerprint)
@@ -239,7 +251,7 @@ class WorkflowTests(unittest.TestCase):
             self.assertEqual(calls[2:4], [('csv_preview', 'edit-feedback'), ('csv_preview', 'baseline')])
 
     def test_phase_activation_retains_original_task_and_shares_wall_action_and_token_budgets(self):
-        for treatment, status, early_use in itertools.product(('baseline', 'phases', 'staged-inputs'), ('waiting', 'completed'), (False, True)):
+        for treatment, status, early_use in itertools.product(('baseline', 'unpaired-baseline', 'phases', 'staged-inputs'), ('waiting', 'completed'), (False, True)):
             with self.subTest(treatment=treatment, status=status, early_use=early_use), temporary_directory() as directory:
                 folder = Path(directory)
                 folder.mkdir(exist_ok=True)
@@ -248,7 +260,7 @@ class WorkflowTests(unittest.TestCase):
                 task = {'name': 'second-extension-audit', 'task': 'Original contract, focused tests, activate and audit.',
                         'fixtures': {'inventory.json': fixture}, 'checks': []}
                 config = {**DEFAULTS, 'max_steps': 4}
-                plan = {'experiment': 'phases', 'treatment': treatment, 'deadline': 30,
+                plan = {'experiment': None if treatment=='unpaired-baseline' else 'phases', 'treatment': treatment, 'deadline': 30,
                         'generated_tokens': 17, 'ordinary_generated_tokens': 5,
                         'trusted_sha256': {}, 'environment': {}}
                 agent = Mock(execution=SimpleNamespace(mode='vm'))

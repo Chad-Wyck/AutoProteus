@@ -29,6 +29,60 @@ class ScriptedClient:
 
 @unittest.skipUnless(os.environ.get('AUTOPROTEUS_VM_TESTS') == '1', 'Real VM checks require explicit opt in')
 class RealVMTests(unittest.TestCase):
+    def test_first_activation_use_checks_fresh_calls_and_shares_remaining_actions(self):
+        import sys
+        from types import SimpleNamespace
+        sys.path.insert(0,str(ROOT/'evaluations'))
+        import activation_use as use
+        import generalization as study
+        from controller.evaluation import freeze_source
+        source=json.loads(json.dumps(seed_files(ROOT)))
+        specs={name:('Scripted reference only',{'path':{'type':'string'},
+            **({'limit':{'type':'integer','default':5}} if name=='csv_preview' else {})},['path']) for name in study.CONTRACTS}
+        for item in source:
+            text=base64.b64decode(item['data']).decode()
+            if item['path']=='autoproteus/tools.py':
+                text=text.replace('        if tool == "list_files":',study.REFERENCE+'        if tool == "list_files":')
+            elif item['path']=='autoproteus/providers.py':
+                text=text.replace('TOOL_SPECS = {','TOOL_SPECS = '+repr(specs)+' | {')
+            item['data']=base64.b64encode(text.encode()).decode()
+        frozen=freeze_source(self.store,source,'Scripted first-use reference, never model evidence')
+        for feature,mode in [('sha256_file','positive'),('csv_preview','positive'),('format_json','positive'),
+                             ('sha256_file','missing_call'),('sha256_file','action_cap'),
+                             ('sha256_file','program_call'),('sha256_file','failed_program')]:
+            with self.subTest(feature=feature,mode=mode):
+                spec=use.contract(feature,feature+'-'+mode)
+                _,receipt=use.expected(spec)
+                actions=[{'action':{'tool':'write_file','arguments':{'path':'development/sample.txt','content':'{"x":1}'}}},
+                    {'action':{'tool':feature,'arguments':{'path':'development/sample.txt'}}},
+                    {'status':'needs_input'}]
+                if mode in ('program_call','failed_program'):
+                    import shlex
+                    program=("from autoproteus.tools import Workspace\nfrom pathlib import Path\n"
+                        "workspace=Workspace(Path('.'))\nresult=workspace.execute("+repr(feature)+", "+
+                        repr({'path':'missing-input.txt' if mode=='failed_program' else spec['input']})+")\nprint('Result:', result)")
+                    actions.append({'action':{'tool':'run_command','arguments':{
+                        'command':'PYTHONPATH=/work/task/harness python3 -c '+shlex.quote(program)}}})
+                elif mode!='missing_call':actions.append({'action':{'tool':feature,'arguments':{'path':spec['input']}}})
+                actions.extend([{'action':{'tool':'write_file','arguments':{'path':spec['output'],'content':json.dumps(receipt)}}},
+                    {'action':{'tool':'read_file','arguments':{'path':spec['output']}}},{'status':'completed'}])
+                self.settings.values['max_steps']=3 if mode=='action_cap' else 6
+                agent=self.agent(actions)
+                session=self.store.create(spec['instruction'],'hosted','scripted-first-use')
+                agent.start(session,candidate=frozen)
+                self.assertEqual(self.wait(agent,session),'waiting')
+                self.assertNotIn(spec['input'],session['artifacts'])
+                config=dict(self.settings.values)
+                budget=SimpleNamespace(summary=lambda:{'exhausted':False,'charged_output_tokens':0,'limit':65536})
+                result=use.activate(agent,self.store,session,self.settings,config,spec,budget,time.monotonic()+60,study.wait)
+                self.assertEqual(result['passed'],mode in ('positive','program_call'),result)
+                self.assertEqual(result['supplied_actions'],config['max_steps']-2)
+                self.assertLessEqual(session['steps'],config['max_steps'])
+                if mode=='missing_call':
+                    self.assertTrue(result['artifacts_correct']);self.assertFalse(result['capability_used'])
+                if mode=='action_cap':self.assertFalse(result['completed'])
+                agent.close()
+
     def test_practical_check_runs_all_cases_through_production_connection_without_weights(self):
         from controller.practical import PracticalCheck
         from controller.execution import ExecutionPolicy

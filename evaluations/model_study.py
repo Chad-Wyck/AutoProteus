@@ -35,6 +35,7 @@ from run_budget import BudgetModelClient, GeneratedTokenBudget, DEFAULT_OUTPUT_T
 from study_support import ResultCache, StudyQueue, Timings, file_identity, identity
 from workflow_variants import TREATMENTS, variant, DEVELOPMENT_FOCUS, USE_FOCUS
 import generalization as study
+import activation_use
 
 
 from model_plan import private, trusted_files, environment, prepare, check, workflow_requirements, growth_feature, calibrate
@@ -226,6 +227,17 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
         if feature:
             with timings.measure('independent_grading'):
                 row['review'] = checks.assess(store, source, row['run'], feature, folder / 'review')
+            if task.get('first_use') and not earlier:
+                row['first_package_accepted'] = bool(study.verified(row['review']) and row['stages']['submitted']
+                    and time.monotonic()<deadline)
+                if row['first_package_accepted']:
+                    with timings.measure('first_activation_and_use'):
+                        row['first_use'] = activation_use.activate(agent, store, session, settings, config,
+                            task['first_use'], budget, deadline, study.wait)
+                else:
+                    row['first_use'] = {'attempted':False,'passed':False,'reason':'first_package_not_accepted'}
+                row['stages'].update(activated=row['first_use'].get('activated',False),
+                    independently_verified=study.verified(row['review']), first_use_passed=row['first_use']['passed'])
             if row.get('submission_feedback') is not None:
                 repaired = sum(entry['continued'] for entry in row['submission_feedback'])
                 row['public_submission_repairs'] = repaired
@@ -257,12 +269,11 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
                 remaining_actions = max(0, config['max_steps'] - session['steps'])
                 if (row['verified_extension'] and retained and row['stage_order_preserved'] and remaining > 0 and
                         session['status'] in ('completed', 'waiting') and not row['run']['timed_out'] and not budget.summary()['exhausted'] and
-                        (not plan.get('experiment') or remaining_actions > 0)):
+                        remaining_actions > 0):
                     with timings.measure('activation_and_final_use'):
-                        if plan.get('experiment'):
-                            # Both sides of the paired experiment share action,
-                            # wall and generated-token allowances across stages.
-                            settings.values = {**config, 'max_steps': remaining_actions}
+                        # Activation never grants a new task allowance. A later
+                        # second-extension task receives its own fresh allowance.
+                        settings.values = {**config, 'max_steps': remaining_actions}
                         if final_contract:
                             session['candidate_from'] = session['id']
                             agent.start(session, 'CURRENT FINAL TASK\n' + task['final_task'], candidate=session,
@@ -367,13 +378,21 @@ def summarize(queue, plan):
             'scheduled_first_tasks': 0 if plan.get('parent') else len(plan['upgrade_tasks']) * plan['repeats'] * len(plan.get('variants', {'baseline': []})),
             'first_attempts': sum(row['cell'][len(prefix):].startswith('first_') for row in all_rows), 'first_finished': len(first),
             'first_verified': sum(study.verified(row.get('review', {})) for row in first),
-            'first_accepted': sum(bool(row.get('review', {}).get('accepted')) for row in first),
+            'first_accepted': sum(bool(row.get('first_package_accepted')) if plan.get('protocol')==activation_use.PROTOCOL
+                else bool(row.get('review',{}).get('accepted')) for row in first),
+            'first_packages_ready': sum(bool(row.get('first_package_accepted')) for row in first),
+            'first_use_attempts': sum(bool(row.get('first_use',{}).get('attempted')) for row in first),
+            'first_use_passed': sum(bool(row.get('first_use',{}).get('passed')) for row in first),
             'second_attempts': sum(row['cell'][len(prefix):].startswith('growth_') for row in all_rows), 'second_finished': len(growth),
             'second_verified': sum(bool(row.get('verified_extension')) for row in growth),
-            'complete_growth': sum(bool(row.get('scores', {}).get('functional_growth')) for row in growth),
+            'second_use_passed': sum(bool(row.get('scores', {}).get('functional_growth')) for row in growth),
+            'diagnostic_second_attempts': sum(bool(row.get('chain',{}).get('diagnostic_only')) for row in growth),
+            'complete_growth': (None if plan.get('protocol')==activation_use.PROTOCOL and (plan.get('parent') or not plan.get('growth_enabled',True)) else
+                sum(bool(row.get('chain',{}).get('complete_chain_passed')) if plan.get('protocol')==activation_use.PROTOCOL
+                    else bool(row.get('scores',{}).get('functional_growth')) for row in growth)),
             'reuse_attempts': sum(row['cell'][len(prefix):].startswith('reuse_') for row in all_rows),
             'reuse_finished': len(reuse), 'reuse_passed': sum(bool(row.get('reuse', {}).get('passed')) for row in reuse)}
-    report = {'mode': plan['mode'], 'scope': plan['scope'], 'queue': queue.summary(), 'profiles': profiles}
+    report = {'mode': plan['mode'], 'protocol':plan.get('protocol','legacy'), 'scope': plan['scope'], 'queue': queue.summary(), 'profiles': profiles}
     if plan.get('experiment'):
         report['comparison'] = comparison(queue, plan)
     return report
@@ -408,8 +427,13 @@ def comparison(queue, plan):
             group['attempt_costs'].append(costs)
             if attempt['state'] != 'completed':
                 continue
-            success = bool(row.get('reuse', {}).get('passed') if '_reuse_' in cell else
-                           row.get('scores', {}).get('functional_growth') if '_growth_' in cell else row.get('review', {}).get('accepted'))
+            if plan.get('protocol')==activation_use.PROTOCOL:
+                success = bool(row.get('reuse',{}).get('passed') if '_reuse_' in cell else
+                    row.get('chain',{}).get('complete_chain_passed') if '_growth_' in cell and not plan.get('parent') else
+                    row.get('scores',{}).get('functional_growth') if '_growth_' in cell else row.get('first_use',{}).get('passed'))
+            else:
+                success = bool(row.get('reuse', {}).get('passed') if '_reuse_' in cell else
+                    row.get('scores', {}).get('functional_growth') if '_growth_' in cell else row.get('review', {}).get('accepted'))
             group['finished'] += 1
             group['successes'] += success
             # Explicit retries remain in totals but do not replace an original
@@ -558,12 +582,26 @@ def _run(args):
                         input_source = plan.get('variants', {}).get(treatment, plan['source'])
                         inputs = {**plan, 'treatment': treatment}
                         task = {'name': feature, 'task': 'Add exactly one new public tool. ' + plan['contracts'][feature] + plan['recipe'], 'checks': []}
+                        if plan.get('protocol') == activation_use.PROTOCOL:
+                            spec = plan['first_use_contracts'][f'{repeat}-{feature}']
+                            task['first_use'] = spec
+                            task['task'] = task['task'].replace('Finish completed only after implementing and verifying the feature.',
+                                'After implementing and verifying the feature, finish needs_input requesting independent activation.')
+                            task['task'] += ('\nAfter independent checking and activation the controller will supply fresh task inputs. '
+                                'Do not create those input or receipt paths during development. Complete this first-use task: '+spec['instruction'])
                         first = cell(first_id, lambda folder: trial(folder, task, input_source, config, inputs, feature))
-                        if first.get('review', {}).get('accepted'):
+                        if not plan.get('growth_enabled',True):
+                            queue.skip(profile['id']+'_'+growth_id, 'Second extension not requested in this first-only comparison')
+                        elif activation_use.eligible_parent(first, plan.get('protocol')):
                             saved = queue.latest(profile['id'] + '_' + first_id)
                             source = json.loads((Path(saved['folder']) / 'review/candidate-source.json').read_text())
                             added, task = growth_task(feature, plan)
-                            cell(growth_id, lambda folder: trial(folder, task, source, config, inputs, added, feature))
+                            def second_trial(folder):
+                                row = trial(folder, task, source, config, inputs, added, feature)
+                                row['chain'] = activation_use.chain_result(first, row, plan.get('protocol'))
+                                atomic_json(folder/'result.json', row)
+                                return row
+                            cell(growth_id, second_trial)
                         else:
                             queue.skip(profile['id'] + '_' + growth_id, 'First upgrade not fully accepted; no accepted parent exists')
         summary = summarize(queue, plan)
@@ -582,6 +620,7 @@ if __name__ == '__main__':
     p.add_argument('--output', required=True)
     p.add_argument('--mode', choices=('benchmark', 'screen', 'full'), default='screen')
     p.add_argument('--repeats', type=int)
+    p.add_argument('--first-only', action='store_true', help='Measure first extension and activation/use without requesting a second extension')
     p.add_argument('--timeout', type=int, default=DEFAULT_TASK_SECONDS)
     p.add_argument('--output-token-budget', type=int, default=DEFAULT_OUTPUT_TOKENS)
     p.add_argument('--experiment', choices=TREATMENTS, help='Pair the frozen default with one opt-in treatment')

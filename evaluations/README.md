@@ -4,11 +4,14 @@ This directory contains optional experiment runners, independent graders,
 research notes and recorded findings. These tools run outside the editable seed.
 Normal application setup does not require them.
 
+Latest: [first-use, growth and optional-planning findings](seed-v0.14.0-activation-use-2026-10-26-findings.md), including separately preserved raw and reassessed use scores.
+
 ## Running a study
 
 | Guide | Purpose |
 | --- | --- |
 | [Test your own model](local-model-test-handoff.md) | Copyable Windows/Linux instructions for first and second extensions on the current starter. |
+| [Activation/use protocol and reports](activation-use-study.md) | First-use scoring, diagnostic growth, an opt-in navigation pilot and closed-trace reports. |
 | [Model studies](model-study.md) | Prepare a frozen model comparison, screen first upgrades, then test growth from accepted parents. |
 | [Workflow experiments](workflow-experiments.md) | Compare opt-in edit feedback, context handling and completion support. |
 | [Navigation comparison](navigation-study.md) | Measure whether source navigation reduces repeated inspection. |

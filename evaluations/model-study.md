@@ -1,5 +1,11 @@
 # Faster local model comparisons
 
+New plans use `activation-use-v2`: first implementation/checking, activation and
+model-led use on fresh inputs, then a separate second-extension task and use of
+both capabilities. See [the protocol and measurement guide](activation-use-study.md).
+Keep existing studies frozen at their original checkout; do not update a friend's
+running `d8e7175` study or rewrite its historical scores.
+
 Optional paired [workflow experiments](workflow-experiments.md) add edit feedback,
 advisory syntax diagnostics, observation masking, focused phases, optional
 withheld final inputs, public submission feedback, precise source context and
@@ -77,6 +83,11 @@ Modes:
 | `benchmark` | Short and longer-prompt inference requests with bounded output | Compare runtime configurations cheaply; no tool executes and no VM is needed. Not a capability qualification. |
 | `screen` | Benchmark, three basic tasks, hashing and JSON-formatting extensions, then growth from accepted parents | Select promising profiles. CSV remains untested. One repeat by default. |
 | `full` | Benchmark, five basic tasks, all three extensions, then growth from every accepted parent | Full exploratory qualification. Three repeats by default; explicitly select one for a bounded pilot. |
+
+`--first-only` omits second extensions for a focused first-package/use comparison;
+complete growth is unmeasured in that mode. `--experiment source-outline` adds
+one opt-in navigation tool to a copied seed, with exact character ranges. Neither
+option changes the default seed.
 
 The basic gate is at least four of five passes in full mode, or two of three in
 screen mode. The inference gate checks protocol behaviour, not a minimum speed:

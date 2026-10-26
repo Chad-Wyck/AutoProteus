@@ -1,12 +1,14 @@
 """Frozen study inputs and independently checked calibration; never starts inference."""
 import json
 import platform
+import secrets
 from pathlib import Path
 from urllib.parse import urlparse
 
 from autoproteus.providers import tool_definitions
 from controller.config import DEFAULTS
 from research_limits import research_config, resource_limits
+from activation_use import PROTOCOL, contract, oracle_controls
 from controller.evaluation import freeze_source, source_identity
 from controller.isolation import seed_files
 from controller.storage import atomic_json, now
@@ -34,7 +36,9 @@ def trusted_files():
         'evaluations/generalization-probe.py', 'evaluations/local-model-benchmark.py',
         'evaluations/local-feature-probe.py', 'evaluations/local-upgrade-tasks.json',
         'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/research_limits.py',
-        'evaluations/submission_preflight.py', 'evaluations/completion_study.py', 'evaluations/invoke_tool.py', 'evaluations/tasks.json')]
+        'evaluations/submission_preflight.py', 'evaluations/completion_study.py', 'evaluations/activation_use.py',
+        'evaluations/source_navigation.py', 'evaluations/navigation_variant.py',
+        'evaluations/invoke_tool.py', 'evaluations/tasks.json')]
     return {p.relative_to(ROOT).as_posix(): file_identity(p) for p in paths}
 
 
@@ -71,6 +75,7 @@ def prepare(args):
                 raise ValueError('Profile asset failed verification: ' + path)
     source = seed_files(ROOT)
     plan = {'created': now(), 'mode': args.mode, 'repeats': args.repeats if args.repeats is not None else (3 if args.mode == 'full' else 1),
+            'protocol':PROTOCOL, 'growth_enabled':not getattr(args, 'first_only', False),
             'source': source, 'source_sha256': source_identity(source), 'profiles': profiles,
             'trusted_sha256': trusted_files(), 'environment': environment(),
             'contracts': study.CONTRACTS, 'recipe': study.RECIPE,
@@ -83,7 +88,8 @@ def prepare(args):
             'upgrade_tasks': (list(study.CONTRACTS) if args.mode == 'full' else
                               ['sha256_file', 'format_json'] if args.mode == 'screen' else []),
             'scope': 'Screens select profiles for qualification; incomplete screens are not model rankings. '
-                     'Each accepted first upgrade receives one fresh second-extension task. '
+                     'Verified submitted first packages activate on fresh input before a separate second task. '
+                     'First-use failures permit labelled diagnostics from the frozen verified parent, never complete-chain credit. '
                      'Retries, untested cells, cached checks and infrastructure failures are recorded separately.'}
     experiment = getattr(args, 'experiment', None)
     if experiment:
@@ -134,6 +140,12 @@ def prepare(args):
         plan['task_pack'] = {'path': str(Path(task_pack).resolve()), 'sha256': file_identity(task_pack)}
     if plan['repeats'] < 1 or args.timeout < 1 or args.output_token_budget < 1:
         raise ValueError('Repeat and budget values must be positive')
+    if not plan['growth_enabled'] and plan.get('parent'):
+        raise ValueError('First-only studies test starter extensions, not a supplied parent')
+    plan['first_use_contracts'] = {f'{repeat}-{feature}':contract(feature, secrets.token_hex(8))
+        for repeat in range(1,plan['repeats']+1) for feature in plan['upgrade_tasks']}
+    if not plan['growth_enabled']:
+        plan['scope'] += ' First-only comparison: no second extension requested; complete growth is unmeasured.'
     output.mkdir(parents=True)
     atomic_json(output / 'plan.json', plan)
     (output / 'plan.sha256').write_text(identity(plan), encoding='ascii')
@@ -169,6 +181,9 @@ def workflow_requirements(plan):
 
 def calibrate(plan, output, cache, study, run_regressions):
     from controller.storage import Store
+    if plan.get('protocol')==PROTOCOL:
+        atomic_json(output/'first-use-oracle-calibration.json',
+                    {'plan_sha256':identity(plan),**oracle_controls(plan.get('first_use_contracts',{}))})
     def calibration():
         folder = output / 'grader-calibration'
         suffix = 1

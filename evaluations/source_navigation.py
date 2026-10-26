@@ -13,7 +13,8 @@ def source_outline(workspace, args):
     offsets = [0]
     for line in text.splitlines(keepends=True):
         offsets.append(offsets[-1] + len(line))
-    result = {'path': str(path.relative_to(workspace.root)), 'definitions': [], 'truncated': False}
+    result = {'path': str(path.relative_to(workspace.root)), 'units':'Unicode characters, not line numbers',
+              'definitions': [], 'truncated': False}
 
     def definitions(body, prefix=''):
         for node in body:
@@ -25,6 +26,13 @@ def source_outline(workspace, args):
                        'length': min(end - start, 12000), 'characters': end - start}
                 if isinstance(node, ast.ClassDef):
                     yield from definitions(node.body, name + '.')
+            elif not prefix and isinstance(node, (ast.Assign, ast.AnnAssign)):
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                names = [target.id for target in targets if isinstance(target, ast.Name)]
+                if names:
+                    start, end = offsets[node.lineno-1], offsets[node.end_lineno]
+                    yield {'name':', '.join(names), 'kind':'assignment', 'line':node.lineno,
+                           'start':start, 'length':min(end-start,12000), 'characters':end-start}
     for entry in definitions(tree.body):
         result['definitions'].append(entry)
         if len(result['definitions']) > 60 or len(json.dumps(result, ensure_ascii=False)) > 6000:

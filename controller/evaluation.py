@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import base64
-import ast
 import difflib
 import hashlib
 import json
@@ -18,6 +17,7 @@ from .artifacts import Artifacts, SEED_TESTS, relative_name, safe_path, seed_fil
 from .isolation import IsolatedAgent
 from .storage import Store, atomic_json, now
 from .compatibility import model_identity
+from .tool_evidence import python_invocations
 
 
 def development_invocation(args):
@@ -54,21 +54,9 @@ def tool_use(events):
             args = shlex.split(action.get('arguments', {}).get('command', ''))
             if data.get('result', {}).get('exit_code') != 0:
                 continue
-            # Recognize the other observed development route without executing
-            # submitted Python on the host. Only unconditional top-level calls
-            # through the imported Workspace class count as diagnostic evidence.
-            if len(args) == 3 and args[:2] == ['python3', '-c']:
-                tree = ast.parse(args[2])
-                imported = any(isinstance(node, ast.ImportFrom) and node.module == 'autoproteus.tools' and
-                               any(alias.name == 'Workspace' and not alias.asname for alias in node.names)
-                               for node in tree.body)
-                for node in tree.body if imported else []:
-                    value = node.value if isinstance(node, (ast.Assign, ast.Expr)) else None
-                    if (isinstance(value, ast.Call) and isinstance(value.func, ast.Attribute) and
-                            value.func.attr == 'execute' and isinstance(value.func.value, ast.Call) and
-                            isinstance(value.func.value.func, ast.Name) and value.func.value.func.id == 'Workspace' and
-                            value.args and isinstance(value.args[0], ast.Constant) and isinstance(value.args[0].value, str)):
-                        development.add(value.args[0].value)
+            programs=python_invocations(action.get('arguments',{}).get('command',''))
+            if programs:
+                development.update(record['tool'] for record in programs)
                 continue
             helper = len(args) == 4 and args[:2] == ['python3', 'experience/invoke_tool.py']
             checker = development_invocation(args)

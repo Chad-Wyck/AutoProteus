@@ -4,6 +4,18 @@ Versions use `major.minor.patch`. Before launch, `0.x.0` introduces features and
 `0.x.y` contains bug fixes. Components can exceed 9 or 99. Historical `0.0.x`
 release and experiment labels remain unchanged.
 
+## Unreleased — evaluation protocol
+
+- Add prospective first activation/use scoring before second-extension tasks,
+  with fresh inputs, source/result checks and separately labelled diagnostics.
+- Share remaining actions at every activation; new tasks receive fresh budgets.
+- Add a read-only closed-study report and timeline audit, preserving legacy
+  scores and explicit measurement coverage.
+- Prepare one opt-in source-outline comparison; the default seed is unchanged.
+- Add an opt-in optional-planning comparison and record negative/variable results.
+- Recognize ordinary Python Workspace-variable use, with bounded static evidence
+  and separately saved reassessments rather than overwriting original verdicts.
+
 ## 0.14.0
 
 - Make action, wall-time and generated-token limits explicit in research plans,

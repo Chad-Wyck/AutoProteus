@@ -22,6 +22,16 @@ spec.loader.exec_module(navigation)
 
 
 class NavigationStudyTests(unittest.TestCase):
+    def test_outline_locates_module_registration_with_explicit_character_units(self):
+        with temporary_directory() as directory:
+            root=Path(directory);text='# é猫\r\nTOOL_SPECS = {\r\n    "one": 1\r\n}\r\n'
+            (root/'providers.py').write_bytes(text.encode())
+            result=source_outline(Workspace(root),{'path':'providers.py'})
+            self.assertIn('not line numbers',result['units'])
+            item=result['definitions'][0]
+            self.assertEqual(item['name'],'TOOL_SPECS')
+            self.assertEqual(text[item['start']:item['start']+item['length']],text[text.index('TOOL_SPECS'):])
+
     def test_partial_cost_totals_cannot_win_a_matched_success_comparison(self):
         from test_observations import ObservationTests
         from observations import call_metrics

@@ -4,6 +4,11 @@ Use **`evaluations/model_study.py`**. This is the published runner used for the
 v0.14.0 first/second-extension pilot. It tests the checked-out starter; no old
 seed, experimental treatment or human-written parent is needed.
 
+Newly prepared plans use **`activation-use-v2`**, adding first activation/use.
+If a friend is already running commit `d8e7175`, keep that checkout frozen until
+it finishes. Its older protocol did not separately measure first autonomous use;
+retain those results under their original revision and protocol.
+
 ## What it tests
 
 With `--mode full --repeats 1`, each model receives:
@@ -11,12 +16,18 @@ With `--mode full --repeats 1`, each model receives:
 1. A short and longer-prompt inference/protocol check.
 2. Five ordinary tasks: exact file, precise edit, recovery, Unicode and code fix.
 3. Three fresh first extensions: hashing, CSV preview and JSON formatting.
-4. A second extension from **each fully accepted first parent**. The grown seed
+4. First activation and model-led use on fresh inputs withheld during development,
+   requiring the actual new tool result, correct saved files, unchanged seed and
+   explicit completion. Independent grader calls do not count as model use.
+5. A second extension from each verified submitted first parent. The grown seed
    must preserve its earlier capability, pass independent checks, activate, and
    use both capabilities to finish an audit with correct files.
 
-Every first attempt starts from a fresh starter. Failed parents do not receive
-second attempts. The full-mode basic gate requires at least four of five passes,
+Every first attempt starts from a fresh starter. Invalid implementation packages
+do not receive second attempts. If a verified first package fails first use, the
+second task is explicitly a diagnostic from the frozen checked parent; it earns
+no complete-chain credit even if it succeeds. First-use mutations are not promoted.
+The full-mode basic gate requires at least four of five passes,
 after the inference check passes. If that gate fails, upgrades remain untested;
 they do not count as failed implementations.
 
@@ -25,6 +36,10 @@ per extension trial, shared across development, checking and final use. Ordinary
 tasks have a separate 240-second/8,192-token allowance. These are ceilings, not
 duration estimates. One repeat is exploratory; three repeats schedule nine first
 extensions and up to nine second extensions per model.
+
+Activation uses the **remaining** action allowance. The second task receives a
+fresh task allowance. Earlier baseline protocol runs could refresh actions at
+activation; their original counts remain historical evidence, not v2 results.
 
 ## Machine setup
 
@@ -124,10 +139,28 @@ and results. Include the hardware and engine settings noted above. Archive this
 study folder, not all of `.data/` or the model weights.
 
 The summary separates `first_verified`, `first_accepted`, `second_verified` and
-`complete_growth`. Working code, correct outputs, explicit finish and complete
+`complete_growth`, plus `first_use_attempts`, `first_use_passed`,
+`second_use_passed` and `diagnostic_second_attempts`. In v2, `first_accepted`
+means an independently verified, submitted package; a development `needs_input`
+request for activation is valid. Use `first_use_passed` to assess completion of
+the first user task. `complete_growth` requires both first and second use.
+The legacy development review is retained separately rather than rescored.
+Working code, correct outputs, explicit finish and complete
 verified growth are different outcomes. Preserve failures and missing usage
 measurements. Do not coach the model, repair its code or weaken checks to get a
 pass. These familiar directed tools do not establish broad capability discovery.
+
+Generate a compact report from a finished study without recovering sessions:
+
+```text
+python evaluations/study_report.py --input .data/friend-model-full --output .data/friend-model-report
+```
+
+Use the same bundled Python executable as above. This writes Markdown and JSON
+with separate implementation, candidate-test, scope, provider/format and final-use
+observations. Legacy first use and full chains are labelled unmeasured. Partial
+cost sums retain completeness flags. The reporter refuses actively running queues
+and does not execute candidate code or change historical scores.
 
 If another coding agent is helping, give it this guide and ask it to configure
 the local endpoint, freeze one profile, calibrate, run the full study and return

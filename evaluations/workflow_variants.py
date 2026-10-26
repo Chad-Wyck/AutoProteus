@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TREATMENTS = ('edit-feedback', 'syntax-feedback', 'masked-history', 'phases', 'staged-inputs',
-              'submission-feedback', 'edit-context', 'verified-lesson', 'final-contract', 'short-guidance')
+              'submission-feedback', 'edit-context', 'verified-lesson', 'final-contract', 'short-guidance', 'source-outline', 'optional-planning')
 
 SHORT_GUIDANCE = '''Find relevant source, make a small change, then check it.
 For upgrades, follow harness/README.md. Preserve existing tests and add focused tests.
@@ -46,6 +46,33 @@ def variant(source, treatment, keep=8, threshold=512):
     if treatment not in ('baseline', *TREATMENTS):
         raise ValueError('Unknown workflow treatment')
     result = copy.deepcopy(source)
+    if treatment == 'source-outline':
+        from navigation_variant import navigation_variant
+        return navigation_variant(source)
+    if treatment == 'optional-planning':
+        changed = set()
+        for item in result:
+            if item['path'] not in ('autoproteus/protocol.py', 'README.md'):
+                continue
+            text = base64.b64decode(item['data']).decode('utf-8')
+            if item['path'] == 'autoproteus/protocol.py':
+                start = text.index('Before seed edits, record the remaining final-task requirements')
+                end = text.index('For seed upgrades follow harness/README.md.', start)
+                text = text[:start] + ('Use a task plan or independent assertion script when useful; derive final requirements '
+                    'from the human request, not earlier examples or model-written notes.\n') + text[end:]
+            else:
+                start = text.index('Before editing, record the **remaining final task**')
+                end = text.index('1. **Implement.**', start)
+                text = text[:start] + ('A task plan in root `todo.txt` or an independent assertion script is optional.\n'
+                    'Choose checks that establish the requested outcome. Derive expectations\n'
+                    'from the human requirements, not earlier examples or model-written notes.\n\n') + text[end:]
+                text = replace_once(text, '5. **Verify outputs.** Inspect saved files and run the prepared assertions.',
+                    '5. **Verify outputs.** Inspect saved files; use independent assertions when useful.')
+            item['data'] = base64.b64encode(text.encode('utf-8')).decode('ascii')
+            changed.add(item['path'])
+        if changed != {'autoproteus/protocol.py', 'README.md'}:
+            raise ValueError('Optional planning needs the shared prompt and upgrade recipe')
+        return result
     if treatment == 'short-guidance':
         changed = set()
         for item in result:
