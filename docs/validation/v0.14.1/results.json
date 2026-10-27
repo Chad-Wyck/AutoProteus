@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "release": "v0.14.1",
+  "tested_commit": "171dd399f2c052288424c8a5015d10501a9a1edb",
+  "starter_source_sha256": "ebbbddc665b4f5eadfb9beb6bc47b3bd99bfaf3aa414b7f20980a00c212469de",
+  "recorded_at_utc": "2026-10-27T10:04:47.327072+00:00",
+  "evidence_type": "maintainer-recorded local validation refresh; not a CI run or independent security audit",
+  "environment": {
+    "platform": "Linux-7.0.0-39-generic-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "python": "3.12.3",
+    "vm_backend": "not run",
+    "guest": "not run"
+  },
+  "ordinary": {
+    "discovered": 487,
+    "passed": 438,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 49,
+    "seconds": 129.159,
+    "log": "ordinary-tests.log",
+    "log_sha256": "7f2221b4669a27b2c32ee22eeadcf2dd4a97212d1ca33327163c9063f2957bc4"
+  },
+  "real_vm": null,
+  "model_trials": {
+    "qualification_attempts": 0,
+    "qualification_passed": null,
+    "scheduled_extensions": 0,
+    "launched_extensions": 0,
+    "extension_outcomes": null,
+    "note": "No model trials were run by this refresh. Earlier qualification history is unchanged; see the v0.5.1 receipts in docs/validation/v0.5.1/."
+  },
+  "provenance": {
+    "generator": "evaluations/refresh-validation.py",
+    "new_test_execution": true,
+    "logs": "Exact bytes produced by the suite invocation (or the log supplied for ingestion); hashes computed at bundle time."
+  },
+  "scope": [
+    "Results apply to the tested commit and named suite invocations only.",
+    "Skipped tests are not passes; the selected VM suite is not all optional VM coverage.",
+    "These checks do not prove isolation security or model self-improvement."
+  ]
+}

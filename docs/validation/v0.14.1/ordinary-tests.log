@@ -1,0 +1,92 @@
+START fixture_benchmark_01
+CELL fixture_benchmark_01 completed
+START fixture_basic_one
+CELL fixture_basic_one completed
+START fixture_first_01_sha256_file
+CELL fixture_first_01_sha256_file completed
+START fixture_growth_01_sha256_file
+CELL fixture_growth_01_sha256_file completed
+START fixture_first_01_csv_preview
+CELL fixture_first_01_csv_preview completed
+START fixture_first_01_format_json
+CELL fixture_first_01_format_json completed
+CELL fixture_benchmark_01 completed
+CELL fixture_basic_one completed
+CELL fixture_first_01_sha256_file completed
+CELL fixture_growth_01_sha256_file completed
+CELL fixture_first_01_csv_preview completed
+CELL fixture_first_01_format_json completed
+Prepared full with 1 profiles and 1 repeat(s). No inference started.
+Prepared full with 1 profiles and 1 repeat(s). No inference started.
+Scripted calibration passed. No model inference started.
+Prepared full with 1 profiles and 1 repeat(s). No inference started.
+START fixture_benchmark_01
+CELL fixture_benchmark_01 completed
+START fixture_basic_one
+CELL fixture_basic_one completed
+START fixture_basic_two
+CELL fixture_basic_two completed
+START fixture_basic_three
+CELL fixture_basic_three completed
+START fixture_first_01_sha256_file
+CELL fixture_first_01_sha256_file completed
+START fixture_growth_01_sha256_file
+CELL fixture_growth_01_sha256_file completed
+START fixture_first_01_csv_preview
+CELL fixture_first_01_csv_preview completed
+START fixture_first_01_format_json
+CELL fixture_first_01_format_json completed
+CELL fixture_benchmark_01 completed
+CELL fixture_basic_one completed
+CELL fixture_basic_two completed
+CELL fixture_basic_three completed
+CELL fixture_first_01_sha256_file completed
+CELL fixture_growth_01_sha256_file completed
+CELL fixture_first_01_csv_preview completed
+CELL fixture_first_01_format_json completed
+START fixture_benchmark_01
+START fixture_benchmark_01
+Prepared benchmark with 1 profiles and 1 repeat(s). No inference started.
+Scripted calibration passed. No model inference started.
+Prepared full with 1 profiles and 1 repeat(s). No inference started.
+START qwen9b_benchmark_01
+CELL qwen9b_benchmark_01 completed
+START qwen9b_basic_exact-file
+CELL qwen9b_basic_exact-file completed
+START qwen9b_basic_precise-edit
+CELL qwen9b_basic_precise-edit completed
+START qwen9b_basic_recovery
+CELL qwen9b_basic_recovery completed
+START qwen9b_basic_unicode
+CELL qwen9b_basic_unicode completed
+START qwen9b_basic_bug-fix
+CELL qwen9b_basic_bug-fix completed
+START qwen9b_first_01_sha256_file_baseline
+CELL qwen9b_first_01_sha256_file_baseline completed
+START qwen9b_first_01_sha256_file_edit-feedback
+CELL qwen9b_first_01_sha256_file_edit-feedback completed
+START qwen9b_first_01_csv_preview_edit-feedback
+CELL qwen9b_first_01_csv_preview_edit-feedback completed
+START qwen9b_first_01_csv_preview_baseline
+CELL qwen9b_first_01_csv_preview_baseline completed
+START qwen9b_first_01_format_json_baseline
+CELL qwen9b_first_01_format_json_baseline completed
+START qwen9b_first_01_format_json_edit-feedback
+CELL qwen9b_first_01_format_json_edit-feedback completed
+CELL qwen9b_benchmark_01 completed
+CELL qwen9b_basic_exact-file completed
+CELL qwen9b_basic_precise-edit completed
+CELL qwen9b_basic_recovery completed
+CELL qwen9b_basic_unicode completed
+CELL qwen9b_basic_bug-fix completed
+CELL qwen9b_first_01_sha256_file_baseline completed
+CELL qwen9b_first_01_sha256_file_edit-feedback completed
+CELL qwen9b_first_01_csv_preview_edit-feedback completed
+CELL qwen9b_first_01_csv_preview_baseline completed
+CELL qwen9b_first_01_format_json_baseline completed
+CELL qwen9b_first_01_format_json_edit-feedback completed
+Prepared full with 1 profiles and 1 repeat(s). No inference started.
+----------------------------------------------------------------------
+Ran 487 tests in 129.159s
+
+OK (skipped=49)
