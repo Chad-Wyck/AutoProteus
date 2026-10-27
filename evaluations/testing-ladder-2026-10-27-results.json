@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "kind": "testing-ladder-report",
+  "recorded_at_utc": "2026-10-27T10:05:15.960861+00:00",
+  "rungs": [
+    {
+      "rung": "local-tiny",
+      "model": {
+        "provider": "ollama",
+        "model": "qwen2.5:0.5b",
+        "base_url": "http://127.0.0.1:11434"
+      },
+      "phases": {
+        "preflight": {
+          "status": "endpoint-unreachable",
+          "detail": "No local inference endpoint answered at http://127.0.0.1:11434: <urlopen error [Errno 111] Connection refused>"
+        },
+        "prepare": {
+          "status": "already-prepared",
+          "detail": "A frozen plan already exists; previous evidence is preserved."
+        },
+        "calibrate": {
+          "status": "calibration-failed",
+          "detail": "    atomic_json(output/'calibration-failure.json',checks);raise ValueError('Completion grader calibration failed');                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^; ValueError: Completion grader calibration failed Failure detail recorded in calibration-failure.json."
+        }
+      },
+      "frozen_plan_sha256": "b014e991ee5073f6bd4831744324ebdf124476c4db1c83258ad2948880815c87",
+      "calibration_failure_output": "Hardware virtualization is unavailable. Enable virtualization in your computer firmware, or enable nested virtualization on your VM host, then reopen AutoProteus. Native execution is available only through an explicitly acknowledged separate launch."
+    },
+    {
+      "rung": "local-default",
+      "model": {
+        "provider": "ollama",
+        "model": "qwen3:4b-instruct",
+        "base_url": "http://127.0.0.1:11434"
+      },
+      "phases": {
+        "preflight": {
+          "status": "endpoint-unreachable",
+          "detail": "No local inference endpoint answered at http://127.0.0.1:11434: <urlopen error [Errno 111] Connection refused>"
+        },
+        "prepare": {
+          "status": "prepared",
+          "detail": "Prepared 6 attempts; no model calls started."
+        }
+      },
+      "frozen_plan_sha256": "69f3bb2ba4ea4eb775b1695016944fa458bb83258de813c2a434cd699a23b80b"
+    },
+    {
+      "rung": "local-large",
+      "model": {
+        "provider": "ollama",
+        "model": "qwen2.5:14b",
+        "base_url": "http://127.0.0.1:11434"
+      },
+      "phases": {
+        "preflight": {
+          "status": "endpoint-unreachable",
+          "detail": "No local inference endpoint answered at http://127.0.0.1:11434: <urlopen error [Errno 111] Connection refused>"
+        },
+        "prepare": {
+          "status": "prepared",
+          "detail": "Prepared 6 attempts; no model calls started."
+        }
+      },
+      "frozen_plan_sha256": "5013920a30ffb33ecddf8742ad15b4f2b6136328cb31c4f9bc6c1c3256d9698b"
+    },
+    {
+      "rung": "hosted-top",
+      "model": {
+        "provider": "hosted",
+        "model": null,
+        "base_url": "http://127.0.0.1:11434"
+      },
+      "phases": {
+        "preflight": {
+          "status": "spend-gated",
+          "detail": "Hosted rung: no probe made. Running it is real API spend and needs explicit approval, amount named, first."
+        }
+      }
+    }
+  ]
+}
