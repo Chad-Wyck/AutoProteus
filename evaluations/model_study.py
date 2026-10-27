@@ -36,6 +36,7 @@ from study_support import ResultCache, StudyQueue, Timings, file_identity, ident
 from workflow_variants import TREATMENTS, variant, DEVELOPMENT_FOCUS, USE_FOCUS
 import generalization as study
 import activation_use
+from repeatability import repeat_config
 
 
 from model_plan import private, trusted_files, environment, prepare, check, workflow_requirements, growth_feature, calibrate
@@ -166,6 +167,7 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
     checks = Checks(folder, plan, deadline=deadline)
     timings = Timings()
     row = {'task': task['name'], 'earlier': earlier, 'added': feature, 'operator_candidate_repairs': [],
+           'requested_sampling_seed':config.get('sampling_seed'),
            'input_protocol': 'withheld_final_input' if staged else 'strict_preserve_visible_input',
            'treatment': plan.get('treatment', 'baseline'), 'stages': {'activated': False},
            'experimental_instructions': ['CURRENT FINAL TASK\n' + task['final_task']] if final_contract else
@@ -505,6 +507,9 @@ def _run(args):
             'scope': 'Frozen inputs and scripted calibration only; no model inference or capability result.'})
         print('Scripted calibration passed. No model inference started.', flush=True)
         return
+    if plan['mode']=='outcomes':
+        from outcome_study import run_plan
+        return run_plan(plan,output,queue,args)
     try:
         for profile in plan['profiles']:
             config = profile['config']
@@ -548,6 +553,7 @@ def _run(args):
                     queue.skip(profile['id'] + '_basic_' + name, 'Inference screen did not qualify; not run')
             gate = speed.get('passed') and sum(row.get('run', {}).get('passed', False) for row in ordinary) >= len(names) - 1
             for repeat in range(1, plan['repeats'] + 1):
+                seeded_config=repeat_config(plan,config,repeat)
                 if plan.get('parent'):
                     parent = plan['parent']
                     added, task = growth_task(parent['tool'], plan)
@@ -589,7 +595,7 @@ def _run(args):
                                 'After implementing and verifying the feature, finish needs_input requesting independent activation.')
                             task['task'] += ('\nAfter independent checking and activation the controller will supply fresh task inputs. '
                                 'Do not create those input or receipt paths during development. Complete this first-use task: '+spec['instruction'])
-                        first = cell(first_id, lambda folder: trial(folder, task, input_source, config, inputs, feature))
+                        first = cell(first_id, lambda folder: trial(folder, task, input_source, seeded_config, inputs, feature))
                         if not plan.get('growth_enabled',True):
                             queue.skip(profile['id']+'_'+growth_id, 'Second extension not requested in this first-only comparison')
                         elif activation_use.eligible_parent(first, plan.get('protocol')):
@@ -597,7 +603,7 @@ def _run(args):
                             source = json.loads((Path(saved['folder']) / 'review/candidate-source.json').read_text())
                             added, task = growth_task(feature, plan)
                             def second_trial(folder):
-                                row = trial(folder, task, source, config, inputs, added, feature)
+                                row = trial(folder, task, source, seeded_config, inputs, added, feature)
                                 row['chain'] = activation_use.chain_result(first, row, plan.get('protocol'))
                                 atomic_json(folder/'result.json', row)
                                 return row
@@ -618,7 +624,7 @@ if __name__ == '__main__':
     p = commands.add_parser('prepare')
     p.add_argument('--profiles', required=True)
     p.add_argument('--output', required=True)
-    p.add_argument('--mode', choices=('benchmark', 'screen', 'full'), default='screen')
+    p.add_argument('--mode', choices=('benchmark', 'screen', 'full', 'outcomes'), default='screen')
     p.add_argument('--repeats', type=int)
     p.add_argument('--first-only', action='store_true', help='Measure first extension and activation/use without requesting a second extension')
     p.add_argument('--timeout', type=int, default=DEFAULT_TASK_SECONDS)
@@ -630,6 +636,7 @@ if __name__ == '__main__':
     p.add_argument('--parent-tool', choices=tuple(study.CONTRACTS))
     p.add_argument('--reuse-task', help='JSON task with required_tools and exact artifact checks; reuse only, no upgrade credit')
     p.add_argument('--task-pack', help='Optional independently checked offline tasks replacing the basic-task pack')
+    p.add_argument('--case-pack', help='Portable fixed upgrade cases and predeclared per-request seeds')
     p = commands.add_parser('run')
     p.add_argument('--input', required=True)
     p.add_argument('--check-only', action='store_true', help='Verify frozen inputs and scripted graders without contacting inference')

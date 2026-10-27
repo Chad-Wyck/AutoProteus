@@ -62,6 +62,18 @@ class FakeModelServer:
 
 
 class HostProviderTests(unittest.TestCase):
+    def test_explicit_research_seed_reaches_both_transports_and_is_otherwise_omitted(self):
+        for hosted in (False,True):
+            server=FakeModelServer(hosted=hosted,native=True);self.addCleanup(server.close)
+            for seed in (None,104729):
+                config={**DEFAULTS,'provider':'hosted' if hosted else 'ollama','base_url':server.url,'sampling_seed':seed}
+                ModelClient(config).complete([{'role':'user','content':'Check.'}],threading.Event(),tools=tool_definitions())
+                payload=server.payloads[-1] if hosted else server.payloads[-1]['options']
+                if seed is None:self.assertNotIn('seed',payload)
+                else:self.assertEqual(payload['seed'],seed)
+        for value in (True,-1,2147483648,'104729'):
+            with self.assertRaises(ValueError):ModelClient({**DEFAULTS,'sampling_seed':value})
+
     def test_local_reasoning_chunks_reach_the_live_preview_callback_separately_from_content(self):
         class Progress:
             def __init__(self): self.text = []; self.counts = []

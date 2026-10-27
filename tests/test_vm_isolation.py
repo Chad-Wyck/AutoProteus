@@ -29,6 +29,90 @@ class ScriptedClient:
 
 @unittest.skipUnless(os.environ.get('AUTOPROTEUS_VM_TESTS') == '1', 'Real VM checks require explicit opt in')
 class RealVMTests(unittest.TestCase):
+    def test_unassigned_real_vm_yields_to_a_waiting_foreground_lease(self):
+        from controller.isolation import VMLease
+        agent=self.agent([{'status':'completed'}]);agent.can_retain=lambda _:True
+        agent.keep_ready(self.settings.values);slot=agent.warm.slot;slot['thread'].join(timeout=20)
+        self.assertTrue(agent.warm.public()['ready'])
+        acquired=threading.Event();release=threading.Event();errors=[]
+        def contender():
+            lease=VMLease(agent.appliance.directory)
+            try:lease.acquire(threading.Event(),time.monotonic()+8);acquired.set();release.wait(8)
+            except Exception as error:errors.append(str(error))
+            finally:lease.close()
+        worker=threading.Thread(target=contender);worker.start()
+        try:
+            self.assertTrue(acquired.wait(10),errors)
+            self.assertTrue(slot['vm'].closed.is_set())
+            self.assertFalse(agent.warm.public()['ready'])
+            agent.keep_ready(self.settings.values);pending=agent.warm.slot
+            if pending:pending['thread'].join(timeout=2)
+            self.assertFalse(agent.warm.public()['ready'])
+        finally:release.set();worker.join(timeout=10)
+
+    def test_retained_idle_vm_yields_without_losing_committed_files(self):
+        from controller.isolation import VMLease
+        agent=self.agent([{'action':{'tool':'write_file','arguments':{'path':'kept.txt','content':'saved'}}},
+            {'status':'needs_input'},{'action':{'tool':'read_file','arguments':{'path':'kept.txt'}}},{'status':'completed'}])
+        agent.can_retain=lambda _:True
+        session=self.store.create('Save and wait.','hosted','fixture');agent.start(session)
+        self.assertEqual(self.wait(agent,session),'waiting');vm=agent.idle['vm']
+        acquired=threading.Event();release=threading.Event();errors=[]
+        def contender():
+            lease=VMLease(agent.appliance.directory)
+            try:lease.acquire(threading.Event(),time.monotonic()+8);acquired.set();release.wait(8)
+            except Exception as error:errors.append(str(error))
+            finally:lease.close()
+        worker=threading.Thread(target=contender);worker.start()
+        try:
+            stop=time.monotonic()+7
+            while not acquired.is_set() and time.monotonic()<stop:
+                agent.keep_ready(self.settings.values);acquired.wait(.1)
+            self.assertTrue(acquired.is_set(),errors);self.assertTrue(vm.closed.is_set());self.assertIsNone(agent.idle)
+            self.assertEqual(Artifacts(self.store,session).read('kept.txt'),b'saved')
+        finally:release.set();worker.join(timeout=10)
+        agent.start(session,'Read the saved file and finish.')
+        self.assertEqual(self.wait(agent,session),'completed')
+        self.assertEqual(Artifacts(self.store,session).read('kept.txt'),b'saved')
+
+    def test_outcome_choice_accepts_arbitrary_extension_and_reuses_it_in_a_fresh_task(self):
+        import sys
+        sys.path.insert(0,str(ROOT/'evaluations'))
+        from outcome_study import phase
+        from outcome_tasks import task_pack
+        from autoproteus.providers import tool_definitions
+        source=seed_files(ROOT);text={r['path']:base64.b64decode(r['data']).decode() for r in source}
+        tools=text['autoproteus/tools.py'].replace('        if tool == "list_files":',
+            '        if tool == "echo_batch":\n            return {"value": args["value"]}\n        if tool == "list_files":')
+        providers=text['autoproteus/providers.py'].replace('TOOL_SPECS = {',
+            'TOOL_SPECS = {\n    "echo_batch": ("Echo a batch label", {"value": STRING}, ["value"]),')
+        test='''import tempfile,unittest
+from pathlib import Path
+from autoproteus.tools import Workspace
+class EchoTest(unittest.TestCase):
+ def test_echo(self):
+  with tempfile.TemporaryDirectory() as p:
+   self.assertEqual(Workspace(Path(p)).execute('echo_batch',{'value':'checked'}),{'value':'checked'})
+'''
+        case=task_pack()[0];first=case['first'];later=case['reuse']
+        def write(path,content):return {'action':{'tool':'write_file','arguments':{'path':path,'content':content}}}
+        actions=[write('harness/autoproteus/tools.py',tools),write('harness/autoproteus/providers.py',providers),
+            write('harness/tests/test_echo_batch.py',test),{'status':'needs_input'},
+            {'action':{'tool':'echo_batch','arguments':{'value':'first'}}},
+            write(first['checks'][0]['path'],first['checks'][0]['expected']),{'status':'completed'}]
+        config={**self.settings.values,'action_limit':True,'max_steps':64};plan={'deadline':120,'generated_tokens':8192}
+        names=[t['function']['name'] for t in tool_definitions(True)]
+        client=ScriptedClient(actions)
+        result=phase(self.data/'outcome-first',first,source,config,plan,names,lambda _:client)
+        self.assertTrue(result['task_outcome_passed'],result);self.assertEqual(result['checked_packages'],1)
+        self.assertEqual(result['activations'],1);self.assertIn('echo_batch',result['continuation_tools'])
+        accepted=json.loads((self.data/'outcome-first/continuation-source.json').read_text())
+        client=ScriptedClient([{'action':{'tool':'echo_batch','arguments':{'value':'later'}}},
+            write(later['checks'][0]['path'],later['checks'][0]['expected']),{'status':'completed'}])
+        reuse=phase(self.data/'outcome-later',later,accepted,config,plan,result['continuation_tools'],lambda _:client)
+        self.assertTrue(reuse['task_outcome_passed'],reuse);self.assertFalse(reuse['seed_edit_attempted'])
+        self.assertIn('echo_batch',reuse['usage']['direct'])
+
     def test_first_activation_use_checks_fresh_calls_and_shares_remaining_actions(self):
         import sys
         from types import SimpleNamespace

@@ -69,6 +69,8 @@ def failure_labels(row):
 
 def report(directory):
     directory, queue_root, plan, queue = load_closed(directory)
+    if plan.get('mode')=='outcomes':
+        raise ValueError('Outcome-only studies use their runner summary.json and outcome-results.json; no named-feature upgrade score applies')
     prospective = plan.get('protocol')==PROTOCOL
     chain_measured = prospective and not plan.get('parent') and plan.get('growth_enabled',True)
     schedule = {row['id']:row for row in plan.get('schedule',[]) if 'id' in row}

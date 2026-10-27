@@ -4,6 +4,10 @@ Use **`evaluations/model_study.py`**. This is the published runner used for the
 v0.14.0 first/second-extension pilot. It tests the checked-out starter; no old
 seed, experimental treatment or human-written parent is needed.
 
+For the next fixed-case repeatability and outcome-choice studies, use
+[the portable study guide](next-studies.md). Prepare fresh plans on the test
+machine; a frozen plan is tied to its source, runner and execution environment.
+
 Newly prepared plans use **`activation-use-v2`**, adding first activation/use.
 If a friend is already running commit `d8e7175`, keep that checkout frozen until
 it finishes. Its older protocol did not separately measure first autonomous use;
@@ -52,7 +56,12 @@ activation; their original counts remain historical evidence, not v2 results.
    endpoint on the same machine. Inference uses the host GPU; model-written
    code runs in disposable VMs. The test runner does not start the model service
    or download weights.
-4. Avoid a competing retained app VM:
+4. Keep inference ownership and execution contention controlled:
+   Updated v0.14.1 controllers yield idle caches to waiting work without unloading
+   the model. Active tasks retain their slot. Restart the controller once after
+   upgrading; old running controllers/runners do not gain this behavior in memory.
+   The following shutdown workaround remains useful for older versions or for
+   measuring cold-start behavior:
    - For an independently managed model engine, choose **Settings → Quit
      AutoProteus**, then leave/start that engine independently.
    - For AutoProteus's managed Ollama service, close **all** AutoProteus browser

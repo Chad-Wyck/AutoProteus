@@ -27,46 +27,11 @@ from .inference_history import attach_history
 from .web_access import WebAccess
 from .thinking import Thinking
 from .warm_vm import WarmVM
+from .vm_lease import VMLease
 
 MAX_JOURNAL = 64 * 1024 * 1024
 MAX_SECONDS = 3600
 RESPONSE_RETRIES = 2
-
-
-class VMLease:
-    """Serialize app, evaluator and test VMs across host processes."""
-    def __init__(self, directory):
-        self.path = safe_path(directory, 'active-vm.lock')
-        self.stream = None
-
-    def acquire(self, cancel, deadline, on_wait=None):
-        self.stream = self.path.open('a+b')
-        if not self.path.stat().st_size:
-            self.stream.write(b'0'); self.stream.flush()
-        while True:
-            if cancel.is_set():
-                raise Cancelled()
-            if time.monotonic() > deadline:
-                raise IsolationError('Timed out waiting for the isolated environment')
-            try:
-                self.stream.seek(0)
-                if os.name == 'nt':
-                    import msvcrt
-                    msvcrt.locking(self.stream.fileno(), msvcrt.LK_NBLCK, 1)
-                else:
-                    import fcntl
-                    fcntl.flock(self.stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                return
-            except OSError:
-                if on_wait:
-                    on_wait()
-                    on_wait = None
-                cancel.wait(.1)
-
-    def close(self):
-        if self.stream:
-            self.stream.close()
-            self.stream = None
 
 
 def vm_command(appliance, bridge_port=0):
@@ -399,7 +364,7 @@ class IsolatedAgent:
     def reap_idle(self):
         with self.lock:
             if self.idle and (self.idle['vm'].closed.is_set() or not self.can_retain
-                              or not self.can_retain(self.idle['config'])):
+                              or not self.can_retain(self.idle['config']) or self.idle['lease'].request_pending()):
                 self.discard_idle()
 
     def start(self, session, message=None, candidate=None, verification=False, handoff='full', deadline=None):
@@ -465,6 +430,7 @@ class IsolatedAgent:
             if self.idle:
                 if (not verification and candidate is None and self.idle['session'] == session['id']
                         and self.idle['signature'] == signature and not self.idle['vm'].closed.is_set()
+                        and not self.idle['lease'].request_pending()
                         and self.can_retain and self.can_retain(config)):
                     retained = self.idle
                 else:

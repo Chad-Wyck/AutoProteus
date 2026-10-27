@@ -19,7 +19,8 @@ class WarmVM:
                 if self.slot['lease']:
                     self.slot['lease'].close()
                 self.slot = None
-            slot = self.slot = {'cancel':threading.Event(), 'vm':None, 'lease':None}
+            slot = self.slot = {'cancel':threading.Event(), 'watch_stop':threading.Event(),
+                                'vm':None, 'lease':None, 'prepared':False}
             slot['thread'] = threading.Thread(target=self._prepare, args=(slot,), daemon=True)
             slot['thread'].start()
 
@@ -29,7 +30,11 @@ class WarmVM:
             self.appliance.verify()
             deadline = time.monotonic()+90
             lease = self.lease_factory(self.appliance.directory)
-            lease.acquire(slot['cancel'], deadline)
+            lease.acquire(slot['cancel'], deadline, background=True)
+            with self.lock:
+                slot['lease']=lease
+            slot['watcher']=threading.Thread(target=self._watch,args=(slot,),daemon=True)
+            slot['watcher'].start()
             if slot['cancel'].is_set():
                 raise Cancelled()
             vm = self.factory(self.appliance)
@@ -37,9 +42,10 @@ class WarmVM:
                 raise IsolationError('Guest warm-up handshake failed')
             with self.lock:
                 if self.slot is slot and not slot['cancel'].is_set():
-                    slot.update(vm=vm, lease=lease)
+                    slot.update(vm=vm, lease=lease, prepared=True)
                     vm = lease = None
         except Exception:
+            slot['watch_stop'].set()
             with self.lock:
                 if self.slot is slot:
                     self.slot = None
@@ -48,6 +54,18 @@ class WarmVM:
                 vm.close()
             if lease:
                 lease.close()
+
+    def _watch(self,slot):
+        while not slot['watch_stop'].wait(.1):
+            with self.lock:
+                if self.slot is not slot:return
+                pending=slot['lease'].request_pending() is True
+                if pending and not slot['prepared']:
+                    slot['cancel'].set()
+                    return
+            if pending:
+                self._discard(slot)
+                return
 
     def take(self, cancel, deadline):
         with self.lock:
@@ -64,20 +82,25 @@ class WarmVM:
             slot['thread'].join(timeout=.1)
         with self.lock:
             if self.slot is slot:
-                self.slot = None
-                if slot['vm'] and not slot['vm'].closed.is_set():
+                if slot['vm'] and not slot['vm'].closed.is_set() and not slot['lease'].request_pending():
+                    self.slot = None
+                    slot['watch_stop'].set()
                     return slot
-                if slot['lease']:
-                    slot['lease'].close()
+        self._discard(slot)
         return None
 
     def close(self):
         with self.lock:
-            slot, self.slot = self.slot, None
-            if not slot:
-                return
+            slot=self.slot
+        if slot:self._discard(slot)
+
+    def _discard(self,slot):
+        with self.lock:
+            if self.slot is not slot:return
+            self.slot=None
             slot['cancel'].set()
-            if slot['vm']:
+            slot['watch_stop'].set()
+            if slot['prepared']:
                 try:
                     slot['vm'].close()
                 finally:

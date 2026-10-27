@@ -9,6 +9,9 @@ def research_config(values):
         raise ValueError('Keep provider keys in AUTOPROTEUS_API_KEY, not study plans')
     if type(config['max_steps']) is not int or not 1 <= config['max_steps'] <= 200:
         raise ValueError('Research action allowances must be integers from 1 to 200')
+    value=config.get('sampling_seed')
+    if value is not None and (type(value) is not int or not 0<=value<=2147483647):
+        raise ValueError('Sampling seeds must be integers from 0 to 2147483647')
     return config
 
 

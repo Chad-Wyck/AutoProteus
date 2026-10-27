@@ -12,6 +12,7 @@ class WarmVMTests(unittest.TestCase):
     def setUp(self):
         self.appliance = Mock(directory=Path('.'))
         self.vm, self.lease = Mock(), Mock()
+        self.lease.request_pending.return_value=False
         self.vm.closed = threading.Event()
         self.vm.next.return_value = {'op':'ready','protocol':2}
         self.vm.close.side_effect = self.vm.closed.set
@@ -48,3 +49,15 @@ class WarmVMTests(unittest.TestCase):
         self.warm.prepare(); self.assertTrue(started.wait(2))
         self.warm.close()
         self.vm.close.assert_called_once(); self.lease.close.assert_called_once()
+
+    def test_foreground_demand_cancels_an_incomplete_warmup(self):
+        started=threading.Event()
+        def handshake(cancel,deadline):
+            started.set();cancel.wait(2);raise Cancelled()
+        self.vm.next.side_effect=handshake
+        self.warm.prepare();slot=self.warm.slot;self.assertTrue(started.wait(2))
+        self.lease.request_pending.return_value=True
+        slot['thread'].join(timeout=3)
+        self.assertTrue(slot['cancel'].is_set())
+        self.assertFalse(slot['thread'].is_alive());self.assertFalse(self.warm.public()['ready'])
+        self.vm.close.assert_called_once();self.lease.close.assert_called_once()

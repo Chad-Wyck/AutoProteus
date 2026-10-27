@@ -38,6 +38,8 @@ def trusted_files():
         'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/research_limits.py',
         'evaluations/submission_preflight.py', 'evaluations/completion_study.py', 'evaluations/activation_use.py',
         'evaluations/source_navigation.py', 'evaluations/navigation_variant.py',
+        'evaluations/repeatability.py', 'evaluations/repeatability-cases.json',
+        'evaluations/outcome_tasks.py', 'evaluations/outcome_study.py',
         'evaluations/invoke_tool.py', 'evaluations/tasks.json')]
     return {p.relative_to(ROOT).as_posix(): file_identity(p) for p in paths}
 
@@ -52,10 +54,12 @@ def environment():
 
 
 def prepare(args):
+    if args.mode=='outcomes' and (getattr(args,'first_only',False) or getattr(args,'task_pack',None)):
+        raise ValueError('Outcome mode includes its own fixed task and reuse pack')
     output = private(args.output)
     if output.exists():
         raise ValueError('Prepare into a new directory; existing evidence is preserved')
-    profiles = json.loads(Path(args.profiles).read_text(encoding='utf-8'))
+    profiles = json.loads(Path(args.profiles).read_text(encoding='utf-8-sig'))
     if not isinstance(profiles, list) or not profiles:
         raise ValueError('Supply a nonempty list of profiles')
     seen = set()
@@ -142,10 +146,32 @@ def prepare(args):
         raise ValueError('Repeat and budget values must be positive')
     if not plan['growth_enabled'] and plan.get('parent'):
         raise ValueError('First-only studies test starter extensions, not a supplied parent')
-    plan['first_use_contracts'] = {f'{repeat}-{feature}':contract(feature, secrets.token_hex(8))
-        for repeat in range(1,plan['repeats']+1) for feature in plan['upgrade_tasks']}
+    case_pack=getattr(args,'case_pack',None)
+    if case_pack:
+        if args.mode!='full' or plan.get('parent') or plan.get('reuse_task'):
+            raise ValueError('Fixed repeatability cases require full starter-extension studies')
+        from repeatability import freeze_cases
+        freeze_cases(plan,case_pack,args.repeats)
+    else:
+        plan['first_use_contracts'] = {f'{repeat}-{feature}':contract(feature, secrets.token_hex(8))
+            for repeat in range(1,plan['repeats']+1) for feature in plan['upgrade_tasks']}
     if not plan['growth_enabled']:
         plan['scope'] += ' First-only comparison: no second extension requested; complete growth is unmeasured.'
+    if args.mode=='outcomes':
+        plan['protocol']='outcome-choice-v1'
+        if plan['repeats']>20:raise ValueError('Outcome studies support at most twenty repeats per plan')
+        from outcome_tasks import task_pack
+        from study_support import identity as case_identity
+        plan['outcome_cases']=task_pack()
+        plan['base_tool_names']=[t['function']['name'] for t in plan['tools']]
+        plan['repeatability']={'sampling_seeds':[104729+7919*i for i in range(plan['repeats'])],
+            'seed_scope':'Per-request seed. Runtime honoring and deterministic output are not guaranteed.',
+            'portable_case_sha256':case_identity({'cases':plan['outcome_cases'],'deadline':plan['deadline'],
+                'generated_tokens':plan['generated_tokens']})}
+        for profile in plan['profiles']:profile['config']['sampling_seed']=plan['repeatability']['sampling_seeds'][0]
+        plan['scope']='Outcome-only tasks and fresh-session reuse. No extension is required or prescribed. '
+        plan['scope']+='All tasks are starter-solvable; simple versus repeated-processing is an opportunity label, not necessity. '
+        plan['scope']+='Task artifacts, package checks, edits, activation and observed reuse are separate. Arbitrary feature semantics and extension necessity remain unmeasured.'
     output.mkdir(parents=True)
     atomic_json(output / 'plan.json', plan)
     (output / 'plan.sha256').write_text(identity(plan), encoding='ascii')
@@ -181,6 +207,10 @@ def workflow_requirements(plan):
 
 def calibrate(plan, output, cache, study, run_regressions):
     from controller.storage import Store
+    if plan['mode']=='outcomes':
+        from outcome_study import calibrate as outcome_calibration
+        outcome_calibration(plan,output)
+        return
     if plan.get('protocol')==PROTOCOL:
         atomic_json(output/'first-use-oracle-calibration.json',
                     {'plan_sha256':identity(plan),**oracle_controls(plan.get('first_use_contracts',{}))})

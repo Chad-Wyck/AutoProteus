@@ -6,6 +6,8 @@ Normal application setup does not require them.
 
 Latest: [first-use, growth and optional-planning findings](seed-v0.14.0-activation-use-2026-10-26-findings.md), including separately preserved raw and reassessed use scores.
 
+Next: [portable repeatability and outcome-choice studies](next-studies.md), prepared for faster hardware without changing the default seed workflow.
+
 ## Running a study
 
 | Guide | Purpose |

@@ -195,6 +195,9 @@ def request_json(url, data=None, headers=None, timeout=10):
 class ModelClient:
     def __init__(self, config, key="", observer=None):
         self.config = dict(config)
+        seed=self.config.get('sampling_seed')
+        if seed is not None and (type(seed) is not int or not 0<=seed<=2147483647):
+            raise ValueError('Sampling seed must be an integer from 0 to 2147483647')
         self.key = key
         self.observer = observer
         self.observation_context = None
@@ -358,6 +361,8 @@ class ModelClient:
             payload = {"model": config["model"], "messages": wire, "stream": True,
                        "options": {"num_ctx": config["context_tokens"], "num_predict": config["response_tokens"],
                                    "temperature": config["temperature"]}, "keep_alive": "10m"}
+            if config.get('sampling_seed') is not None:
+                payload['options']['seed']=config['sampling_seed']
             if native:
                 payload['tools'] = tools
             else:
@@ -422,6 +427,8 @@ class ModelClient:
                     observe('provider_response', {'frames': frames, 'stream': True, 'complete': done})
         payload = {"model": config["model"], "messages": wire, "stream": False,
                    "max_tokens": config["response_tokens"], "temperature": config["temperature"]}
+        if config.get('sampling_seed') is not None:
+            payload['seed']=config['sampling_seed']
         if native:
             payload['tools'] = tools
         if config.get("json_mode") and not native:

@@ -4,7 +4,14 @@ Versions use `major.minor.patch`. Before launch, `0.x.0` introduces features and
 `0.x.y` contains bug fixes. Components can exceed 9 or 99. Historical `0.0.x`
 release and experiment labels remain unchanged.
 
-## Unreleased — evaluation protocol
+## 0.14.1
+
+- Let foreground work reclaim an unassigned or retained idle VM. Keep the model
+  resident, avoid immediate rewarming into an occupied slot, and preserve active work.
+- Freeze repeatability task wording/fixtures across repeats with predeclared,
+  opt-in per-request sampling seeds and portable case identities.
+- Add outcome-only tasks and fresh-session reuse observations. Correct completion
+  requires no extension; package checks and arbitrary feature semantics remain separate.
 
 - Add prospective first activation/use scoring before second-extension tasks,
   with fresh inputs, source/result checks and separately labelled diagnostics.
