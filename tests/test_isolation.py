@@ -18,6 +18,38 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class BoundaryTests(unittest.TestCase):
+    def test_plain_reply_pause_reason_crosses_the_real_broker_and_cannot_be_forged(self):
+        from controller.providers import ModelClient, model_response
+        from autoproteus.providers import tool_definitions
+        client = ModelClient(self.settings.values)
+        broker = Broker(self.store, self.session, client, self.settings.values, self.cancel)
+        plain = model_response('Done, the file is saved.', [], True)
+        with patch.object(client, 'complete', return_value=plain):
+            broker.handle({'op':'infer','messages':[{'role':'user','content':'Do the task'}], 'tools':tool_definitions()})
+        state = {**self.session,'status':'waiting','messages':[{'role':'assistant','content':plain['content']}]}
+        broker.handle({'op':'state','session':state})
+        self.assertEqual(self.session['waiting_reason'], 'plain_reply')
+        self.assertEqual(broker.last_status, 'waiting')
+        self.assertEqual(self.session['activity'], 'Paused without explicit completion')
+        explicit = model_response('', [{'function':{'name':'finish','arguments':{'message':'Which filename?', 'status':'needs_input'}}}], True)
+        with patch.object(client, 'complete', return_value=explicit):
+            broker.handle({'op':'infer','messages':[{'role':'user','content':'Continue'}], 'tools':tool_definitions()})
+        broker.handle({'op':'state','session':{**self.session,'status':'waiting','waiting_reason':'plain_reply',
+            'messages':[{'role':'assistant','content':explicit['content']}]}})
+        self.assertNotIn('waiting_reason', self.session)
+        self.assertEqual(broker.last_status, 'waiting')
+
+    def test_superseded_plain_reply_cannot_label_a_different_guest_decision(self):
+        from controller.providers import ModelClient, model_response
+        from autoproteus.providers import tool_definitions
+        client = ModelClient(self.settings.values)
+        broker = Broker(self.store, self.session, client, self.settings.values, self.cancel)
+        with patch.object(client, 'complete', return_value=model_response('Done.', [], True)):
+            broker.handle({'op':'infer','messages':[{'role':'user','content':'Do the task'}], 'tools':tool_definitions()})
+        broker.handle({'op':'state','session':{**self.session,'status':'waiting',
+            'messages':[{'role':'assistant','content':'{"status":"needs_input","message":"A different question"}'}]}})
+        self.assertNotIn('waiting_reason', self.session)
+
     def test_optional_request_cap_can_be_off_without_disabling_the_frame_limit(self):
         broker = Broker(self.store, self.session, self.client,
                         {**self.settings.values, 'action_limit':False, 'max_steps':1}, self.cancel)

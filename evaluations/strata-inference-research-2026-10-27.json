@@ -1,0 +1,120 @@
+{
+  "date": "2026-10-27",
+  "scope": "Research only; no installs, model downloads, benchmarks or service changes",
+  "upstream_repository": "Niko1221/Strata",
+  "upstream_revision": "5e8a4cca7d690ac60ca37eb09e7d0e010099ad6d",
+  "local_revision": "c2c7d13501b165130bcc13994ba0be0344cb58a1",
+  "hardware_source": "evaluations/seed-v0.5-local-findings.md",
+  "hardware": {
+    "gpu": "GTX 1080 Ti",
+    "vram_gib": 11,
+    "compute_capability": "6.1",
+    "cpu": "i5-11600K",
+    "cores": 6,
+    "threads": 12,
+    "ram_bytes": 34132537344,
+    "os": "Windows 11 Home 10.0.26200",
+    "recorded_driver": "581.29",
+    "fresh_inventory": false
+  },
+  "model": {
+    "family": "Qwen3.6-35B-A3B",
+    "first_candidate": "UD-Q4_K_XL",
+    "bytes": 22853663008,
+    "sha256": "55983c5a75a1ab969824077b3bb3de4146e82a9234072b48ad4e8f92ad3fe9f1",
+    "huggingface_repository": "unsloth/Qwen3.6-35B-A3B-MTP-GGUF",
+    "revision": "5bc3e238d916f48a861bac2f8a1990a0e9b7e98d"
+  },
+  "upstream_files": [
+    {
+      "path": "docs/MODELS.md",
+      "git_blob_sha": "8f3fbedf8a2df5c772ffbc94d7f40808e1db206b",
+      "url": "https://github.com/Niko1221/Strata/blob/5e8a4cca7d690ac60ca37eb09e7d0e010099ad6d/docs/MODELS.md"
+    },
+    {
+      "path": "docs/INSTALL.md",
+      "git_blob_sha": "ea344cbd29ca6d19011e1fc488728290c83dc5cd",
+      "url": "https://github.com/Niko1221/Strata/blob/5e8a4cca7d690ac60ca37eb09e7d0e010099ad6d/docs/INSTALL.md"
+    },
+    {
+      "path": "docs/HOW_IT_WORKS.md",
+      "git_blob_sha": "7c8f9eecf6a82629720469fb68b991dc508162bc",
+      "url": "https://github.com/Niko1221/Strata/blob/5e8a4cca7d690ac60ca37eb09e7d0e010099ad6d/docs/HOW_IT_WORKS.md"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "git_blob_sha": "369d699c0700e184976b5c644a2b8d6bacf12b7e",
+      "url": "https://github.com/Niko1221/Strata/blob/5e8a4cca7d690ac60ca37eb09e7d0e010099ad6d/CMakeLists.txt"
+    },
+    {
+      "path": "docs/QWEN36.md",
+      "git_blob_sha": "96bf4486e4cb8d13b09ff36245f757af896762b3",
+      "url": "https://github.com/Niko1221/Strata/blob/5e8a4cca7d690ac60ca37eb09e7d0e010099ad6d/docs/QWEN36.md"
+    },
+    {
+      "path": "docs/OLDER_GPUS.md",
+      "git_blob_sha": "ace14e2285669b26f63c7fe63de7cfd2a09c1636",
+      "url": "https://github.com/Niko1221/Strata/blob/5e8a4cca7d690ac60ca37eb09e7d0e010099ad6d/docs/OLDER_GPUS.md"
+    },
+    {
+      "path": "serve/server.py",
+      "git_blob_sha": "8c5213b1f809fd96f8d2025f6d36c926f477a7e2",
+      "url": "https://github.com/Niko1221/Strata/blob/5e8a4cca7d690ac60ca37eb09e7d0e010099ad6d/serve/server.py"
+    },
+    {
+      "path": "setup.py",
+      "git_blob_sha": "73471f68f37130086fb9032de21bf6798009c5a1",
+      "url": "https://github.com/Niko1221/Strata/blob/5e8a4cca7d690ac60ca37eb09e7d0e010099ad6d/setup.py"
+    },
+    {
+      "path": "src/qwen35/q36_engine.cu",
+      "git_blob_sha": "6a773837d1bd46a1dbad6446a95bf8d4c8367990",
+      "url": "https://github.com/Niko1221/Strata/blob/5e8a4cca7d690ac60ca37eb09e7d0e010099ad6d/src/qwen35/q36_engine.cu"
+    },
+    {
+      "path": "src/qwen35/q36_kernels.cuh",
+      "git_blob_sha": "21617b0bbdd5e1be211c0b2147f732152f5e0acc",
+      "url": "https://github.com/Niko1221/Strata/blob/5e8a4cca7d690ac60ca37eb09e7d0e010099ad6d/src/qwen35/q36_kernels.cuh"
+    },
+    {
+      "path": "src/prefill/gemm.cu",
+      "git_blob_sha": "6d7816c96d0612a9bd5af1a6a2162ed8ff4b61b3",
+      "url": "https://github.com/Niko1221/Strata/blob/5e8a4cca7d690ac60ca37eb09e7d0e010099ad6d/src/prefill/gemm.cu"
+    },
+    {
+      "path": "tools/test_setup_qwen36.py",
+      "git_blob_sha": "b71cab233e15ebe77de00abd177cdb100d8d0f95",
+      "url": "https://github.com/Niko1221/Strata/blob/5e8a4cca7d690ac60ca37eb09e7d0e010099ad6d/tools/test_setup_qwen36.py"
+    }
+  ],
+  "issues": [
+    {
+      "number": 4332,
+      "url": "https://github.com/Niko1221/Strata/issues/4332",
+      "observed_state": "open",
+      "evidence": "Community report of Q4 model boot on GTX 1080 Ti; speed measurements are RTX 4080 SUPER, not GTX."
+    },
+    {
+      "number": 3508,
+      "url": "https://github.com/Niko1221/Strata/issues/3508",
+      "observed_state": "closed",
+      "closure": "Template housekeeping; not confirmed fix",
+      "evidence": "Older Windows P5000/32GB RAM pressure and MTP/configuration report; comments inspected."
+    }
+  ],
+  "local_files": [
+    {
+      "path": "evaluations/seed-v0.5-local-findings.md",
+      "sha256": "771a42aba17fd95cbe55185ac300a024fd67ffc450022b1d55a9bdd987292415"
+    },
+    {
+      "path": "evaluations/local-model-test-handoff.md",
+      "sha256": "874db51a950f8444564f922c402b18eaf2654cb1be7c8f4e1a91a154ec290d7e"
+    },
+    {
+      "path": "evaluations/seed-v0.14.1-local-2026-10-27-findings.md",
+      "sha256": "a66e4edb5296486d9de99cf6c7bebe4a99edc78f1d11f9a67f2e0704f819f5b"
+    }
+  ],
+  "conclusion": "Worth an isolated trial using experimental CUDA12 path; Q4 memory plausible but tight; no established native Windows 1080Ti performance or AP qualification."
+}

@@ -4,7 +4,7 @@ import json
 
 NATIVE = '''RESPONSE FORMAT
 Use the supplied native tools. Prefer one tool call at a time.
-After verification, call finish with message and status="completed".
+After verification, end the task with a native finish tool call: message is your final answer, status="completed". Saying "done" in prose does not complete the task.
 For required user input, call finish with your question and status="needs_input".
 A plain text reply is shown to the user and pauses for their reply; it does not complete the task.
 '''
@@ -27,9 +27,13 @@ def response_instructions(protocol, tools):
     return JSON + json.dumps(catalog, ensure_ascii=False, separators=(',', ':'))
 
 
-def with_response_instructions(messages, protocol, tools):
+def with_response_instructions(messages, protocol, tools, native_instructions=None):
     """Leave the seed's journal intact; keep the effective opening prefix stable."""
     instructions = response_instructions(protocol, tools)
+    if native_instructions is not None:
+        if protocol != 'native' or not isinstance(native_instructions, str) or not 1 <= len(native_instructions) <= 12000:
+            raise ValueError('Frozen native instructions require native mode and bounded text')
+        instructions = native_instructions
     result = [dict(item) for item in messages]
     if result and result[0]['role'] == 'system':
         result[0]['content'] += '\n' + instructions

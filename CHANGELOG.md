@@ -4,6 +4,26 @@ Versions use `major.minor.patch`. Before launch, `0.x.0` introduces features and
 `0.x.y` contains bug fixes. Components can exceed 9 or 99. Historical `0.0.x`
 release and experiment labels remain unchanged.
 
+## 0.15.0
+
+- Report identical edit text as an unchanged result with zero replacements,
+  preserving file bytes and avoiding a write. Missing/ambiguous matches still fail.
+- Clarify explicit completion in the seed's neutral instructions, finish tool
+  description and native format guidance. Plain replies still pause, not complete.
+- Freeze per-request versus externally server-initialized sampling as distinct
+  research settings. Record declarations separately from actual request seeds;
+  do not claim the runner initialized or verified an external server RNG.
+- Separate checked artifacts, explicit completion, capability use and skipped
+  stages in closed-study reports. Prepare a focused CSV sampling comparison;
+  no live-model effectiveness result is established by these changes.
+- Add opt-in per-attempt owned inference services, pinned startup receipts,
+  memory/lifetime guards and process-tree cleanup, outside the editable seed.
+- Label native prose endings as paused without explicit completion. Explicit
+  input requests retain their normal label; neither earns completion credit.
+- Freeze separate unchanged-edit and finishing interventions, with shared
+  starter checks and a basic-only study mode. Frozen host instructions are
+  research-owned; the guest cannot select them.
+
 ## 0.14.1
 
 - Let foreground work reclaim an unassigned or retained idle VM. Keep the model

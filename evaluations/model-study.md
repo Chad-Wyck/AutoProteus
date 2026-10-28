@@ -6,6 +6,47 @@ both capabilities. See [the protocol and measurement guide](activation-use-study
 Keep existing studies frozen at their original checkout; do not update a friend's
 running `d8e7175` study or rewrite its historical scores.
 
+Sampling mode is frozen separately from task/source identity. See the
+[focused sampling comparison](next-studies.md#focused-sampling-comparison-prepared-for-later)
+for `--sampling-seed-mode per-request` versus `server-initialized`. The latter
+omits request seeds; external server initialization and per-attempt restarts
+remain the runtime owner's responsibility, unverified by this runner.
+Closed-study reports now separate checked artifacts, explicit completion, tool
+reuse and skipped stages; historical verdicts and qualification gates are unchanged.
+
+### Optional owned inference service
+
+Profiles without `runtime` keep connecting to an externally managed service.
+An optional `runtime` manifest makes the runner start a **fresh owned service
+per attempted cell**, then stop it and its descendants. Completed cells are not
+relaunched on Resume. An occupied dedicated port is an infrastructure error;
+the runner never takes over or stops the existing service.
+
+See [the owned-runtime profile example](owned-runtime-profile.example.json).
+Replace paths and hashes, pin all model/runtime dependencies, and select flags,
+offload and cache settings appropriate to that exact engine and hardware. The
+example is not a memory-fit or runtime-compatibility qualification. Commands are
+argument lists, not shell strings; only `{seed}`, `{port}` and `{context_tokens}`
+are substituted. Windows processes start suspended and enter an owned job before
+running; Linux uses the existing parent-watched process supervisor. No guest or
+model-written command is used for host startup. Do not put credentials in commands.
+
+Assets are hashed once per study invocation; size/timestamp changes are checked
+during each attempt. Startup, commands, pinned assets, optional reported seed/
+context, memory samples and cleanup receipts are saved under each attempt's
+`runtime/`. A configured reported setting must match; an omitted check is
+unverified. A reported seed match does not establish RNG determinism or that an
+API honors per-request seeds. Startup is outside the task allowance and has its
+own deadline. The lifetime guard includes startup, the declared task ceiling and
+30 seconds for orchestration; cleanup time can extend beyond that ceiling.
+
+The helper watches available physical RAM and, on Windows, available commit.
+Linux commit headroom is unmeasured. Tune the starting threshold for the model
+and leave space for AP's guest. Default thresholds do not prove a model fits.
+Memory/asset/lifetime failures terminate only owned inference and leave an
+infrastructure error rather than an accepted capability result. Profiles remain
+host-owned; seed edits cannot configure this launcher or grant host access.
+
 Optional paired [workflow experiments](workflow-experiments.md) add edit feedback,
 advisory syntax diagnostics, observation masking, focused phases, optional
 withheld final inputs, public submission feedback, precise source context and
@@ -81,6 +122,7 @@ Modes:
 | Mode | Work | Meaning |
 | --- | --- | --- |
 | `benchmark` | Short and longer-prompt inference requests with bounded output | Compare runtime configurations cheaply; no tool executes and no VM is needed. Not a capability qualification. |
+| `basic` | Benchmark, protected starter checks and all five basic tasks for each repeat | Measure artifact correctness and explicit completion without any extension request. |
 | `screen` | Benchmark, three basic tasks, hashing and JSON-formatting extensions, then growth from accepted parents | Select promising profiles. CSV remains untested. One repeat by default. |
 | `full` | Benchmark, five basic tasks, all three extensions, then growth from every accepted parent | Full exploratory qualification. Three repeats by default; explicitly select one for a bounded pilot. |
 

@@ -16,6 +16,16 @@ The remaining sections describe VM mode.
 
 Treat all guest code, commands, model responses, harness changes and protocol output as hostile. The host executes `app.py` and `controller/`; it never imports candidate code, `seed.py`, or `autoproteus/`. It owns credentials, provider configuration, UI assets, VM arguments, runtime hashes, quotas, Stop, recovery, and quarantine storage. Source and inputs enter the VM as copied bytes, never host mounts.
 
+Optional research profiles under `evaluations/` can start an owned inference
+service from a trusted operator-supplied command and pinned assets. These are
+host programs, not sandboxed guest tools; their manifests must not come from
+candidate output. Windows jobs and the existing Linux supervisor manage their
+lifecycle, while memory/startup guards improve operation rather than create a
+new security boundary. Guests cannot select these commands, process settings,
+or frozen research response instructions through broker frames. Host-derived
+plain-reply labels affect display only and grant neither completion credit nor
+new authority.
+
 VM backends use QEMU 11.1.0/WHPX on x86-64 Windows and distribution-managed QEMU/KVM on x86-64 Linux. No hardware accelerator means no VM execution. Windows Sandbox and full Hyper-V management are not required. Linux setup installs signed distribution packages and, after administrator authorization, grants the launching account KVM group access. The host records the root-owned QEMU executable's path and SHA-256; a changed executable requires preparing isolation again. Guest components and portable Python are checksum-pinned. Setup belongs to the trusted host, never to the editable seed.
 
 Windows QEMU runs in a job. Linux QEMU runs under a separate process-group supervisor, with no-new-privileges, resource limits and QEMU seccomp restrictions on privilege changes, spawning and scheduler changes. The supervisor monitors the controller PID and process start time; pidfds address the actual supervisor for shutdown without signaling a reused PID. Its environment excludes provider keys. The environment marker used by guest code prevents accidental native launch; it is not a security boundary.

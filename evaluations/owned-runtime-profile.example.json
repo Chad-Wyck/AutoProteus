@@ -1,0 +1,38 @@
+[
+  {
+    "id": "owned-local-model",
+    "config": {
+      "provider": "hosted",
+      "base_url": "http://127.0.0.1:47847/v1",
+      "model": "your-model-id",
+      "protocol": "native",
+      "context_tokens": 32768,
+      "response_tokens": 4096,
+      "temperature": 0.6,
+      "thinking": false,
+      "max_steps": 128,
+      "request_timeout": 600,
+      "sampling_seed": 104729,
+      "internet": false
+    },
+    "assets": {
+      "C:/replace/llama-server.exe": "REPLACE_WITH_SHA256",
+      "C:/replace/model.gguf": "REPLACE_WITH_SHA256"
+    },
+    "runtime": {
+      "command": [
+        "C:/replace/llama-server.exe", "-m", "C:/replace/model.gguf",
+        "--alias", "your-model-id", "--host", "127.0.0.1",
+        "--port", "{port}", "--seed", "{seed}", "-c", "{context_tokens}",
+        "-np", "1", "-t", "6", "--jinja", "--reasoning", "off"
+      ],
+      "health_path": "/health",
+      "metadata_path": "/props",
+      "reported_seed_path": "default_generation_settings.params.seed",
+      "reported_context_path": "default_generation_settings.n_ctx",
+      "startup_seconds": 300,
+      "minimum_start_bytes": 4294967296,
+      "memory_floor_bytes": 2147483648
+    }
+  }
+]

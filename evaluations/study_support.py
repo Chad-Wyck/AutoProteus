@@ -20,6 +20,16 @@ def file_identity(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
+def task_observations(run):
+    """Keep checked outputs, reported completion and the strict verdict separate."""
+    checks = run.get('checks')
+    checked = isinstance(checks, list) and bool(checks) and all(
+        isinstance(item, dict) and type(item.get('passed')) is bool for item in checks)
+    return {'artifacts_correct': all(item['passed'] for item in checks) if checked else None,
+            'explicit_completion': run['status'] == 'completed' if run.get('status') else None,
+            'task_passed': run.get('passed') if type(run.get('passed')) is bool else None}
+
+
 class Timings:
     def __init__(self):
         self.seconds = {}

@@ -62,6 +62,46 @@ class FakeModelServer:
 
 
 class HostProviderTests(unittest.TestCase):
+    def test_host_frozen_native_format_is_in_the_wire_request_without_modifying_history(self):
+        server=FakeModelServer(hosted=True,native=True);self.addCleanup(server.close)
+        messages=[{'role':'system','content':'Keep this stable.'},{'role':'user','content':'Check.'}]
+        client=ModelClient({**DEFAULTS,'provider':'hosted','base_url':server.url},
+                           native_instructions='FROZEN BASELINE NATIVE FORMAT')
+        client.complete(messages,threading.Event(),tools=tool_definitions())
+        self.assertIn('FROZEN BASELINE NATIVE FORMAT',server.payloads[-1]['messages'][0]['content'])
+        self.assertEqual(messages[0]['content'],'Keep this stable.')
+
+    def test_declared_server_seed_is_recorded_but_not_sent_on_either_transport(self):
+        import sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'evaluations'))
+        from repeatability import repeat_config, sampling_record
+        plan = {'sampling_seed_mode': 'server-initialized', 'repeatability': {'sampling_seeds': [104729, 130363]}}
+        for hosted in (False, True):
+            server = FakeModelServer(hosted=hosted, native=True)
+            self.addCleanup(server.close)
+            config = repeat_config(plan, {**DEFAULTS, 'provider': 'hosted' if hosted else 'ollama',
+                                         'base_url': server.url, 'sampling_seed': 104729}, 2)
+            for _ in range(2):
+                ModelClient(config).complete([{'role': 'user', 'content': 'Check.'}], threading.Event(), tools=tool_definitions())
+                payload = server.payloads[-1] if hosted else server.payloads[-1]['options']
+                self.assertNotIn('seed', payload)
+            recorded = sampling_record(config)
+            self.assertIsNone(recorded['request_seed'])
+            self.assertEqual(recorded['declared_server_initial_seed'], 130363)
+            self.assertFalse(recorded['server_initialization_verified'])
+
+    def test_native_finish_contract_is_visible_without_certifying_plain_prose(self):
+        from controller.action_protocol import with_response_instructions
+        from autoproteus.protocol import PROTOCOL
+        tools = tool_definitions()
+        effective = with_response_instructions([{'role': 'system', 'content': PROTOCOL}], 'native', tools)
+        self.assertIn('native finish tool call', effective[0]['content'])
+        finish = next(item['function'] for item in tools if item['function']['name'] == 'finish')
+        self.assertIn("status='completed'", finish['description'])
+        self.assertIn('plain text reply does not complete', finish['description'])
+        self.assertEqual(json.loads(normalize_tool_response('Done, verified.', []))['status'], 'needs_input')
+
     def test_explicit_research_seed_reaches_both_transports_and_is_otherwise_omitted(self):
         for hosted in (False,True):
             server=FakeModelServer(hosted=hosted,native=True);self.addCleanup(server.close)

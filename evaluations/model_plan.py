@@ -1,5 +1,6 @@
 """Frozen study inputs and independently checked calibration; never starts inference."""
 import json
+import base64
 import platform
 import secrets
 from pathlib import Path
@@ -14,6 +15,7 @@ from controller.isolation import seed_files
 from controller.storage import atomic_json, now
 from study_support import file_identity, identity
 from workflow_variants import variant
+from repeatability import SEED_MODES, repeat_config, sampling_record
 import generalization as study
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,7 +40,8 @@ def trusted_files():
         'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/research_limits.py',
         'evaluations/submission_preflight.py', 'evaluations/completion_study.py', 'evaluations/activation_use.py',
         'evaluations/source_navigation.py', 'evaluations/navigation_variant.py',
-        'evaluations/repeatability.py', 'evaluations/repeatability-cases.json',
+        'evaluations/repeatability.py', 'evaluations/repeatability-cases.json', 'evaluations/sampling-csv-cases.json',
+        'evaluations/owned_runtime.py', 'evaluations/seed_comparison.py',
         'evaluations/outcome_tasks.py', 'evaluations/outcome_study.py',
         'evaluations/invoke_tool.py', 'evaluations/tasks.json')]
     return {p.relative_to(ROOT).as_posix(): file_identity(p) for p in paths}
@@ -54,6 +57,9 @@ def environment():
 
 
 def prepare(args):
+    seed_mode = getattr(args, 'sampling_seed_mode', 'per-request')
+    if seed_mode not in SEED_MODES:
+        raise ValueError('Unknown sampling seed mode')
     if args.mode=='outcomes' and (getattr(args,'first_only',False) or getattr(args,'task_pack',None)):
         raise ValueError('Outcome mode includes its own fixed task and reuse pack')
     output = private(args.output)
@@ -74,13 +80,31 @@ def prepare(args):
             raise ValueError('This runner accepts local inference endpoints only')
         if config['response_tokens'] >= config['context_tokens']:
             raise ValueError('Response allowance must be smaller than context')
+        if profile.get('runtime') is not None:
+            from owned_runtime import validate
+            validate(profile['runtime'], config, profile.get('assets', {}))
         for path, digest in profile.get('assets', {}).items():
             if file_identity(path) != digest:
                 raise ValueError('Profile asset failed verification: ' + path)
-    source = seed_files(ROOT)
+    current = seed_files(ROOT)
+    source = current
+    source_path = getattr(args, 'source_pack', None)
+    if source_path:
+        source = json.loads(Path(source_path).read_text(encoding='utf-8-sig'))
+        expected = {item['path']: item['data'] for item in current}
+        if (not isinstance(source, list) or len(source) != len(expected) or
+                any(not isinstance(item, dict) or set(item) != {'path', 'data'} for item in source) or
+                {item['path'] for item in source} != set(expected)):
+            raise ValueError('Comparison source pack must contain the same complete starter file set')
+        for item in source:
+            base64.b64decode(item['data'], validate=True)
+            if item['path'].startswith('tests/') and item['data'] != expected[item['path']]:
+                raise ValueError('Comparison sources must preserve the common starter tests')
     plan = {'created': now(), 'mode': args.mode, 'repeats': args.repeats if args.repeats is not None else (3 if args.mode == 'full' else 1),
             'protocol':PROTOCOL, 'growth_enabled':not getattr(args, 'first_only', False),
+            'sampling_seed_mode': seed_mode,
             'source': source, 'source_sha256': source_identity(source), 'profiles': profiles,
+            'starter_sha256': source_identity(current),
             'trusted_sha256': trusted_files(), 'environment': environment(),
             'contracts': study.CONTRACTS, 'recipe': study.RECIPE,
             'tasks': json.loads((ROOT / 'evaluations/tasks.json').read_text(encoding='utf-8')),
@@ -95,6 +119,14 @@ def prepare(args):
                      'Verified submitted first packages activate on fresh input before a separate second task. '
                      'First-use failures permit labelled diagnostics from the frozen verified parent, never complete-chain credit. '
                      'Retries, untested cells, cached checks and infrastructure failures are recorded separately.'}
+    if source_path:
+        plan['source_pack'] = {'path': str(Path(source_path).resolve()), 'sha256': file_identity(source_path)}
+    instructions_path = getattr(args, 'native_instructions_file', None)
+    if instructions_path:
+        instructions = Path(instructions_path).read_text(encoding='utf-8-sig')
+        if not 1 <= len(instructions) <= 12000 or any(p['config']['protocol'] != 'native' for p in profiles):
+            raise ValueError('Frozen native instructions need native profiles and bounded text')
+        plan['native_instructions'] = instructions
     experiment = getattr(args, 'experiment', None)
     if experiment:
         if args.mode != 'full':
@@ -165,13 +197,19 @@ def prepare(args):
         plan['outcome_cases']=task_pack()
         plan['base_tool_names']=[t['function']['name'] for t in plan['tools']]
         plan['repeatability']={'sampling_seeds':[104729+7919*i for i in range(plan['repeats'])],
-            'seed_scope':'Per-request seed. Runtime honoring and deterministic output are not guaranteed.',
+            'sampling_seed_mode':seed_mode,
+            'seed_scope':'Declared seed schedule; runtime honoring and deterministic output are not guaranteed.',
             'portable_case_sha256':case_identity({'cases':plan['outcome_cases'],'deadline':plan['deadline'],
-                'generated_tokens':plan['generated_tokens']})}
+                'generated_tokens':plan['generated_tokens'], 'sampling_seed_mode':seed_mode})}
         for profile in plan['profiles']:profile['config']['sampling_seed']=plan['repeatability']['sampling_seeds'][0]
         plan['scope']='Outcome-only tasks and fresh-session reuse. No extension is required or prescribed. '
         plan['scope']+='All tasks are starter-solvable; simple versus repeated-processing is an opportunity label, not necessity. '
         plan['scope']+='Task artifacts, package checks, edits, activation and observed reuse are separate. Arbitrary feature semantics and extension necessity remain unmeasured.'
+    for profile in plan['profiles']:
+        profile['config'] = repeat_config(plan, profile['config'], 1)
+        profile['sampling'] = sampling_record(profile['config'])
+    if seed_mode == 'server-initialized':
+        plan['scope'] += ' Server-seed initialization and fresh-server-per-attempt lifecycle belong to the external runtime owner; unverified without separate evidence.'
     output.mkdir(parents=True)
     atomic_json(output / 'plan.json', plan)
     (output / 'plan.sha256').write_text(identity(plan), encoding='ascii')
@@ -183,7 +221,7 @@ def prepare(args):
 
 
 def check(plan):
-    if source_identity(seed_files(ROOT)) != plan['source_sha256'] or trusted_files() != plan['trusted_sha256']:
+    if source_identity(seed_files(ROOT)) != plan.get('starter_sha256', plan['source_sha256']) or trusted_files() != plan['trusted_sha256']:
         raise ValueError('Seed or trusted runner changed; prepare a new plan')
     if environment() != plan['environment']:
         raise ValueError('Execution environment changed; prepare a new plan')
@@ -229,7 +267,16 @@ def calibrate(plan, output, cache, study, run_regressions):
             return row.get('passed') is True and file_identity(Path(row['evidence']) / 'calibration.json') == row['report_sha256']
         except (OSError, KeyError, TypeError):
             return False
-    if plan['mode'] != 'benchmark':
+    if plan['mode'] == 'basic':
+        store = Store(output / 'basic-calibration/sessions')
+        key = {'kind': 'basic-starter', 'source': plan['source_sha256'],
+               'trusted': plan['trusted_sha256'], 'environment': plan['environment']}
+        def basic_check():
+            return run_regressions(ROOT, store, freeze_source(store, plan['source'], 'Frozen basic-task starter'))
+        value, receipt = cache.run(key, basic_check, lambda row: row.get('passed') is True)
+        atomic_json(output/'calibration-receipt.json', {'cache': receipt, 'result': value})
+        if not value.get('passed'): raise ValueError('Basic-task starter failed protected regressions')
+    elif plan['mode'] != 'benchmark':
         value, receipt = cache.run({'source': plan['source_sha256'], 'trusted': plan['trusted_sha256'],
                                     'environment': plan['environment'], 'kind': 'generalization-calibration'},
                                    calibration, valid_calibration)

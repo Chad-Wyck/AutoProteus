@@ -271,7 +271,7 @@ function renderSession() {
   visible('stop', active); visible('send', true); $('stop').disabled = session.status === 'stopping';
   $('task').disabled = session.status === 'stopping'; $('task').placeholder = active ? 'Change direction, or queue something for afterwards…' : 'Add a reply, clarify the task, or request a change…';
   renderInputQueue(session);
-  const labels = { running: 'Working', stopping: 'Stopping', completed: session.provider === 'demo' ? 'Demo finished' : 'Agent reported completion', waiting: 'Your input needed', paused: 'Paused', interrupted: 'Interrupted', error: 'Needs attention', ready: 'Ready' };
+  const labels = { running: 'Working', stopping: 'Stopping', completed: session.provider === 'demo' ? 'Demo finished' : 'Agent reported completion', waiting: session.waiting_reason === 'plain_reply' ? 'Paused without explicit completion' : 'Your input needed', paused: 'Paused', interrupted: 'Interrupted', error: 'Needs attention', ready: 'Ready' };
   text('status-label', labels[session.status] || session.status); $('status-dot').className = 'status-dot ' + session.status;
   renderVerification();
   text('step-count', `${session.steps} step${session.steps === 1 ? '' : 's'} · ${session.provider === 'demo' ? 'Scripted demo' : session.model}`);

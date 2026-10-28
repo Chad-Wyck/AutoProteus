@@ -170,6 +170,11 @@ def model_response(content, calls, native, **metadata):
     if native:
         try:
             response['content'] = normalize_tool_response(content, calls)
+            # Transport provenance, not a guess about whether the prose asks a
+            # question. Explicit JSON/textual finish decisions keep their status.
+            text = content.strip()
+            if not calls and text and not text.startswith(('{', 'finish\n')):
+                response['reply_kind'] = 'plain_reply'
         except (ValueError, KeyError, TypeError) as error:
             # Preserve malformed native responses in the journal for diagnosis.
             response.update(content='', normalization_error=str(error))
@@ -193,12 +198,13 @@ def request_json(url, data=None, headers=None, timeout=10):
 
 
 class ModelClient:
-    def __init__(self, config, key="", observer=None):
+    def __init__(self, config, key="", observer=None, native_instructions=None):
         self.config = dict(config)
         seed=self.config.get('sampling_seed')
         if seed is not None and (type(seed) is not int or not 0<=seed<=2147483647):
             raise ValueError('Sampling seed must be an integer from 0 to 2147483647')
         self.key = key
+        self.native_instructions = native_instructions  # Host-owned research override; never read from guest frames.
         self.observer = observer
         self.observation_context = None
         self.observation_failed = False
@@ -221,7 +227,7 @@ class ModelClient:
         # Legacy callers may supply their own JSON prompt without declarations.
         # Current guest requests always supply the catalog in either mode.
         if tools is not None:
-            wire = with_response_instructions(wire, 'native' if native else 'json', tools)
+            wire = with_response_instructions(wire, 'native' if native else 'json', tools, self.native_instructions)
         schemas = tools if native else []
         pairs = []
         for index, (call, result) in enumerate(zip(wire, wire[1:])):

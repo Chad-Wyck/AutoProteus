@@ -21,7 +21,7 @@ The hosted adapter cannot verify all engine settings from a model alias. Record
 requested versus independently verified settings. Compare complete successful
 tasks first, then calls, measured tokens and time; preserve partial measurements.
 
-New studies request a seed on **each model call**. This is a different sampling
+By default, fixed-case studies request a seed on **each model call**. This is a different sampling
 protocol from earlier private runs that initialized a fresh server RNG once per
 attempt. The optional field maps to Ollama `options.seed` or the compatible chat
 API's `seed`. Normal app requests omit it unless explicitly supplied. See the
@@ -34,6 +34,15 @@ Check recorded provider payloads and engine evidence. Seed control
 does not control cache warmth or guarantee identical hardware trajectories.
 An unseeded ordinary `--mode full` study remains available for incompatible
 endpoints; label its sampling separately from this seeded case pack.
+
+`--sampling-seed-mode server-initialized` instead **omits the request seed** and
+records the scheduled seed as `server_initial_seed`. It does not start, restart,
+or seed the external service. The runtime owner must initialize a fresh service
+with that seed before **each attempt**, preserve its command/configuration and
+restart evidence, and avoid unrelated calls consuming the RNG stream. A plain
+long-lived endpoint is not a controlled server-initialized comparison. The runner
+labels server initialization unverified; matching declarations alone are not proof.
+Both native API transports are checked for omission of request seeds in this mode.
 
 Prepare separate environment-bound plans on each host. Compare Git revision,
 source fingerprint, profile and `repeatability.portable_case_sha256`; do not copy
@@ -79,6 +88,94 @@ python -X utf8 evaluations/model_study.py run --input .data/fixed-growth
 The case pack fixes the repeat count; a conflicting `--repeats` is rejected.
 Provider traces and per-attempt results record the requested sampling seed.
 Actual tool actions and finishing remain subject to the same protected limits.
+
+### Focused sampling comparison, prepared for later
+
+Use `sampling-csv-cases.json` for three paired CSV trials (six first attempts,
+plus qualification/basic checks), with first activation/use but no second
+extension. Keep the same frozen source, model, settings and resource limits in
+both plans. Prepare the following two plans; **do not run them while the PC is
+busy with another workload**:
+
+```text
+python -X utf8 evaluations/model_study.py prepare --profiles profiles.json --output .data/csv-per-request --mode full --first-only --case-pack evaluations/sampling-csv-cases.json --sampling-seed-mode per-request --timeout 3600 --output-token-budget 65536
+python -X utf8 evaluations/model_study.py prepare --profiles profiles.json --output .data/csv-server-initialized --mode full --first-only --case-pack evaluations/sampling-csv-cases.json --sampling-seed-mode server-initialized --timeout 3600 --output-token-budget 65536
+```
+
+Use the [optional owned-runtime profile](model-study.md#optional-owned-inference-service)
+to arrange fresh services with startup/seed receipts, or retain an external
+runtime owner with equivalent evidence. The generic runner groups an arm's work;
+it does not interleave separate queues. Alternate arm order across matched seeds
+as specified by the comparison schedule. Do not run two whole queues sequentially
+and describe them as counterbalanced.
+
+Portable case hashes include the sampling mode and therefore differ across
+these arms; compare the frozen contracts, fixtures, seed schedule and budgets
+directly as well. This tests sampling policy on the current seed, not a regression
+against an older seed. No effectiveness result follows from preparation.
+
+### Read the results in stages
+
+`study_report.py` reads only closed exports and does not recover sessions:
+
+```text
+python -X utf8 evaluations/study_report.py --input .data/csv-per-request --output .data/csv-per-request-report
+```
+
+Its basic-task table separates checked artifacts/behavior, explicit completion,
+and strict task passes. Extension acceptance, actual use and complete chains
+remain separate. Not-run cells retain their gate reason and are **untested**;
+missing observations are unmeasured. A prose completion reply does not become
+verified completion, and correct files do not establish that a new tool was used.
+Historical results are read without changing their verdicts.
+
+### Isolate edit-result feedback from finishing guidance
+
+Freeze the previous Git seed, the two independent interventions, and their
+combined source without starting any service:
+
+```text
+python -X utf8 evaluations/seed_comparison.py --output .data/pretest-comparisons --baseline-ref c2c7d13501b165130bcc13994ba0be0344cb58a1
+python -X utf8 evaluations/seed_comparison.py --output .data/pretest-comparisons --check-only
+```
+
+This produces source packs, native-format instruction files and a hashed
+preparation manifest. It rejects unrelated seed differences and preserves the
+same starter checks in every arm. Line endings are aligned to the current files
+and that normalization is recorded. A version-only release metadata change is
+also aligned across arms and recorded alongside the original Git source hash;
+unrelated code changes are rejected. These are inert bundles, not calibrated or
+executable study plans. Fix the model/runtime/context settings before execution.
+
+- **Finishing:** baseline versus `finish-only`, initially the first paired seed
+  on five basic tasks (10 tasks). The treatment changes the seed/tool wording
+  and host native instructions; it adds no reminder after a failed attempt.
+- **Unchanged edits:** baseline versus `edit-result-only`, three paired CSV
+  first-extension/use trials (six first attempts). Only `file_ops.py` changes.
+  Both arms use the baseline finishing wording and the same sampling policy.
+- **Combined:** retained for subsequent qualification, not included in those
+  isolated comparisons. Do not add its attempts to either treatment's score.
+
+The manifest records per-task paired order; extra finishing repeats require a
+separate repeatability decision. For environment-bound preparation, the normal
+runner accepts `--source-pack` and `--native-instructions-file`. For example:
+
+```text
+python -X utf8 evaluations/model_study.py prepare --profiles profiles.json --output .data/finishing-baseline --mode basic --repeats 1 --source-pack .data/pretest-comparisons/baseline-source.json --native-instructions-file .data/pretest-comparisons/baseline-native.txt
+```
+
+Prepare the matching treatment with its own files and new output directory.
+Use `--mode full --first-only --case-pack evaluations/sampling-csv-cases.json`
+for the CSV arms. Do not combine the sampling-policy study with this intervention
+study: keep per-request policy, seeds and initial runtime settings matched.
+Separate whole-arm runs are labelled exploratory, not balanced interleaving.
+The first basic screen uses profile seed 104729; later finishing pairs use the
+manifest's seeds through separately prepared profiles/plans. The per-request
+seed and per-attempt startup receipts make the actual execution auditable.
+
+Common controller code is current in all arms except the explicitly frozen
+native instructions. Live checks still use protected guests. Read source bundles
+as data; never import candidate modules into the host to inspect a catalog.
 
 ## 2. Outcome-only choice and later reuse
 

@@ -108,6 +108,7 @@ class Broker:
                               if config.get('action_limit', True) else None)
         self.finished = False
         self.last_status = 'running'
+        self.plain_reply = None
         self.activation_context, self.context_config = activation_context, config
         self.inputs, self.operations = Inputs(store, session), Operations(store, session)
         self.web = WebAccess(config.get('internet', False), cancel)
@@ -157,6 +158,7 @@ class Broker:
             self.human_texts.update(item['content'] for item in messages)
             return messages
         if op == 'infer' and set(frame) in ({'op', 'messages'}, {'op', 'messages', 'tools'}):
+            self.plain_reply = None
             messages = frame['messages']
             if isinstance(messages, list) and len(messages) > 2048:
                 raise IsolationError('Model request exceeds the 2048-message limit')
@@ -203,6 +205,8 @@ class Broker:
                     outcome = 'failed'
                     try:
                         answer = self.client.complete(forwarded, self.cancel, progress=thinking, tools=tools)
+                        if answer.get('reply_kind') == 'plain_reply':
+                            self.plain_reply = json.loads(answer['content'])
                         thinking.thinking(answer.get('thinking', ''))
                         outcome = 'completed'
                         return answer
@@ -285,6 +289,16 @@ class Broker:
             fields.remove('status')
             with self.store.lock:
                 self.session.update({key: value[key] for key in fields if key in value})
+                self.session.pop('waiting_reason', None)
+                if self.last_status == 'waiting' and self.plain_reply is not None:
+                    last = next((item['content'] for item in reversed(value['messages']) if item['role'] == 'assistant'), '')
+                    try:
+                        consumed = json.loads(last) == self.plain_reply
+                    except ValueError:
+                        consumed = False
+                    if consumed:
+                        self.session['waiting_reason'] = 'plain_reply'
+                        self.session['activity'] = 'Paused without explicit completion'
                 self.inputs.acknowledge(value['messages'])
                 self.operations.acknowledge(value['messages'])
                 self.session['status'] = 'running'

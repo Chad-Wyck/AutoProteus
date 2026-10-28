@@ -12,10 +12,48 @@ from test_seed import temporary_directory
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'evaluations'))
 import model_plan
-from repeatability import repeat_config, freeze_cases
+from repeatability import repeat_config, freeze_cases, sampling_record
 
 
 class RepeatabilityTests(unittest.TestCase):
+    def test_server_initialization_is_distinct_and_never_claimed_verified(self):
+        config = {'sampling_seed': 999}
+        plan = {'sampling_seed_mode': 'server-initialized', 'repeatability': {'sampling_seeds': [1, 2]}}
+        server = repeat_config(plan, config, 2)
+        self.assertNotIn('sampling_seed', server)
+        self.assertEqual(server['server_initial_seed'], 2)
+        self.assertEqual(repeat_config(plan, server, 1)['server_initial_seed'], 1)
+        self.assertEqual(config, {'sampling_seed': 999})
+        self.assertFalse(sampling_record(server)['server_initialization_verified'])
+        per_request = repeat_config({**plan, 'sampling_seed_mode': 'per-request'}, server, 2)
+        self.assertEqual(per_request['sampling_seed'], 2)
+        self.assertNotIn('server_initial_seed', per_request)
+        for values in ({}, {'sampling_seed': True}, {'server_initial_seed': -1}):
+            with self.assertRaises(ValueError):repeat_config({'sampling_seed_mode': 'server-initialized'}, values, 1)
+        with self.assertRaises(ValueError):repeat_config({'sampling_seed_mode': 'unknown'}, config, 1)
+        self.assertEqual(sampling_record({})['mode'], 'server-default')
+
+    def test_csv_sampling_arms_freeze_matching_tasks_and_distinct_policies_without_inference(self):
+        with temporary_directory() as directory:
+            root = Path(directory)
+            profiles = root / 'profiles.json'
+            atomic_json(profiles, [{'id': 'fixture', 'config': {'provider': 'hosted', 'base_url': 'http://127.0.0.1:8080/v1', 'model': 'fixture'}}])
+            plans = []
+            for mode in ('per-request', 'server-initialized'):
+                args = SimpleNamespace(mode='full', output=str(root / mode), profiles=str(profiles), repeats=None,
+                    first_only=True, timeout=3600, output_token_budget=65536, sampling_seed_mode=mode,
+                    case_pack=str(ROOT / 'evaluations/sampling-csv-cases.json'))
+                with patch('builtins.print'):model_plan.prepare(args)
+                plans.append(json.loads((root / mode / 'plan.json').read_text()))
+            request, server = plans
+            for key in ('source_sha256', 'first_use_contracts', 'contracts', 'deadline', 'generated_tokens', 'upgrade_tasks', 'repeats'):
+                self.assertEqual(request[key], server[key])
+            self.assertEqual(request['upgrade_tasks'], ['csv_preview'])
+            self.assertFalse(request['growth_enabled'])
+            self.assertNotEqual(request['repeatability']['portable_case_sha256'], server['repeatability']['portable_case_sha256'])
+            self.assertNotIn('sampling_seed', server['profiles'][0]['config'])
+            self.assertEqual(server['profiles'][0]['sampling']['declared_server_initial_seed'], 104729)
+
     def test_fixed_cases_are_identical_across_repeats_and_host_preparations(self):
         with temporary_directory() as directory:
             root=Path(directory);profiles=root/'profiles.json'

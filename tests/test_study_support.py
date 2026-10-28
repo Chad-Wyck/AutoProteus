@@ -178,6 +178,44 @@ class StudySupportTests(unittest.TestCase):
             self.assertEqual(result['complete_growth'], 0)
             self.assertEqual(summary['queue']['not_run'], 1)
 
+    def test_summary_separates_correct_basic_artifacts_from_completion_and_missing_checks(self):
+        with temporary_directory() as directory:
+            queue = StudyQueue(directory, 'frozen')
+            queue.run('fixture_basic_files', lambda _: {'run': {
+                'checks': [{'passed': True}], 'status': 'waiting', 'passed': False}})
+            queue.run('fixture_basic_error', lambda _: {'run': {
+                'checks': [], 'status': 'error', 'passed': False}})
+            queue.skip('fixture_basic_skipped', 'Inference gate did not qualify')
+            summary = study.summarize(queue, {'profiles': [{'id': 'fixture'}], 'mode': 'full', 'scope': '',
+                'upgrade_tasks': [], 'repeats': 1})['profiles']['fixture']['ordinary']
+            self.assertEqual(summary, {'attempts': 2, 'artifact_checks': 1, 'artifacts_correct': 1,
+                'completion_observations': 2, 'explicit_completion': 0, 'passed': 0, 'not_run': 1})
+
+    def test_basic_mode_runs_each_seed_without_requesting_an_extension(self):
+        with temporary_directory() as directory:
+            root=Path(directory);folder=root/'.data/basic';folder.mkdir(parents=True)
+            names=['one','two','three','four','five']
+            plan={'mode':'basic','repeats':2,'source':[],'source_sha256':'fixture','scope':'basic fixture',
+                  'profiles':[{'id':'fixture','config':dict(DEFAULTS)}], 'upgrade_tasks':[],
+                  'ordinary_tasks':names,'tasks':[{'name':name} for name in names],
+                  'repeatability':{'sampling_seeds':[11,22]}}
+            atomic_json(folder/'plan.json',plan);(folder/'plan.sha256').write_text(identity(plan))
+            calls=[]
+            def attempt(_folder,task,source,config,inputs,*extra):
+                self.assertEqual(extra,())
+                calls.append(config['sampling_seed'])
+                return {'run':{'status':'waiting','passed':False,'checks':[{'passed':True}]}}
+            with patch.object(study,'ROOT',root),patch.object(study,'check'),patch.object(study,'Appliance'),\
+                    patch.object(study,'calibrate'),patch.object(study,'model_identity',return_value={'model':'fixture'}),\
+                    patch.object(study,'benchmark',return_value={'passed':True}),patch.object(study,'trial',side_effect=attempt),\
+                    patch('builtins.print'):
+                study._run(SimpleNamespace(input=str(folder),retry=[]))
+            self.assertEqual(calls,[11]*5+[22]*5)
+            summary=json.loads((folder/'summary.json').read_text())['profiles']['fixture']
+            self.assertEqual(summary['first_attempts'],0)
+            self.assertEqual(summary['ordinary']['artifacts_correct'],10)
+            self.assertEqual(summary['ordinary']['explicit_completion'],0)
+
     def test_candidate_check_cache_is_scoped_to_attempt_and_changed_source_invalidates(self):
         from controller.evaluation import freeze_source
         from controller.storage import Store

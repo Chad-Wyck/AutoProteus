@@ -9,6 +9,7 @@ changes no app preferences and executes candidates only in disposable VMs.
 import argparse
 import base64
 import copy
+from contextlib import nullcontext
 import hashlib
 import json
 import platform
@@ -32,11 +33,12 @@ from controller.storage import Store, atomic_json, now
 from controller.submissions import repair_ticket, ticket_message
 from observations import CallRecorder, call_metrics, latency_metrics, navigation_metrics, read_events
 from run_budget import BudgetModelClient, GeneratedTokenBudget, DEFAULT_OUTPUT_TOKENS, DEFAULT_TASK_SECONDS
-from study_support import ResultCache, StudyQueue, Timings, file_identity, identity
+from study_support import ResultCache, StudyQueue, Timings, file_identity, identity, task_observations
 from workflow_variants import TREATMENTS, variant, DEVELOPMENT_FOCUS, USE_FOCUS
 import generalization as study
 import activation_use
-from repeatability import repeat_config
+from repeatability import SEED_MODES, repeat_config, sampling_record
+from owned_runtime import RuntimeOwner
 
 
 from model_plan import private, trusted_files, environment, prepare, check, workflow_requirements, growth_feature, calibrate
@@ -95,7 +97,8 @@ def metrics(folder, recorder, clients):
 def benchmark(folder, config, plan):
     recorder = CallRecorder(folder / 'provider-calls.jsonl')
     response = min(config['response_tokens'], 256 if config.get('thinking') is False else 1024)
-    client = BudgetModelClient({**config, 'response_tokens': response}, token_budget=GeneratedTokenBudget(response * 2), observer=recorder)
+    client = BudgetModelClient({**config, 'response_tokens': response}, token_budget=GeneratedTokenBudget(response * 2), observer=recorder,
+                              native_instructions=plan.get('native_instructions'))
     results = []
     started = time.monotonic()
     for length in (0, min(24000, (config['context_tokens'] - 1024) // 2)):
@@ -114,7 +117,7 @@ def benchmark(folder, config, plan):
         except (ProviderError, ValueError) as error:
             row.update(passed=False, error=str(error), category=getattr(error, 'category', 'protocol'))
         results.append(row)
-    return {'passed': all(row['passed'] for row in results), 'requests': results,
+    return {'passed': all(row['passed'] for row in results), 'requests': results, 'sampling': sampling_record(config),
             'seconds': round(time.monotonic() - started, 3), **metrics(folder, recorder, [client]),
             'scope': 'Inference-only speed/protocol screen. No model-chosen tool executes. '
                      'First measured call and longer-prompt call; cache warmth is not controlled.'}
@@ -155,7 +158,8 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
     budget = GeneratedTokenBudget(plan['generated_tokens'] if feature or reuse_only else plan['ordinary_generated_tokens'])
     clients = []
     def factory(values):
-        client = BudgetModelClient(values, token_budget=budget, observer=recorder)
+        client = BudgetModelClient(values, token_budget=budget, observer=recorder,
+                                   native_instructions=plan.get('native_instructions'))
         clients.append(client)
         return client
     settings = SimpleNamespace(values=config, key=lambda: '')
@@ -168,6 +172,7 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
     timings = Timings()
     row = {'task': task['name'], 'earlier': earlier, 'added': feature, 'operator_candidate_repairs': [],
            'requested_sampling_seed':config.get('sampling_seed'),
+           'sampling': sampling_record(config),
            'input_protocol': 'withheld_final_input' if staged else 'strict_preserve_visible_input',
            'treatment': plan.get('treatment', 'baseline'), 'stages': {'activated': False},
            'experimental_instructions': ['CURRENT FINAL TASK\n' + task['final_task']] if final_contract else
@@ -376,7 +381,17 @@ def summarize(queue, plan):
         growth = [row['result'] for row in rows if row['cell'][len(prefix):].startswith('growth_')]
         reuse = [row['result'] for row in rows if row['cell'][len(prefix):].startswith('reuse_')]
         speed = [row['result'] for row in rows if row['cell'][len(prefix):].startswith('benchmark_')]
+        ordinary = [task_observations(row['result'].get('run', {})) for row in rows if row['cell'][len(prefix):].startswith('basic_')]
         profiles[profile['id']] = {'benchmarks': speed,
+            'sampling': sampling_record(profile.get('config', {})),
+            'ordinary': {'attempts': sum(row['cell'][len(prefix):].startswith('basic_') for row in all_rows),
+                'artifact_checks': sum(type(row['artifacts_correct']) is bool for row in ordinary),
+                'artifacts_correct': sum(row['artifacts_correct'] is True for row in ordinary),
+                'completion_observations': sum(type(row['explicit_completion']) is bool for row in ordinary),
+                'explicit_completion': sum(row['explicit_completion'] is True for row in ordinary),
+                'passed': sum(row['task_passed'] is True for row in ordinary),
+                'not_run': sum(key.startswith(prefix+'basic_') and attempts[-1]['state']=='not_run'
+                               for key, attempts in queue.data['cells'].items())},
             'scheduled_first_tasks': 0 if plan.get('parent') else len(plan['upgrade_tasks']) * plan['repeats'] * len(plan.get('variants', {'baseline': []})),
             'first_attempts': sum(row['cell'][len(prefix):].startswith('first_') for row in all_rows), 'first_finished': len(first),
             'first_verified': sum(study.verified(row.get('review', {})) for row in first),
@@ -490,7 +505,11 @@ def _run(args):
     check(plan)
     if plan['mode'] != 'benchmark':
         Appliance(ROOT).verify()
+    owners = {}
     for profile in plan['profiles']:
+        if profile.get('runtime') is not None:
+            owners[profile['id']] = RuntimeOwner(profile)
+            continue
         for path, digest in profile.get('assets', {}).items():
             if file_identity(path) != digest:
                 raise ValueError('Profile asset changed: ' + path)
@@ -509,38 +528,63 @@ def _run(args):
         return
     if plan['mode']=='outcomes':
         from outcome_study import run_plan
-        return run_plan(plan,output,queue,args)
+        return run_plan(plan,output,queue,args,owners=owners)
     try:
         for profile in plan['profiles']:
             config = profile['config']
-            public_identity = model_identity(config)
+            owner = owners.get(profile['id'])
+            public_identity = None if owner else model_identity(config)
             marker = output / (profile['id'] + '-identity.json')
-            if marker.exists() and json.loads(marker.read_text()) != public_identity:
+            if not owner and marker.exists() and json.loads(marker.read_text()) != public_identity:
                 raise ValueError('Inference service identity changed; prepare a new plan')
-            atomic_json(marker, public_identity)
-            def cell(suffix, execute):
+            if not owner: atomic_json(marker, public_identity)
+            def cell(suffix, execute, runtime_config=None):
                 check(plan)
-                if model_identity(config) != public_identity:
+                if not owner and model_identity(config) != public_identity:
                     raise ValueError('Inference service identity changed during study')
                 name = profile['id'] + '_' + suffix
                 previous = queue.latest(name)
                 if not previous or (previous['state'] in ('interrupted', 'error') and name in args.retry):
                     print('START', name, flush=True)
                 def checked_execute(folder):
-                    result = execute(folder)
-                    # Also check the final cell: a change during a long attempt
-                    # must not become a completed frozen-study observation.
-                    check(plan)
-                    if model_identity(config) != public_identity:
-                        raise ValueError('Inference service identity changed during the attempt')
+                    context = owner.attempt(folder, runtime_config or config,
+                        plan.get('ordinary_deadline', 240) if suffix.startswith('basic_') else
+                        plan.get('deadline', 1800)) if owner else nullcontext(None)
+                    with context as runtime:
+                        expected = model_identity(config) if owner else public_identity
+                        if owner:
+                            if marker.exists() and json.loads(marker.read_text()) != expected:
+                                raise ValueError('Owned inference service identity changed; prepare a new plan')
+                            atomic_json(marker, expected)
+                        result = execute(folder)
+                        # Also check the final cell: partial mixed-source results
+                        # cannot earn credit even after the trial wrote a result.
+                        check(plan)
+                        if model_identity(config) != expected:
+                            raise ValueError('Inference service identity changed during the attempt')
+                    if runtime:
+                        result['runtime_observation'] = runtime.record
+                        atomic_json(folder/'result.json', result)
                     return result
                 row = queue.run(name, checked_execute, retry=name in args.retry)
                 atomic_json(output / 'summary.json', summarize(queue, plan))
                 print('CELL', name, row['state'], flush=True)
                 return row.get('result', {})
             for repeat in range(1, (plan['repeats'] if plan['mode'] == 'benchmark' else 1) + 1):
-                speed = cell('benchmark_%02d' % repeat, lambda folder: benchmark(folder, config, plan))
+                selected = repeat_config(plan, config, repeat)
+                speed = cell('benchmark_%02d' % repeat, lambda folder: benchmark(folder, selected, plan), selected)
             if plan['mode'] == 'benchmark':
+                continue
+            if plan['mode'] == 'basic':
+                for repeat in range(1, plan['repeats'] + 1):
+                    selected = repeat_config(plan, config, repeat)
+                    for name in plan['ordinary_tasks']:
+                        suffix = 'basic_%02d_%s' % (repeat, name)
+                        task = next(item for item in plan['tasks'] if item['name'] == name)
+                        if speed.get('passed'):
+                            cell(suffix, lambda folder, task=task: trial(folder, task, plan['source'], selected, plan), selected)
+                        else:
+                            queue.skip(profile['id']+'_'+suffix, 'Inference screen did not qualify; basic task untested')
                 continue
             names = plan['ordinary_tasks'] if plan['mode'] == 'full' else plan['ordinary_tasks'][:3]
             ordinary = []
@@ -565,9 +609,9 @@ def _run(args):
                     for treatment in order:
                         suffix = ('reuse' if plan.get('reuse_task') else 'growth') + '_%02d_%s_%s' % (repeat, parent['tool'], treatment)
                         if gate:
-                            cell(suffix, lambda folder, treatment=treatment: trial(folder, task, parent['source'], config,
+                            cell(suffix, lambda folder, treatment=treatment: trial(folder, task, parent['source'], seeded_config,
                                 {**plan, 'treatment': treatment}, None if plan.get('reuse_task') else added,
-                                None if plan.get('reuse_task') else parent['tool']))
+                                None if plan.get('reuse_task') else parent['tool']), seeded_config)
                         else:
                             queue.skip(profile['id'] + '_' + suffix, 'Basic gate did not qualify; supplied-parent growth untested')
                     continue
@@ -595,7 +639,7 @@ def _run(args):
                                 'After implementing and verifying the feature, finish needs_input requesting independent activation.')
                             task['task'] += ('\nAfter independent checking and activation the controller will supply fresh task inputs. '
                                 'Do not create those input or receipt paths during development. Complete this first-use task: '+spec['instruction'])
-                        first = cell(first_id, lambda folder: trial(folder, task, input_source, seeded_config, inputs, feature))
+                        first = cell(first_id, lambda folder: trial(folder, task, input_source, seeded_config, inputs, feature), seeded_config)
                         if not plan.get('growth_enabled',True):
                             queue.skip(profile['id']+'_'+growth_id, 'Second extension not requested in this first-only comparison')
                         elif activation_use.eligible_parent(first, plan.get('protocol')):
@@ -607,7 +651,7 @@ def _run(args):
                                 row['chain'] = activation_use.chain_result(first, row, plan.get('protocol'))
                                 atomic_json(folder/'result.json', row)
                                 return row
-                            cell(growth_id, second_trial)
+                            cell(growth_id, second_trial, seeded_config)
                         else:
                             queue.skip(profile['id'] + '_' + growth_id, 'First upgrade not fully accepted; no accepted parent exists')
         summary = summarize(queue, plan)
@@ -624,7 +668,7 @@ if __name__ == '__main__':
     p = commands.add_parser('prepare')
     p.add_argument('--profiles', required=True)
     p.add_argument('--output', required=True)
-    p.add_argument('--mode', choices=('benchmark', 'screen', 'full', 'outcomes'), default='screen')
+    p.add_argument('--mode', choices=('benchmark', 'basic', 'screen', 'full', 'outcomes'), default='screen')
     p.add_argument('--repeats', type=int)
     p.add_argument('--first-only', action='store_true', help='Measure first extension and activation/use without requesting a second extension')
     p.add_argument('--timeout', type=int, default=DEFAULT_TASK_SECONDS)
@@ -636,7 +680,11 @@ if __name__ == '__main__':
     p.add_argument('--parent-tool', choices=tuple(study.CONTRACTS))
     p.add_argument('--reuse-task', help='JSON task with required_tools and exact artifact checks; reuse only, no upgrade credit')
     p.add_argument('--task-pack', help='Optional independently checked offline tasks replacing the basic-task pack')
-    p.add_argument('--case-pack', help='Portable fixed upgrade cases and predeclared per-request seeds')
+    p.add_argument('--source-pack', help='Inert comparison source JSON; must preserve the common starter tests')
+    p.add_argument('--native-instructions-file', help='Host-owned frozen native-format text for controlled comparisons')
+    p.add_argument('--case-pack', help='Portable fixed upgrade cases and predeclared seed schedule')
+    p.add_argument('--sampling-seed-mode', choices=SEED_MODES, default='per-request',
+                   help='Per-call seed, or omit request seeds and declare externally managed server initialization (not verified by runner)')
     p = commands.add_parser('run')
     p.add_argument('--input', required=True)
     p.add_argument('--check-only', action='store_true', help='Verify frozen inputs and scripted graders without contacting inference')

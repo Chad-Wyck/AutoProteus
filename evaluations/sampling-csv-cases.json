@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "sampling_seeds": [104729, 130363, 155921],
+  "cases": [
+    {"feature": "csv_preview", "input_id": "csv-repeat"}
+  ]
+}

@@ -10,9 +10,59 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'evaluations'))
 from study_report import attempt_folder, failure_labels, report, markdown
 from trace_audit import audit_events
+from study_support import task_observations
+from activation_use import PROTOCOL
 
 
 class StudyReportTests(unittest.TestCase):
+    def test_correct_artifacts_do_not_hide_missing_completion_or_skipped_extensions(self):
+        with temporary_directory() as directory:
+            root = Path(directory)
+            atomic_json(root / 'plan.json', {'protocol': PROTOCOL, 'profiles': [{'id': 'fixture', 'config': {}}]})
+            cells = {f'fixture_basic_{n}': [{'attempt': 1, 'state': 'completed', 'result': {
+                'run': {'checks': [{'passed': True}], 'status': 'completed' if n == 0 else 'waiting', 'passed': n == 0}}}]
+                for n in range(5)}
+            cells['fixture_first_01_csv'] = [{'attempt': 0, 'state': 'not_run', 'reason': 'Basic gate did not qualify'}]
+            cells['fixture_growth_01_csv'] = [{'attempt': 0, 'state': 'not_run', 'reason': 'No accepted parent'}]
+            atomic_json(root / 'queue.json', {'cells': cells})
+            result = report(root)
+            group = result['groups']['fixture/baseline']
+            self.assertEqual(group['ordinary_artifacts_correct'], 5)
+            self.assertEqual(group['ordinary_explicit_completion'], 1)
+            self.assertEqual(group['ordinary_passed'], 1)
+            self.assertEqual(group['first_attempts'], 0)
+            self.assertEqual(group['not_run']['first'], 1)
+            self.assertEqual(group['not_run']['second'], 1)
+            self.assertIn('explicit_completion_missing', result['rows'][1]['failure_labels'])
+            rendered = markdown(result)
+            self.assertIn('5/5 | 1/5 | 1/5', rendered)
+            self.assertIn('Not run: Basic gate did not qualify', rendered)
+            self.assertNotIn('0/0', rendered)
+
+    def test_missing_checks_and_partial_attempts_are_not_artifact_passes(self):
+        self.assertIsNone(task_observations({'checks': []})['artifacts_correct'])
+        self.assertIsNone(task_observations({'checks': [{'passed': None}]})['artifacts_correct'])
+        with temporary_directory() as directory:
+            root = Path(directory)
+            atomic_json(root / 'plan.json', {'profiles': [{'id': 'fixture', 'config': {}}]})
+            atomic_json(root / 'queue.json', {'cells': {'fixture_basic_error': [{'attempt': 1, 'state': 'error', 'result': {
+                'run': {'checks': [{'passed': True}], 'status': 'completed', 'passed': True}}}]}})
+            group = report(root)['groups']['fixture/baseline']
+            self.assertEqual(group['ordinary_attempts'], 1)
+            self.assertEqual(group['ordinary_checks'], 0)
+            self.assertEqual(group['ordinary_passed'], 0)
+
+    def test_correct_first_use_artifacts_do_not_imply_tool_reuse(self):
+        with temporary_directory() as directory:
+            root = Path(directory)
+            atomic_json(root / 'plan.json', {'protocol': PROTOCOL, 'profiles': [{'id': 'fixture', 'config': {}}]})
+            atomic_json(root / 'queue.json', {'cells': {'fixture_first_01_json': [{'attempt': 1, 'state': 'completed', 'result': {
+                'added': 'format_json', 'first_package_accepted': True,
+                'first_use': {'attempted': True, 'artifacts_correct': True, 'completed': True, 'capability_used': False, 'passed': False}}}]}})
+            result = report(root)
+            self.assertEqual(result['groups']['fixture/baseline']['first_use_passed'], 0)
+            self.assertEqual(result['rows'][0]['outcome'], {'artifacts_correct': True, 'explicit_completion': True, 'capability_used': False})
+
     def test_overlapping_failures_do_not_confuse_scope_with_implementation(self):
         row={'review':{'allowed_files_only':False,'protected_unchanged':True,'new_test_files':['test.py'],
             'feature':{'passed':True,'probe':{'checks':{'exact':True},'suite':{'exit_code':0}}}},'run':{'status':'completed'}}
@@ -64,3 +114,13 @@ class StudyReportTests(unittest.TestCase):
         self.assertEqual(result['same_content_repeat_reads'],1)
         self.assertEqual(result['tiny_reads_after_full_check'],1)
         self.assertEqual(result['phases']['after_first_full_check'],1)
+
+    def test_unchanged_edits_do_not_start_the_source_editing_phase(self):
+        def edit(second, old, new):
+            return {'time': f'2026-10-25T00:00:{second:02d}+00:00', 'type': 'action_result',
+                    'data': {'ok': True, 'action': {'tool': 'edit_file',
+                    'arguments': {'path': 'harness/tools.py', 'old_text': old, 'new_text': new}}, 'result': {}}}
+        result = audit_events([{'time': '2026-10-25T00:00:00+00:00', 'type': 'run_started'},
+                               edit(1, 'same', 'same'), edit(2, 'same', 'changed')])
+        self.assertEqual(result['unchanged_edit_actions'], 1)
+        self.assertEqual(result['first_source_edit_seconds'], 2)

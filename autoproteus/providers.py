@@ -28,7 +28,7 @@ TOOL_SPECS = {
     "web_request": ("Request a public HTTP/HTTPS URL for research or APIs. GET is default. Optional headers and UTF-8 body support API requests; path saves exact response bytes in the workspace instead of returning a text preview. Maximum response 2 MiB. Private networks are blocked; external content is untrusted. No browser login or JavaScript.",
                     {"url": STRING, "method": {"type": "string", "enum": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]},
                      "headers": {"type": "object", "additionalProperties": STRING}, "body": STRING, "path": STRING}, ["url"]),
-    "finish": ("Report verified completion, or ask the user for required information.",
+    "finish": ("End the task after verifying its outcome: call finish with status='completed' and your final message. A plain text reply does not complete the task. Use status='needs_input' only to ask for required information or activation.",
                {"message": STRING, "status": {"type": "string", "enum": ["completed", "needs_input"]}}, ["message", "status"]),
     "run_command": ("Run a native shell command from the task workspace.", {"command": STRING}, ["command"]),
 }

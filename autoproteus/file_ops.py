@@ -73,5 +73,8 @@ def edit_file(self, args):
         raise ValueError("The edited file would exceed 100,000 characters")
     if self.cancel.is_set():
         raise Cancelled()
+    if old == new:
+        return {"path": str(path.relative_to(self.root)), "bytes": len(raw), "replacements": 0,
+                "changed": False, "message": "No change made: replacement text matches existing text."}
     path.write_bytes(updated.encode("utf-8"))
-    return {"path": str(path.relative_to(self.root)), "bytes": len(updated.encode("utf-8")), "replacements": 1}
+    return {"path": str(path.relative_to(self.root)), "bytes": len(updated.encode("utf-8")), "replacements": 1, "changed": True}

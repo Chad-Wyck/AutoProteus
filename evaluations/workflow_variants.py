@@ -101,9 +101,11 @@ def variant(source, treatment, keep=8, threshold=512):
     for item in result:
         if item['path'] == 'autoproteus/file_ops.py' and treatment in ('edit-feedback', 'syntax-feedback'):
             text = base64.b64decode(item['data']).decode('utf-8')
-            anchor = '    return {"path": str(path.relative_to(self.root)), "bytes": len(updated.encode("utf-8")), "replacements": 1}'
+            anchor = '    return {"path": str(path.relative_to(self.root)), "bytes": len(updated.encode("utf-8")), "replacements": 1, "changed": True}'
+            if anchor not in text:  # Historical frozen seeds lack the changed field.
+                anchor = anchor.replace(', "changed": True', '')
             text = replace_once(text, anchor, '    from .workflow_support import edit_feedback\n'
-                '    return edit_feedback({"path": str(path.relative_to(self.root)), "bytes": len(updated.encode("utf-8")), "replacements": 1},\n'
+                '    return edit_feedback(' + anchor.strip().removeprefix('return ') + ',\n'
                 '                         path, updated, start, len(new), ' + repr(treatment) + ')')
             changed = True
         elif item['path'] == 'autoproteus/context.py' and treatment == 'masked-history':

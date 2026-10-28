@@ -1,5 +1,6 @@
 """Outcome/choice observations, separate from named-feature upgrade qualification."""
 import json
+from contextlib import nullcontext
 from pathlib import Path
 import threading
 import time
@@ -12,7 +13,7 @@ from controller.storage import Store, atomic_json
 from controller.submissions import submission_policy
 from observations import CallRecorder, read_events
 from outcome_tasks import grade_outputs, oracle_controls
-from repeatability import repeat_config
+from repeatability import repeat_config, sampling_record
 from run_budget import BudgetModelClient, GeneratedTokenBudget
 from study_support import identity
 
@@ -82,7 +83,7 @@ def phase(folder,task,source,config,plan,base_names,client_factory=None):
     root=Path(__file__).resolve().parents[1];agent=IsolatedAgent(root,store,settings,factory)
     if agent.execution.mode!='vm':raise ValueError('Outcome studies require disposable VMs')
     start=time.monotonic();deadline=start+plan['deadline'];active=source;names=set(base_names)
-    row={'task':task['name'],'requested_sampling_seed':config.get('sampling_seed'),'packages':[],
+    row={'task':task['name'],'requested_sampling_seed':config.get('sampling_seed'),'sampling':sampling_record(config),'packages':[],
         'activations':0,'scripted':client_factory is not None,'feature_semantics':'unmeasured'}
     atomic_json(folder/'task.json',task)
     try:
@@ -138,22 +139,33 @@ def calibrate(plan,output):
     if not result['passed']:raise ValueError('Outcome starter package calibration failed')
 
 
-def run_plan(plan,output,queue,args):
+def run_plan(plan,output,queue,args,owners=None):
     import model_study as ms
     from controller.compatibility import model_identity
     rows=[]
     for profile in plan['profiles']:
-        config=profile['config'];known=model_identity(config)
+        owner = (owners or {}).get(profile['id'])
+        config=profile['config'];known=None if owner else model_identity(config)
         marker=output/(profile['id']+'-identity.json')
-        if marker.exists() and json.loads(marker.read_text())!=known:raise ValueError('Inference service identity changed; prepare a fresh plan')
-        atomic_json(marker,known)
-        def cell(suffix,execute):
+        if not owner and marker.exists() and json.loads(marker.read_text())!=known:raise ValueError('Inference service identity changed; prepare a fresh plan')
+        if not owner: atomic_json(marker,known)
+        def cell(suffix,execute,runtime_config=None):
             ms.check(plan)
-            if model_identity(config)!=known:raise ValueError('Inference service identity changed')
+            if not owner and model_identity(config)!=known:raise ValueError('Inference service identity changed')
             name=profile['id']+'_'+suffix
             def checked(folder):
-                value=execute(folder);ms.check(plan)
-                if model_identity(config)!=known:raise ValueError('Inference service identity changed')
+                context = owner.attempt(folder, runtime_config or config, plan['deadline']) if owner else nullcontext(None)
+                with context as runtime:
+                    expected = model_identity(config) if owner else known
+                    if owner:
+                        if marker.exists() and json.loads(marker.read_text()) != expected:
+                            raise ValueError('Owned inference service identity changed')
+                        atomic_json(marker, expected)
+                    value=execute(folder);ms.check(plan)
+                    if model_identity(config)!=expected:raise ValueError('Inference service identity changed')
+                if runtime:
+                    value['runtime_observation'] = runtime.record
+                    atomic_json(folder/'result.json', value)
                 return value
             record=queue.run(name,checked,retry=name in args.retry)
             print('CELL',name,record['state'],flush=True)
@@ -167,13 +179,13 @@ def run_plan(plan,output,queue,args):
                 if not speed.get('result',{}).get('passed'):
                     queue.skip(profile['id']+'_'+suffix,'Inference screen did not qualify')
                     queue.skip(profile['id']+'_'+reuse_suffix,'Inference screen did not qualify');continue
-                first=cell(suffix,lambda folder:phase(folder,case['first'],plan['source'],seeded,plan,plan['base_tool_names']))
+                first=cell(suffix,lambda folder:phase(folder,case['first'],plan['source'],seeded,plan,plan['base_tool_names']),seeded)
                 if first['state']!='completed':
                     queue.skip(profile['id']+'_'+reuse_suffix,'No completed first attempt to observe');continue
                 original=first['result'];source_path=Path(first['folder'])/'continuation-source.json'
                 source=json.loads(source_path.read_text(encoding='utf-8'))
                 if source_identity(source)!=original['continuation_source_sha256']:raise ValueError('Continuation source changed')
-                later=cell(reuse_suffix,lambda folder:phase(folder,case['reuse'],source,seeded,plan,original['continuation_tools']))
+                later=cell(reuse_suffix,lambda folder:phase(folder,case['reuse'],source,seeded,plan,original['continuation_tools']),seeded)
                 added=set(original['continuation_tools'])-set(plan['base_tool_names'])
                 usage=later.get('result',{}).get('usage',{})
                 observed=added & (set(usage.get('direct',[]))|set(usage.get('development',[])))

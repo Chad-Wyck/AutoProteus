@@ -19,12 +19,16 @@ def audit_events(events):
     def seconds(event):
         return round((datetime.fromisoformat(event['time'])-datetime.fromisoformat(start)).total_seconds(),3) if start else None
     reads=[];first_edit=first_test=first_full=last_full=finish=None
+    unchanged_edits = 0
     seen=Counter();paths=Counter();after=Counter()
     for event in events:
         if event.get('type')=='run_finished': finish=seconds(event)
         data=event.get('data',{});action=data.get('action',{});args=action.get('arguments',{})
         if event.get('type')!='action_result' or not data.get('ok'): continue
         tool=action.get('tool');path=args.get('path','');result=data.get('result',{})
+        if tool == 'edit_file' and isinstance(args.get('old_text'), str) and args['old_text'] == args.get('new_text'):
+            unchanged_edits += 1
+            continue  # An identical replacement is not a source or test edit.
         if tool in ('write_file','edit_file','delete_file') and path.startswith('harness/'):
             if path.startswith('harness/tests/'):
                 if first_test is None:first_test=seconds(event)
@@ -45,7 +49,8 @@ def audit_events(events):
         if first_full is not None:after[path]+=1
         reads.append({'seconds':seconds(event),'path':path,'start':offset,'characters':len(content),
             'requested_length':args.get('length'),'phase':phase,'same_observed_content_before':prior})
-    return {'navigation':navigation_metrics(events),'first_source_edit_seconds':first_edit,'first_test_edit_seconds':first_test,
+    return {'navigation':navigation_metrics(events),'unchanged_edit_actions':unchanged_edits,
+        'first_source_edit_seconds':first_edit,'first_test_edit_seconds':first_test,
         'first_full_check_seconds':first_full,'last_full_check_seconds':last_full,'finish_seconds':finish,
         'successful_read_actions':len(reads),'reads_by_path':dict(paths),'reads_after_first_full_check_by_path':dict(after),
         'same_content_repeat_reads':sum(row['same_observed_content_before'] for row in reads),
