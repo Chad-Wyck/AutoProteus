@@ -88,6 +88,41 @@ class ZipTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 packager.create_tag(repo, '1.2.3')
 
+    def test_tag_lands_on_ref_not_head(self):
+        # Chad's PR #5 reproduction: --tag --ref <older commit> must tag
+        # that commit, not HEAD.
+        parent = ROOT / '.data/test-tmp'
+        parent.mkdir(parents=True, exist_ok=True)
+        with TemporaryDirectory(dir=parent) as tmp:
+            repo = make_repo(tmp)
+            first = packager.resolve_commit(repo, 'HEAD')
+            (repo / 'a.txt').write_text('changed\n')
+            subprocess.run(['git', 'commit', '-q', '-a', '-m', 'second'],
+                           cwd=repo, check=True)
+            self.assertNotEqual(first, packager.resolve_commit(repo, 'HEAD'))
+            packager.create_tag(repo, '1.2.3', ref=first)
+            tagged = subprocess.run(
+                ['git', 'rev-list', '-n', '1', 'v1.2.3'], cwd=repo,
+                capture_output=True, check=True).stdout.decode().strip()
+            self.assertEqual(tagged, first)
+
+    def test_notes_come_from_ref_not_worktree(self):
+        # Notes must be read from the packaged commit even when the
+        # working-tree CHANGELOG.md has been modified since.
+        parent = ROOT / '.data/test-tmp'
+        parent.mkdir(parents=True, exist_ok=True)
+        with TemporaryDirectory(dir=parent) as tmp:
+            repo = make_repo(tmp)
+            (repo / 'CHANGELOG.md').write_text(CHANGELOG)
+            subprocess.run(['git', 'add', '-A'], cwd=repo, check=True)
+            subprocess.run(['git', 'commit', '-q', '-m', 'changelog'],
+                           cwd=repo, check=True)
+            (repo / 'CHANGELOG.md').write_text(
+                CHANGELOG.replace('Yield idle VMs.', 'WORKTREE EDIT'))
+            section = packager.changelog_section_at_ref(repo, 'HEAD', '0.14.1')
+            self.assertIn('Yield idle VMs.', section)
+            self.assertNotIn('WORKTREE EDIT', section)
+
 
 if __name__ == '__main__':
     unittest.main()
