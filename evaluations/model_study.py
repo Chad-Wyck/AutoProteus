@@ -18,6 +18,7 @@ import sys
 import threading
 import time
 from types import SimpleNamespace
+from unittest.mock import patch
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,6 +34,7 @@ from controller.storage import Store, atomic_json, now
 from controller.submissions import repair_ticket, ticket_message
 from observations import CallRecorder, call_metrics, latency_metrics, navigation_metrics, read_events
 from run_budget import BudgetModelClient, GeneratedTokenBudget, DEFAULT_OUTPUT_TOKENS, DEFAULT_TASK_SECONDS
+from hosted_study import client as study_client, connection as hosted_connection
 from study_support import ResultCache, StudyQueue, Timings, file_identity, identity, task_observations
 from workflow_variants import TREATMENTS, variant, DEVELOPMENT_FOCUS, USE_FOCUS
 import generalization as study
@@ -42,6 +44,12 @@ from owned_runtime import RuntimeOwner
 
 
 from model_plan import private, trusted_files, environment, prepare, check, workflow_requirements, growth_feature, calibrate
+
+
+def budget_client(config, **kwargs):
+    # Keep the existing local-client seam for experiments and scripted tests.
+    from hosted_study import permitted
+    return study_client(config, **kwargs) if permitted(config) else BudgetModelClient(config, **kwargs)
 
 
 class Checks:
@@ -97,7 +105,7 @@ def metrics(folder, recorder, clients):
 def benchmark(folder, config, plan):
     recorder = CallRecorder(folder / 'provider-calls.jsonl')
     response = min(config['response_tokens'], 256 if config.get('thinking') is False else 1024)
-    client = BudgetModelClient({**config, 'response_tokens': response}, token_budget=GeneratedTokenBudget(response * 2), observer=recorder,
+    client = budget_client({**config, 'response_tokens': response}, token_budget=GeneratedTokenBudget(response * 2), observer=recorder,
                               native_instructions=plan.get('native_instructions'))
     results = []
     started = time.monotonic()
@@ -124,8 +132,41 @@ def benchmark(folder, config, plan):
 
 
 def trial(folder, task, source, config, plan, feature=None, earlier=None):
+    if not plan.get('activation_reminder', False) or not feature:
+        return _trial(folder,task,source,config,plan,feature,earlier)
+    instruction=task.get('first_use',{}).get('instruction') if not earlier else task.get('final_task')
+    if not isinstance(instruction,str) or not instruction or instruction not in task['task']:
+        raise ValueError('Activation reminder requires a verbatim existing final-use instruction')
+    from activation_replay import broker_type, MARKER
+    with patch('controller.isolation.Broker',broker_type('task-reminder',instruction)):
+        result=_trial(folder,task,source,config,plan,feature,earlier)
+    trace=Path(folder)/'provider-calls.jsonl'
+    result['activation_reminder']={'instruction':instruction,'source':'verbatim original task clause',
+        'observed':any(event.get('type')=='provider_request' and any(MARKER+instruction in item.get('content','')
+            for item in event.get('data',{}).get('payload',{}).get('messages',
+                event.get('data',{}).get('payload',{}).get('input',[])) if isinstance(item.get('content'),str))
+            for event in read_events(trace)) if trace.exists() else False,
+        'scope':'Host-owned state after activation only; no development coaching or hidden grader feedback.'}
+    atomic_json(Path(folder)/'result.json',result)
+    return result
+
+
+def activation_tool_use(events, boundary):
+    """Public corrections are continuations of one activated-use stage."""
+    if type(boundary) is not int or not 0 <= boundary <= len(events):
+        raise ValueError('Invalid activation event boundary')
+    return tool_use(events[boundary:])
+
+
+def _trial(folder, task, source, config, plan, feature=None, earlier=None):
     task = copy.deepcopy(task)
     original_task = copy.deepcopy(task)
+    public_spec = None
+    if plan.get('public_verifier_feedback') and feature:
+        from public_verifier import specification, announcement
+        public_spec = specification(task, feature, earlier)
+        task['public_verifier'] = public_spec
+        task['task'] += announcement(public_spec)
     staged = plan.get('treatment') == 'staged-inputs'
     final_input = 'inventory.json'
     if staged:
@@ -158,7 +199,7 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
     budget = GeneratedTokenBudget(plan['generated_tokens'] if feature or reuse_only else plan['ordinary_generated_tokens'])
     clients = []
     def factory(values):
-        client = BudgetModelClient(values, token_budget=budget, observer=recorder,
+        client = budget_client(values, token_budget=budget, observer=recorder,
                                    native_instructions=plan.get('native_instructions'))
         clients.append(client)
         return client
@@ -185,6 +226,14 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
             row['run'] = run_task(agent, store, config, task, freeze_source(store, source, 'Frozen input'),
                                   max(0, deadline - time.monotonic()), deadline=deadline)
         session = store.get(row['run']['session'])
+        def public_feedback(run):
+            from public_verifier import repair
+            original_text = (original_task['fixtures'] if earlier else original_task['first_use']['fixtures'])[public_spec['input']]
+            run, receipt = repair(agent, store, session, settings, config, public_spec,
+                                  original_text, budget, deadline, study.wait, run,
+                                  record=lambda value: atomic_json(folder / 'public-verifier-feedback.json', value))
+            atomic_json(folder / 'public-verifier-feedback.json', receipt)
+            return run, receipt
         if support:
             events = study.journal(store, session)
             lesson_read = any(event.get('type') == 'action_result' and event.get('data', {}).get('ok') and
@@ -240,7 +289,10 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
                 if row['first_package_accepted']:
                     with timings.measure('first_activation_and_use'):
                         row['first_use'] = activation_use.activate(agent, store, session, settings, config,
-                            task['first_use'], budget, deadline, study.wait)
+                            task['first_use'], budget, deadline, study.wait,
+                            **({'feedback': public_feedback} if public_spec else {}))
+                        if public_spec:
+                            row['public_verifier'] = row['first_use'].get('public_verifier')
                 else:
                     row['first_use'] = {'attempted':False,'passed':False,'reason':'first_package_not_accepted'}
                 row['stages'].update(activated=row['first_use'].get('activated',False),
@@ -277,6 +329,7 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
                 if (row['verified_extension'] and retained and row['stage_order_preserved'] and remaining > 0 and
                         session['status'] in ('completed', 'waiting') and not row['run']['timed_out'] and not budget.summary()['exhausted'] and
                         remaining_actions > 0):
+                    activation_boundary = len(study.journal(store, session))
                     with timings.measure('activation_and_final_use'):
                         # Activation never grants a new task allowance. A later
                         # second-extension task receives its own fresh allowance.
@@ -301,6 +354,8 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
                         row['stages']['activated'] = True
                         # Synchronous activation/setup consumes wall time too.
                         row['final'] = study.wait(agent, session, max(0, deadline - time.monotonic()))
+                        if public_spec:
+                            row['final'], row['public_verifier'] = public_feedback(row['final'])
                     row['final_source_unchanged'] = source_identity(candidate_source(store, session)) == source_identity(edited)
                     expected = original_task['fixtures'][artifact] if earlier == 'csv_preview' else json.dumps(
                         json.loads(original_task['fixtures'][artifact]), ensure_ascii=False, sort_keys=True, indent=2) + '\n'
@@ -315,7 +370,9 @@ def trial(folder, task, source, config, plan, feature=None, earlier=None):
                             correct = correct and receipt.get('rows') == rows[:5] and receipt.get('truncated') == (len(rows) > 5)
                     except (OSError, ValueError, AttributeError):
                         correct = False
-                    row['final_usage'] = tool_use(study.latest_run(study.journal(store, session)))
+                    row['final_usage'] = activation_tool_use(study.journal(store, session), activation_boundary)
+                    row['final_usage_scope'] = {'event_boundary': activation_boundary,
+                        'scope': 'All actual calls since activation, including public correction; development is excluded.'}
                     row['final_artifacts_correct'] = correct
                     row['stages'].update(correct_final_use=correct, explicit_finish=session['status'] == 'completed')
                     row['scores'] = growth_scores(row['final_source_unchanged'], retained,
@@ -409,7 +466,17 @@ def summarize(queue, plan):
                     else bool(row.get('scores',{}).get('functional_growth')) for row in growth)),
             'reuse_attempts': sum(row['cell'][len(prefix):].startswith('reuse_') for row in all_rows),
             'reuse_finished': len(reuse), 'reuse_passed': sum(bool(row.get('reuse', {}).get('passed')) for row in reuse)}
-    report = {'mode': plan['mode'], 'protocol':plan.get('protocol','legacy'), 'scope': plan['scope'], 'queue': queue.summary(), 'profiles': profiles}
+        if plan.get('public_verifier_feedback'):
+            feedback = [row['public_verifier'] for row in first + growth if row.get('public_verifier')]
+            profiles[profile['id']]['public_verifier'] = {
+                'stages': len(feedback),
+                'passed_without_feedback': sum(r.get('passed_without_feedback') is True for r in feedback),
+                'corrections': sum(r.get('corrections', 0) for r in feedback),
+                'passed_after_feedback': sum(r.get('passed_after_feedback') is True for r in feedback),
+                'scope': 'Public artifact/completion observations, separate from hidden qualification. Use/chain totals include corrections.'}
+    report = {'mode': plan['mode'], 'protocol':plan.get('protocol','legacy'), 'scope': plan['scope'],
+              'activation_reminder':plan.get('activation_reminder',False),
+              'public_verifier_feedback':plan.get('public_verifier_feedback',False),'queue': queue.summary(), 'profiles': profiles}
     if plan.get('experiment'):
         report['comparison'] = comparison(queue, plan)
     return report
@@ -492,7 +559,13 @@ def run(args):
     lease = VMLease(private(args.input))
     try:
         lease.acquire(threading.Event(), time.monotonic() + 1)
-        return _run(args)
+        output = private(args.input)
+        plan = json.loads((output / 'plan.json').read_text(encoding='utf-8'))
+        if identity(plan) != (output / 'plan.sha256').read_text().strip():
+            raise ValueError('Frozen plan changed')
+        check(plan)
+        with hosted_connection(plan, args, output):
+            return _run(args)
     finally:
         lease.close()
 
@@ -667,6 +740,7 @@ if __name__ == '__main__':
     commands = parser.add_subparsers(dest='command', required=True)
     p = commands.add_parser('prepare')
     p.add_argument('--profiles', required=True)
+    p.add_argument('--allow-hosted', action='store_true', help='Explicitly permit paid official OpenAI Responses studies')
     p.add_argument('--output', required=True)
     p.add_argument('--mode', choices=('benchmark', 'basic', 'screen', 'full', 'outcomes'), default='screen')
     p.add_argument('--repeats', type=int)
@@ -683,10 +757,17 @@ if __name__ == '__main__':
     p.add_argument('--source-pack', help='Inert comparison source JSON; must preserve the common starter tests')
     p.add_argument('--native-instructions-file', help='Host-owned frozen native-format text for controlled comparisons')
     p.add_argument('--case-pack', help='Portable fixed upgrade cases and predeclared seed schedule')
+    p.add_argument('--activation-reminder', action='store_true',
+                   help='Research only: copy the existing final-use clause into host activation state')
+    p.add_argument('--public-verifier-feedback', action='store_true',
+                   help='Research only: disclose public output checks and permit one correction within the original allowances')
     p.add_argument('--sampling-seed-mode', choices=SEED_MODES, default='per-request',
                    help='Per-call seed, or omit request seeds and declare externally managed server initialization (not verified by runner)')
     p = commands.add_parser('run')
     p.add_argument('--input', required=True)
+    p.add_argument('--allow-hosted', action='store_true', help='Explicitly authorize the frozen paid API study')
+    p.add_argument('--api-key-file', help='Windows-encrypted host-only key; never copied into the plan or guest')
+    p.add_argument('--max-api-cost-usd', type=float, default=25, help='Conservative study-wide API cost cap, default $25')
     p.add_argument('--check-only', action='store_true', help='Verify frozen inputs and scripted graders without contacting inference')
     p.add_argument('--retry', action='append', default=[], metavar='CELL_ID', help='Explicit new attempt after interruption/error; preserves the original')
     args = parser.parse_args()

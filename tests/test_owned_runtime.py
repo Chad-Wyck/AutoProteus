@@ -17,6 +17,7 @@ from test_seed import temporary_directory
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/'evaluations'))
 from owned_runtime import AssetPins, GIB, OwnedRuntime, validate
+from runtime_pressure import PressureGuard
 from study_support import file_identity, identity
 import model_study as ms
 
@@ -122,6 +123,42 @@ class OwnedRuntimeTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'lifetime expired'):runtime.guard()
             runtime.close()
             self.assertFalse(listening(runtime.port))
+
+    def test_sustained_paging_stops_owned_service_above_the_hard_floor(self):
+        with temporary_directory() as directory, socket.socket() as unrelated:
+            unrelated.bind(('127.0.0.1', 0)); unrelated.listen()
+            reader = SimpleNamespace(read=lambda: {'page_in_bytes_per_second':64*1024**2}, close=lambda:None)
+            runtime = self.fixture(Path(directory)/'runtime')
+            runtime.spec['pressure_seconds'] = .01
+            with patch('owned_runtime.PagingReader', return_value=reader):
+                runtime.start()
+                runtime.read_memory=lambda: {'available_physical':3*GIB,'available_commit':12*GIB}
+                runtime.monitor.join(timeout=4)
+            self.assertFalse(runtime.monitor.is_alive())
+            with self.assertRaisesRegex(RuntimeError, 'Sustained host memory pressure'): runtime.guard()
+            runtime.close()
+            self.assertTrue(listening(unrelated.getsockname()[1]))
+            receipt=json.loads((runtime.folder/'cleanup.json').read_text())
+            self.assertEqual(receipt['failure_category'], 'resource')
+            self.assertTrue(receipt['owned_process_stopped'])
+
+    def test_pressure_requires_a_sustained_combination_and_recovers(self):
+        guard = PressureGuard(seconds=15)
+        low={'available_physical':3*GIB,'page_in_bytes_per_second':64*1024**2}
+        self.assertIsNone(guard.observe(low,0))
+        self.assertIsNone(guard.observe(low,14))
+        self.assertIsNone(guard.observe({**low,'available_physical':8*GIB},15))
+        self.assertIsNone(guard.observe(low,16))
+        self.assertIsNone(guard.observe(low,30))
+        self.assertIn('pressure',guard.observe(low,31))
+        # Busy cold file reads with enough available RAM are not pressure.
+        self.assertIsNone(guard.observe({**low,'available_physical':8*GIB},50))
+        # Low RAM without paging/stalls, or missing counters, is not proof.
+        self.assertIsNone(guard.observe({'available_physical':3*GIB},100))
+        self.assertIsNone(guard.observe({'available_physical':3*GIB},120))
+        linux={'available_physical':3*GIB,'memory_stall_percent':30}
+        self.assertIsNone(guard.observe(linux,130))
+        self.assertIn('pressure',guard.observe(linux,145))
 
     def test_existing_evidence_and_changed_assets_cannot_be_reused(self):
         with temporary_directory() as directory:

@@ -69,6 +69,23 @@ def failure_labels(row):
     return labels, failed
 
 
+def failure_kind(attempt, result, cleanup):
+    """Use receipts first; a downstream connection error is not model evidence."""
+    reason = cleanup.get('reason') or result.get('resource_reason') or attempt.get('detail') or ''
+    category = cleanup.get('failure_category') or result.get('failure_category')
+    # Recognize the exact legacy guard wording without modifying old records.
+    if category == 'resource' or any(text in reason for text in (
+            'Memory floor reached; owned inference stopped',
+            'Insufficient memory headroom for owned inference startup',
+            'Sustained host memory pressure')):
+        return 'resource', reason
+    if attempt['state'] == 'interrupted' or category == 'operator_interruption':
+        return 'interrupted', reason
+    if attempt['state'] == 'error' or category or result.get('infrastructure_failure'):
+        return 'infrastructure', reason or result.get('infrastructure_failure', '')
+    return None, reason
+
+
 def report(directory):
     directory, queue_root, plan, queue = load_closed(directory)
     if plan.get('mode')=='outcomes':
@@ -83,6 +100,13 @@ def report(directory):
             if not result and attempt.get('attempt',0)>0:
                 path=attempt_folder(queue_root,cell,attempt['attempt'])/'result.json'
                 if path.exists(): result=read_json(path)
+            cleanup = {}
+            if attempt.get('attempt', 0)>0:
+                path = (attempt_folder(queue_root,cell,attempt['attempt'])/'runtime/cleanup.json').resolve()
+                if not path.is_relative_to(queue_root.resolve()):
+                    raise ValueError('Runtime receipt escapes study')
+                if path.exists(): cleanup=read_json(path)
+            kind, stop_reason = failure_kind(attempt, result, cleanup)
             case=schedule.get(cell,{})
             profile=next((p['id'] for p in sorted(plan.get('profiles',[]), key=lambda p: len(p['id']), reverse=True)
                           if cell.startswith(p['id']+'_')),'local-model')
@@ -102,9 +126,15 @@ def report(directory):
                 outcome = {'artifacts_correct': result.get('final_artifacts_correct'),
                            'explicit_completion': result.get('stages', {}).get('explicit_finish'),
                            'capability_used': result.get('scores', {}).get('capabilities_used')}
-            if attempt['state'] != 'completed':
+            if attempt['state'] != 'completed' or kind:
                 outcome = {}  # Partial result bytes are not completed observations.
             labels, failed=failure_labels(result)
+            if kind:
+                # Partial checks remain in the raw record. They do not explain
+                # a completed capability verdict when execution was disrupted.
+                labels = [{'resource':'resource_stop', 'interrupted':'interrupted',
+                           'infrastructure':'infrastructure_error'}[kind]]
+                failed = []
             if phase == 'ordinary' and outcome.get('explicit_completion') is False:
                 labels.append('explicit_completion_missing')
             if phase == 'ordinary' and outcome.get('artifacts_correct') is False:
@@ -113,8 +143,13 @@ def report(directory):
             measurements={name:{**value,'complete':bool(captured and value.get('complete'))}
                 for name,value in result.get('calls',{}).get('measurements',{}).items()}
             rows.append({'cell':cell,'attempt':attempt.get('attempt',0),'state':attempt['state'],
-                'profile':profile,'arm':case.get('arm',result.get('treatment','baseline')),'phase':phase,
+                'profile':profile,'arm':case.get('arm',
+                    ('public-verifier-feedback' + ('+task-reminder' if plan.get('activation_reminder') else ''))
+                    if plan.get('public_verifier_feedback') else 'task-reminder' if plan.get('activation_reminder') else result.get('treatment','baseline')),'phase':phase,
+                'activation_reminder':result.get('activation_reminder'),
+                'public_verifier':result.get('public_verifier'),
                 'outcome': outcome, 'sampling': result.get('sampling'),
+                'failure_kind':kind, 'resource_reason':stop_reason if kind else None,
                 'runtime': {key: result['runtime_observation'][key] for key in
                     ('fresh_server', 'initial_server_seed', 'request_seed', 'reported_seed_matches', 'reported_context_matches', 'load_seconds')
                     if key in result['runtime_observation']} if result.get('runtime_observation') else None,
@@ -130,11 +165,14 @@ def report(directory):
                 'protected_changes':result.get('review',{}).get('protected_changes',[]),
                 'seconds':result.get('total_seconds'),'measurements':measurements,
                 'token_enforcement':result.get('token_budget'),
-                'reason':attempt.get('reason') or attempt.get('detail')})
+                'reason':stop_reason or attempt.get('reason') or attempt.get('detail')})
     groups={}
     for row in rows:
         key=row['profile']+'/'+row['arm']
         group=groups.setdefault(key,{'launched':0,'finished':0,'first_attempts':0,'first_packages':0,'first_use_attempts':0,'first_use_passed':0,
+            'ordinary_evaluated':0,'first_evaluated':0,'second_evaluated':0,
+            'resource_stops':0,'infrastructure_errors':0,'interruptions':0,
+            'public_verifier_stages':0,'public_passed_without_feedback':0,'public_corrections':0,'public_passed_after_feedback':0,
             'second_attempts':0,'second_verified':0,'second_use_passed':0,'complete_chains':0 if chain_measured else None,'diagnostic_second':0,
             'ordinary_attempts':0,'ordinary_checks':0,'ordinary_artifacts_correct':0,
             'ordinary_completion_observations':0,'ordinary_explicit_completion':0,'ordinary_passed':0,
@@ -145,9 +183,18 @@ def report(directory):
         group['launched']+=row['attempt']>0
         group['finished']+=row['state']=='completed'
         group['first_attempts']+=row['phase']=='first' and row['attempt']>0
-        group['first_use_attempts']+=bool(row['first_use'] and row['first_use'].get('attempted'))
         group['second_attempts']+=row['phase']=='second' and row['attempt']>0
-        if row['state']!='completed': continue  # Partial result bytes cannot earn credit.
+        if row['failure_kind']:
+            group[{'resource':'resource_stops','interrupted':'interruptions','infrastructure':'infrastructure_errors'}[row['failure_kind']]]+=1
+        if row['state']!='completed' or row['failure_kind']: continue  # Partial results cannot earn credit.
+        if row['public_verifier']:
+            feedback = row['public_verifier']
+            group['public_verifier_stages'] += 1
+            group['public_passed_without_feedback'] += feedback.get('passed_without_feedback') is True
+            group['public_corrections'] += feedback.get('corrections', 0)
+            group['public_passed_after_feedback'] += feedback.get('passed_after_feedback') is True
+        if row['phase'] in ('ordinary','first','second'): group[row['phase']+'_evaluated']+=1
+        group['first_use_attempts']+=bool(row['first_use'] and row['first_use'].get('attempted'))
         if row['phase'] == 'ordinary':
             group['ordinary_checks'] += type(row['outcome'].get('artifacts_correct')) is bool
             group['ordinary_artifacts_correct'] += row['outcome'].get('artifacts_correct') is True
@@ -165,8 +212,12 @@ def report(directory):
          'sampling_seed','sampling_seed_mode','server_initial_seed')}, 'sampling': p.get('sampling', sampling_record(p.get('config', {})))}
         for p in plan.get('profiles',[])]
     return {'protocol':plan.get('protocol','legacy'),'source_sha256':plan.get('source_sha256',plan.get('sources')),
+        'activation_reminder':plan.get('activation_reminder',False),
+        'public_verifier_feedback':plan.get('public_verifier_feedback',False),
         'profiles':public_profiles,'groups':groups,'rows':rows,
-        'scope':'Read-only report. Historical scores are unchanged. Correct artifacts, explicit completion and actual capability use are separate observations. '
+        'scope':'Read-only report. Saved records are unchanged. Score fractions cover fully evaluated attempts only; '
+                'all launched attempts, resource stops, infrastructure errors and interruptions remain visible separately. '
+                'Correct artifacts, explicit completion and actual capability use are separate observations. '
                 'Not-run cells are untested, not failed attempts. Artifact counts cover recorded checks (including behavior checks), not arbitrary feature correctness. '
                 'Legacy first autonomous use and complete chains are unmeasured, not zero. Labels are overlapping observations, not proven causes.',
         'cost_scope':'Known sums retain completeness flags. Token enforcement charges are not measured generation. No efficiency ranking is made here.'}
@@ -177,19 +228,31 @@ def markdown(value):
         return f'{passed}/{total}' if total else 'unmeasured'
     text=['# Study outcome report','',value['scope'],'',value['cost_scope'],'',
         '## Basic tasks','',
-        '| Profile / arm | Correct checked artifacts | Explicit completion | Strict task passes / attempts | Basic not run |',
+        '| Profile / arm | Correct checked artifacts | Explicit completion | Strict task passes / evaluated | Basic not run |',
         '| --- | ---: | ---: | ---: | ---: |']
     for key, row in value['groups'].items():
         text.append(f"| {key.replace('|','/')} | {fraction(row['ordinary_artifacts_correct'], row['ordinary_checks'])} | "
                     f"{fraction(row['ordinary_explicit_completion'], row['ordinary_completion_observations'])} | "
-                    f"{fraction(row['ordinary_passed'], row['ordinary_attempts'])} | {row['not_run']['ordinary']} |")
+                    f"{fraction(row['ordinary_passed'], row['ordinary_evaluated'])} | {row['not_run']['ordinary']} |")
     text += ['', '## Extensions and use', '',
         '| Profile / arm | First packages | First use | Second verified | Second use | Complete chains | Diagnostic second-stage attempts |',
         '| --- | ---: | ---: | ---: | ---: | ---: | ---: |']
     for key,row in value['groups'].items():
         first_use=fraction(row['first_use_passed'],row['first_use_attempts']) if value['protocol']==PROTOCOL else 'unmeasured'
-        chains=row['complete_chains'] if row['complete_chains'] is not None and row['first_attempts'] else 'unmeasured'
-        text.append(f"| {key.replace('|','/')} | {fraction(row['first_packages'],row['first_attempts'])} | {first_use} | {fraction(row['second_verified'],row['second_attempts'])} | {fraction(row['second_use_passed'],row['second_attempts'])} | {chains} | {row['diagnostic_second']} |")
+        chains=row['complete_chains'] if row['complete_chains'] is not None and row['first_evaluated'] else 'unmeasured'
+        text.append(f"| {key.replace('|','/')} | {fraction(row['first_packages'],row['first_evaluated'])} | {first_use} | {fraction(row['second_verified'],row['second_evaluated'])} | {fraction(row['second_use_passed'],row['second_evaluated'])} | {chains} | {row['diagnostic_second']} |")
+    if value.get('public_verifier_feedback'):
+        text += ['', '## Experimental public verifier', '',
+                 'These checks were disclosed before inference. They are separate from hidden qualification; extension/use scores above include any automatic correction. Public success alone does not establish a complete workflow.', '',
+                 '| Profile / arm | Public stages checked | Passed before feedback | Corrections | Passed after feedback |',
+                 '| --- | ---: | ---: | ---: | ---: |']
+        for key, row in value['groups'].items():
+            text.append(f"| {key.replace('|','/')} | {row['public_verifier_stages']} | {row['public_passed_without_feedback']} | {row['public_corrections']} | {row['public_passed_after_feedback']} |")
+    text += ['', '## Execution accounting', '',
+             '| Profile / arm | Launched | Finished | Resource stops | Other infrastructure errors | Interrupted |',
+             '| --- | ---: | ---: | ---: | ---: | ---: |']
+    for key,row in value['groups'].items():
+        text.append(f"| {key.replace('|','/')} | {row['launched']} | {row['finished']} | {row['resource_stops']} | {row['infrastructure_errors']} | {row['interruptions']} |")
     text += ['', '## Cells not run', '', '| Profile / arm | Basic | First extension | Second extension | Inference |',
              '| --- | ---: | ---: | ---: | ---: |']
     for key, row in value['groups'].items():
@@ -215,6 +278,7 @@ def markdown(value):
            '| --- | --- | --- | --- | --- | --- | --- |']
     for row in value['rows']:
         detail=', '.join(row['failure_labels']+row['failed_feature_checks']) or row['reason'] or 'No recorded failure label'
+        if row.get('resource_reason'): detail += ': ' + str(row['resource_reason'])
         if row['state'] == 'not_run': detail = 'Not run: ' + (row['reason'] or 'No reason recorded')
         def verdict(key):
             observed = row['outcome'].get(key)

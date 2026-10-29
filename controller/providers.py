@@ -128,7 +128,7 @@ def normalize_tool_response(content, calls):
         # envelope. Do not extract calls from prose, fences or partial JSON.
         if text.startswith('finish\n'):
             arguments = json.loads(text.split('\n', 1)[1])
-            if (not isinstance(arguments, dict) or set(arguments) != {'message', 'status'}
+            if (not isinstance(arguments, dict) or not {'message', 'status'} <= set(arguments) or set(arguments) - {'message', 'status', 'reason'}
                     or not isinstance(arguments['message'], str) or arguments['status'] not in ('completed', 'needs_input')):
                 raise ValueError('Call finish with a text message and a valid status')
             return json.dumps(arguments, ensure_ascii=False)
@@ -152,7 +152,8 @@ def normalize_tool_response(content, calls):
         if isinstance(arguments, str):
             arguments = json.loads(arguments)
         if function['name'] == 'finish':
-            decisions.append({'message': arguments['message'], 'status': arguments['status']})
+            decisions.append({'message': arguments['message'], 'status': arguments['status'],
+                              **({'reason': arguments['reason']} if 'reason' in arguments else {})})
         else:
             decisions.append({'message': content if not decisions else '', 'action': {'tool': function['name'], 'arguments': arguments}})
     if len(decisions) == 1:
@@ -208,6 +209,8 @@ class ModelClient:
         self.observer = observer
         self.observation_context = None
         self.observation_failed = False
+        from .openai_responses import ResponsesHistory
+        self.responses_history = ResponsesHistory()
 
     def check_context(self, messages, tools):
         """Protected default; experimental host clients may supply another estimator."""
@@ -363,6 +366,39 @@ class ModelClient:
         wire, adjustment = self.prepare_messages(messages, tools, observe)
         context_metadata = {'context_adjustment': adjustment} if adjustment else {}
         base = config["base_url"].rstrip("/")
+        from .openai_responses import selected, payload as response_payload, unpack
+        if selected(config):
+            payload = response_payload(config, wire, tools, self.responses_history)
+            # Account for the actual Responses envelope and opaque replay state.
+            self.check_context(payload['input'], payload.get('tools', []))
+            if cancel.is_set():
+                raise Cancelled()
+            if observe:
+                observe('provider_request', {'payload': payload, 'api_format': 'responses'})
+            data = request_json(base + '/responses', payload,
+                {'Authorization': 'Bearer ' + self.key} if self.key else {}, config.get('request_timeout', 180))
+            if observe:
+                observe('provider_response', {'payload': data, 'stream': False,
+                    'complete': data.get('status') == 'completed'})
+            text, calls, thinking, usage = unpack(data)
+            answer = model_response(text, calls, native, thinking=thinking, usage=usage,
+                provider_model=data.get('model'), response_id=data.get('id'), **context_metadata)
+            if cancel.is_set():
+                raise Cancelled()
+            if native and not answer.get('normalization_error'):
+                # Rebuild exactly the history the journal will send next, rather
+                # than trusting a guest-supplied provider ID or reasoning item.
+                try:
+                    saved_wire, _ = self.prepare_messages(messages + [
+                        {'role': 'assistant', 'content': answer['content']}], tools)
+                    self.responses_history.remember(saved_wire, data['output'])
+                except ProviderError:
+                    # An optional replay cache cannot discard an otherwise
+                    # complete response at the context boundary.
+                    pass
+            if progress and hasattr(progress, 'thinking'):
+                progress.thinking(thinking)
+            return answer
         if config["provider"] == "ollama":
             payload = {"model": config["model"], "messages": wire, "stream": True,
                        "options": {"num_ctx": config["context_tokens"], "num_predict": config["response_tokens"],

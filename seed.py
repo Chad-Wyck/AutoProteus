@@ -6,6 +6,13 @@ def run(root, store, settings, client_factory, session, message=None):
     return agent
 
 
+def workspace_root():
+    """Development paths use the running task root, independent of shell cwd."""
+    import os
+    from pathlib import Path
+    return Path(os.environ.get('AUTOPROTEUS_WORKSPACE') or Path.cwd())
+
+
 def invoke(tool, arguments):
     """Try an edited tool without requiring its development tests to pass."""
     import json
@@ -21,7 +28,7 @@ def invoke(tool, arguments):
         required = definitions[tool]['parameters']['required']
         if not isinstance(arguments, dict) or any(key not in arguments for key in required):
             raise ValueError('Supply a JSON argument object containing the required tool arguments')
-        value = Workspace(Path.cwd()).execute(tool, arguments)
+        value = Workspace(workspace_root()).execute(tool, arguments)
         print(json.dumps({'check': 'candidate tool invocation', 'passed': True, 'tool': tool, 'result': value}, ensure_ascii=True))
         return 0
     except Exception as error:
@@ -97,7 +104,7 @@ if __name__ == '__main__':
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         from autoproteus.tools import Workspace
         try:
-            workspace = Workspace(Path.cwd())
+            workspace = Workspace(workspace_root())
             if args.arguments_file:
                 args.arguments = json.loads(workspace.read_text(args.arguments_file))
             if args.text_file:

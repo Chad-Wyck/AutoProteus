@@ -7,7 +7,7 @@ from activation_use import contract
 from study_support import identity, file_identity
 
 
-SEED_MODES = ('per-request', 'server-initialized')
+SEED_MODES = ('per-request', 'server-initialized', 'provider-default')
 
 
 def sampling_record(config):
@@ -15,9 +15,11 @@ def sampling_record(config):
     seed = config.get('sampling_seed')
     mode = config.get('sampling_seed_mode', 'per-request' if seed is not None else 'server-default')
     return {'mode': mode, 'request_seed': seed,
+            'case_schedule_seed': config.get('case_schedule_seed'),
             'declared_server_initial_seed': config.get('server_initial_seed'),
             'server_initialization_verified': False,
-            'scope': 'Request payloads record the sent seed. Server initialization/restarts and provider honoring '
+            'scope': ('Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. '
+                      if mode == 'provider-default' else '') + 'Request payloads record the sent seed. Server initialization/restarts and provider honoring '
                      'require separate runtime evidence; this runner does not reset or verify the service RNG.'}
 
 
@@ -48,6 +50,7 @@ def freeze_cases(plan,path,requested_repeats=None):
     plan['repeatability']={'case_pack_sha256':file_identity(path),'sampling_seeds':seeds,
         'sampling_seed_mode':mode,
         'seed_scope': 'Per-request seed.' if mode == 'per-request' else
+            'Case schedule only; provider-default sampling has no reproducible inference seed.' if mode == 'provider-default' else
             'Declared initial server seed; external owner must initialize a fresh RNG stream for each attempt. Unverified by runner.',
         'portable_case_sha256':identity({'cases':specs,'contracts':plan['contracts'],'recipe':plan['recipe'],
             'seeds':seeds,'sampling_seed_mode':mode,'deadline':plan['deadline'],'generated_tokens':plan['generated_tokens']})}
@@ -64,7 +67,11 @@ def repeat_config(plan,config,repeat):
     seed = seeds[repeat-1] if seeds else config.get('sampling_seed', config.get('server_initial_seed'))
     if seed is not None and (type(seed) is not int or not 0 <= seed <= 2147483647):
         raise ValueError('Sampling seeds must be integers from 0 to 2147483647')
-    if mode == 'server-initialized':
+    if mode == 'provider-default':
+        values.pop('sampling_seed', None)
+        values.pop('server_initial_seed', None)
+        values.update(sampling_seed_mode=mode, case_schedule_seed=seed)
+    elif mode == 'server-initialized':
         if seed is None:
             raise ValueError('Server-initialized studies require a declared seed or case-pack seed schedule')
         values.pop('sampling_seed', None)

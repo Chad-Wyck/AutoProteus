@@ -18,7 +18,7 @@ class InferenceHistory:
         self.store, self.session = store, session
         self.source = deepcopy(session.get('selected_seed'))
         self.profile = {key: config.get(key) for key in ('provider', 'model', 'protocol', 'context_tokens',
-            'response_tokens', 'temperature', 'thinking', 'json_mode')}
+            'response_tokens', 'temperature', 'thinking', 'json_mode', 'api_format', 'reasoning_effort')}
         self.failed = False
 
     def blob(self, value):
@@ -47,22 +47,24 @@ class InferenceHistory:
                       'seed': self.source, 'profile': self.profile}
             if kind == 'provider_request':
                 payload = data['payload']
+                messages = payload.get('messages', payload.get('input', []))
                 state = {'tools': payload.get('tools', []),
                          'tools_present': 'tools' in payload,
-                         'instructions': [m for m in payload['messages'] if m['role'] == 'system'],
+                         'instructions': [m for m in messages if m.get('role') in ('system', 'developer')],
                          'profile': self.profile, 'seed': common['seed']}
                 state_id = self.blob(state)
-                references = [self.blob(message) for message in payload['messages']]
-                options = {k: v for k, v in payload.items() if k not in ('messages', 'tools')}
+                references = [self.blob(message) for message in messages]
+                options = {k: v for k, v in payload.items() if k not in ('messages', 'input', 'tools')}
                 self.store.event(self.session, 'host_inference_request', {**common, 'state': state_id,
                     'messages': references, 'options': options, 'identity_format': 'SHA-256 of canonical JSON',
+                    'input_format': 'responses' if 'input' in payload else 'chat-completions',
                     'scope': 'Actual provider payload; declarations are data, not host permissions.'})
             elif kind == 'provider_response':
                 self.store.event(self.session, 'host_inference_response', {**common, 'response': self.blob(data)})
             elif kind in ('call_start', 'context_trimmed', 'call_end', 'transport_end'):
                 value = {k: v for k, v in data.items() if k != 'content'}
                 self.store.event(self.session, 'host_inference_' + kind, {**common, **value})
-        except (OSError, ValueError) as error:
+        except (OSError, ValueError, KeyError, TypeError) as error:
             if not self.failed:
                 self.failed = True
                 self.store.event(self.session, 'host_inference_history_incomplete', {'reason': str(error)[:200]})
@@ -72,9 +74,13 @@ def attach_history(client, store, session, config):
     previous = getattr(client.observer, '_original_observer', client.observer)
     recorder = InferenceHistory(store, session, config)
     def observe(event):
-        recorder(event)
-        if previous:
-            previous(event)
+        try:
+            recorder(event)
+        finally:
+            # A diagnostic failure must never suppress resource accounting or
+            # another observer's evidence of a request already being sent.
+            if previous:
+                previous(event)
     observe._original_observer = previous
     client.observer = observe
     return recorder

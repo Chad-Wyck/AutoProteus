@@ -1,4 +1,4 @@
-# Faster local model comparisons
+# Model comparisons
 
 New plans use `activation-use-v2`: first implementation/checking, activation and
 model-led use on fresh inputs, then a separate second-extension task and use of
@@ -47,6 +47,103 @@ Memory/asset/lifetime failures terminate only owned inference and leave an
 infrastructure error rather than an accepted capability result. Profiles remain
 host-owned; seed edits cannot configure this launcher or grant host access.
 
+The hard floor remains 2 GiB by default. An additional responsiveness guard
+requires available physical RAM below `pressure_floor_bytes` (default 4 GiB)
+plus sustained paging or stalls for `pressure_seconds` (default 15 seconds).
+On Windows, paging means at least 32 MiB/s of memory page-ins; on Linux it
+means at least 20% full memory PSI. After readiness, repeated health-check
+failures under low RAM also count. High file-read traffic with sufficient RAM
+does not trigger this guard. Missing paging telemetry is recorded as unavailable;
+the hard floors and health checks remain active. These are host pressure signals,
+not proof the model caused the pressure, and do not guarantee a responsive desktop.
+Only the owned service is terminated; caches, other apps and Windows settings
+are left alone. Cleanup receipts include a structured failure category.
+
+Closed reports show evaluated score denominators separately from all launches,
+resource stops, other infrastructure errors and interruptions. Exact legacy
+guard receipts take precedence over their downstream connection errors.
+
+### Activation-only handoff replay
+
+`activation_replay.py prepare --profiles PROFILE.json --output .data/REPLAY
+--parent .data/ACCEPTED-HASH-ATTEMPT --parent .data/ACCEPTED-CSV-ATTEMPT`
+freezes accepted candidate bytes, original human tasks, first-use contracts and
+three matched sampling seeds. Then run `activation_replay.py run --input
+.data/REPLAY`. Keep each command on one line. The supplied profile controls the
+equal action allowance; defaults are 20 minutes and 16,384 generated tokens per
+activation-use trial. Every arm gets a fresh owned service and disposable VM.
+
+The control uses normal concise activation. The treatment adds only a verbatim
+copy of the already-supplied first-use instruction to host activation state.
+This is a fresh activation-only reconstruction, not restoration of the original
+development checkpoint. Development transcripts, model-written todos and prior
+failed-use outputs are absent in both arms. Candidate source remains identical;
+no expected outputs, hidden checks or post-failure corrections reach the model.
+Independent VM checks recalibrate each accepted candidate before inference.
+The durable queue preserves attempts and does not retry errors automatically;
+a STOP file prevents starting further cells. Stop an active run through its
+own runner/process owner, not by terminating unrelated services.
+
+Report artifact correctness, actual capability/default use, inspection, source
+preservation and explicit completion separately. This experiment cannot establish
+new extension ability, complete growth chains or generalization to unseen tasks.
+
+For a full starter-extension/growth study, add `--activation-reminder` to
+`model_study.py prepare --mode full`. The frozen plan records this research-only
+choice. After independent activation, the host copies the existing first-use
+instruction, or the second task's existing final-use clause, into activation
+state. It adds no expected outputs, feedback from hidden checks or new human
+instructions. Original development prompts and per-stage shared budgets are
+unchanged. Each result records the copied clause and whether it appeared in a
+captured provider request. The normal application and editable seed are unchanged.
+
+### Experimental public final-output feedback
+
+Prepare a **new**, separate full study with `--public-verifier-feedback` to
+measure automatic correction after activation. It is off by default and does
+not change app settings or hidden graders. It can accompany
+`--activation-reminder`, but cannot be combined with another `--experiment` or
+a supplied parent. Use matching profiles/cases and resource limits for a
+separate control study; do not reuse the earlier frozen plans after source edits.
+
+Before inference, each task discloses its complete public verifier specification
+in `task.json` and the model-facing request. It checks the named final files:
+preservation or canonical JSON formatting, receipt fields, byte counts/hashes,
+and the requested default CSV preview. Expected values come from the original
+public input and stated contract, never candidate output or hidden test results.
+Fresh input bytes remain withheld until their normal activation stage.
+
+After a completed finish with incorrect saved outputs, at most **one** automatic
+feedback message permits correction using the active tools. Waiting for a real
+user answer, exhaustion, timeout and already-correct outputs do not trigger a
+correction. The same remaining action, generated-token and wall-time allowances
+cover that continuation. Source changes still fail source-preservation checks.
+Neither model-produced verifier code nor candidate code executes on the host.
+
+`public-verifier-feedback.json` preserves initial and final public results,
+output hashes, the initial run and exact automatic feedback. Closed reports label
+the treatment and separate public passes before feedback, corrections and public
+passes after feedback. Independent feature, retention, actual-use, inspection and
+completion requirements remain separate; a public pass cannot create upgrade or
+complete-chain credit. Overall use/chain scores in this treatment include any
+correction and must not be described as unassisted success. The public initial
+score is an artifact/completion observation, not hidden qualification of the
+initial attempt. Rejected packages never reach final-use feedback.
+Second-use evidence starts at an explicit activation event boundary and includes
+any automatic correction continuation. A valid earlier call is not forgotten
+when correction starts another run; pre-activation development never counts.
+Mismatch feedback can identify a bounded first difference using a zero-based
+JSON pointer and a differing character/type/length. It does not return entire
+expected rows. These diagnostics use the same public requirements and original
+inputs; the public pass predicate and hidden qualification do not change.
+
+The tool-use evidence reader accepts labelled multiline JSON from an observed
+literal `Workspace.execute` result serialized by an imported `json.dumps` (or
+import alias). It does not execute that program on the host. Failed commands,
+wrong input paths, unrelated printed objects, shadowed encoders and incomplete
+outputs remain insufficient evidence. This is bounded observation of ordinary
+routes, not a security proof against deliberately forged guest evidence.
+
 Optional paired [workflow experiments](workflow-experiments.md) add edit feedback,
 advisory syntax diagnostics, observation masking, focused phases, optional
 withheld final inputs, public submission feedback, precise source context and
@@ -80,10 +177,55 @@ Supply a JSON list of profiles. Each profile has a unique lowercase `id`, a
 dictionary mapping model/runtime file paths to expected SHA-256 values. Use
 `provider: "ollama"` for its API, or `provider: "hosted"` for an OpenAI-compatible
 local endpoint such as `http://127.0.0.1:8080/v1`. The latter name describes the
-wire format; this runner accepts loopback endpoints only. Configure sampling
+wire format; the runner accepts loopback endpoints by default. Configure sampling
 parameters not exposed by the production adapter on the inference server and
 retain its command/configuration as evidence. Never enable a separate server-side
 agent/tool execution loop.
+
+### Explicit paid OpenAI studies
+
+The protected provider adapter uses Responses for the official OpenAI endpoint
+in `api_format: "auto"`, or explicitly with `api_format: "responses"`. Other
+hosted services keep Chat Completions unless Responses is explicitly selected.
+Set `reasoning_effort: "low"` for GPT-6.1 Sol. No temperature or inference seed
+is sent on Responses; `--sampling-seed-mode provider-default` records that the
+fixed case schedule is not a reproducible model RNG seed. Optional tool
+arguments stay optional (`strict: false`); no built-in hosted execution tools
+are enabled. Incomplete or unknown execution outputs never release an action.
+
+For paid studies the profile must explicitly name `provider: "hosted"`,
+`base_url: "https://api.openai.com/v1"`, `api_format: "responses"` and
+`model: "gpt-6.1-sol"`. Both preparation and execution require `--allow-hosted`.
+The runner's current price guard supports this model at up to 128K context.
+Tasks, source and tool results go to OpenAI; commands still run only in the VM.
+
+Save the key using Windows protection, never in a profile or CLI argument:
+
+```powershell
+.\.runtime\python\python.exe -c "import getpass; from pathlib import Path; from controller.config import protect; Path('.data/openai-api-key.bin').write_bytes(protect(getpass.getpass('OpenAI API key: ').encode()))"
+```
+
+Prepare the existing full protocol with `--allow-hosted
+--sampling-seed-mode provider-default`; run with:
+
+```powershell
+.\.runtime\python\python.exe evaluations/model_study.py run --input .data/openai-study --allow-hosted --api-key-file .data/openai-api-key.bin --max-api-cost-usd 25
+```
+
+This does not change normal app preferences or copy the key into the guest.
+Requests use `store: false`. Matching in-memory host histories can replay opaque
+reasoning items and their original call IDs; changed/trimmed histories and new
+clients use the neutral journal without stale provider state. Resume therefore
+does not promise preservation of opaque reasoning. Traces record requests,
+responses, reported usage and returned model IDs without authorization headers.
+`api-spend.json` conservatively counts all input at $2.50/M and output at $10/M,
+including reasoning once. It reserves the full configured request envelope and
+charges unmeasured sent calls that amount. This is a study guard and upper
+estimate, not an OpenAI billing receipt or a guarantee against price changes.
+
+References: [Responses reasoning](https://developers.openai.com/api/docs/guides/reasoning),
+[function calling](https://developers.openai.com/api/docs/guides/function-calling),
+[Sol model settings and pricing](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
 
 Example profile (replace the model with an already installed checkpoint):
 

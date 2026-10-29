@@ -4,8 +4,8 @@ import json
 GUIDANCE = '''Find relevant source with search_files; read useful sections (often 2000-6000 characters), then act.
 Before seed edits, record the remaining final-task requirements in todo.txt, separating them from earlier examples. This plan carries through activation; reconcile it with human corrections.
 For checkable final files with terminal access, prepare development/verify_task.py before implementation. Derive its assertions from the requirements, then run it on the saved final outputs after activation.
-For seed upgrades follow harness/README.md. Implement and test; request activation when remaining work needs the new tools, then verify outputs and finish.
-Call workspace.execute(tool, arguments) in tests; reuse Workspace.read_text/write_text for text tools. Preserve existing tests; add a new test file.
+For seed upgrades follow harness/README.md. Implement and test; request activation with needs_input and reason='activation' when remaining work needs new tools, then verify outputs and finish.
+Call workspace.execute(tool, arguments) in tests; see harness/examples/test_text_extension.py. Use Workspace.read_text/write_text inside text tools; read_file is bounded inspection. Preserve existing tests; add a new test file.
 Keep disposable fixtures, argument JSON and verification scripts outside harness/, for example development/.
 From the workspace root, python3 harness/seed.py invoke --tool NAME --arguments-file development/args.json tries edited tools.
 For large text arguments, add --text-file ARGUMENT development/fragment.txt instead of embedding source in argument JSON.
@@ -48,6 +48,8 @@ def parse_action(text):
         raise ValueError("Return exactly one action or one status")
     if has_status and value["status"] not in ("completed", "needs_input"):
         raise ValueError("Status must be completed or needs_input")
+    if 'reason' in value and (value.get('status') != 'needs_input' or value['reason'] != 'activation'):
+        raise ValueError("Use reason='activation' only with status='needs_input'")
     if has_action:
         action = value["action"]
         if not isinstance(action, dict) or not isinstance(action.get("tool"), str) or not isinstance(action.get("arguments"), dict):

@@ -141,6 +141,12 @@ class Agent:
                     if decision.get("message"):
                         self.store.feed(session, "assistant", decision["message"])
                     if "status" in decision:
+                        if decision.get('reason') == 'activation' and response.get('activation_acknowledged'):
+                            notice = response['activation_acknowledged']
+                            session['messages'].append({'role': 'user', 'content': notice, 'origin': 'internal'})
+                            self.store.feed(session, 'notice', notice)
+                            self.store.event(session, 'activation_acknowledged', {'notice': notice})
+                            break
                         session.update(status="completed" if decision["status"] == "completed" else "waiting", activity="Finished" if decision["status"] == "completed" else "Waiting for your reply")
                         self.store.event(session, "run_finished", {"status": session["status"], "verification": "model_reported"})
                         self.store.save(session)

@@ -143,7 +143,7 @@ def model_identity(config):
 
 
 PROFILE_FIELDS = ('provider', 'model', 'protocol', 'context_tokens', 'response_tokens', 'temperature',
-                  'thinking', 'json_mode', 'terminal', 'request_timeout')
+                  'thinking', 'json_mode', 'terminal', 'request_timeout', 'api_format', 'reasoning_effort')
 
 
 def qualify_profile(config, key='', previous=None):

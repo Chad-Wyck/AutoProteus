@@ -4,6 +4,48 @@ Versions use `major.minor.patch`. Before launch, `0.x.0` introduces features and
 `0.x.y` contains bug fixes. Components can exceed 9 or 99. Historical `0.0.x`
 release and experiment labels remain unchanged.
 
+## 0.16.0
+
+- Add host-side OpenAI Responses API transport, including low reasoning effort,
+  stateless opaque reasoning replay for matching histories and ordinary guest
+  function calls. Preserve optional tool arguments and the existing neutral seed.
+- Allow explicitly authorized OpenAI model studies with a Windows-encrypted
+  host credential and conservative API spending guard. Paid runs retain the
+  existing VM, frozen-source and independent first/second-extension checks.
+- Record provider-default sampling separately from local reproducible seed
+  requests; Sol studies omit unsupported temperature and sampling-seed fields.
+- Stop owned study inference on sustained low RAM combined with heavy paging,
+  memory stalls or unresponsive health checks; preserve the existing hard floors.
+- Separate resource stops, infrastructure errors and interruptions from fully
+  evaluated capability scores, retaining every launched attempt and its receipt.
+- Add a frozen activation-only replay comparison using accepted candidate bytes
+  and a verbatim existing task reminder. No default seed guidance is changed.
+- Recognize labelled multiline JSON results from observed guest Python tool calls,
+  with checks for imported JSON encoders, actual inputs and successful execution.
+- Allow full starter/growth studies to opt into the same host activation reminder
+  at both use stages, preserving original public instructions and shared budgets.
+- Bundle a runnable text-test example covering exact bytes, exceptions and large
+  Unicode fixtures; distinguish processing helpers from bounded display tools.
+- Mark activation requests explicitly in either protocol. A host-confirmed request
+  for the unchanged active seed receives at most one acknowledgement per run;
+  genuine questions still pause and resource allowances remain unchanged.
+- Add an opt-in public final-output verifier experiment, disclosed before inference.
+  Permit one correction within existing limits and report initial versus assisted
+  public results separately from hidden feature, retention and use qualification.
+- Count second-stage capability use across the whole activated stage, including
+  public correction continuations, while excluding development calls.
+- Resolve development tool paths and argument/text files from the task workspace
+  even after changing shell directories, avoiding accidental fixtures in the seed.
+  Standalone CLI calls retain their current-directory behavior.
+- Give experimental public verifier feedback bounded first-difference locations
+  and character/type/length details, preserving existing pass criteria and keeping
+  hidden checks separate.
+- Record Sol interaction-log removal at the user's request while preserving
+  published results; the retained private study is excluded from training.
+- Document local-only LoRA context curation and bounded memory probes. The 6K
+  forward pass completes under a 4 GiB shared-memory allowance, but backward
+  exceeds the retained ten-minute update limit. No full training or adapter export.
+
 ## 0.15.0
 
 - Report identical edit text as an unchanged result with zero replacements,

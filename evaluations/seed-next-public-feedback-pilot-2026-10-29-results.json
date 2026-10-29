@@ -1,0 +1,1454 @@
+{
+  "created": "2026-10-29T08:08:42.094260+00:00",
+  "experiment": "csv-public-feedback-v1",
+  "state": "pilot_complete_full_qualification_running",
+  "starter": "Unreleased working tree after f3f3533. Pilot uses the unchanged older accepted CSV parent; new seed edits are measured by the separate full qualification.",
+  "starter_sha256": "62cf9126bdea486cb6bfdb3befaa381a0cf464f83d9867b1912f18d8073e9a69",
+  "parent_sha256": "61f92c5168e09ed964d0f334e96753e4edb8f0a5afc056a9694344df550f997e",
+  "parent_origin": "D:\\AI_New\\AP\\.data\\qwen9b-full-reminder-20261028\\study-final\\trials\\qwen35-9b-q6-task-reminder_first_02_csv_preview\\attempt-001",
+  "sampling_seeds": [
+    104729,
+    130363,
+    155921
+  ],
+  "settings": {
+    "configured": true,
+    "provider": "hosted",
+    "base_url": "http://127.0.0.1:47848/v1",
+    "model": "qwen35-9b-q6_k",
+    "context_tokens": 131072,
+    "response_tokens": 4096,
+    "temperature": 0.6,
+    "max_steps": 128,
+    "request_timeout": 600,
+    "command_timeout": 60,
+    "terminal": true,
+    "json_mode": false,
+    "thinking": false,
+    "protocol": "native",
+    "internet": false,
+    "action_limit": true,
+    "sampling_seed": 104729,
+    "sampling_seed_mode": "per-request"
+  },
+  "budgets": {
+    "actions": 128,
+    "generated_tokens": 65536,
+    "seconds": 3600
+  },
+  "shared_conditions": "All paired task.json packets equal: same public verifier disclosure, parent, fixtures and activation reminder. Only automatic correction differs.",
+  "groups": {
+    "control": {
+      "completed": 3,
+      "verified": 3,
+      "original_functional": 2,
+      "audited_functional": 2,
+      "corrected_grades": 0
+    },
+    "feedback": {
+      "completed": 3,
+      "verified": 3,
+      "original_functional": 2,
+      "audited_functional": 3,
+      "corrected_grades": 1
+    }
+  },
+  "rows": [
+    {
+      "cell": "qwen35-9b-q6-csv-feedback_growth_01_csv_preview_control",
+      "arm": "control",
+      "original_scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": false,
+        "capabilities_used": true,
+        "functional_growth": false,
+        "direct_tool_use": true,
+        "strict_route_success": false
+      },
+      "audited_scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": false,
+        "capabilities_used": true,
+        "functional_growth": false,
+        "direct_tool_use": true,
+        "strict_route_success": false
+      },
+      "changed": false,
+      "reason": "Count only actual calls after the observed activation boundary, including the automatic public correction. Development and independent-check sessions are excluded.",
+      "activation_run_event_index": 557,
+      "activation_run_time": "2026-10-29T07:08:33.221360+00:00",
+      "stage_usage": {
+        "direct": [
+          "csv_preview",
+          "list_files",
+          "read_file",
+          "sha256_file",
+          "write_file"
+        ],
+        "development": []
+      },
+      "original_latest_run_usage": {
+        "direct": [
+          "csv_preview",
+          "list_files",
+          "read_file",
+          "sha256_file",
+          "write_file"
+        ],
+        "development": []
+      },
+      "direct_witnesses": [
+        {
+          "time": "2026-10-29T07:08:53.467818+00:00",
+          "action": {
+            "tool": "csv_preview",
+            "arguments": {
+              "path": "sample.txt",
+              "limit": 2
+            }
+          },
+          "result": {
+            "path": "sample.txt",
+            "rows": [
+              [
+                "id",
+                "value"
+              ],
+              [
+                "1",
+                "café, 猫"
+              ]
+            ],
+            "truncated": true
+          }
+        },
+        {
+          "time": "2026-10-29T07:08:57.123851+00:00",
+          "action": {
+            "tool": "sha256_file",
+            "arguments": {
+              "path": "sample.txt"
+            }
+          },
+          "result": {
+            "path": "sample.txt",
+            "bytes": 42,
+            "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+          }
+        }
+      ],
+      "seconds": 855.89,
+      "package_verified": true,
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "sample.txt",
+          "output": "audit.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256",
+            "rows",
+            "truncated"
+          ],
+          "exact_fields": false,
+          "preview_limit": 5,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": false,
+          "mismatches": [
+            {
+              "path": "audit.json",
+              "check": "rows",
+              "message": "Saved field differs from the public requirement.",
+              "expected_records": 3,
+              "actual_records": 2
+            },
+            {
+              "path": "audit.json",
+              "check": "truncated",
+              "message": "Saved field differs from the public requirement.",
+              "expected": false,
+              "actual": true
+            }
+          ],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 193,
+              "sha256": "ebc86d57501d1cbf73f79ccfcb0624f77e7aebe31df9fd08bf9c33c23a149ac1"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "5ccb0231ec4e4b6e81ef66b0eff5d8d6",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 41,
+          "provider_error_category": null,
+          "last_notices": [
+            "The response format was invalid. Asking the model to correct it; no action was executed.",
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "final": {
+          "passed": false,
+          "mismatches": [
+            {
+              "path": "audit.json",
+              "check": "rows",
+              "message": "Saved field differs from the public requirement.",
+              "expected_records": 3,
+              "actual_records": 2
+            },
+            {
+              "path": "audit.json",
+              "check": "truncated",
+              "message": "Saved field differs from the public requirement.",
+              "expected": false,
+              "actual": true
+            }
+          ],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 193,
+              "sha256": "ebc86d57501d1cbf73f79ccfcb0624f77e7aebe31df9fd08bf9c33c23a149ac1"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": false,
+        "passed_after_feedback": false,
+        "correction_enabled": false,
+        "scope": "Observation-only control. No correction, expected output or hidden verdict is sent to the model."
+      },
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 542809,
+          "measured_calls": 44,
+          "expected_calls": 44,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 10346,
+          "measured_calls": 44,
+          "expected_calls": 44,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 802.07,
+          "measured_calls": 44,
+          "expected_calls": 44,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 801.983,
+          "measured_calls": 44,
+          "expected_calls": 44,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 220,
+        "bytes": 2485229,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 3600.0,
+        "work_seconds": 855.889759,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.9e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "activation_reminder": {
+        "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "source_unchanged": true
+    },
+    {
+      "cell": "qwen35-9b-q6-csv-feedback_growth_01_csv_preview_feedback",
+      "arm": "feedback",
+      "original_scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": false,
+        "functional_growth": false,
+        "direct_tool_use": false,
+        "strict_route_success": false
+      },
+      "audited_scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "changed": true,
+      "reason": "Count only actual calls after the observed activation boundary, including the automatic public correction. Development and independent-check sessions are excluded.",
+      "activation_run_event_index": 557,
+      "activation_run_time": "2026-10-29T07:21:56.747836+00:00",
+      "stage_usage": {
+        "direct": [
+          "csv_preview",
+          "list_files",
+          "read_file",
+          "sha256_file",
+          "write_file"
+        ],
+        "development": []
+      },
+      "original_latest_run_usage": {
+        "direct": [
+          "csv_preview",
+          "read_file",
+          "write_file"
+        ],
+        "development": []
+      },
+      "direct_witnesses": [
+        {
+          "time": "2026-10-29T07:22:16.703378+00:00",
+          "action": {
+            "tool": "csv_preview",
+            "arguments": {
+              "path": "sample.txt",
+              "limit": 2
+            }
+          },
+          "result": {
+            "path": "sample.txt",
+            "rows": [
+              [
+                "id",
+                "value"
+              ],
+              [
+                "1",
+                "café, 猫"
+              ]
+            ],
+            "truncated": true
+          }
+        },
+        {
+          "time": "2026-10-29T07:22:20.097573+00:00",
+          "action": {
+            "tool": "sha256_file",
+            "arguments": {
+              "path": "sample.txt"
+            }
+          },
+          "result": {
+            "path": "sample.txt",
+            "bytes": 42,
+            "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+          }
+        },
+        {
+          "time": "2026-10-29T07:24:11.119056+00:00",
+          "action": {
+            "tool": "csv_preview",
+            "arguments": {
+              "path": "sample.txt"
+            }
+          },
+          "result": {
+            "path": "sample.txt",
+            "rows": [
+              [
+                "id",
+                "value"
+              ],
+              [
+                "1",
+                "café, 猫"
+              ],
+              [
+                "2",
+                "two\r\nlines"
+              ]
+            ],
+            "truncated": false
+          }
+        }
+      ],
+      "seconds": 898.534,
+      "package_verified": true,
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "sample.txt",
+          "output": "audit.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256",
+            "rows",
+            "truncated"
+          ],
+          "exact_fields": false,
+          "preview_limit": 5,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": false,
+          "mismatches": [
+            {
+              "path": "audit.json",
+              "check": "rows",
+              "message": "Saved field differs from the public requirement.",
+              "expected_records": 3,
+              "actual_records": 2
+            },
+            {
+              "path": "audit.json",
+              "check": "truncated",
+              "message": "Saved field differs from the public requirement.",
+              "expected": false,
+              "actual": true
+            }
+          ],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 193,
+              "sha256": "ebc86d57501d1cbf73f79ccfcb0624f77e7aebe31df9fd08bf9c33c23a149ac1"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "6398fc264bb2441387771cc7297e4338",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 41,
+          "provider_error_category": null,
+          "last_notices": [
+            "The response format was invalid. Asking the model to correct it; no action was executed.",
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 1,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "feedback": "AUTOMATIC PUBLIC FINAL-OUTPUT FEEDBACK\n{\"passed\": false, \"mismatches\": [{\"path\": \"audit.json\", \"check\": \"rows\", \"message\": \"Saved field differs from the public requirement.\", \"expected_records\": 3, \"actual_records\": 2}, {\"path\": \"audit.json\", \"check\": \"truncated\", \"message\": \"Saved field differs from the public requirement.\", \"expected\": false, \"actual\": true}], \"snapshots\": {\"sample.txt\": {\"bytes\": 42, \"sha256\": \"cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f\"}, \"audit.json\": {\"bytes\": 193, \"sha256\": \"ebc86d57501d1cbf73f79ccfcb0624f77e7aebe31df9fd08bf9c33c23a149ac1\"}}, \"scope\": \"Public saved-output checks only; no capability-use, hidden tests or upgrade approval.\"}\nCorrect these saved outputs using the active tools and original requirements. Do not edit the seed or request activation again. Verify the outputs and finish completed. No additional action, token or time allowance is granted.",
+        "supplied_actions": 87,
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 217,
+              "sha256": "7c63103adc3a15ced10fb2228773d44a9b68177d5322c1d5eb4f6e7c9a7bd7ac"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": false,
+        "passed_after_feedback": true
+      },
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 633712,
+          "measured_calls": 48,
+          "expected_calls": 48,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 10982,
+          "measured_calls": 48,
+          "expected_calls": 48,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 835.458,
+          "measured_calls": 48,
+          "expected_calls": 48,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 835.361,
+          "measured_calls": 48,
+          "expected_calls": 48,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 240,
+        "bytes": 2873671,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 3600.0,
+        "work_seconds": 898.534107,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.6e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "activation_reminder": {
+        "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "source_unchanged": true
+    },
+    {
+      "cell": "qwen35-9b-q6-csv-feedback_growth_02_csv_preview_feedback",
+      "arm": "feedback",
+      "original_scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "audited_scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "changed": false,
+      "reason": "Count only actual calls after the observed activation boundary, including the automatic public correction. Development and independent-check sessions are excluded.",
+      "activation_run_event_index": 269,
+      "activation_run_time": "2026-10-29T07:30:43.898436+00:00",
+      "stage_usage": {
+        "direct": [
+          "csv_preview",
+          "list_files",
+          "read_file",
+          "sha256_file",
+          "write_file"
+        ],
+        "development": []
+      },
+      "original_latest_run_usage": {
+        "direct": [
+          "csv_preview",
+          "list_files",
+          "read_file",
+          "sha256_file",
+          "write_file"
+        ],
+        "development": []
+      },
+      "direct_witnesses": [
+        {
+          "time": "2026-10-29T07:31:00.174606+00:00",
+          "action": {
+            "tool": "csv_preview",
+            "arguments": {
+              "path": "sample.txt",
+              "limit": 5
+            }
+          },
+          "result": {
+            "path": "sample.txt",
+            "rows": [
+              [
+                "id",
+                "value"
+              ],
+              [
+                "1",
+                "café, 猫"
+              ],
+              [
+                "2",
+                "two\r\nlines"
+              ]
+            ],
+            "truncated": false
+          }
+        },
+        {
+          "time": "2026-10-29T07:31:03.459182+00:00",
+          "action": {
+            "tool": "sha256_file",
+            "arguments": {
+              "path": "sample.txt"
+            }
+          },
+          "result": {
+            "path": "sample.txt",
+            "bytes": 42,
+            "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+          }
+        }
+      ],
+      "seconds": 401.402,
+      "package_verified": true,
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "sample.txt",
+          "output": "audit.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256",
+            "rows",
+            "truncated"
+          ],
+          "exact_fields": false,
+          "preview_limit": 5,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 217,
+              "sha256": "1c798f5117ea9d71b85ad0e018cac64b7b5a727caf58b6c41fa780657303e90c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "03c950af2b96447baa5fb2808fc6b538",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 22,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 217,
+              "sha256": "1c798f5117ea9d71b85ad0e018cac64b7b5a727caf58b6c41fa780657303e90c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 226776,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 4952,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 355.397,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 355.351,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 120,
+        "bytes": 1074265,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 3600.0,
+        "work_seconds": 401.402087,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.7e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "activation_reminder": {
+        "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "source_unchanged": true
+    },
+    {
+      "cell": "qwen35-9b-q6-csv-feedback_growth_02_csv_preview_control",
+      "arm": "control",
+      "original_scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "audited_scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "changed": false,
+      "reason": "Count only actual calls after the observed activation boundary, including the automatic public correction. Development and independent-check sessions are excluded.",
+      "activation_run_event_index": 278,
+      "activation_run_time": "2026-10-29T07:37:21.731140+00:00",
+      "stage_usage": {
+        "direct": [
+          "csv_preview",
+          "list_files",
+          "read_file",
+          "sha256_file",
+          "write_file"
+        ],
+        "development": []
+      },
+      "original_latest_run_usage": {
+        "direct": [
+          "csv_preview",
+          "list_files",
+          "read_file",
+          "sha256_file",
+          "write_file"
+        ],
+        "development": []
+      },
+      "direct_witnesses": [
+        {
+          "time": "2026-10-29T07:37:37.897148+00:00",
+          "action": {
+            "tool": "csv_preview",
+            "arguments": {
+              "path": "sample.txt",
+              "limit": 5
+            }
+          },
+          "result": {
+            "path": "sample.txt",
+            "rows": [
+              [
+                "id",
+                "value"
+              ],
+              [
+                "1",
+                "café, 猫"
+              ],
+              [
+                "2",
+                "two\r\nlines"
+              ]
+            ],
+            "truncated": false
+          }
+        },
+        {
+          "time": "2026-10-29T07:37:41.162899+00:00",
+          "action": {
+            "tool": "sha256_file",
+            "arguments": {
+              "path": "sample.txt"
+            }
+          },
+          "result": {
+            "path": "sample.txt",
+            "bytes": 42,
+            "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+          }
+        }
+      ],
+      "seconds": 389.023,
+      "package_verified": true,
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "sample.txt",
+          "output": "audit.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256",
+            "rows",
+            "truncated"
+          ],
+          "exact_fields": false,
+          "preview_limit": 5,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 217,
+              "sha256": "1c798f5117ea9d71b85ad0e018cac64b7b5a727caf58b6c41fa780657303e90c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "c4d01c77d31b4ac987fe1bd33ce490f3",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 22,
+          "provider_error_category": null,
+          "last_notices": [
+            "The response format was invalid. Asking the model to correct it; no action was executed.",
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 217,
+              "sha256": "1c798f5117ea9d71b85ad0e018cac64b7b5a727caf58b6c41fa780657303e90c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false,
+        "correction_enabled": false,
+        "scope": "Observation-only control. No correction, expected output or hidden verdict is sent to the model."
+      },
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 242875,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 5252,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 346.942,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 346.899,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 125,
+        "bytes": 1147997,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 3600.0,
+        "work_seconds": 389.022817,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.7e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "activation_reminder": {
+        "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "source_unchanged": true
+    },
+    {
+      "cell": "qwen35-9b-q6-csv-feedback_growth_03_csv_preview_control",
+      "arm": "control",
+      "original_scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "audited_scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "changed": false,
+      "reason": "Count only actual calls after the observed activation boundary, including the automatic public correction. Development and independent-check sessions are excluded.",
+      "activation_run_event_index": 415,
+      "activation_run_time": "2026-10-29T07:45:25.053628+00:00",
+      "stage_usage": {
+        "direct": [
+          "csv_preview",
+          "list_files",
+          "read_file",
+          "sha256_file"
+        ],
+        "development": []
+      },
+      "original_latest_run_usage": {
+        "direct": [
+          "csv_preview",
+          "list_files",
+          "read_file",
+          "sha256_file"
+        ],
+        "development": []
+      },
+      "direct_witnesses": [
+        {
+          "time": "2026-10-29T07:45:54.541768+00:00",
+          "action": {
+            "tool": "sha256_file",
+            "arguments": {
+              "path": "sample.txt"
+            }
+          },
+          "result": {
+            "path": "sample.txt",
+            "bytes": 42,
+            "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+          }
+        },
+        {
+          "time": "2026-10-29T07:45:57.246331+00:00",
+          "action": {
+            "tool": "csv_preview",
+            "arguments": {
+              "path": "sample.txt",
+              "limit": 5
+            }
+          },
+          "result": {
+            "path": "sample.txt",
+            "rows": [
+              [
+                "id",
+                "value"
+              ],
+              [
+                "1",
+                "café, 猫"
+              ],
+              [
+                "2",
+                "two\r\nlines"
+              ]
+            ],
+            "truncated": false
+          }
+        }
+      ],
+      "seconds": 485.928,
+      "package_verified": true,
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "sample.txt",
+          "output": "audit.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256",
+            "rows",
+            "truncated"
+          ],
+          "exact_fields": false,
+          "preview_limit": 5,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 224,
+              "sha256": "fa49cad16bbd0fb083f7a51086b1b512e0a9462f4155a525d273a98db146ccc2"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "dbd89eca22414f138fcb1bdf645bd6b8",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 32,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 224,
+              "sha256": "fa49cad16bbd0fb083f7a51086b1b512e0a9462f4155a525d273a98db146ccc2"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false,
+        "correction_enabled": false,
+        "scope": "Observation-only control. No correction, expected output or hidden verdict is sent to the model."
+      },
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 382938,
+          "measured_calls": 34,
+          "expected_calls": 34,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 6558,
+          "measured_calls": 34,
+          "expected_calls": 34,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 438.265,
+          "measured_calls": 34,
+          "expected_calls": 34,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 438.202,
+          "measured_calls": 34,
+          "expected_calls": 34,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 170,
+        "bytes": 1783482,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 3600.0,
+        "work_seconds": 485.92807,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.4e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "activation_reminder": {
+        "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "source_unchanged": true
+    },
+    {
+      "cell": "qwen35-9b-q6-csv-feedback_growth_03_csv_preview_feedback",
+      "arm": "feedback",
+      "original_scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "audited_scores": {
+        "capability_added": true,
+        "earlier_behavior_preserved": true,
+        "task_completed_correctly": true,
+        "capabilities_used": true,
+        "functional_growth": true,
+        "direct_tool_use": true,
+        "strict_route_success": true
+      },
+      "changed": false,
+      "reason": "Count only actual calls after the observed activation boundary, including the automatic public correction. Development and independent-check sessions are excluded.",
+      "activation_run_event_index": 415,
+      "activation_run_time": "2026-10-29T07:53:41.124948+00:00",
+      "stage_usage": {
+        "direct": [
+          "csv_preview",
+          "list_files",
+          "read_file",
+          "sha256_file"
+        ],
+        "development": []
+      },
+      "original_latest_run_usage": {
+        "direct": [
+          "csv_preview",
+          "list_files",
+          "read_file",
+          "sha256_file"
+        ],
+        "development": []
+      },
+      "direct_witnesses": [
+        {
+          "time": "2026-10-29T07:54:10.191976+00:00",
+          "action": {
+            "tool": "sha256_file",
+            "arguments": {
+              "path": "sample.txt"
+            }
+          },
+          "result": {
+            "path": "sample.txt",
+            "bytes": 42,
+            "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+          }
+        },
+        {
+          "time": "2026-10-29T07:54:12.872180+00:00",
+          "action": {
+            "tool": "csv_preview",
+            "arguments": {
+              "path": "sample.txt",
+              "limit": 5
+            }
+          },
+          "result": {
+            "path": "sample.txt",
+            "rows": [
+              [
+                "id",
+                "value"
+              ],
+              [
+                "1",
+                "café, 猫"
+              ],
+              [
+                "2",
+                "two\r\nlines"
+              ]
+            ],
+            "truncated": false
+          }
+        }
+      ],
+      "seconds": 486.777,
+      "package_verified": true,
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "sample.txt",
+          "output": "audit.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256",
+            "rows",
+            "truncated"
+          ],
+          "exact_fields": false,
+          "preview_limit": 5,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 224,
+              "sha256": "fa49cad16bbd0fb083f7a51086b1b512e0a9462f4155a525d273a98db146ccc2"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "9623fbe20829409fa3c9c116ded0fe3b",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 32,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 224,
+              "sha256": "fa49cad16bbd0fb083f7a51086b1b512e0a9462f4155a525d273a98db146ccc2"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 382938,
+          "measured_calls": 34,
+          "expected_calls": 34,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 6558,
+          "measured_calls": 34,
+          "expected_calls": 34,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 438.958,
+          "measured_calls": 34,
+          "expected_calls": 34,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 438.895,
+          "measured_calls": 34,
+          "expected_calls": 34,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 170,
+        "bytes": 1783502,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "wall_budget": {
+        "allowance_seconds": 3600.0,
+        "work_seconds": 486.776798,
+        "deadline_reached": false,
+        "deadline_overrun_seconds": 0,
+        "cleanup_seconds": 1.4e-05,
+        "scope": "One deadline for development, grading, retention and final use. No new check starts after expiry. Stopping workers and saving evidence can overrun; that delay and final cleanup are reported separately."
+      },
+      "activation_reminder": {
+        "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "source_unchanged": true
+    }
+  ],
+  "progression": {
+    "created": "2026-10-29T08:00:24.102367+00:00",
+    "basis": "Same predeclared criterion applied to activated-stage regrade; original raw scores preserved.",
+    "pilot_audit": "activated-stage-audit.json",
+    "control_completed_workflows": 2,
+    "feedback_completed_workflows": 3,
+    "public_feedback_for_full": true,
+    "proceed_to_full": true,
+    "starter_unchanged_since_pilot_preparation": true,
+    "full_plan": "D:\\AI_New\\AP\\.data\\qwen9b-public-feedback-20261029\\full\\plan.json",
+    "pilot_model_attempts_interrupted": 0,
+    "grading_fix": "Count calls from the explicit activation boundary across correction continuations; exclude development."
+  },
+  "grading_correction": "Post-hoc correction of an evaluation bookkeeping error, not a model rerun or candidate repair. Frozen prompts, source, budgets and original scores remain unchanged. Hidden check results never enter model feedback.",
+  "limitations": [
+    "Three paired seeds on one familiar chain; no generalization or repeatability claim.",
+    "Only one treatment attempt needed correction; two passed before feedback.",
+    "Matched sampling seeds do not guarantee deterministic inference.",
+    "Original scores and the separate activated-stage regrade are preserved; no candidate repair or hidden feedback.",
+    "The transition was held after all six pilot cells and model cleanup; no model attempt was interrupted."
+  ],
+  "raw_evidence": "D:\\AI_New\\AP\\.data\\qwen9b-public-feedback-20261029\\pilot"
+}

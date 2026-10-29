@@ -1,0 +1,2210 @@
+{
+  "protocol": "activation-use-v2",
+  "source_sha256": "34588c61faa52d0288fc52fcfbf95dca5a730499a6fca1e486921bda717fdd0c",
+  "activation_reminder": true,
+  "profiles": [
+    {
+      "id": "qwen35-9b-q6-task-reminder",
+      "config": {
+        "provider": "hosted",
+        "model": "qwen35-9b-q6_k",
+        "context_tokens": 131072,
+        "response_tokens": 4096,
+        "temperature": 0.6,
+        "max_steps": 128,
+        "request_timeout": 600,
+        "terminal": true,
+        "thinking": false,
+        "protocol": "native",
+        "internet": false,
+        "action_limit": true,
+        "sampling_seed": 104729,
+        "sampling_seed_mode": "per-request"
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      }
+    }
+  ],
+  "groups": {
+    "qwen35-9b-q6-task-reminder/task-reminder": {
+      "launched": 22,
+      "finished": 20,
+      "first_attempts": 10,
+      "first_packages": 5,
+      "first_use_attempts": 5,
+      "first_use_passed": 5,
+      "ordinary_evaluated": 5,
+      "first_evaluated": 9,
+      "second_evaluated": 5,
+      "resource_stops": 0,
+      "infrastructure_errors": 0,
+      "interruptions": 2,
+      "second_attempts": 6,
+      "second_verified": 5,
+      "second_use_passed": 2,
+      "complete_chains": 2,
+      "diagnostic_second": 0,
+      "ordinary_attempts": 5,
+      "ordinary_checks": 5,
+      "ordinary_artifacts_correct": 5,
+      "ordinary_completion_observations": 5,
+      "ordinary_explicit_completion": 5,
+      "ordinary_passed": 5,
+      "not_run": {
+        "ordinary": 0,
+        "first": 0,
+        "second": 4,
+        "inference": 0,
+        "unmeasured": 0
+      }
+    }
+  },
+  "rows": [
+    {
+      "cell": "qwen35-9b-q6-task-reminder_benchmark_01",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "inference",
+      "activation_reminder": null,
+      "outcome": {},
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 104729,
+        "request_seed": 104729,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 8.146009
+      },
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": null,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 8482,
+          "measured_calls": 2,
+          "expected_calls": 2,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 76,
+          "measured_calls": 2,
+          "expected_calls": 2,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 20.805,
+          "measured_calls": 2,
+          "expected_calls": 2,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 20.805,
+          "measured_calls": 2,
+          "expected_calls": 2,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": null,
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_basic_exact-file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "ordinary",
+      "activation_reminder": null,
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "task_passed": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 104729,
+        "request_seed": 104729,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 8.14083
+      },
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 42.604,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 6190,
+          "measured_calls": 3,
+          "expected_calls": 3,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 165,
+          "measured_calls": 3,
+          "expected_calls": 3,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 38.214,
+          "measured_calls": 3,
+          "expected_calls": 3,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 38.209,
+          "measured_calls": 3,
+          "expected_calls": 3,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 8192,
+        "charged_output_tokens": 165,
+        "reported_output_tokens": 165,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_basic_precise-edit",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "ordinary",
+      "activation_reminder": null,
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "task_passed": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 104729,
+        "request_seed": 104729,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 7.882392
+      },
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 88.97,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 11242,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 449,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 84.212,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 84.204,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 8192,
+        "charged_output_tokens": 449,
+        "reported_output_tokens": 449,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_basic_recovery",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "ordinary",
+      "activation_reminder": null,
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "task_passed": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 104729,
+        "request_seed": 104729,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 8.087092
+      },
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 47.826,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 8481,
+          "measured_calls": 4,
+          "expected_calls": 4,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 223,
+          "measured_calls": 4,
+          "expected_calls": 4,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 43.373,
+          "measured_calls": 4,
+          "expected_calls": 4,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 43.366,
+          "measured_calls": 4,
+          "expected_calls": 4,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 8192,
+        "charged_output_tokens": 223,
+        "reported_output_tokens": 223,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_basic_unicode",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "ordinary",
+      "activation_reminder": null,
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "task_passed": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 104729,
+        "request_seed": 104729,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 7.891708
+      },
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 33.458,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 6202,
+          "measured_calls": 3,
+          "expected_calls": 3,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 227,
+          "measured_calls": 3,
+          "expected_calls": 3,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 29.037,
+          "measured_calls": 3,
+          "expected_calls": 3,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 29.032,
+          "measured_calls": 3,
+          "expected_calls": 3,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 8192,
+        "charged_output_tokens": 227,
+        "reported_output_tokens": 227,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_basic_bug-fix",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "ordinary",
+      "activation_reminder": null,
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "task_passed": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 104729,
+        "request_seed": 104729,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 7.661334
+      },
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 62.254,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 13673,
+          "measured_calls": 6,
+          "expected_calls": 6,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 427,
+          "measured_calls": 6,
+          "expected_calls": 6,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 53.57,
+          "measured_calls": 6,
+          "expected_calls": 6,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 53.559,
+          "measured_calls": 6,
+          "expected_calls": 6,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 8192,
+        "charged_output_tokens": 427,
+        "reported_output_tokens": 427,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_first_01_sha256_file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use sha256_file on activation/hash-night.txt. Save exactly its path, bytes and sha256 fields as a JSON object in activation/hash-night-receipt.json. Preserve the input bytes. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 104729,
+        "request_seed": 104729,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 8.595597
+      },
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/hash-night.txt",
+        "output": "activation/hash-night-receipt.json",
+        "source_sha256": "19f6522de03450d8d6ec7d16142adcffd1415a69857a508fe29c2ecaf7c6fc42",
+        "supplied_actions": 104,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "50d174101e3d47778c9984b04bf4c7a7",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 30,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 6,
+        "shared_actions_used": 30,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 636.259,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 306376,
+          "measured_calls": 32,
+          "expected_calls": 32,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 4339,
+          "measured_calls": 32,
+          "expected_calls": 32,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 601.44,
+          "measured_calls": 32,
+          "expected_calls": 32,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 601.381,
+          "measured_calls": 32,
+          "expected_calls": 32,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 4339,
+        "reported_output_tokens": 4339,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_growth_01_sha256_file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 104729,
+        "request_seed": 104729,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 7.450718
+      },
+      "feature": "format_json",
+      "package_verified": true,
+      "package_accepted": false,
+      "first_use": null,
+      "second_task_passed": true,
+      "complete_chain_passed": true,
+      "diagnostic_second": false,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 665.475,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 855404,
+          "measured_calls": 68,
+          "expected_calls": 68,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 8559,
+          "measured_calls": 68,
+          "expected_calls": 68,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 603.219,
+          "measured_calls": 68,
+          "expected_calls": 68,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 603.094,
+          "measured_calls": 68,
+          "expected_calls": 68,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 8559,
+        "reported_output_tokens": 8559,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_first_01_format_json",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use format_json to format activation/format-night.json in place. Save exactly its path and bytes fields as a JSON object in activation/format-night-receipt.json. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": false,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": null,
+        "explicit_completion": null,
+        "capability_used": null
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 104729,
+        "request_seed": 104729,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 7.659148
+      },
+      "feature": "format_json",
+      "package_verified": false,
+      "package_accepted": false,
+      "first_use": {
+        "attempted": false,
+        "passed": false,
+        "reason": "first_package_not_accepted"
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [
+        "candidate_tests",
+        "paused_or_action_allowance",
+        "development_not_completed"
+      ],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 2847.651,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 3956008,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 29559,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 2765.25,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 2764.995,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 29559,
+        "reported_output_tokens": 29559,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_growth_01_format_json",
+      "attempt": 0,
+      "state": "not_run",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "second",
+      "activation_reminder": null,
+      "outcome": {},
+      "sampling": null,
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": null,
+      "measurements": {},
+      "token_enforcement": null,
+      "reason": "First upgrade not fully accepted; no accepted parent exists"
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_first_01_csv_preview",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use csv_preview on activation/csv-night.csv with its default limit. Save exactly its path, rows and truncated fields as a JSON object in activation/csv-night-receipt.json. Preserve all input bytes; the earlier development examples are not this task. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 104729,
+        "request_seed": 104729,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 9.560641
+      },
+      "feature": "csv_preview",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/csv-night.csv",
+        "output": "activation/csv-night-receipt.json",
+        "source_sha256": "d289032af3766d3ab52accc96ba259e4a3d22f4eb53099e6ac686810cc2609b6",
+        "supplied_actions": 91,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": true,
+        "run": {
+          "session": "5060004087854fdd9d3687ee929ae3c7",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 43,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 6,
+        "shared_actions_used": 43,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 985.676,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 641490,
+          "measured_calls": 45,
+          "expected_calls": 45,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 12259,
+          "measured_calls": 45,
+          "expected_calls": 45,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 932.225,
+          "measured_calls": 45,
+          "expected_calls": 45,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 932.144,
+          "measured_calls": 45,
+          "expected_calls": 45,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 12259,
+        "reported_output_tokens": 12259,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_growth_01_csv_preview",
+      "attempt": 1,
+      "state": "interrupted",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "second",
+      "activation_reminder": null,
+      "outcome": {},
+      "sampling": null,
+      "failure_kind": "interrupted",
+      "resource_reason": "User requested pause for gaming",
+      "runtime": null,
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [
+        "interrupted"
+      ],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": null,
+      "measurements": {},
+      "token_enforcement": null,
+      "reason": "User requested pause for gaming"
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_growth_01_csv_preview",
+      "attempt": 2,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": false,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 104729,
+        "request_seed": 104729,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 9.912103
+      },
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": false,
+      "first_use": null,
+      "second_task_passed": false,
+      "complete_chain_passed": false,
+      "diagnostic_second": false,
+      "failure_labels": [
+        "second_use"
+      ],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 889.221,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 415067,
+          "measured_calls": 34,
+          "expected_calls": 34,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 6998,
+          "measured_calls": 34,
+          "expected_calls": 34,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 833.973,
+          "measured_calls": 34,
+          "expected_calls": 34,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 833.898,
+          "measured_calls": 34,
+          "expected_calls": 34,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 6998,
+        "reported_output_tokens": 6998,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_first_02_format_json",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use format_json to format activation/format-night.json in place. Save exactly its path and bytes fields as a JSON object in activation/format-night-receipt.json. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": false,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": null,
+        "explicit_completion": null,
+        "capability_used": null
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 130363,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 130363,
+        "request_seed": 130363,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 9.671657
+      },
+      "feature": "format_json",
+      "package_verified": false,
+      "package_accepted": false,
+      "first_use": {
+        "attempted": false,
+        "passed": false,
+        "reason": "first_package_not_accepted"
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [
+        "protected_regressions",
+        "fresh_public_invocation",
+        "wall_allowance",
+        "development_not_completed"
+      ],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": "Shared task deadline expired; check not launched.",
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 3600.575,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 1249500,
+          "measured_calls": 48,
+          "expected_calls": 49,
+          "complete": false,
+          "status": "partial"
+        },
+        "output_tokens": {
+          "known_sum": 35496,
+          "measured_calls": 48,
+          "expected_calls": 49,
+          "complete": false,
+          "status": "partial"
+        },
+        "call_seconds": {
+          "known_sum": 3580.352,
+          "measured_calls": 49,
+          "expected_calls": 49,
+          "complete": false,
+          "status": "partial"
+        },
+        "transport_seconds": {
+          "known_sum": 3490.196,
+          "measured_calls": 48,
+          "expected_calls": 49,
+          "complete": false,
+          "status": "partial"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 39592,
+        "reported_output_tokens": 35496,
+        "unmeasured_sent_calls": 1,
+        "usage_complete": false,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_growth_02_format_json",
+      "attempt": 0,
+      "state": "not_run",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "second",
+      "activation_reminder": null,
+      "outcome": {},
+      "sampling": null,
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": null,
+      "measurements": {},
+      "token_enforcement": null,
+      "reason": "First upgrade not fully accepted; no accepted parent exists"
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_first_02_csv_preview",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use csv_preview on activation/csv-night.csv with its default limit. Save exactly its path, rows and truncated fields as a JSON object in activation/csv-night-receipt.json. Preserve all input bytes; the earlier development examples are not this task. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 130363,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 130363,
+        "request_seed": 130363,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 9.597721
+      },
+      "feature": "csv_preview",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/csv-night.csv",
+        "output": "activation/csv-night-receipt.json",
+        "source_sha256": "61f92c5168e09ed964d0f334e96753e4edb8f0a5afc056a9694344df550f997e",
+        "supplied_actions": 104,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": true,
+        "run": {
+          "session": "c2f76cf7667f41fcba26c47ed1567ae5",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 36,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 12,
+        "shared_actions_used": 36,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 577.825,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 428485,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 7775,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 531.336,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 531.267,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 7775,
+        "reported_output_tokens": 7775,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_growth_02_csv_preview",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": false,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 130363,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 130363,
+        "request_seed": 130363,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 7.871241
+      },
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": null,
+      "second_task_passed": false,
+      "complete_chain_passed": false,
+      "diagnostic_second": false,
+      "failure_labels": [
+        "second_use"
+      ],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 690.676,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 476455,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 8418,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 641.899,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 641.831,
+          "measured_calls": 38,
+          "expected_calls": 38,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 8418,
+        "reported_output_tokens": 8418,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_first_02_sha256_file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use sha256_file on activation/hash-night.txt. Save exactly its path, bytes and sha256 fields as a JSON object in activation/hash-night-receipt.json. Preserve the input bytes. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 130363,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 130363,
+        "request_seed": 130363,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 8.068912
+      },
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/hash-night.txt",
+        "output": "activation/hash-night-receipt.json",
+        "source_sha256": "0a95d5c4ae91c4eeca2dc8f04fa2c043c2cdd30e452bf724f33f182dd0873bf6",
+        "supplied_actions": 63,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": [
+            "sha256_file"
+          ]
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "c590c5d620194e97823ba6e1ec588ff7",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 84,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 19,
+        "shared_actions_used": 84,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 1046.48,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 1498953,
+          "measured_calls": 86,
+          "expected_calls": 86,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 10626,
+          "measured_calls": 86,
+          "expected_calls": 86,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 990.92,
+          "measured_calls": 86,
+          "expected_calls": 86,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 990.763,
+          "measured_calls": 86,
+          "expected_calls": 86,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 10626,
+        "reported_output_tokens": 10626,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_growth_02_sha256_file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 130363,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 130363,
+        "request_seed": 130363,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 8.670796
+      },
+      "feature": "format_json",
+      "package_verified": true,
+      "package_accepted": false,
+      "first_use": null,
+      "second_task_passed": true,
+      "complete_chain_passed": true,
+      "diagnostic_second": false,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 1130.826,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 1634874,
+          "measured_calls": 79,
+          "expected_calls": 79,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 13337,
+          "measured_calls": 79,
+          "expected_calls": 79,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 1059.295,
+          "measured_calls": 79,
+          "expected_calls": 79,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 1059.147,
+          "measured_calls": 79,
+          "expected_calls": 79,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 13337,
+        "reported_output_tokens": 13337,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_first_03_csv_preview",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use csv_preview on activation/csv-night.csv with its default limit. Save exactly its path, rows and truncated fields as a JSON object in activation/csv-night-receipt.json. Preserve all input bytes; the earlier development examples are not this task. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": false,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": null,
+        "explicit_completion": null,
+        "capability_used": null
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 155921,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 155921,
+        "request_seed": 155921,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 9.920696
+      },
+      "feature": "csv_preview",
+      "package_verified": false,
+      "package_accepted": false,
+      "first_use": {
+        "attempted": false,
+        "passed": false,
+        "reason": "first_package_not_accepted"
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [
+        "candidate_tests",
+        "paused_or_action_allowance",
+        "development_not_completed"
+      ],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 2851.614,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 5343918,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 19629,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 2779.001,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 2778.763,
+          "measured_calls": 129,
+          "expected_calls": 129,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 19629,
+        "reported_output_tokens": 19629,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_growth_03_csv_preview",
+      "attempt": 0,
+      "state": "not_run",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "second",
+      "activation_reminder": null,
+      "outcome": {},
+      "sampling": null,
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": null,
+      "measurements": {},
+      "token_enforcement": null,
+      "reason": "First upgrade not fully accepted; no accepted parent exists"
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_first_03_sha256_file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use sha256_file on activation/hash-night.txt. Save exactly its path, bytes and sha256 fields as a JSON object in activation/hash-night-receipt.json. Preserve the input bytes. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 155921,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 155921,
+        "request_seed": 155921,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 8.606873
+      },
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/hash-night.txt",
+        "output": "activation/hash-night-receipt.json",
+        "source_sha256": "748b61a5cbc3e7a0c48d47141f4ce67f54efb9a9b8997229d8df19d5a1209ec2",
+        "supplied_actions": 98,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "628cf63c5b5940a096b795ebd055240e",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 38,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 8,
+        "shared_actions_used": 38,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 719.156,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 465794,
+          "measured_calls": 40,
+          "expected_calls": 40,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 6046,
+          "measured_calls": 40,
+          "expected_calls": 40,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 678.281,
+          "measured_calls": 40,
+          "expected_calls": 40,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 678.208,
+          "measured_calls": 40,
+          "expected_calls": 40,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 6046,
+        "reported_output_tokens": 6046,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_growth_03_sha256_file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": false,
+        "explicit_completion": false,
+        "capability_used": false
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 155921,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 155921,
+        "request_seed": 155921,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 8.840444
+      },
+      "feature": "format_json",
+      "package_verified": true,
+      "package_accepted": false,
+      "first_use": null,
+      "second_task_passed": false,
+      "complete_chain_passed": false,
+      "diagnostic_second": false,
+      "failure_labels": [
+        "second_use"
+      ],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 1725.087,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 1912496,
+          "measured_calls": 97,
+          "expected_calls": 97,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 13897,
+          "measured_calls": 97,
+          "expected_calls": 97,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 1641.431,
+          "measured_calls": 97,
+          "expected_calls": 97,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 1641.243,
+          "measured_calls": 97,
+          "expected_calls": 97,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 13897,
+        "reported_output_tokens": 13897,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_first_03_format_json",
+      "attempt": 1,
+      "state": "interrupted",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "first",
+      "activation_reminder": null,
+      "outcome": {},
+      "sampling": null,
+      "failure_kind": "interrupted",
+      "resource_reason": "User requested pause for gaming",
+      "runtime": null,
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [
+        "interrupted"
+      ],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": null,
+      "measurements": {},
+      "token_enforcement": null,
+      "reason": "User requested pause for gaming"
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_first_03_format_json",
+      "attempt": 2,
+      "state": "completed",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use format_json to format activation/format-night.json in place. Save exactly its path and bytes fields as a JSON object in activation/format-night-receipt.json. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": false,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "outcome": {
+        "artifacts_correct": null,
+        "explicit_completion": null,
+        "capability_used": null
+      },
+      "sampling": {
+        "mode": "per-request",
+        "request_seed": 155921,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": {
+        "fresh_server": true,
+        "initial_server_seed": 155921,
+        "request_seed": 155921,
+        "reported_seed_matches": null,
+        "reported_context_matches": true,
+        "load_seconds": 8.578562
+      },
+      "feature": "format_json",
+      "package_verified": false,
+      "package_accepted": false,
+      "first_use": {
+        "attempted": false,
+        "passed": false,
+        "reason": "first_package_not_accepted"
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [
+        "implementation"
+      ],
+      "failed_feature_checks": [
+        "unicode_output_exact",
+        "unicode_output_exact_idempotent"
+      ],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 733.314,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 806918,
+          "measured_calls": 43,
+          "expected_calls": 43,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 9077,
+          "measured_calls": 43,
+          "expected_calls": 43,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 694.222,
+          "measured_calls": 43,
+          "expected_calls": 43,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 694.134,
+          "measured_calls": 43,
+          "expected_calls": 43,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 9077,
+        "reported_output_tokens": 9077,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "qwen35-9b-q6-task-reminder_growth_03_format_json",
+      "attempt": 0,
+      "state": "not_run",
+      "profile": "qwen35-9b-q6-task-reminder",
+      "arm": "task-reminder",
+      "phase": "second",
+      "activation_reminder": null,
+      "outcome": {},
+      "sampling": null,
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": null,
+      "measurements": {},
+      "token_enforcement": null,
+      "reason": "First upgrade not fully accepted; no accepted parent exists"
+    }
+  ],
+  "scope": "Read-only report. Saved records are unchanged. Score fractions cover fully evaluated attempts only; all launched attempts, resource stops, infrastructure errors and interruptions remain visible separately. Correct artifacts, explicit completion and actual capability use are separate observations. Not-run cells are untested, not failed attempts. Artifact counts cover recorded checks (including behavior checks), not arbitrary feature correctness. Legacy first autonomous use and complete chains are unmeasured, not zero. Labels are overlapping observations, not proven causes.",
+  "cost_scope": "Known sums retain completeness flags. Token enforcement charges are not measured generation. No efficiency ranking is made here."
+}

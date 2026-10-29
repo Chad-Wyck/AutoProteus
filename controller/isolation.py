@@ -110,6 +110,8 @@ class Broker:
         self.last_status = 'running'
         self.plain_reply = None
         self.activation_context, self.context_config = activation_context, config
+        self.running_source = session.get('selected_seed', {}).get('source_sha256') if activation_context else None
+        self.activation_ack_sent = False
         self.inputs, self.operations = Inputs(store, session), Operations(store, session)
         self.web = WebAccess(config.get('internet', False), cancel)
         # Snapshot before accepting guest state. The seed's neutral transport
@@ -124,6 +126,35 @@ class Broker:
         if isinstance(client, ModelClient):
             attach_history(client, store, session, config)
             client.observation_context = self.inference_context
+
+    def activation_reply(self, answer):
+        """Acknowledge one explicit redundant request; never interpret prose."""
+        answer = dict(answer)
+        answer.pop('activation_acknowledged', None)
+        if not self.running_source or self.activation_ack_sent or answer.get('normalization_error'):
+            return answer
+        try:
+            decision = json.loads(answer.get('content', ''))
+        except (ValueError, TypeError):
+            return answer
+        if (not isinstance(decision, dict) or decision.get('status') != 'needs_input' or
+                decision.get('reason') != 'activation' or 'action' in decision or 'actions' in decision):
+            return answer
+        # Check host-owned exported bytes, never guest claims or source imports.
+        # Pending transfers make the exact current source uncertain.
+        if self.artifacts.pending:
+            return answer
+        from .submissions import source_hash
+        source = [{'path': item['path'][8:], 'data': item['data']}
+                  for item in self.artifacts.pack() if item['path'].startswith('harness/')]
+        if not source or source_hash(source) != self.running_source:
+            return answer
+        self.activation_ack_sent = True
+        answer['activation_acknowledged'] = ('This exact seed version is already active; no new activation is needed. '
+            'Continue the remaining user task with its supplied tools, verify the saved outputs, then finish completed. '
+            'This acknowledgement grants no additional action, token or time allowance.')
+        self.store.event(self.session, 'host_activation_acknowledged', {'source_sha256': self.running_source})
+        return answer
 
     def inference_context(self, messages):
         """Host snapshot comparisons describe omissions, not the seed's reasons."""
@@ -209,13 +240,13 @@ class Broker:
                             self.plain_reply = json.loads(answer['content'])
                         thinking.thinking(answer.get('thinking', ''))
                         outcome = 'completed'
-                        return answer
+                        return self.activation_reply(answer)
                     except Cancelled:
                         outcome = 'interrupted'
                         raise
                     finally:
                         thinking.finish(outcome)
-                return self.client.complete(messages, self.cancel)
+                return self.activation_reply(self.client.complete(messages, self.cancel))
             except Cancelled:
                 raise
             except ProviderError as error:

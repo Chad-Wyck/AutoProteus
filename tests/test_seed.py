@@ -295,7 +295,8 @@ def normalize_tool_response(content, calls):
     decisions=[]
     for call in calls:
         fn=call['function']; args=fn['arguments']
-        decisions.append({'message':args['message'], 'status':args['status']} if fn['name']=='finish'
+        decisions.append({'message':args['message'], 'status':args['status'],
+                          **({'reason':args['reason']} if 'reason' in args else {})} if fn['name']=='finish'
                          else {'message':content, 'action':{'tool':fn['name'], 'arguments':args}})
     if len(decisions)==1: return json.dumps(decisions[0])
     return json.dumps({'message':content, 'actions':[d['action'] for d in decisions if 'action' in d],

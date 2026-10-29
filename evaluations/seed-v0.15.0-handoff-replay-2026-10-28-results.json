@@ -1,0 +1,1234 @@
+{
+  "created": "2026-10-28T22:16:28.610077+00:00",
+  "experiment": "activation-handoff-replay-v1",
+  "base_git": "f3f3533",
+  "starter_sha256": "34588c61faa52d0288fc52fcfbf95dca5a730499a6fca1e486921bda717fdd0c",
+  "starter_unchanged": true,
+  "settings": {
+    "model": "qwen35-9b-q6_k",
+    "protocol": "native",
+    "context_tokens": 131072,
+    "response_tokens": 4096,
+    "temperature": 0.6,
+    "thinking": false,
+    "max_steps": 64,
+    "internet": false
+  },
+  "seeds": [
+    104729,
+    130363,
+    155921
+  ],
+  "seconds_per_trial": 1200,
+  "generated_tokens_per_trial": 16384,
+  "raw_summary": {
+    "updated": "2026-10-28T22:13:58.685206+00:00",
+    "arms": {
+      "baseline": {
+        "scheduled": 6,
+        "evaluated": 6,
+        "passed": 5,
+        "artifacts": 6,
+        "capability_used": 5,
+        "completed": 6,
+        "source_unchanged": 6,
+        "resource_stops": 0,
+        "infrastructure_errors": 0,
+        "interrupted": 0
+      },
+      "task-reminder": {
+        "scheduled": 6,
+        "evaluated": 6,
+        "passed": 6,
+        "artifacts": 6,
+        "capability_used": 6,
+        "completed": 6,
+        "source_unchanged": 6,
+        "resource_stops": 0,
+        "infrastructure_errors": 0,
+        "interrupted": 0
+      }
+    },
+    "queue": {
+      "launched_attempts": 12,
+      "completed_attempts": 12,
+      "interrupted_or_error_attempts": 0,
+      "unresolved_cells": [],
+      "not_run": 0
+    },
+    "scope": "Exploratory activation-only reuse, not new extension or complete growth-chain evidence. Both arms use identical frozen candidates, original task, inputs and limits. Only host activation state gets a verbatim existing requirement reminder. No expected outputs or corrective coaching."
+  },
+  "all_attempt_costs": {
+    "baseline": {
+      "calls": 124,
+      "input_tokens": {
+        "known_sum": 1197818,
+        "complete": true
+      },
+      "output_tokens": {
+        "known_sum": 10775,
+        "complete": true
+      },
+      "call_seconds": {
+        "known_sum": 923.07,
+        "complete": true
+      }
+    },
+    "task-reminder": {
+      "calls": 42,
+      "input_tokens": {
+        "known_sum": 124232,
+        "complete": true
+      },
+      "output_tokens": {
+        "known_sum": 3966,
+        "complete": true
+      },
+      "call_seconds": {
+        "known_sum": 291.93,
+        "complete": true
+      }
+    }
+  },
+  "matched_frozen_success_pairs": 5,
+  "matched_success_costs": {
+    "baseline": {
+      "calls": 98,
+      "input_tokens": {
+        "known_sum": 884975,
+        "complete": true
+      },
+      "output_tokens": {
+        "known_sum": 8472,
+        "complete": true
+      },
+      "call_seconds": {
+        "known_sum": 726.876,
+        "complete": true
+      }
+    },
+    "task-reminder": {
+      "calls": 35,
+      "input_tokens": {
+        "known_sum": 103182,
+        "complete": true
+      },
+      "output_tokens": {
+        "known_sum": 3250,
+        "complete": true
+      },
+      "call_seconds": {
+        "known_sum": 240.049,
+        "complete": true
+      }
+    }
+  },
+  "native_capability_use": {
+    "baseline": 1,
+    "task-reminder": 6
+  },
+  "memory_minimum_gib": {
+    "available_physical": 8.160247802734375,
+    "available_commit": 22.453758239746094
+  },
+  "paging_telemetry_available_trials": 12,
+  "owned_services_closed": true,
+  "known_grader_false_negative": {
+    "cell": "replay_01_csv_preview_baseline",
+    "frozen_score_unchanged": true,
+    "audit": "Two successful literal Workspace.execute csv_preview calls on the fresh input omitted limit; the second saved the actual result. The frozen grader verified exact receipt/input bytes, inspection, completion and source preservation but did not recognize labelled multiline json.dumps output. This is a separate evidence audit, not a model repair, automated regrade or new experiment.",
+    "evidence": [
+      {
+        "command_sha256": "351acc8acc26bb8380b92d763a630001b115df9b71f167902bda37e09a5168bd",
+        "arguments": {
+          "path": "activation/csv-night.csv"
+        },
+        "exit_code": 0,
+        "stdout": "Result: {\n  \"path\": \"activation/csv-night.csv\",\n  \"rows\": [\n    [\n      \"name\",\n      \"value\"\n    ],\n    [\n      \"caf\\u00e9, \\u732b\",\n      \"1\"\n    ],\n    [\n      \"line\\r\\nbreak\",\n      \"2\"\n    ],\n    [\n      \"csv-night-0\",\n      \"0\"\n    ],\n    [\n      \"csv-night-1\",\n      \"1\"\n    ]\n  ],\n  \"truncated\": true\n}\n",
+        "command": "cd /work/task && PYTHONPATH=/work/task/harness python3 -c \"\nfrom autoproteus.tools import Workspace\nfrom pathlib import Path\nimport json\n\n# Create workspace from root\nws = Workspace(Path.cwd())\n\n# Call csv_preview on activation/csv-night.csv with default limit\nresult = ws.execute('csv_preview', {'path': 'activation/csv-night.csv'})\nprint('Result:', json.dumps(result, indent=2))\n\""
+      },
+      {
+        "command_sha256": "c58395d1677d5db3a0d52c0b6722478d889500094008025dfcbea7d669b7b6a4",
+        "arguments": {
+          "path": "activation/csv-night.csv"
+        },
+        "exit_code": 0,
+        "stdout": "Saved result to activation/csv-night-receipt.json\nContent: {\n  \"path\": \"activation/csv-night.csv\",\n  \"rows\": [\n    [\n      \"name\",\n      \"value\"\n    ],\n    [\n      \"café, 猫\",\n      \"1\"\n    ],\n    [\n      \"line\\r\\nbreak\",\n      \"2\"\n    ],\n    [\n      \"csv-night-0\",\n      \"0\"\n    ],\n    [\n      \"csv-night-1\",\n      \"1\"\n    ]\n  ],\n  \"truncated\": true\n}\n",
+        "command": "cd /work/task && PYTHONPATH=/work/task/harness python3 -c \"\nfrom autoproteus.tools import Workspace\nfrom pathlib import Path\nimport json\n\n# Create workspace from root\nws = Workspace(Path.cwd())\n\n# Call csv_preview on activation/csv-night.csv with default limit\nresult = ws.execute('csv_preview', {'path': 'activation/csv-night.csv'})\n\n# Save to activation/csv-night-receipt.json\nws.execute('write_file', {'path': 'activation/csv-night-receipt.json', 'content': json.dumps(result, ensure_ascii=False)})\n\nprint('Saved result to activation/csv-night-receipt.json')\nprint('Content:', json.dumps(result, indent=2, ensure_ascii=False))\n\""
+      }
+    ]
+  },
+  "limitations": [
+    "Exploratory activation-only reuse, not new extension or complete growth-chain evidence. Both arms use identical frozen candidates, original task, inputs and limits. Only host activation state gets a verbatim existing requirement reminder. No expected outputs or corrective coaching.",
+    "Fresh activation reconstruction excludes development transcript and model-written todo; it is not a replay of the exact historical checkpoint.",
+    "Two previously studied accepted implementations; no new extension or second-growth task was run.",
+    "Reminder copies the known first-use clause from the task contract; generic remaining-task extraction has not been implemented or qualified.",
+    "Sifu ran concurrently with user authorization. Wall-time and throughput are not controlled hardware benchmarks.",
+    "Default-argument omission is recorded separately and was not consistent in native CSV calls; correct default-equivalent output alone does not prove omission.",
+    "One frozen functional-use score is an evidence-parser false negative; do not interpret 5/6 versus 6/6 as established functional superiority."
+  ],
+  "trials": [
+    {
+      "cell": "replay_01_sha256_file_baseline",
+      "arm": "baseline",
+      "feature": "sha256_file",
+      "source_sha256": "19f6522de03450d8d6ec7d16142adcffd1415a69857a508fe29c2ecaf7c6fc42",
+      "frozen_grade": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/hash-night.txt",
+        "output": "activation/hash-night-receipt.json",
+        "source_sha256": "19f6522de03450d8d6ec7d16142adcffd1415a69857a508fe29c2ecaf7c6fc42",
+        "supplied_actions": 64,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": [
+            "sha256_file"
+          ]
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "6bc6ccba50c149f8b6b32ca09e2c073d",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 17,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 17,
+        "shared_actions_used": 17,
+        "deadline_reached": false
+      },
+      "calls": 18,
+      "seconds": 152.90670260000024,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 123267,
+          "measured_calls": 18,
+          "expected_calls": 18,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 1362,
+          "measured_calls": 18,
+          "expected_calls": 18,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 140.741,
+          "measured_calls": 18,
+          "expected_calls": 18,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 140.705,
+          "measured_calls": 18,
+          "expected_calls": 18,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 90,
+        "bytes": 571410,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "native_capability_used": false,
+      "reminder_observed_in_first_provider_request": false
+    },
+    {
+      "cell": "replay_01_sha256_file_task-reminder",
+      "arm": "task-reminder",
+      "feature": "sha256_file",
+      "source_sha256": "19f6522de03450d8d6ec7d16142adcffd1415a69857a508fe29c2ecaf7c6fc42",
+      "frozen_grade": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/hash-night.txt",
+        "output": "activation/hash-night-receipt.json",
+        "source_sha256": "19f6522de03450d8d6ec7d16142adcffd1415a69857a508fe29c2ecaf7c6fc42",
+        "supplied_actions": 64,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "b3a0d0f90eca46bb9da8d04aee1db23c",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 8,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 8,
+        "shared_actions_used": 8,
+        "deadline_reached": false
+      },
+      "calls": 8,
+      "seconds": 65.03971880000017,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 24563,
+          "measured_calls": 8,
+          "expected_calls": 8,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 822,
+          "measured_calls": 8,
+          "expected_calls": 8,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 59.52,
+          "measured_calls": 8,
+          "expected_calls": 8,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 59.506,
+          "measured_calls": 8,
+          "expected_calls": 8,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 40,
+        "bytes": 116864,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "native_capability_used": true,
+      "reminder_observed_in_first_provider_request": true
+    },
+    {
+      "cell": "replay_01_csv_preview_baseline",
+      "arm": "baseline",
+      "feature": "csv_preview",
+      "source_sha256": "d289032af3766d3ab52accc96ba259e4a3d22f4eb53099e6ac686810cc2609b6",
+      "frozen_grade": {
+        "attempted": true,
+        "activated": true,
+        "passed": false,
+        "input": "activation/csv-night.csv",
+        "output": "activation/csv-night-receipt.json",
+        "source_sha256": "d289032af3766d3ab52accc96ba259e4a3d22f4eb53099e6ac686810cc2609b6",
+        "supplied_actions": 64,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file"
+          ],
+          "development": [
+            "csv_preview",
+            "list_files",
+            "write_file"
+          ]
+        },
+        "capability_used": false,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "db35b68d7aec49e1b6fbb0235857b928",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 25,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 25,
+        "shared_actions_used": 25,
+        "deadline_reached": false
+      },
+      "calls": 26,
+      "seconds": 208.8849478000002,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 312843,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2303,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 196.194,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 196.146,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 130,
+        "bytes": 1421844,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "native_capability_used": false,
+      "reminder_observed_in_first_provider_request": false
+    },
+    {
+      "cell": "replay_01_csv_preview_task-reminder",
+      "arm": "task-reminder",
+      "feature": "csv_preview",
+      "source_sha256": "d289032af3766d3ab52accc96ba259e4a3d22f4eb53099e6ac686810cc2609b6",
+      "frozen_grade": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/csv-night.csv",
+        "output": "activation/csv-night-receipt.json",
+        "source_sha256": "d289032af3766d3ab52accc96ba259e4a3d22f4eb53099e6ac686810cc2609b6",
+        "supplied_actions": 64,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": true,
+        "run": {
+          "session": "c3d86ededa0a401aab8e1abc56b7b3e1",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 6,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 6,
+        "shared_actions_used": 6,
+        "deadline_reached": false
+      },
+      "calls": 7,
+      "seconds": 57.23382850000007,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 21050,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 716,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 51.881,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 51.868,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 35,
+        "bytes": 104864,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "native_capability_used": true,
+      "reminder_observed_in_first_provider_request": true
+    },
+    {
+      "cell": "replay_02_sha256_file_task-reminder",
+      "arm": "task-reminder",
+      "feature": "sha256_file",
+      "source_sha256": "19f6522de03450d8d6ec7d16142adcffd1415a69857a508fe29c2ecaf7c6fc42",
+      "frozen_grade": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/hash-night.txt",
+        "output": "activation/hash-night-receipt.json",
+        "source_sha256": "19f6522de03450d8d6ec7d16142adcffd1415a69857a508fe29c2ecaf7c6fc42",
+        "supplied_actions": 64,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "4dba30ae6dc84396b4d823d7c2f9a3de",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 5,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 5,
+        "shared_actions_used": 5,
+        "deadline_reached": false
+      },
+      "calls": 6,
+      "seconds": 40.5561845000002,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 16241,
+          "measured_calls": 6,
+          "expected_calls": 6,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 440,
+          "measured_calls": 6,
+          "expected_calls": 6,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 35.602,
+          "measured_calls": 6,
+          "expected_calls": 6,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 35.591,
+          "measured_calls": 6,
+          "expected_calls": 6,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 30,
+        "bytes": 78278,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "native_capability_used": true,
+      "reminder_observed_in_first_provider_request": true
+    },
+    {
+      "cell": "replay_02_sha256_file_baseline",
+      "arm": "baseline",
+      "feature": "sha256_file",
+      "source_sha256": "19f6522de03450d8d6ec7d16142adcffd1415a69857a508fe29c2ecaf7c6fc42",
+      "frozen_grade": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/hash-night.txt",
+        "output": "activation/hash-night-receipt.json",
+        "source_sha256": "19f6522de03450d8d6ec7d16142adcffd1415a69857a508fe29c2ecaf7c6fc42",
+        "supplied_actions": 64,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file"
+          ],
+          "development": [
+            "sha256_file"
+          ]
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "989bd7f3494c4336b4985cefb88cdb52",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 29,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 29,
+        "shared_actions_used": 29,
+        "deadline_reached": false
+      },
+      "calls": 30,
+      "seconds": 230.57717009999988,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 338056,
+          "measured_calls": 30,
+          "expected_calls": 30,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2662,
+          "measured_calls": 30,
+          "expected_calls": 30,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 214.161,
+          "measured_calls": 30,
+          "expected_calls": 30,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 214.105,
+          "measured_calls": 30,
+          "expected_calls": 30,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 150,
+        "bytes": 1526721,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "native_capability_used": false,
+      "reminder_observed_in_first_provider_request": false
+    },
+    {
+      "cell": "replay_02_csv_preview_task-reminder",
+      "arm": "task-reminder",
+      "feature": "csv_preview",
+      "source_sha256": "d289032af3766d3ab52accc96ba259e4a3d22f4eb53099e6ac686810cc2609b6",
+      "frozen_grade": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/csv-night.csv",
+        "output": "activation/csv-night-receipt.json",
+        "source_sha256": "d289032af3766d3ab52accc96ba259e4a3d22f4eb53099e6ac686810cc2609b6",
+        "supplied_actions": 64,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": false,
+        "run": {
+          "session": "2b10c4ea38134b9b9a8012722452e8f2",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 6,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 6,
+        "shared_actions_used": 6,
+        "deadline_reached": false
+      },
+      "calls": 7,
+      "seconds": 42.61945629999991,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 20681,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 472,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 37.46,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 37.447,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 35,
+        "bytes": 100521,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "native_capability_used": true,
+      "reminder_observed_in_first_provider_request": true
+    },
+    {
+      "cell": "replay_02_csv_preview_baseline",
+      "arm": "baseline",
+      "feature": "csv_preview",
+      "source_sha256": "d289032af3766d3ab52accc96ba259e4a3d22f4eb53099e6ac686810cc2609b6",
+      "frozen_grade": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/csv-night.csv",
+        "output": "activation/csv-night-receipt.json",
+        "source_sha256": "d289032af3766d3ab52accc96ba259e4a3d22f4eb53099e6ac686810cc2609b6",
+        "supplied_actions": 64,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": false,
+        "run": {
+          "session": "d4c9219c3c704e61b5fba66facf43ad7",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 11,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 11,
+        "shared_actions_used": 11,
+        "deadline_reached": false
+      },
+      "calls": 12,
+      "seconds": 106.52455290000034,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 80946,
+          "measured_calls": 12,
+          "expected_calls": 12,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 1183,
+          "measured_calls": 12,
+          "expected_calls": 12,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 100.096,
+          "measured_calls": 12,
+          "expected_calls": 12,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 100.072,
+          "measured_calls": 12,
+          "expected_calls": 12,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 60,
+        "bytes": 382764,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "native_capability_used": true,
+      "reminder_observed_in_first_provider_request": false
+    },
+    {
+      "cell": "replay_03_sha256_file_baseline",
+      "arm": "baseline",
+      "feature": "sha256_file",
+      "source_sha256": "19f6522de03450d8d6ec7d16142adcffd1415a69857a508fe29c2ecaf7c6fc42",
+      "frozen_grade": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/hash-night.txt",
+        "output": "activation/hash-night-receipt.json",
+        "source_sha256": "19f6522de03450d8d6ec7d16142adcffd1415a69857a508fe29c2ecaf7c6fc42",
+        "supplied_actions": 64,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": [
+            "sha256_file"
+          ]
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": false,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "924d8cc284214fa79a3870f8954425c8",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 19,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 19,
+        "shared_actions_used": 19,
+        "deadline_reached": false
+      },
+      "calls": 20,
+      "seconds": 151.55646010000055,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 171135,
+          "measured_calls": 20,
+          "expected_calls": 20,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 1802,
+          "measured_calls": 20,
+          "expected_calls": 20,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 142.741,
+          "measured_calls": 20,
+          "expected_calls": 20,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 142.705,
+          "measured_calls": 20,
+          "expected_calls": 20,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 100,
+        "bytes": 784124,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "native_capability_used": false,
+      "reminder_observed_in_first_provider_request": false
+    },
+    {
+      "cell": "replay_03_sha256_file_task-reminder",
+      "arm": "task-reminder",
+      "feature": "sha256_file",
+      "source_sha256": "19f6522de03450d8d6ec7d16142adcffd1415a69857a508fe29c2ecaf7c6fc42",
+      "frozen_grade": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/hash-night.txt",
+        "output": "activation/hash-night-receipt.json",
+        "source_sha256": "19f6522de03450d8d6ec7d16142adcffd1415a69857a508fe29c2ecaf7c6fc42",
+        "supplied_actions": 64,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "e9e7c3372f794472a16585596752f248",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 6,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, sha256_file. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 6,
+        "shared_actions_used": 6,
+        "deadline_reached": false
+      },
+      "calls": 7,
+      "seconds": 64.38243559999955,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 20451,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 858,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 59.228,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 59.216,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 35,
+        "bytes": 98604,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "native_capability_used": true,
+      "reminder_observed_in_first_provider_request": true
+    },
+    {
+      "cell": "replay_03_csv_preview_baseline",
+      "arm": "baseline",
+      "feature": "csv_preview",
+      "source_sha256": "d289032af3766d3ab52accc96ba259e4a3d22f4eb53099e6ac686810cc2609b6",
+      "frozen_grade": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/csv-night.csv",
+        "output": "activation/csv-night-receipt.json",
+        "source_sha256": "d289032af3766d3ab52accc96ba259e4a3d22f4eb53099e6ac686810cc2609b6",
+        "supplied_actions": 64,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": [
+            "csv_preview"
+          ]
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "e0511523079d4c1bb0b20904f6e755be",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 17,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 17,
+        "shared_actions_used": 17,
+        "deadline_reached": false
+      },
+      "calls": 18,
+      "seconds": 138.90523889999986,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 171571,
+          "measured_calls": 18,
+          "expected_calls": 18,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 1463,
+          "measured_calls": 18,
+          "expected_calls": 18,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 129.137,
+          "measured_calls": 18,
+          "expected_calls": 18,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 129.105,
+          "measured_calls": 18,
+          "expected_calls": 18,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 90,
+        "bytes": 794949,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "native_capability_used": false,
+      "reminder_observed_in_first_provider_request": false
+    },
+    {
+      "cell": "replay_03_csv_preview_task-reminder",
+      "arm": "task-reminder",
+      "feature": "csv_preview",
+      "source_sha256": "d289032af3766d3ab52accc96ba259e4a3d22f4eb53099e6ac686810cc2609b6",
+      "frozen_grade": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/csv-night.csv",
+        "output": "activation/csv-night-receipt.json",
+        "source_sha256": "d289032af3766d3ab52accc96ba259e4a3d22f4eb53099e6ac686810cc2609b6",
+        "supplied_actions": 64,
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": true,
+        "run": {
+          "session": "66bb524995804a1e8581920a54d359dc",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 6,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command, csv_preview. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 6,
+        "shared_actions_used": 6,
+        "deadline_reached": false
+      },
+      "calls": 7,
+      "seconds": 53.42062669999996,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 21246,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 658,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 48.239,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 48.226,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "capture": {
+        "records": 35,
+        "bytes": 104785,
+        "dropped": 0,
+        "error": null,
+        "complete": true,
+        "observer_failed": false
+      },
+      "native_capability_used": true,
+      "reminder_observed_in_first_provider_request": true
+    }
+  ],
+  "private_evidence": ".data\\activation-replay-20261028\\study-final"
+}

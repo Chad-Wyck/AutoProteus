@@ -1,0 +1,4320 @@
+{
+  "protocol": "activation-use-v2",
+  "source_sha256": "645d2222c5f7f6e92ad5f2ca964f7584e07b47ea4d410872e98a61009eb7bb0d",
+  "activation_reminder": true,
+  "public_verifier_feedback": true,
+  "profiles": [
+    {
+      "id": "gpt61-sol-low",
+      "config": {
+        "provider": "hosted",
+        "model": "gpt-6.1-sol",
+        "context_tokens": 131072,
+        "response_tokens": 4096,
+        "temperature": 0.6,
+        "max_steps": 128,
+        "request_timeout": 600,
+        "terminal": true,
+        "thinking": null,
+        "protocol": "native",
+        "internet": false,
+        "action_limit": true,
+        "sampling_seed_mode": "provider-default",
+        "api_format": "responses",
+        "reasoning_effort": "low"
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      }
+    }
+  ],
+  "groups": {
+    "gpt61-sol-low/public-verifier-feedback+task-reminder": {
+      "launched": 24,
+      "finished": 24,
+      "first_attempts": 9,
+      "first_packages": 9,
+      "first_use_attempts": 9,
+      "first_use_passed": 9,
+      "ordinary_evaluated": 5,
+      "first_evaluated": 9,
+      "second_evaluated": 9,
+      "resource_stops": 0,
+      "infrastructure_errors": 0,
+      "interruptions": 0,
+      "public_verifier_stages": 18,
+      "public_passed_without_feedback": 18,
+      "public_corrections": 0,
+      "public_passed_after_feedback": 0,
+      "second_attempts": 9,
+      "second_verified": 9,
+      "second_use_passed": 9,
+      "complete_chains": 9,
+      "diagnostic_second": 0,
+      "ordinary_attempts": 5,
+      "ordinary_checks": 5,
+      "ordinary_artifacts_correct": 5,
+      "ordinary_completion_observations": 5,
+      "ordinary_explicit_completion": 5,
+      "ordinary_passed": 5,
+      "not_run": {
+        "ordinary": 0,
+        "first": 0,
+        "second": 0,
+        "inference": 0,
+        "unmeasured": 0
+      }
+    }
+  },
+  "rows": [
+    {
+      "cell": "gpt61-sol-low_benchmark_01",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "inference",
+      "activation_reminder": null,
+      "public_verifier": null,
+      "outcome": {},
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": null,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 7306,
+          "measured_calls": 2,
+          "expected_calls": 2,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 46,
+          "measured_calls": 2,
+          "expected_calls": 2,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 3.657,
+          "measured_calls": 2,
+          "expected_calls": 2,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 3.656,
+          "measured_calls": 2,
+          "expected_calls": 2,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": null,
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_basic_exact-file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "ordinary",
+      "activation_reminder": null,
+      "public_verifier": null,
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "task_passed": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 15.046,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 7747,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 179,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 8.702,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 8.691,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 8192,
+        "charged_output_tokens": 179,
+        "reported_output_tokens": 179,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_basic_precise-edit",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "ordinary",
+      "activation_reminder": null,
+      "public_verifier": null,
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "task_passed": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 16.589,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 7894,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 224,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 10.268,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 10.256,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 8192,
+        "charged_output_tokens": 224,
+        "reported_output_tokens": 224,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_basic_recovery",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "ordinary",
+      "activation_reminder": null,
+      "public_verifier": null,
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "task_passed": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 13.145,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 5902,
+          "measured_calls": 4,
+          "expected_calls": 4,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 105,
+          "measured_calls": 4,
+          "expected_calls": 4,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 7.185,
+          "measured_calls": 4,
+          "expected_calls": 4,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 7.176,
+          "measured_calls": 4,
+          "expected_calls": 4,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 8192,
+        "charged_output_tokens": 105,
+        "reported_output_tokens": 105,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_basic_unicode",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "ordinary",
+      "activation_reminder": null,
+      "public_verifier": null,
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "task_passed": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 15.646,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 7799,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 195,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 9.046,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 9.035,
+          "measured_calls": 5,
+          "expected_calls": 5,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 8192,
+        "charged_output_tokens": 195,
+        "reported_output_tokens": 195,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_basic_bug-fix",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "ordinary",
+      "activation_reminder": null,
+      "public_verifier": null,
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "task_passed": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": null,
+      "package_verified": null,
+      "package_accepted": null,
+      "first_use": null,
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 26.18,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 12040,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 336,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 14.734,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 14.719,
+          "measured_calls": 7,
+          "expected_calls": 7,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 8192,
+        "charged_output_tokens": 336,
+        "reported_output_tokens": 336,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_first_01_sha256_file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use sha256_file on activation/hash-night.txt. Save exactly its path, bytes and sha256 fields as a JSON object in activation/hash-night-receipt.json. Preserve the input bytes. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use sha256_file on activation/hash-night.txt. Save exactly its path, bytes and sha256 fields as a JSON object in activation/hash-night-receipt.json. Preserve the input bytes. Check the saved result and finish completed. Do not edit the seed after activation.",
+          "input": "activation/hash-night.txt",
+          "output": "activation/hash-night-receipt.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "exact_fields": true,
+          "preview_limit": null,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/hash-night.txt": {
+              "bytes": 43,
+              "sha256": "96c977ac2a5af71342148a70c0e3db7e7f24f7de992e9c418b3f421725c7ce9c"
+            },
+            "activation/hash-night-receipt.json": {
+              "bytes": 137,
+              "sha256": "20b484e018fcab6dc96297722f6250ce802c5338c9212d5dd01df474e1d625fd"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "e623ba4ce9b64280a0a3f10e8ac67409",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 20,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/hash-night.txt": {
+              "bytes": 43,
+              "sha256": "96c977ac2a5af71342148a70c0e3db7e7f24f7de992e9c418b3f421725c7ce9c"
+            },
+            "activation/hash-night-receipt.json": {
+              "bytes": 137,
+              "sha256": "20b484e018fcab6dc96297722f6250ce802c5338c9212d5dd01df474e1d625fd"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/hash-night.txt",
+        "output": "activation/hash-night-receipt.json",
+        "source_sha256": "66555e7bfca568af4e7784c86713e67dad312069297c15dc589abb212103b5c6",
+        "supplied_actions": 115,
+        "public_verifier": {
+          "experimental": true,
+          "specification": {
+            "schema": 1,
+            "instruction": "Use sha256_file on activation/hash-night.txt. Save exactly its path, bytes and sha256 fields as a JSON object in activation/hash-night-receipt.json. Preserve the input bytes. Check the saved result and finish completed. Do not edit the seed after activation.",
+            "input": "activation/hash-night.txt",
+            "output": "activation/hash-night-receipt.json",
+            "input_operation": "preserve",
+            "receipt_fields": [
+              "path",
+              "bytes",
+              "sha256"
+            ],
+            "exact_fields": true,
+            "preview_limit": null,
+            "canonical_json": {
+              "ensure_ascii": false,
+              "sort_keys": true,
+              "indent": 2,
+              "final_lf": true
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/hash-night.txt": {
+                "bytes": 43,
+                "sha256": "96c977ac2a5af71342148a70c0e3db7e7f24f7de992e9c418b3f421725c7ce9c"
+              },
+              "activation/hash-night-receipt.json": {
+                "bytes": 137,
+                "sha256": "20b484e018fcab6dc96297722f6250ce802c5338c9212d5dd01df474e1d625fd"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial_status": "completed",
+          "initial_run": {
+            "session": "e623ba4ce9b64280a0a3f10e8ac67409",
+            "status": "completed",
+            "timed_out": false,
+            "steps": 20,
+            "provider_error_category": null,
+            "last_notices": [
+              "Your edited seed is now active. Available workspace tools: sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+              "Session resumed. Checking the current workspace before continuing."
+            ]
+          },
+          "corrections": 0,
+          "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+          "final": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/hash-night.txt": {
+                "bytes": 43,
+                "sha256": "96c977ac2a5af71342148a70c0e3db7e7f24f7de992e9c418b3f421725c7ce9c"
+              },
+              "activation/hash-night-receipt.json": {
+                "bytes": 137,
+                "sha256": "20b484e018fcab6dc96297722f6250ce802c5338c9212d5dd01df474e1d625fd"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "final_status": "completed",
+          "passed_without_feedback": true,
+          "passed_after_feedback": false
+        },
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "e623ba4ce9b64280a0a3f10e8ac67409",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 20,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 7,
+        "shared_actions_used": 20,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 98.015,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 117261,
+          "measured_calls": 22,
+          "expected_calls": 22,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2180,
+          "measured_calls": 22,
+          "expected_calls": 22,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 57.418,
+          "measured_calls": 22,
+          "expected_calls": 22,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 57.368,
+          "measured_calls": 22,
+          "expected_calls": 22,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2180,
+        "reported_output_tokens": 2180,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_growth_01_sha256_file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "inventory.json",
+          "output": "audit.json",
+          "input_operation": "canonical_json",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "exact_fields": false,
+          "preview_limit": null,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "inventory.json": {
+              "bytes": 54,
+              "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4"
+            },
+            "audit.json": {
+              "bytes": 126,
+              "sha256": "e6e81f45315a7a78c26c904abb8e640dcad85b750fbeee42434008d89ae45e90"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "72fd23b2ebbd4d79ba81fcb0bcf6e382",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 23,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: format_json, sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "inventory.json": {
+              "bytes": 54,
+              "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4"
+            },
+            "audit.json": {
+              "bytes": 126,
+              "sha256": "e6e81f45315a7a78c26c904abb8e640dcad85b750fbeee42434008d89ae45e90"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "format_json",
+      "package_verified": true,
+      "package_accepted": false,
+      "first_use": null,
+      "second_task_passed": true,
+      "complete_chain_passed": true,
+      "diagnostic_second": false,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 126.21,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 133463,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2467,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 71.15,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 71.09,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2467,
+        "reported_output_tokens": 2467,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_first_01_format_json",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use format_json to format activation/format-night.json in place. Save exactly its path and bytes fields as a JSON object in activation/format-night-receipt.json. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use format_json to format activation/format-night.json in place. Save exactly its path and bytes fields as a JSON object in activation/format-night-receipt.json. Check the saved result and finish completed. Do not edit the seed after activation.",
+          "input": "activation/format-night.json",
+          "output": "activation/format-night-receipt.json",
+          "input_operation": "canonical_json",
+          "receipt_fields": [
+            "path",
+            "bytes"
+          ],
+          "exact_fields": true,
+          "preview_limit": null,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/format-night.json": {
+              "bytes": 79,
+              "sha256": "7e2a9b8c7848df256117b800b820d2014d7aca31218d4cee298607b8ca2331d0"
+            },
+            "activation/format-night-receipt.json": {
+              "bytes": 51,
+              "sha256": "b0ca0ee0293e0f35dd2c5e37ea95ee137eea0a087fb7760e46183747f607f8e7"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "359947924e5e4369a09ca4d761087cef",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 23,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, format_json, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/format-night.json": {
+              "bytes": 79,
+              "sha256": "7e2a9b8c7848df256117b800b820d2014d7aca31218d4cee298607b8ca2331d0"
+            },
+            "activation/format-night-receipt.json": {
+              "bytes": 51,
+              "sha256": "b0ca0ee0293e0f35dd2c5e37ea95ee137eea0a087fb7760e46183747f607f8e7"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "format_json",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/format-night.json",
+        "output": "activation/format-night-receipt.json",
+        "source_sha256": "087c4b8179cf6cb0cab1bcb35eff55f28f078c991a4673414149c03c46701bfa",
+        "supplied_actions": 114,
+        "public_verifier": {
+          "experimental": true,
+          "specification": {
+            "schema": 1,
+            "instruction": "Use format_json to format activation/format-night.json in place. Save exactly its path and bytes fields as a JSON object in activation/format-night-receipt.json. Check the saved result and finish completed. Do not edit the seed after activation.",
+            "input": "activation/format-night.json",
+            "output": "activation/format-night-receipt.json",
+            "input_operation": "canonical_json",
+            "receipt_fields": [
+              "path",
+              "bytes"
+            ],
+            "exact_fields": true,
+            "preview_limit": null,
+            "canonical_json": {
+              "ensure_ascii": false,
+              "sort_keys": true,
+              "indent": 2,
+              "final_lf": true
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/format-night.json": {
+                "bytes": 79,
+                "sha256": "7e2a9b8c7848df256117b800b820d2014d7aca31218d4cee298607b8ca2331d0"
+              },
+              "activation/format-night-receipt.json": {
+                "bytes": 51,
+                "sha256": "b0ca0ee0293e0f35dd2c5e37ea95ee137eea0a087fb7760e46183747f607f8e7"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial_status": "completed",
+          "initial_run": {
+            "session": "359947924e5e4369a09ca4d761087cef",
+            "status": "completed",
+            "timed_out": false,
+            "steps": 23,
+            "provider_error_category": null,
+            "last_notices": [
+              "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, format_json, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+              "Session resumed. Checking the current workspace before continuing."
+            ]
+          },
+          "corrections": 0,
+          "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+          "final": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/format-night.json": {
+                "bytes": 79,
+                "sha256": "7e2a9b8c7848df256117b800b820d2014d7aca31218d4cee298607b8ca2331d0"
+              },
+              "activation/format-night-receipt.json": {
+                "bytes": 51,
+                "sha256": "b0ca0ee0293e0f35dd2c5e37ea95ee137eea0a087fb7760e46183747f607f8e7"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "final_status": "completed",
+          "passed_without_feedback": true,
+          "passed_after_feedback": false
+        },
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "format_json",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": false,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "359947924e5e4369a09ca4d761087cef",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 23,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, format_json, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 9,
+        "shared_actions_used": 23,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 113.703,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 136949,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2402,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 72.581,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 72.523,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2402,
+        "reported_output_tokens": 2402,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_growth_01_format_json",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "inventory.json",
+          "output": "audit.json",
+          "input_operation": "canonical_json",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "exact_fields": false,
+          "preview_limit": null,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "inventory.json": {
+              "bytes": 54,
+              "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4"
+            },
+            "audit.json": {
+              "bytes": 126,
+              "sha256": "e6e81f45315a7a78c26c904abb8e640dcad85b750fbeee42434008d89ae45e90"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "8931ba31bf72492ba1d90d4b47f9c5fd",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 23,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, format_json, sha256_file, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "inventory.json": {
+              "bytes": 54,
+              "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4"
+            },
+            "audit.json": {
+              "bytes": 126,
+              "sha256": "e6e81f45315a7a78c26c904abb8e640dcad85b750fbeee42434008d89ae45e90"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": false,
+      "first_use": null,
+      "second_task_passed": true,
+      "complete_chain_passed": true,
+      "diagnostic_second": false,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 124.85,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 132000,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2164,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 65.88,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 65.818,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2164,
+        "reported_output_tokens": 2164,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_first_01_csv_preview",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use csv_preview on activation/csv-night.csv with its default limit. Save exactly its path, rows and truncated fields as a JSON object in activation/csv-night-receipt.json. Preserve all input bytes; the earlier development examples are not this task. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use csv_preview on activation/csv-night.csv with its default limit. Save exactly its path, rows and truncated fields as a JSON object in activation/csv-night-receipt.json. Preserve all input bytes; the earlier development examples are not this task. Check the saved result and finish completed. Do not edit the seed after activation.",
+          "input": "activation/csv-night.csv",
+          "output": "activation/csv-night-receipt.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "rows",
+            "truncated"
+          ],
+          "exact_fields": true,
+          "preview_limit": 5,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/csv-night.csv": {
+              "bytes": 120,
+              "sha256": "d57085871c9d28c7becd21379876c1a51a8923c219e6dfa727b0b5e13f0e6aba"
+            },
+            "activation/csv-night-receipt.json": {
+              "bytes": 296,
+              "sha256": "e4cd2cd4ea455a0a0c0ca06019623a58f2080bda364e2919b05c016a9675a42c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "efc75edea26840ffaf23328619fb5317",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 23,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: csv_preview, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/csv-night.csv": {
+              "bytes": 120,
+              "sha256": "d57085871c9d28c7becd21379876c1a51a8923c219e6dfa727b0b5e13f0e6aba"
+            },
+            "activation/csv-night-receipt.json": {
+              "bytes": 296,
+              "sha256": "e4cd2cd4ea455a0a0c0ca06019623a58f2080bda364e2919b05c016a9675a42c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "csv_preview",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/csv-night.csv",
+        "output": "activation/csv-night-receipt.json",
+        "source_sha256": "3ed439fc4150203503b85491188ab32c68a779fb45c4016afa69b9b6660d08af",
+        "supplied_actions": 113,
+        "public_verifier": {
+          "experimental": true,
+          "specification": {
+            "schema": 1,
+            "instruction": "Use csv_preview on activation/csv-night.csv with its default limit. Save exactly its path, rows and truncated fields as a JSON object in activation/csv-night-receipt.json. Preserve all input bytes; the earlier development examples are not this task. Check the saved result and finish completed. Do not edit the seed after activation.",
+            "input": "activation/csv-night.csv",
+            "output": "activation/csv-night-receipt.json",
+            "input_operation": "preserve",
+            "receipt_fields": [
+              "path",
+              "rows",
+              "truncated"
+            ],
+            "exact_fields": true,
+            "preview_limit": 5,
+            "canonical_json": {
+              "ensure_ascii": false,
+              "sort_keys": true,
+              "indent": 2,
+              "final_lf": true
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/csv-night.csv": {
+                "bytes": 120,
+                "sha256": "d57085871c9d28c7becd21379876c1a51a8923c219e6dfa727b0b5e13f0e6aba"
+              },
+              "activation/csv-night-receipt.json": {
+                "bytes": 296,
+                "sha256": "e4cd2cd4ea455a0a0c0ca06019623a58f2080bda364e2919b05c016a9675a42c"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial_status": "completed",
+          "initial_run": {
+            "session": "efc75edea26840ffaf23328619fb5317",
+            "status": "completed",
+            "timed_out": false,
+            "steps": 23,
+            "provider_error_category": null,
+            "last_notices": [
+              "Your edited seed is now active. Available workspace tools: csv_preview, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+              "Session resumed. Checking the current workspace before continuing."
+            ]
+          },
+          "corrections": 0,
+          "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+          "final": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/csv-night.csv": {
+                "bytes": 120,
+                "sha256": "d57085871c9d28c7becd21379876c1a51a8923c219e6dfa727b0b5e13f0e6aba"
+              },
+              "activation/csv-night-receipt.json": {
+                "bytes": 296,
+                "sha256": "e4cd2cd4ea455a0a0c0ca06019623a58f2080bda364e2919b05c016a9675a42c"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "final_status": "completed",
+          "passed_without_feedback": true,
+          "passed_after_feedback": false
+        },
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": false,
+        "completed": true,
+        "default_arguments_omitted": true,
+        "run": {
+          "session": "efc75edea26840ffaf23328619fb5317",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 23,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: csv_preview, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 8,
+        "shared_actions_used": 23,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 120.145,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 145671,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2989,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 74.199,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 74.138,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2989,
+        "reported_output_tokens": 2989,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_growth_01_csv_preview",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "sample.txt",
+          "output": "audit.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256",
+            "rows",
+            "truncated"
+          ],
+          "exact_fields": false,
+          "preview_limit": 5,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 287,
+              "sha256": "f3cdf95dd44a30a5b954f01c0e12fff0bfc75757a60ec96b6990a777a6af3c6c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "3a5eb0b5e87e48e9bd7bb2e58afcccb2",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 23,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: sha256_file, csv_preview, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 287,
+              "sha256": "f3cdf95dd44a30a5b954f01c0e12fff0bfc75757a60ec96b6990a777a6af3c6c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 104729,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": false,
+      "first_use": null,
+      "second_task_passed": true,
+      "complete_chain_passed": true,
+      "diagnostic_second": false,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 109.806,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 132385,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2312,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 61.689,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 61.633,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2312,
+        "reported_output_tokens": 2312,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_first_02_format_json",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use format_json to format activation/format-night.json in place. Save exactly its path and bytes fields as a JSON object in activation/format-night-receipt.json. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use format_json to format activation/format-night.json in place. Save exactly its path and bytes fields as a JSON object in activation/format-night-receipt.json. Check the saved result and finish completed. Do not edit the seed after activation.",
+          "input": "activation/format-night.json",
+          "output": "activation/format-night-receipt.json",
+          "input_operation": "canonical_json",
+          "receipt_fields": [
+            "path",
+            "bytes"
+          ],
+          "exact_fields": true,
+          "preview_limit": null,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/format-night.json": {
+              "bytes": 79,
+              "sha256": "7e2a9b8c7848df256117b800b820d2014d7aca31218d4cee298607b8ca2331d0"
+            },
+            "activation/format-night-receipt.json": {
+              "bytes": 51,
+              "sha256": "b0ca0ee0293e0f35dd2c5e37ea95ee137eea0a087fb7760e46183747f607f8e7"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "529cd7a286b045c8b28945cb9394082e",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 24,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, format_json, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/format-night.json": {
+              "bytes": 79,
+              "sha256": "7e2a9b8c7848df256117b800b820d2014d7aca31218d4cee298607b8ca2331d0"
+            },
+            "activation/format-night-receipt.json": {
+              "bytes": 51,
+              "sha256": "b0ca0ee0293e0f35dd2c5e37ea95ee137eea0a087fb7760e46183747f607f8e7"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 130363,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "format_json",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/format-night.json",
+        "output": "activation/format-night-receipt.json",
+        "source_sha256": "2a9d2c70d9d65e305b5de4c63f1bf57e629680b42d9d6e046e04a749097dba63",
+        "supplied_actions": 112,
+        "public_verifier": {
+          "experimental": true,
+          "specification": {
+            "schema": 1,
+            "instruction": "Use format_json to format activation/format-night.json in place. Save exactly its path and bytes fields as a JSON object in activation/format-night-receipt.json. Check the saved result and finish completed. Do not edit the seed after activation.",
+            "input": "activation/format-night.json",
+            "output": "activation/format-night-receipt.json",
+            "input_operation": "canonical_json",
+            "receipt_fields": [
+              "path",
+              "bytes"
+            ],
+            "exact_fields": true,
+            "preview_limit": null,
+            "canonical_json": {
+              "ensure_ascii": false,
+              "sort_keys": true,
+              "indent": 2,
+              "final_lf": true
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/format-night.json": {
+                "bytes": 79,
+                "sha256": "7e2a9b8c7848df256117b800b820d2014d7aca31218d4cee298607b8ca2331d0"
+              },
+              "activation/format-night-receipt.json": {
+                "bytes": 51,
+                "sha256": "b0ca0ee0293e0f35dd2c5e37ea95ee137eea0a087fb7760e46183747f607f8e7"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial_status": "completed",
+          "initial_run": {
+            "session": "529cd7a286b045c8b28945cb9394082e",
+            "status": "completed",
+            "timed_out": false,
+            "steps": 24,
+            "provider_error_category": null,
+            "last_notices": [
+              "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, format_json, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+              "Session resumed. Checking the current workspace before continuing."
+            ]
+          },
+          "corrections": 0,
+          "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+          "final": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/format-night.json": {
+                "bytes": 79,
+                "sha256": "7e2a9b8c7848df256117b800b820d2014d7aca31218d4cee298607b8ca2331d0"
+              },
+              "activation/format-night-receipt.json": {
+                "bytes": 51,
+                "sha256": "b0ca0ee0293e0f35dd2c5e37ea95ee137eea0a087fb7760e46183747f607f8e7"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "final_status": "completed",
+          "passed_without_feedback": true,
+          "passed_after_feedback": false
+        },
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "format_json",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": false,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "529cd7a286b045c8b28945cb9394082e",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 24,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, format_json, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 8,
+        "shared_actions_used": 24,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 105.448,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 151119,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2559,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 70.539,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 70.486,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2559,
+        "reported_output_tokens": 2559,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_growth_02_format_json",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "inventory.json",
+          "output": "audit.json",
+          "input_operation": "canonical_json",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "exact_fields": false,
+          "preview_limit": null,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "inventory.json": {
+              "bytes": 54,
+              "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4"
+            },
+            "audit.json": {
+              "bytes": 126,
+              "sha256": "e6e81f45315a7a78c26c904abb8e640dcad85b750fbeee42434008d89ae45e90"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "558d41c78c8d48098881d593318646e0",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 24,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, sha256_file, format_json, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "inventory.json": {
+              "bytes": 54,
+              "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4"
+            },
+            "audit.json": {
+              "bytes": 126,
+              "sha256": "e6e81f45315a7a78c26c904abb8e640dcad85b750fbeee42434008d89ae45e90"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 130363,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": false,
+      "first_use": null,
+      "second_task_passed": true,
+      "complete_chain_passed": true,
+      "diagnostic_second": false,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 119.355,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 137165,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2202,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 68.271,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 68.213,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2202,
+        "reported_output_tokens": 2202,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_first_02_csv_preview",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use csv_preview on activation/csv-night.csv with its default limit. Save exactly its path, rows and truncated fields as a JSON object in activation/csv-night-receipt.json. Preserve all input bytes; the earlier development examples are not this task. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use csv_preview on activation/csv-night.csv with its default limit. Save exactly its path, rows and truncated fields as a JSON object in activation/csv-night-receipt.json. Preserve all input bytes; the earlier development examples are not this task. Check the saved result and finish completed. Do not edit the seed after activation.",
+          "input": "activation/csv-night.csv",
+          "output": "activation/csv-night-receipt.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "rows",
+            "truncated"
+          ],
+          "exact_fields": true,
+          "preview_limit": 5,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/csv-night.csv": {
+              "bytes": 120,
+              "sha256": "d57085871c9d28c7becd21379876c1a51a8923c219e6dfa727b0b5e13f0e6aba"
+            },
+            "activation/csv-night-receipt.json": {
+              "bytes": 296,
+              "sha256": "e4cd2cd4ea455a0a0c0ca06019623a58f2080bda364e2919b05c016a9675a42c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "0b300d9a77b446458f841a84e9cf1bc5",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 24,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: csv_preview, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/csv-night.csv": {
+              "bytes": 120,
+              "sha256": "d57085871c9d28c7becd21379876c1a51a8923c219e6dfa727b0b5e13f0e6aba"
+            },
+            "activation/csv-night-receipt.json": {
+              "bytes": 296,
+              "sha256": "e4cd2cd4ea455a0a0c0ca06019623a58f2080bda364e2919b05c016a9675a42c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 130363,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "csv_preview",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/csv-night.csv",
+        "output": "activation/csv-night-receipt.json",
+        "source_sha256": "b319bdca952cd4a0fd36b329835ec447ae088b8d00f477ffa3935ede0928d91f",
+        "supplied_actions": 114,
+        "public_verifier": {
+          "experimental": true,
+          "specification": {
+            "schema": 1,
+            "instruction": "Use csv_preview on activation/csv-night.csv with its default limit. Save exactly its path, rows and truncated fields as a JSON object in activation/csv-night-receipt.json. Preserve all input bytes; the earlier development examples are not this task. Check the saved result and finish completed. Do not edit the seed after activation.",
+            "input": "activation/csv-night.csv",
+            "output": "activation/csv-night-receipt.json",
+            "input_operation": "preserve",
+            "receipt_fields": [
+              "path",
+              "rows",
+              "truncated"
+            ],
+            "exact_fields": true,
+            "preview_limit": 5,
+            "canonical_json": {
+              "ensure_ascii": false,
+              "sort_keys": true,
+              "indent": 2,
+              "final_lf": true
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/csv-night.csv": {
+                "bytes": 120,
+                "sha256": "d57085871c9d28c7becd21379876c1a51a8923c219e6dfa727b0b5e13f0e6aba"
+              },
+              "activation/csv-night-receipt.json": {
+                "bytes": 296,
+                "sha256": "e4cd2cd4ea455a0a0c0ca06019623a58f2080bda364e2919b05c016a9675a42c"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial_status": "completed",
+          "initial_run": {
+            "session": "0b300d9a77b446458f841a84e9cf1bc5",
+            "status": "completed",
+            "timed_out": false,
+            "steps": 24,
+            "provider_error_category": null,
+            "last_notices": [
+              "Your edited seed is now active. Available workspace tools: csv_preview, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+              "Session resumed. Checking the current workspace before continuing."
+            ]
+          },
+          "corrections": 0,
+          "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+          "final": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/csv-night.csv": {
+                "bytes": 120,
+                "sha256": "d57085871c9d28c7becd21379876c1a51a8923c219e6dfa727b0b5e13f0e6aba"
+              },
+              "activation/csv-night-receipt.json": {
+                "bytes": 296,
+                "sha256": "e4cd2cd4ea455a0a0c0ca06019623a58f2080bda364e2919b05c016a9675a42c"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "final_status": "completed",
+          "passed_without_feedback": true,
+          "passed_after_feedback": false
+        },
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": false,
+        "completed": true,
+        "default_arguments_omitted": true,
+        "run": {
+          "session": "0b300d9a77b446458f841a84e9cf1bc5",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 24,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: csv_preview, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 10,
+        "shared_actions_used": 24,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 104.311,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 143203,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2732,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 67.01,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 66.96,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2732,
+        "reported_output_tokens": 2732,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_growth_02_csv_preview",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "sample.txt",
+          "output": "audit.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256",
+            "rows",
+            "truncated"
+          ],
+          "exact_fields": false,
+          "preview_limit": 5,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 287,
+              "sha256": "f3cdf95dd44a30a5b954f01c0e12fff0bfc75757a60ec96b6990a777a6af3c6c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "435d9dc051f54bb7bb9951e380204cd0",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 23,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: sha256_file, csv_preview, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 287,
+              "sha256": "f3cdf95dd44a30a5b954f01c0e12fff0bfc75757a60ec96b6990a777a6af3c6c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 130363,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": false,
+      "first_use": null,
+      "second_task_passed": true,
+      "complete_chain_passed": true,
+      "diagnostic_second": false,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 114.488,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 131396,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2468,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 64.34,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 64.29,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2468,
+        "reported_output_tokens": 2468,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_first_02_sha256_file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use sha256_file on activation/hash-night.txt. Save exactly its path, bytes and sha256 fields as a JSON object in activation/hash-night-receipt.json. Preserve the input bytes. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use sha256_file on activation/hash-night.txt. Save exactly its path, bytes and sha256 fields as a JSON object in activation/hash-night-receipt.json. Preserve the input bytes. Check the saved result and finish completed. Do not edit the seed after activation.",
+          "input": "activation/hash-night.txt",
+          "output": "activation/hash-night-receipt.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "exact_fields": true,
+          "preview_limit": null,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/hash-night.txt": {
+              "bytes": 43,
+              "sha256": "96c977ac2a5af71342148a70c0e3db7e7f24f7de992e9c418b3f421725c7ce9c"
+            },
+            "activation/hash-night-receipt.json": {
+              "bytes": 137,
+              "sha256": "20b484e018fcab6dc96297722f6250ce802c5338c9212d5dd01df474e1d625fd"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "79b719f44eda433e94176f39dfee2d08",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 21,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/hash-night.txt": {
+              "bytes": 43,
+              "sha256": "96c977ac2a5af71342148a70c0e3db7e7f24f7de992e9c418b3f421725c7ce9c"
+            },
+            "activation/hash-night-receipt.json": {
+              "bytes": 137,
+              "sha256": "20b484e018fcab6dc96297722f6250ce802c5338c9212d5dd01df474e1d625fd"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 130363,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/hash-night.txt",
+        "output": "activation/hash-night-receipt.json",
+        "source_sha256": "677d34b0e3c652056cc30cf59dd48170fba750b1647dbfa6c990a00803047eca",
+        "supplied_actions": 115,
+        "public_verifier": {
+          "experimental": true,
+          "specification": {
+            "schema": 1,
+            "instruction": "Use sha256_file on activation/hash-night.txt. Save exactly its path, bytes and sha256 fields as a JSON object in activation/hash-night-receipt.json. Preserve the input bytes. Check the saved result and finish completed. Do not edit the seed after activation.",
+            "input": "activation/hash-night.txt",
+            "output": "activation/hash-night-receipt.json",
+            "input_operation": "preserve",
+            "receipt_fields": [
+              "path",
+              "bytes",
+              "sha256"
+            ],
+            "exact_fields": true,
+            "preview_limit": null,
+            "canonical_json": {
+              "ensure_ascii": false,
+              "sort_keys": true,
+              "indent": 2,
+              "final_lf": true
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/hash-night.txt": {
+                "bytes": 43,
+                "sha256": "96c977ac2a5af71342148a70c0e3db7e7f24f7de992e9c418b3f421725c7ce9c"
+              },
+              "activation/hash-night-receipt.json": {
+                "bytes": 137,
+                "sha256": "20b484e018fcab6dc96297722f6250ce802c5338c9212d5dd01df474e1d625fd"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial_status": "completed",
+          "initial_run": {
+            "session": "79b719f44eda433e94176f39dfee2d08",
+            "status": "completed",
+            "timed_out": false,
+            "steps": 21,
+            "provider_error_category": null,
+            "last_notices": [
+              "Your edited seed is now active. Available workspace tools: sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+              "Session resumed. Checking the current workspace before continuing."
+            ]
+          },
+          "corrections": 0,
+          "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+          "final": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/hash-night.txt": {
+                "bytes": 43,
+                "sha256": "96c977ac2a5af71342148a70c0e3db7e7f24f7de992e9c418b3f421725c7ce9c"
+              },
+              "activation/hash-night-receipt.json": {
+                "bytes": 137,
+                "sha256": "20b484e018fcab6dc96297722f6250ce802c5338c9212d5dd01df474e1d625fd"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "final_status": "completed",
+          "passed_without_feedback": true,
+          "passed_after_feedback": false
+        },
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "79b719f44eda433e94176f39dfee2d08",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 21,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 8,
+        "shared_actions_used": 21,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 93.992,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 123942,
+          "measured_calls": 23,
+          "expected_calls": 23,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2197,
+          "measured_calls": 23,
+          "expected_calls": 23,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 60.511,
+          "measured_calls": 23,
+          "expected_calls": 23,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 60.468,
+          "measured_calls": 23,
+          "expected_calls": 23,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2197,
+        "reported_output_tokens": 2197,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_growth_02_sha256_file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "inventory.json",
+          "output": "audit.json",
+          "input_operation": "canonical_json",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "exact_fields": false,
+          "preview_limit": null,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "inventory.json": {
+              "bytes": 54,
+              "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4"
+            },
+            "audit.json": {
+              "bytes": 126,
+              "sha256": "e6e81f45315a7a78c26c904abb8e640dcad85b750fbeee42434008d89ae45e90"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "72564637e66a4744954ab9dbe286239e",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 24,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: format_json, sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "inventory.json": {
+              "bytes": 54,
+              "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4"
+            },
+            "audit.json": {
+              "bytes": 126,
+              "sha256": "e6e81f45315a7a78c26c904abb8e640dcad85b750fbeee42434008d89ae45e90"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 130363,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "format_json",
+      "package_verified": true,
+      "package_accepted": false,
+      "first_use": null,
+      "second_task_passed": true,
+      "complete_chain_passed": true,
+      "diagnostic_second": false,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 114.203,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 136838,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2702,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 67.336,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 67.283,
+          "measured_calls": 26,
+          "expected_calls": 26,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2702,
+        "reported_output_tokens": 2702,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_first_03_csv_preview",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use csv_preview on activation/csv-night.csv with its default limit. Save exactly its path, rows and truncated fields as a JSON object in activation/csv-night-receipt.json. Preserve all input bytes; the earlier development examples are not this task. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use csv_preview on activation/csv-night.csv with its default limit. Save exactly its path, rows and truncated fields as a JSON object in activation/csv-night-receipt.json. Preserve all input bytes; the earlier development examples are not this task. Check the saved result and finish completed. Do not edit the seed after activation.",
+          "input": "activation/csv-night.csv",
+          "output": "activation/csv-night-receipt.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "rows",
+            "truncated"
+          ],
+          "exact_fields": true,
+          "preview_limit": 5,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/csv-night.csv": {
+              "bytes": 120,
+              "sha256": "d57085871c9d28c7becd21379876c1a51a8923c219e6dfa727b0b5e13f0e6aba"
+            },
+            "activation/csv-night-receipt.json": {
+              "bytes": 296,
+              "sha256": "e4cd2cd4ea455a0a0c0ca06019623a58f2080bda364e2919b05c016a9675a42c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "a5289c62213e4fd1b33c87471c8e08ea",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 23,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: csv_preview, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/csv-night.csv": {
+              "bytes": 120,
+              "sha256": "d57085871c9d28c7becd21379876c1a51a8923c219e6dfa727b0b5e13f0e6aba"
+            },
+            "activation/csv-night-receipt.json": {
+              "bytes": 296,
+              "sha256": "e4cd2cd4ea455a0a0c0ca06019623a58f2080bda364e2919b05c016a9675a42c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 155921,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "csv_preview",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/csv-night.csv",
+        "output": "activation/csv-night-receipt.json",
+        "source_sha256": "c3e51ee641e8b7aee68252d0e358b1becb737bda6aaf9c8b3bfce9df5b968001",
+        "supplied_actions": 115,
+        "public_verifier": {
+          "experimental": true,
+          "specification": {
+            "schema": 1,
+            "instruction": "Use csv_preview on activation/csv-night.csv with its default limit. Save exactly its path, rows and truncated fields as a JSON object in activation/csv-night-receipt.json. Preserve all input bytes; the earlier development examples are not this task. Check the saved result and finish completed. Do not edit the seed after activation.",
+            "input": "activation/csv-night.csv",
+            "output": "activation/csv-night-receipt.json",
+            "input_operation": "preserve",
+            "receipt_fields": [
+              "path",
+              "rows",
+              "truncated"
+            ],
+            "exact_fields": true,
+            "preview_limit": 5,
+            "canonical_json": {
+              "ensure_ascii": false,
+              "sort_keys": true,
+              "indent": 2,
+              "final_lf": true
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/csv-night.csv": {
+                "bytes": 120,
+                "sha256": "d57085871c9d28c7becd21379876c1a51a8923c219e6dfa727b0b5e13f0e6aba"
+              },
+              "activation/csv-night-receipt.json": {
+                "bytes": 296,
+                "sha256": "e4cd2cd4ea455a0a0c0ca06019623a58f2080bda364e2919b05c016a9675a42c"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial_status": "completed",
+          "initial_run": {
+            "session": "a5289c62213e4fd1b33c87471c8e08ea",
+            "status": "completed",
+            "timed_out": false,
+            "steps": 23,
+            "provider_error_category": null,
+            "last_notices": [
+              "Your edited seed is now active. Available workspace tools: csv_preview, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+              "Session resumed. Checking the current workspace before continuing."
+            ]
+          },
+          "corrections": 0,
+          "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+          "final": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/csv-night.csv": {
+                "bytes": 120,
+                "sha256": "d57085871c9d28c7becd21379876c1a51a8923c219e6dfa727b0b5e13f0e6aba"
+              },
+              "activation/csv-night-receipt.json": {
+                "bytes": 296,
+                "sha256": "e4cd2cd4ea455a0a0c0ca06019623a58f2080bda364e2919b05c016a9675a42c"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "final_status": "completed",
+          "passed_without_feedback": true,
+          "passed_after_feedback": false
+        },
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "csv_preview",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": false,
+        "completed": true,
+        "default_arguments_omitted": true,
+        "run": {
+          "session": "a5289c62213e4fd1b33c87471c8e08ea",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 23,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: csv_preview, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 10,
+        "shared_actions_used": 23,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 100.296,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 134469,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2766,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 65.105,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 65.053,
+          "measured_calls": 25,
+          "expected_calls": 25,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2766,
+        "reported_output_tokens": 2766,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_growth_03_csv_preview",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use csv_preview and sha256_file on sample.txt. Write audit.json with path=\"sample.txt\", bytes, sha256, rows (default preview) and truncated matching the actual results. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "sample.txt",
+          "output": "audit.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256",
+            "rows",
+            "truncated"
+          ],
+          "exact_fields": false,
+          "preview_limit": 5,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 287,
+              "sha256": "f3cdf95dd44a30a5b954f01c0e12fff0bfc75757a60ec96b6990a777a6af3c6c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "e81d001eb9934f8fbede1ab9b8212c6a",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 22,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: sha256_file, csv_preview, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "sample.txt": {
+              "bytes": 42,
+              "sha256": "cb4c3883bc3698a66818d17f318e0174275e2d4e7ce77686fbeb481f2074684f"
+            },
+            "audit.json": {
+              "bytes": 287,
+              "sha256": "f3cdf95dd44a30a5b954f01c0e12fff0bfc75757a60ec96b6990a777a6af3c6c"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 155921,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": false,
+      "first_use": null,
+      "second_task_passed": true,
+      "complete_chain_passed": true,
+      "diagnostic_second": false,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 105.508,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 134916,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2223,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 57.452,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 57.402,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2223,
+        "reported_output_tokens": 2223,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_first_03_sha256_file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use sha256_file on activation/hash-night.txt. Save exactly its path, bytes and sha256 fields as a JSON object in activation/hash-night-receipt.json. Preserve the input bytes. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use sha256_file on activation/hash-night.txt. Save exactly its path, bytes and sha256 fields as a JSON object in activation/hash-night-receipt.json. Preserve the input bytes. Check the saved result and finish completed. Do not edit the seed after activation.",
+          "input": "activation/hash-night.txt",
+          "output": "activation/hash-night-receipt.json",
+          "input_operation": "preserve",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "exact_fields": true,
+          "preview_limit": null,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/hash-night.txt": {
+              "bytes": 43,
+              "sha256": "96c977ac2a5af71342148a70c0e3db7e7f24f7de992e9c418b3f421725c7ce9c"
+            },
+            "activation/hash-night-receipt.json": {
+              "bytes": 137,
+              "sha256": "20b484e018fcab6dc96297722f6250ce802c5338c9212d5dd01df474e1d625fd"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "c78dac562a284394a0a5d09be34d91c9",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 22,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/hash-night.txt": {
+              "bytes": 43,
+              "sha256": "96c977ac2a5af71342148a70c0e3db7e7f24f7de992e9c418b3f421725c7ce9c"
+            },
+            "activation/hash-night-receipt.json": {
+              "bytes": 137,
+              "sha256": "20b484e018fcab6dc96297722f6250ce802c5338c9212d5dd01df474e1d625fd"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 155921,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/hash-night.txt",
+        "output": "activation/hash-night-receipt.json",
+        "source_sha256": "853d6c8434646d3b098cc05bfde48b134ed857bf65c13329d9902f910a84566e",
+        "supplied_actions": 114,
+        "public_verifier": {
+          "experimental": true,
+          "specification": {
+            "schema": 1,
+            "instruction": "Use sha256_file on activation/hash-night.txt. Save exactly its path, bytes and sha256 fields as a JSON object in activation/hash-night-receipt.json. Preserve the input bytes. Check the saved result and finish completed. Do not edit the seed after activation.",
+            "input": "activation/hash-night.txt",
+            "output": "activation/hash-night-receipt.json",
+            "input_operation": "preserve",
+            "receipt_fields": [
+              "path",
+              "bytes",
+              "sha256"
+            ],
+            "exact_fields": true,
+            "preview_limit": null,
+            "canonical_json": {
+              "ensure_ascii": false,
+              "sort_keys": true,
+              "indent": 2,
+              "final_lf": true
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/hash-night.txt": {
+                "bytes": 43,
+                "sha256": "96c977ac2a5af71342148a70c0e3db7e7f24f7de992e9c418b3f421725c7ce9c"
+              },
+              "activation/hash-night-receipt.json": {
+                "bytes": 137,
+                "sha256": "20b484e018fcab6dc96297722f6250ce802c5338c9212d5dd01df474e1d625fd"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial_status": "completed",
+          "initial_run": {
+            "session": "c78dac562a284394a0a5d09be34d91c9",
+            "status": "completed",
+            "timed_out": false,
+            "steps": 22,
+            "provider_error_category": null,
+            "last_notices": [
+              "Your edited seed is now active. Available workspace tools: sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+              "Session resumed. Checking the current workspace before continuing."
+            ]
+          },
+          "corrections": 0,
+          "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+          "final": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/hash-night.txt": {
+                "bytes": 43,
+                "sha256": "96c977ac2a5af71342148a70c0e3db7e7f24f7de992e9c418b3f421725c7ce9c"
+              },
+              "activation/hash-night-receipt.json": {
+                "bytes": 137,
+                "sha256": "20b484e018fcab6dc96297722f6250ce802c5338c9212d5dd01df474e1d625fd"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "final_status": "completed",
+          "passed_without_feedback": true,
+          "passed_after_feedback": false
+        },
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "list_files",
+            "read_file",
+            "sha256_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": true,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "c78dac562a284394a0a5d09be34d91c9",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 22,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 8,
+        "shared_actions_used": 22,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 91.125,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 129429,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2244,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 59.728,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 59.687,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2244,
+        "reported_output_tokens": 2244,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_growth_03_sha256_file",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "inventory.json",
+          "output": "audit.json",
+          "input_operation": "canonical_json",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "exact_fields": false,
+          "preview_limit": null,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "inventory.json": {
+              "bytes": 54,
+              "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4"
+            },
+            "audit.json": {
+              "bytes": 126,
+              "sha256": "e6e81f45315a7a78c26c904abb8e640dcad85b750fbeee42434008d89ae45e90"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "5893aaf4271f437b91c2b0de97a13792",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 28,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: format_json, sha256_file, list_files, read_file, read_section, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "inventory.json": {
+              "bytes": 54,
+              "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4"
+            },
+            "audit.json": {
+              "bytes": 126,
+              "sha256": "e6e81f45315a7a78c26c904abb8e640dcad85b750fbeee42434008d89ae45e90"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 155921,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "format_json",
+      "package_verified": true,
+      "package_accepted": false,
+      "first_use": null,
+      "second_task_passed": true,
+      "complete_chain_passed": true,
+      "diagnostic_second": false,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 116.679,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 171714,
+          "measured_calls": 30,
+          "expected_calls": 30,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2385,
+          "measured_calls": 30,
+          "expected_calls": 30,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 74.371,
+          "measured_calls": 30,
+          "expected_calls": 30,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 74.317,
+          "measured_calls": 30,
+          "expected_calls": 30,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2385,
+        "reported_output_tokens": 2385,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_first_03_format_json",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "first",
+      "activation_reminder": {
+        "instruction": "Use format_json to format activation/format-night.json in place. Save exactly its path and bytes fields as a JSON object in activation/format-night-receipt.json. Check the saved result and finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use format_json to format activation/format-night.json in place. Save exactly its path and bytes fields as a JSON object in activation/format-night-receipt.json. Check the saved result and finish completed. Do not edit the seed after activation.",
+          "input": "activation/format-night.json",
+          "output": "activation/format-night-receipt.json",
+          "input_operation": "canonical_json",
+          "receipt_fields": [
+            "path",
+            "bytes"
+          ],
+          "exact_fields": true,
+          "preview_limit": null,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/format-night.json": {
+              "bytes": 79,
+              "sha256": "7e2a9b8c7848df256117b800b820d2014d7aca31218d4cee298607b8ca2331d0"
+            },
+            "activation/format-night-receipt.json": {
+              "bytes": 51,
+              "sha256": "b0ca0ee0293e0f35dd2c5e37ea95ee137eea0a087fb7760e46183747f607f8e7"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "4ca53b1a0ee6433498c00afe92c00670",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 22,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, format_json, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "activation/format-night.json": {
+              "bytes": 79,
+              "sha256": "7e2a9b8c7848df256117b800b820d2014d7aca31218d4cee298607b8ca2331d0"
+            },
+            "activation/format-night-receipt.json": {
+              "bytes": 51,
+              "sha256": "b0ca0ee0293e0f35dd2c5e37ea95ee137eea0a087fb7760e46183747f607f8e7"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 155921,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "format_json",
+      "package_verified": true,
+      "package_accepted": true,
+      "first_use": {
+        "attempted": true,
+        "activated": true,
+        "passed": true,
+        "input": "activation/format-night.json",
+        "output": "activation/format-night-receipt.json",
+        "source_sha256": "d20064ca96c43f474c334870d3d711614b9119f3d7651e2a00b787c7e2554196",
+        "supplied_actions": 114,
+        "public_verifier": {
+          "experimental": true,
+          "specification": {
+            "schema": 1,
+            "instruction": "Use format_json to format activation/format-night.json in place. Save exactly its path and bytes fields as a JSON object in activation/format-night-receipt.json. Check the saved result and finish completed. Do not edit the seed after activation.",
+            "input": "activation/format-night.json",
+            "output": "activation/format-night-receipt.json",
+            "input_operation": "canonical_json",
+            "receipt_fields": [
+              "path",
+              "bytes"
+            ],
+            "exact_fields": true,
+            "preview_limit": null,
+            "canonical_json": {
+              "ensure_ascii": false,
+              "sort_keys": true,
+              "indent": 2,
+              "final_lf": true
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/format-night.json": {
+                "bytes": 79,
+                "sha256": "7e2a9b8c7848df256117b800b820d2014d7aca31218d4cee298607b8ca2331d0"
+              },
+              "activation/format-night-receipt.json": {
+                "bytes": 51,
+                "sha256": "b0ca0ee0293e0f35dd2c5e37ea95ee137eea0a087fb7760e46183747f607f8e7"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "initial_status": "completed",
+          "initial_run": {
+            "session": "4ca53b1a0ee6433498c00afe92c00670",
+            "status": "completed",
+            "timed_out": false,
+            "steps": 22,
+            "provider_error_category": null,
+            "last_notices": [
+              "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, format_json, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+              "Session resumed. Checking the current workspace before continuing."
+            ]
+          },
+          "corrections": 0,
+          "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+          "final": {
+            "passed": true,
+            "mismatches": [],
+            "snapshots": {
+              "activation/format-night.json": {
+                "bytes": 79,
+                "sha256": "7e2a9b8c7848df256117b800b820d2014d7aca31218d4cee298607b8ca2331d0"
+              },
+              "activation/format-night-receipt.json": {
+                "bytes": 51,
+                "sha256": "b0ca0ee0293e0f35dd2c5e37ea95ee137eea0a087fb7760e46183747f607f8e7"
+              }
+            },
+            "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+          },
+          "final_status": "completed",
+          "passed_without_feedback": true,
+          "passed_after_feedback": false
+        },
+        "input_correct": true,
+        "receipt_correct": true,
+        "artifacts_correct": true,
+        "usage": {
+          "direct": [
+            "format_json",
+            "list_files",
+            "read_file",
+            "write_file"
+          ],
+          "development": []
+        },
+        "capability_used": true,
+        "source_unchanged": true,
+        "inspection_observed": false,
+        "completed": true,
+        "default_arguments_omitted": null,
+        "run": {
+          "session": "4ca53b1a0ee6433498c00afe92c00670",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 22,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, format_json, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "actions": 8,
+        "shared_actions_used": 22,
+        "deadline_reached": false
+      },
+      "second_task_passed": null,
+      "complete_chain_passed": null,
+      "diagnostic_second": null,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 92.184,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 133321,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2518,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 61.447,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 61.405,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2518,
+        "reported_output_tokens": 2518,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    },
+    {
+      "cell": "gpt61-sol-low_growth_03_format_json",
+      "attempt": 1,
+      "state": "completed",
+      "profile": "gpt61-sol-low",
+      "arm": "public-verifier-feedback+task-reminder",
+      "phase": "second",
+      "activation_reminder": {
+        "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+        "source": "verbatim original task clause",
+        "observed": true,
+        "scope": "Host-owned state after activation only; no development coaching or hidden grader feedback."
+      },
+      "public_verifier": {
+        "experimental": true,
+        "specification": {
+          "schema": 1,
+          "instruction": "Use format_json to format inventory.json and sha256_file to hash its final bytes. Write audit.json with path=\"inventory.json\", bytes and sha256 matching the formatted file. Inspect the input and receipt, then finish completed. Do not edit the seed after activation.",
+          "input": "inventory.json",
+          "output": "audit.json",
+          "input_operation": "canonical_json",
+          "receipt_fields": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "exact_fields": false,
+          "preview_limit": null,
+          "canonical_json": {
+            "ensure_ascii": false,
+            "sort_keys": true,
+            "indent": 2,
+            "final_lf": true
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "inventory.json": {
+              "bytes": 54,
+              "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4"
+            },
+            "audit.json": {
+              "bytes": 126,
+              "sha256": "e6e81f45315a7a78c26c904abb8e640dcad85b750fbeee42434008d89ae45e90"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "initial_status": "completed",
+        "initial_run": {
+          "session": "5d980055604c46de90c20cc29cbcf7f5",
+          "status": "completed",
+          "timed_out": false,
+          "steps": 22,
+          "provider_error_category": null,
+          "last_notices": [
+            "Your edited seed is now active. Available workspace tools: list_files, read_file, read_section, format_json, sha256_file, write_file, edit_file, delete_file, search_files, web_request, run_command. Call the appropriate supplied tools directly to continue the original task after inspecting saved files. The --tool command was for development checks; the activated tools can now be called directly. Request another activation only if you make further seed edits.",
+            "Session resumed. Checking the current workspace before continuing."
+          ]
+        },
+        "corrections": 0,
+        "scope": "Public verifier results are not independent qualification. Hidden results never enter feedback.",
+        "final": {
+          "passed": true,
+          "mismatches": [],
+          "snapshots": {
+            "inventory.json": {
+              "bytes": 54,
+              "sha256": "19d1415138be997cf5fad8e3b22d1eec4a362a2161958fcfa72470ba1a4d4cd4"
+            },
+            "audit.json": {
+              "bytes": 126,
+              "sha256": "e6e81f45315a7a78c26c904abb8e640dcad85b750fbeee42434008d89ae45e90"
+            }
+          },
+          "scope": "Public saved-output checks only; no capability-use, hidden tests or upgrade approval."
+        },
+        "final_status": "completed",
+        "passed_without_feedback": true,
+        "passed_after_feedback": false
+      },
+      "outcome": {
+        "artifacts_correct": true,
+        "explicit_completion": true,
+        "capability_used": true
+      },
+      "sampling": {
+        "mode": "provider-default",
+        "request_seed": null,
+        "case_schedule_seed": 155921,
+        "declared_server_initial_seed": null,
+        "server_initialization_verified": false,
+        "scope": "Provider-default sampling; the case schedule is not an inference RNG seed. Temperature and request seeds are omitted. Request payloads record the sent seed. Server initialization/restarts and provider honoring require separate runtime evidence; this runner does not reset or verify the service RNG."
+      },
+      "failure_kind": null,
+      "resource_reason": null,
+      "runtime": null,
+      "feature": "sha256_file",
+      "package_verified": true,
+      "package_accepted": false,
+      "first_use": null,
+      "second_task_passed": true,
+      "complete_chain_passed": true,
+      "diagnostic_second": false,
+      "failure_labels": [],
+      "failed_feature_checks": [],
+      "feature_checks_not_run_reason": null,
+      "unexpected_files": [],
+      "protected_changes": [],
+      "seconds": 103.8,
+      "measurements": {
+        "input_tokens": {
+          "known_sum": 116355,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "output_tokens": {
+          "known_sum": 2103,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "call_seconds": {
+          "known_sum": 58.321,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        },
+        "transport_seconds": {
+          "known_sum": 58.277,
+          "measured_calls": 24,
+          "expected_calls": 24,
+          "complete": true,
+          "status": "complete"
+        }
+      },
+      "token_enforcement": {
+        "limit": 65536,
+        "charged_output_tokens": 2103,
+        "reported_output_tokens": 2103,
+        "unmeasured_sent_calls": 0,
+        "usage_complete": true,
+        "exhausted": false
+      },
+      "reason": null
+    }
+  ],
+  "scope": "Read-only report. Saved records are unchanged. Score fractions cover fully evaluated attempts only; all launched attempts, resource stops, infrastructure errors and interruptions remain visible separately. Correct artifacts, explicit completion and actual capability use are separate observations. Not-run cells are untested, not failed attempts. Artifact counts cover recorded checks (including behavior checks), not arbitrary feature correctness. Legacy first autonomous use and complete chains are unmeasured, not zero. Labels are overlapping observations, not proven causes.",
+  "cost_scope": "Known sums retain completeness flags. Token enforcement charges are not measured generation. No efficiency ranking is made here.",
+  "api_connection": {
+    "format": "responses",
+    "reasoning_effort": "low",
+    "store": false,
+    "sampling": "Provider default; local temperature and RNG seeds are not sent.",
+    "credential": "Host-only Windows-encrypted file; never included in reports or guest inputs."
+  },
+  "api_usage": {
+    "calls": 478,
+    "input_tokens": 2490284,
+    "output_tokens": 44698,
+    "reasoning_tokens": 92,
+    "cached_input_tokens": 2057883,
+    "cache_write_tokens": 430139,
+    "price_estimate_usd": 1.7326398000000005,
+    "usage_complete": true,
+    "returned_models": [
+      "gpt-6.1-sol"
+    ],
+    "requested_reasoning_efforts": [
+      "low"
+    ],
+    "returned_reasoning_efforts": [
+      "low"
+    ],
+    "request_response_ids_match": true,
+    "all_requests_store_false": true,
+    "unsupported_sampling_fields_sent": 0,
+    "scope": "Fresh study only; API price estimate from reported token classes, not a billing receipt. Includes reasoning once. Interrupted integration run and conservative carry-in are separate."
+  },
+  "elapsed_study_seconds": 2047.5884,
+  "integration_interruption": {
+    "original_study": ".data/openai-sol-low-20261029/full",
+    "reason": "Operator stopped a transport-recorder integration defect; original plans, traces and grades preserved.",
+    "reported_calls": 38,
+    "uncertain_calls": 1,
+    "reported_price_estimate_usd": 0.0804823,
+    "conservative_upper_usd": 0.6811525,
+    "included_in_completed_study_scores": false
+  },
+  "conservative_spend_including_prior_usd": 7.353842500000001
+}

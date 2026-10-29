@@ -172,7 +172,7 @@ def chain_result(first, second, protocol=None):
             'parent_source':'Frozen independently verified first package; first-use mutations are not promoted.'}
 
 
-def activate(agent, store, session, settings, config, spec, budget, deadline, wait):
+def activate(agent, store, session, settings, config, spec, budget, deadline, wait, feedback=None):
     result = {'attempted':False, 'activated':False, 'passed':False, 'input':spec['input'], 'output':spec['output']}
     remaining = config['max_steps'] - session['steps']
     if time.monotonic() >= deadline or remaining <= 0 or budget.summary()['exhausted']:
@@ -193,6 +193,8 @@ def activate(agent, store, session, settings, config, spec, budget, deadline, wa
         agent.restart_seed(session, handoff='concise', deadline=deadline)
         result['activated'] = True
         run = wait(agent, session, max(0, deadline-time.monotonic()))
+        if feedback:
+            run, result['public_verifier'] = feedback(run)
         events = read_events(events_path)[boundary:]
         unchanged = source_identity(candidate_source(store, session)) == source
         result.update(grade(files,spec,events,source_unchanged=unchanged,completed=session['status']=='completed',

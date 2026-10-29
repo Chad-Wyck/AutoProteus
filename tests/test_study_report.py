@@ -63,6 +63,48 @@ class StudyReportTests(unittest.TestCase):
             self.assertEqual(result['groups']['fixture/baseline']['first_use_passed'], 0)
             self.assertEqual(result['rows'][0]['outcome'], {'artifacts_correct': True, 'explicit_completion': True, 'capability_used': False})
 
+    def test_activation_reminder_is_labelled_separately_from_the_default_handoff(self):
+        with temporary_directory() as directory:
+            root=Path(directory)
+            atomic_json(root/'plan.json',{'protocol':PROTOCOL,'activation_reminder':True,'profiles':[{'id':'fixture','config':{}}]})
+            atomic_json(root/'queue.json',{'cells':{'fixture_first_01_hash':[{'attempt':1,'state':'completed',
+                'result':{'added':'sha256_file','first_package_accepted':True,'activation_reminder':{'observed':True}}}]}})
+            value=report(root)
+            self.assertTrue(value['activation_reminder'])
+            self.assertIn('fixture/task-reminder',value['groups'])
+            self.assertTrue(value['rows'][0]['activation_reminder']['observed'])
+
+    def test_resource_receipt_overrides_downstream_provider_error_and_is_not_a_model_score(self):
+        with temporary_directory() as directory:
+            root=Path(directory)
+            atomic_json(root/'plan.json', {'protocol':PROTOCOL,'profiles':[{'id':'fixture','config':{}}]})
+            cells={}
+            for phase in ('basic','first','growth'):
+                cell='fixture_'+phase+'_01'
+                cells[cell]=[{'attempt':1,'state':'error','detail':'ProviderError: connection reset','result':{
+                    'calls':{'error_categories':{'connection':1}},'review':{'new_test_files':[]}}}]
+                atomic_json(root/'trials'/cell/'attempt-001/runtime/cleanup.json',
+                            {'reason':'Memory floor reached; owned inference stopped','owned_process_stopped':True})
+            cells['fixture_basic_cancelled']=[{'attempt':1,'state':'interrupted','detail':'KeyboardInterrupt'}]
+            cells['fixture_basic_unclassified']=[{'attempt':1,'state':'error','detail':'Unknown error'}]
+            atomic_json(root/'queue.json',{'cells':cells})
+            before=(root/'queue.json').read_bytes()
+            value=report(root);group=value['groups']['fixture/baseline']
+            self.assertEqual(group['resource_stops'],3)
+            self.assertEqual(group['interruptions'],1)
+            self.assertEqual(group['infrastructure_errors'],1)
+            self.assertEqual(group['launched'],5)
+            self.assertEqual(group['ordinary_evaluated'],0)
+            self.assertEqual(group['first_evaluated'],0)
+            self.assertEqual(group['second_evaluated'],0)
+            for row in value['rows'][:3]:
+                self.assertIn('resource_stop',row['failure_labels'])
+                self.assertNotIn('provider_or_format',row['failure_labels'])
+                self.assertNotIn('missing_candidate_tests',row['failure_labels'])
+            self.assertIn('Execution accounting',markdown(value))
+            self.assertNotIn('0/3',markdown(value))
+            self.assertEqual((root/'queue.json').read_bytes(),before)
+
     def test_overlapping_failures_do_not_confuse_scope_with_implementation(self):
         row={'review':{'allowed_files_only':False,'protected_unchanged':True,'new_test_files':['test.py'],
             'feature':{'passed':True,'probe':{'checks':{'exact':True},'suite':{'exit_code':0}}}},'run':{'status':'completed'}}

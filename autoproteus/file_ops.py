@@ -2,6 +2,7 @@
 
 
 def read_file(self, tool, args):
+    """Model-facing inspection, not a processing helper; use Workspace.read_text."""
     from .tools import LIMIT, READ_DEFAULT, Cancelled
     path = self.path(args["path"])
     if tool == "read_file" and any(key in args for key in ("offset", "start", "length")):

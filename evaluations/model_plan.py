@@ -38,10 +38,12 @@ def trusted_files():
         'evaluations/generalization-probe.py', 'evaluations/local-model-benchmark.py',
         'evaluations/local-feature-probe.py', 'evaluations/local-upgrade-tasks.json',
         'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/research_limits.py',
+        'evaluations/hosted_study.py',
         'evaluations/submission_preflight.py', 'evaluations/completion_study.py', 'evaluations/activation_use.py',
         'evaluations/source_navigation.py', 'evaluations/navigation_variant.py',
         'evaluations/repeatability.py', 'evaluations/repeatability-cases.json', 'evaluations/sampling-csv-cases.json',
-        'evaluations/owned_runtime.py', 'evaluations/seed_comparison.py',
+        'evaluations/owned_runtime.py', 'evaluations/runtime_pressure.py', 'evaluations/activation_replay.py',
+        'evaluations/study_report.py', 'evaluations/public_verifier.py', 'evaluations/seed_comparison.py',
         'evaluations/outcome_tasks.py', 'evaluations/outcome_study.py',
         'evaluations/invoke_tool.py', 'evaluations/tasks.json')]
     return {p.relative_to(ROOT).as_posix(): file_identity(p) for p in paths}
@@ -60,6 +62,11 @@ def prepare(args):
     seed_mode = getattr(args, 'sampling_seed_mode', 'per-request')
     if seed_mode not in SEED_MODES:
         raise ValueError('Unknown sampling seed mode')
+    if getattr(args,'activation_reminder',False) and (args.mode!='full' or getattr(args,'parent_source',None)):
+        raise ValueError('Activation reminders require full starter-extension studies')
+    if getattr(args,'public_verifier_feedback',False) and (args.mode!='full' or
+            getattr(args,'parent_source',None) or getattr(args,'experiment',None)):
+        raise ValueError('Public verifier feedback requires a separate full starter-extension study')
     if args.mode=='outcomes' and (getattr(args,'first_only',False) or getattr(args,'task_pack',None)):
         raise ValueError('Outcome mode includes its own fixed task and reuse pack')
     output = private(args.output)
@@ -76,8 +83,10 @@ def prepare(args):
         seen.add(slug)
         config = profile['config'] = research_config({'configured': True, 'terminal': True, **profile['config']})
         profile['resource_limits'] = resource_limits(config, args.timeout, args.output_token_budget)
-        if config['provider'] not in ('ollama', 'hosted') or urlparse(config['base_url']).hostname not in ('localhost', '127.0.0.1', '::1'):
-            raise ValueError('This runner accepts local inference endpoints only')
+        local = config['provider'] in ('ollama', 'hosted') and urlparse(config['base_url']).hostname in ('localhost', '127.0.0.1', '::1')
+        from hosted_study import permitted
+        if not local and not (getattr(args, 'allow_hosted', False) and permitted(config)):
+            raise ValueError('Remote studies require --allow-hosted and the official OpenAI Responses endpoint')
         if config['response_tokens'] >= config['context_tokens']:
             raise ValueError('Response allowance must be smaller than context')
         if profile.get('runtime') is not None:
@@ -103,6 +112,9 @@ def prepare(args):
     plan = {'created': now(), 'mode': args.mode, 'repeats': args.repeats if args.repeats is not None else (3 if args.mode == 'full' else 1),
             'protocol':PROTOCOL, 'growth_enabled':not getattr(args, 'first_only', False),
             'sampling_seed_mode': seed_mode,
+            'activation_reminder': bool(getattr(args,'activation_reminder',False)),
+            'public_verifier_feedback': bool(getattr(args,'public_verifier_feedback',False)),
+            'allow_hosted': bool(getattr(args, 'allow_hosted', False)),
             'source': source, 'source_sha256': source_identity(source), 'profiles': profiles,
             'starter_sha256': source_identity(current),
             'trusted_sha256': trusted_files(), 'environment': environment(),
@@ -210,6 +222,11 @@ def prepare(args):
         profile['sampling'] = sampling_record(profile['config'])
     if seed_mode == 'server-initialized':
         plan['scope'] += ' Server-seed initialization and fresh-server-per-attempt lifecycle belong to the external runtime owner; unverified without separate evidence.'
+    if plan['activation_reminder']:
+        plan['scope'] += ' Research task-reminder presentation at activation only: copy the existing public final-use clause. No new human instruction or hidden feedback.'
+    if plan['public_verifier_feedback']:
+        plan['scope'] += (' Experimental public final-output checks are disclosed before inference. At most one correction per activated stage '
+                          'under the original allowances. Initial public success, assisted public success and hidden qualification are separate.')
     output.mkdir(parents=True)
     atomic_json(output / 'plan.json', plan)
     (output / 'plan.sha256').write_text(identity(plan), encoding='ascii')

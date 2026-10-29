@@ -16,6 +16,7 @@ DEFAULTS = {
     "command_timeout": 60, "terminal": False, "json_mode": False, "thinking": None,
     "protocol": "native", "internet": True,
     "action_limit": False,
+    "api_format": "auto", "reasoning_effort": None,
 }
 
 
@@ -92,6 +93,10 @@ class Settings:
             raise ValueError("Choose a local model, hosted connection, or demo")
         if candidate["protocol"] not in ("native", "json"):
             raise ValueError("Action format must be native or json")
+        if candidate['api_format'] not in ('auto', 'chat-completions', 'responses'):
+            raise ValueError('API format must be auto, chat-completions, or responses')
+        if candidate['reasoning_effort'] not in (None, 'none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'):
+            raise ValueError('Invalid reasoning effort')
         parsed = urlparse(candidate["base_url"])
         if parsed.scheme not in ("http", "https") or not parsed.hostname or parsed.username or parsed.password or parsed.query or parsed.fragment:
             raise ValueError("Enter a valid service URL without credentials or query parameters")
@@ -122,7 +127,7 @@ class Settings:
             return candidate
         if key or data.get('clear_key') or any(candidate[k] != self.values[k] for k in
                 ('provider', 'base_url', 'model', 'protocol', 'json_mode', 'thinking', 'context_tokens', 'response_tokens',
-                 'temperature', 'terminal', 'request_timeout')):
+                 'temperature', 'terminal', 'request_timeout', 'api_format', 'reasoning_effort')):
             candidate.pop('compatibility', None)
         if key:
             if os.name == "nt":

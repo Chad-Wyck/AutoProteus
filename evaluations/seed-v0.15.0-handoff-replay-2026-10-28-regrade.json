@@ -1,0 +1,81 @@
+{
+  "scope": "Offline regrade of unchanged closed evidence only. Original records and scores are preserved; no model run or candidate repair.",
+  "previous_passes": 11,
+  "corrected_passes": 12,
+  "attempts": 12,
+  "failed_command_negative_rejected": true,
+  "rows": [
+    {
+      "cell": "replay_01_sha256_file_baseline",
+      "previous_passed": true,
+      "corrected_passed": true,
+      "corrected_capability_used": true
+    },
+    {
+      "cell": "replay_01_sha256_file_task-reminder",
+      "previous_passed": true,
+      "corrected_passed": true,
+      "corrected_capability_used": true
+    },
+    {
+      "cell": "replay_01_csv_preview_baseline",
+      "previous_passed": false,
+      "corrected_passed": true,
+      "corrected_capability_used": true
+    },
+    {
+      "cell": "replay_01_csv_preview_task-reminder",
+      "previous_passed": true,
+      "corrected_passed": true,
+      "corrected_capability_used": true
+    },
+    {
+      "cell": "replay_02_sha256_file_task-reminder",
+      "previous_passed": true,
+      "corrected_passed": true,
+      "corrected_capability_used": true
+    },
+    {
+      "cell": "replay_02_sha256_file_baseline",
+      "previous_passed": true,
+      "corrected_passed": true,
+      "corrected_capability_used": true
+    },
+    {
+      "cell": "replay_02_csv_preview_task-reminder",
+      "previous_passed": true,
+      "corrected_passed": true,
+      "corrected_capability_used": true
+    },
+    {
+      "cell": "replay_02_csv_preview_baseline",
+      "previous_passed": true,
+      "corrected_passed": true,
+      "corrected_capability_used": true
+    },
+    {
+      "cell": "replay_03_sha256_file_baseline",
+      "previous_passed": true,
+      "corrected_passed": true,
+      "corrected_capability_used": true
+    },
+    {
+      "cell": "replay_03_sha256_file_task-reminder",
+      "previous_passed": true,
+      "corrected_passed": true,
+      "corrected_capability_used": true
+    },
+    {
+      "cell": "replay_03_csv_preview_baseline",
+      "previous_passed": true,
+      "corrected_passed": true,
+      "corrected_capability_used": true
+    },
+    {
+      "cell": "replay_03_csv_preview_task-reminder",
+      "previous_passed": true,
+      "corrected_passed": true,
+      "corrected_capability_used": true
+    }
+  ]
+}

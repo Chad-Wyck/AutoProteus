@@ -71,7 +71,7 @@ def run_verification(boot, source, workspace, native=False):
     if not native:
         os.chmod('/dev/vport0p1', 0o600)
     env = {'PATH': '/usr/sbin:/usr/bin:/sbin:/bin', 'PYTHONPATH': str(source),
-           'AUTOPROTEUS_GUEST': '1', 'AUTOPROTEUS_TEST_ROOT': str(workspace / 'test-tmp'),
+           'AUTOPROTEUS_GUEST': '1', 'AUTOPROTEUS_WORKSPACE': str(workspace), 'AUTOPROTEUS_TEST_ROOT': str(workspace / 'test-tmp'),
            'PYTHONDONTWRITEBYTECODE': '1'}
     rules = boot.get('behavior_rules')
     if rules is not None:
@@ -177,6 +177,7 @@ def main(native_root=None):
         os.setgid(1000)
         os.setuid(1000)
     os.environ['AUTOPROTEUS_GUEST'] = '1'
+    os.environ['AUTOPROTEUS_WORKSPACE'] = str(workspace)
     sys.path.insert(0, str(source))
     os.chdir(workspace)
     # No provider address, key or host path enters the guest.

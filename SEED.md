@@ -46,12 +46,14 @@ record the available inspection method in the plan.
    after the tool. Use disposable examples outside `harness/`; inspect saved
    files and return values. Repair failures, then run the full suite.
 3. **Request activation.** Explain the change and actual checks. If remaining
-   work needs new tools, finish `needs_input` requesting activation. Source
+   work needs new tools, finish `needs_input` with `reason="activation"`. Source
    edits do not change running tools. Development checks are not independent
    approval; no separate feature report is required.
 4. **Use the active tools.** Continue the original task with the latest human
    requirements and actual paths, parameters and defaults. Earlier examples
    apply only to their own step. Request activation again only after new edits.
+   An explicit request for the unchanged active version receives at most one
+   automatic acknowledgement per run; questions without `reason` still pause.
 5. **Verify outputs.** Inspect saved files and run the prepared assertions.
    Cover every requested output; repair mismatches without weakening the
    requirements. For open-ended outputs, report what was and was not checked.
@@ -83,41 +85,37 @@ out of `TOOL_SPECS`'s required list. Test the smallest valid call first, then
 explicit defaults and invalid values. A schema and implementation can share the
 same mistake; compare both with the user's contract.
 
-Assert a particular exception type or message only when the contract requires
-it. Otherwise check rejection using the documented API's exceptions. For example,
-a missing-file rejection test can accept `ValueError` or `OSError` when either
-satisfies the contract. Do not invent extra restrictions to make a test pass.
+Assert a specific exception only when the contract requires it; otherwise accept
+`ValueError` or `OSError` for rejection. Do not invent restrictions to pass a test.
 `Workspace.path` resolves paths and rejects escapes; a link that stays inside
 the workspace does not itself violate that rule.
 
+From `harness/`, run `python3 -m unittest discover -s examples -p test_text_extension.py`
+for exact-byte, exception and large Unicode fixture examples. Adapt the calls
+and expected values to your tool in a separate `tests/test_NAME.py`.
+
 For file tools cover empty input, Unicode character versus byte counts, CRLF,
 exact limits and failures preserving original bytes. Isolate one requirement
-per fixture. A size-limit test for valid JSON must contain valid JSON; otherwise
-it can pass because of a parse error. For example:
+per fixture. For JSON size tests, generate valid JSON with `json.dumps` and
+confirm it parses with `json.loads` before testing size rejection. For output
+limits, use valid input within the limit whose transformed output exceeds it.
+Generate large fixtures with short expressions, not repeated literals.
 
-```python
-text = json.dumps({"text": "猫" * 100000}, ensure_ascii=False)
-assert len(text) > 100000
-json.loads(text)  # Confirm validity before testing oversized-input rejection.
-```
-
-Import `json` for that example. For an output-limit test, use valid input within
-the limit whose transformed output exceeds it. Do not infer correctness from
-an error caused by a different invalid condition.
-
-New tests can import `unittest`, `Path` from `pathlib`, `Workspace` from
-`autoproteus.tools`, and `temporary_directory` from `test_seed`. Construct
-`Workspace(Path(directory))` inside `with temporary_directory() as directory:`.
-Generate large fixtures with short expressions rather than repeated literals.
-
-Reuse `Workspace.read_text(path, missing_ok=False)` and
+Inside processing tools, reuse `Workspace.read_text(path, missing_ok=False)` and
 `Workspace.write_text(path, content)` for UTF-8 text. Their limit is 100000
 Unicode characters, measured by `len(text)`; report bytes separately with
 `len(text.encode("utf-8"))`. They preserve CRLF and validate before writing.
 `read_text` raises for a missing file unless `missing_ok=True`. Helpers accept
-relative strings or validated Path objects.
+relative strings or validated Path objects. Model-facing `read_file` and
+`read_section` are inspection tools with a separate 12000-character display
+limit; do not use them to process files under a larger contract.
 
 ## Development commands
+
+In a running task, tool paths, argument files and text files resolve from the
+task workspace even if the shell changes into `harness/`. Keep scratch files in
+workspace `development/`. Standalone CLI use without a task environment uses
+its current directory.
 
 Try an edited registered file tool without waiting for its tests to pass. Write
 `development/args.json` with the tool's actual argument object, then run:

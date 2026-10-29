@@ -29,7 +29,11 @@ def clipped(text, limit=LIMIT):
 
 class Workspace:
     def read_text(self, path, missing_ok=False):
-        """Read bounded UTF-8 text; character counts and CRLF stay unchanged."""
+        """Processing helper: read up to 100000 characters, preserving CRLF.
+
+        Use this inside text tools. The model-facing read_file/read_section
+        tools have a separate 12000-character display limit.
+        """
         if self.cancel.is_set():
             raise Cancelled()
         path = self.path(str(path) if isinstance(path, Path) else path)

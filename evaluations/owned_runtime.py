@@ -15,6 +15,7 @@ from urllib.parse import urlsplit
 
 from controller.storage import atomic_json, now
 from study_support import file_identity
+from runtime_pressure import PagingReader, PressureGuard
 
 GIB = 1024**3
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,7 +42,8 @@ def memory():
 
 def validate(spec, config, assets):
     allowed = {'command', 'cwd', 'health_path', 'metadata_path', 'reported_seed_path',
-               'reported_context_path', 'startup_seconds', 'minimum_start_bytes', 'memory_floor_bytes', 'initial_seed'}
+               'reported_context_path', 'startup_seconds', 'minimum_start_bytes', 'memory_floor_bytes', 'initial_seed',
+               'pressure_floor_bytes', 'pressure_seconds'}
     if not isinstance(spec, dict) or set(spec) - allowed:
         raise ValueError('Invalid owned-runtime settings')
     command = spec.get('command')
@@ -66,12 +68,15 @@ def validate(spec, config, assets):
     for key in ('reported_seed_path', 'reported_context_path'):
         if key in spec and (not isinstance(spec[key], str) or not spec[key] or spec.get('metadata_path', '/props') is None):
             raise ValueError('Reported runtime settings need a metadata path and dotted field name')
-    for key, default in (('startup_seconds', 300), ('minimum_start_bytes', 4*GIB), ('memory_floor_bytes', 2*GIB)):
+    for key, default in (('startup_seconds', 300), ('minimum_start_bytes', 4*GIB), ('memory_floor_bytes', 2*GIB),
+                         ('pressure_floor_bytes', 4*GIB), ('pressure_seconds', 15)):
         value = spec.get(key, default)
         if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
             raise ValueError('Runtime limits must be finite positive numbers')
     if spec.get('minimum_start_bytes', 4*GIB) < spec.get('memory_floor_bytes', 2*GIB):
         raise ValueError('Starting memory headroom must cover the running floor')
+    if spec.get('pressure_floor_bytes', max(4*GIB, spec.get('memory_floor_bytes', 2*GIB))) < spec.get('memory_floor_bytes', 2*GIB):
+        raise ValueError('Pressure headroom must cover the hard memory floor')
     seed = spec.get('initial_seed', 1729)
     if type(seed) is not int or not 0 <= seed <= 2147483647:
         raise ValueError('Invalid initial runtime seed')
@@ -109,6 +114,8 @@ class OwnedRuntime:
         self.logs = []
         self.done = threading.Event(); self.stop_lock = threading.Lock()
         self.reason = None; self.record = {}; self.closed = False; self.created = False
+        self.failure_category = None
+        self.ready = False
         self.startup = spec.get('startup_seconds', 300)
         if type(task_seconds) not in (int, float) or not math.isfinite(task_seconds) or task_seconds <= 0:
             raise ValueError('Owned runtime needs a positive task allowance')
@@ -145,21 +152,38 @@ class OwnedRuntime:
                 self.process.wait(timeout=10)
 
     def watch(self):
-        with (self.folder/'memory.jsonl').open('w', encoding='utf-8') as stream:
-            while not self.done.wait(.5):
-                try:
-                    sample = {'time': now(), **self.read_memory()}
-                    stream.write(json.dumps(sample)+'\n'); stream.flush()
-                    self.guard()
-                    if min(value for key, value in sample.items() if key.startswith('available_') and value is not None) < self.spec.get('memory_floor_bytes', 2*GIB):
-                        raise RuntimeError('Memory floor reached; owned inference stopped')
-                    if time.monotonic()-self.began >= self.lifetime:
-                        raise RuntimeError('Owned inference lifetime expired')
-                except Exception as error:
-                    if self.done.is_set(): return  # Normal cleanup is not a resource failure.
-                    self.reason = self.reason or str(error)
-                    self._stop()
-                    return
+        pressure = PressureGuard(self.spec.get('pressure_floor_bytes', max(4*GIB, self.spec.get('memory_floor_bytes', 2*GIB))),
+                                 self.spec.get('pressure_seconds', 15))
+        reader = PagingReader()
+        try:
+            with (self.folder/'memory.jsonl').open('w', encoding='utf-8') as stream:
+                while not self.done.wait(.5):
+                    try:
+                        sample = {'time': now(), **self.read_memory(), **reader.read()}
+                        if self.ready and sample['available_physical'] < pressure.floor:
+                            try:
+                                sample['health_unresponsive'] = self.read(self.spec.get('health_path', '/health')).get('status') != 'ok'
+                            except (OSError, ValueError, urllib.error.URLError):
+                                sample['health_unresponsive'] = True
+                        stream.write(json.dumps(sample)+'\n'); stream.flush()
+                        self.guard()
+                        if min(value for key, value in sample.items() if key.startswith('available_') and value is not None) < self.spec.get('memory_floor_bytes', 2*GIB):
+                            self.failure_category = 'resource'
+                            raise RuntimeError('Memory floor reached; owned inference stopped')
+                        reason = pressure.observe(sample, time.monotonic())
+                        if reason:
+                            self.failure_category = 'resource'
+                            raise RuntimeError(reason)
+                        if time.monotonic()-self.began >= self.lifetime:
+                            self.failure_category = 'runtime_limit'
+                            raise RuntimeError('Owned inference lifetime expired')
+                    except Exception as error:
+                        if self.done.is_set(): return  # Normal cleanup is not a resource failure.
+                        self.reason = self.reason or str(error)
+                        self._stop()
+                        return
+        finally:
+            reader.close()
 
     def start(self):
         self.folder.mkdir(parents=True, exist_ok=False)
@@ -184,6 +208,7 @@ class OwnedRuntime:
             self.pins.guard()
             before = self.read_memory(); atomic_json(self.folder/'before-load.json', before)
             if min(value for value in before.values() if value is not None) < self.spec.get('minimum_start_bytes', 4*GIB):
+                self.failure_category = 'resource'
                 raise RuntimeError('Insufficient memory headroom for owned inference startup')
             family = socket.AF_INET6 if ':' in self.host else socket.AF_INET
             with socket.socket(family) as probe:
@@ -224,6 +249,7 @@ class OwnedRuntime:
                         raise RuntimeError('Runtime did not report the requested '+setting)
             self.guard()
             self.record['load_seconds'] = round(time.monotonic()-self.began, 6)
+            self.ready = True
             atomic_json(self.folder/'ready.json', {**self.record, 'health': health, 'metadata': metadata})
             return self
         except BaseException as error:
@@ -244,6 +270,7 @@ class OwnedRuntime:
             for log in self.logs: log.close()
             self.closed = True
             atomic_json(self.folder/'cleanup.json', {'finished': now(), 'reason': self.reason,
+                'failure_category': self.failure_category or ('infrastructure' if self.reason else None),
                 'owned_process_stopped': self.process is None or self.process.poll() is not None})
 
 

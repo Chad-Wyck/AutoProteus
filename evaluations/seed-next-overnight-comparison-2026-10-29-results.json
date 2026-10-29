@@ -1,0 +1,2966 @@
+{
+  "created": "2026-10-29T15:00:00.122927+00:00",
+  "scope": "One completed before/after batch, same Qwen profile/cases/seeds/allowances. Source/runtime revision differs. No causal or generalization claim. Public success alone is not independent workflow qualification.",
+  "conditions_verified": {
+    "created": "2026-10-29T12:18:21.089539+00:00",
+    "baseline_source_sha256": "62cf9126bdea486cb6bfdb3befaa381a0cf464f83d9867b1912f18d8073e9a69",
+    "revision_source_sha256": "645d2222c5f7f6e92ad5f2ca964f7584e07b47ea4d410872e98a61009eb7bb0d",
+    "identical_profiles_cases_seeds_budgets_and_treatments": true,
+    "changed_trusted_files": [
+      "evaluations/public_verifier.py",
+      "guest/worker.py"
+    ],
+    "guest_rebuilt_and_verified": true,
+    "scope": "Workspace-root CLI resolution and bounded public mismatch diagnostics. Model, cases, protocols, sampling, resource allowances and grading requirements are unchanged.",
+    "checks": {
+      "ordinary_suite": {
+        "ran": 531,
+        "skipped": 66,
+        "passed": true,
+        "log": ".data\\qwen9b-public-feedback-20261029\\revision-regressions.log"
+      },
+      "workspace_vm": {
+        "ran": 4,
+        "passed": true,
+        "log": ".data\\qwen9b-public-feedback-20261029\\revision-workspace-vm.log"
+      },
+      "protected_starter_vm": {
+        "tests": 55,
+        "passed": true,
+        "receipt": ".data\\qwen9b-public-feedback-20261029\\revision-protected-check\\result.json"
+      },
+      "public_verifier_vm": {
+        "ran": 6,
+        "passed": true,
+        "log": ".data\\qwen9b-public-feedback-20261029\\revision-public-verifier-vm.log"
+      }
+    }
+  },
+  "studies": {
+    "baseline": {
+      "source_sha256": "62cf9126bdea486cb6bfdb3befaa381a0cf464f83d9867b1912f18d8073e9a69",
+      "environment": {
+        "platform": "Windows-11-10.0.26200-SP0",
+        "machine": "AMD64",
+        "python": "3.13.12",
+        "root": "D:\\AI_New\\AP",
+        "appliance_inventory_sha256": "e0695efcb4ca650f32109975077c20b805c195ebd3030d7b541f520921c6da72"
+      },
+      "groups": {
+        "launched": 23,
+        "finished": 22,
+        "first_attempts": 9,
+        "first_packages": 7,
+        "first_use_attempts": 7,
+        "first_use_passed": 7,
+        "ordinary_evaluated": 5,
+        "first_evaluated": 9,
+        "second_evaluated": 7,
+        "resource_stops": 0,
+        "infrastructure_errors": 0,
+        "interruptions": 1,
+        "public_verifier_stages": 14,
+        "public_passed_without_feedback": 12,
+        "public_corrections": 2,
+        "public_passed_after_feedback": 2,
+        "second_attempts": 8,
+        "second_verified": 7,
+        "second_use_passed": 7,
+        "complete_chains": 7,
+        "diagnostic_second": 0,
+        "ordinary_attempts": 5,
+        "ordinary_checks": 5,
+        "ordinary_artifacts_correct": 5,
+        "ordinary_completion_observations": 5,
+        "ordinary_explicit_completion": 5,
+        "ordinary_passed": 5,
+        "not_run": {
+          "ordinary": 0,
+          "first": 0,
+          "second": 2,
+          "inference": 0,
+          "unmeasured": 0
+        }
+      },
+      "rows": [
+        {
+          "case": "01_sha256_file",
+          "phase": "first",
+          "package_accepted": true,
+          "verified_extension": null,
+          "first_use": true,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "sha256_file",
+            "session": "2777d1fc30f14d8aacf41639d960e54e",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 29,
+            "seconds": 399.52,
+            "model_requests": 30,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 7,
+            "read_actions": 5,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 482.034,
+          "calls": 39,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 438089,
+              "measured_calls": 39,
+              "expected_calls": 39,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 6868,
+              "measured_calls": 39,
+              "expected_calls": 39,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 444.102,
+              "measured_calls": 39,
+              "expected_calls": 39,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 444.034,
+              "measured_calls": 39,
+              "expected_calls": 39,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "01_sha256_file",
+          "phase": "second",
+          "package_accepted": null,
+          "verified_extension": true,
+          "first_use": null,
+          "second_use": true,
+          "chain": {
+            "protocol": "activation-use-v2",
+            "first_use_passed": true,
+            "second_task_passed": true,
+            "diagnostic_only": false,
+            "complete_chain_passed": true,
+            "parent_source": "Frozen independently verified first package; first-use mutations are not promoted."
+          },
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "second-extension-audit",
+            "session": "4da260b1223d4c35a0c8372a66da083a",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 82,
+            "seconds": 860.87,
+            "model_requests": 83,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 6,
+            "read_actions": 53,
+            "repeated_reads": 1,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 1012.464,
+          "calls": 104,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 1953412,
+              "measured_calls": 104,
+              "expected_calls": 104,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 12656,
+              "measured_calls": 104,
+              "expected_calls": 104,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 935.336,
+              "measured_calls": 104,
+              "expected_calls": 104,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 935.148,
+              "measured_calls": 104,
+              "expected_calls": 104,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "01_format_json",
+          "phase": "first",
+          "package_accepted": true,
+          "verified_extension": null,
+          "first_use": true,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "format_json",
+            "session": "78eaca9b53b5461a92b08e9004ef5ddf",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 16,
+            "seconds": 248.31,
+            "model_requests": 17,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 2,
+            "read_actions": 4,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 330.01,
+          "calls": 27,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 195547,
+              "measured_calls": 27,
+              "expected_calls": 27,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 4600,
+              "measured_calls": 27,
+              "expected_calls": 27,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 297.863,
+              "measured_calls": 27,
+              "expected_calls": 27,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 297.814,
+              "measured_calls": 27,
+              "expected_calls": 27,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "01_format_json",
+          "phase": "second",
+          "package_accepted": null,
+          "verified_extension": true,
+          "first_use": null,
+          "second_use": true,
+          "chain": {
+            "protocol": "activation-use-v2",
+            "first_use_passed": true,
+            "second_task_passed": true,
+            "diagnostic_only": false,
+            "complete_chain_passed": true,
+            "parent_source": "Frozen independently verified first package; first-use mutations are not promoted."
+          },
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "second-extension-audit",
+            "session": "6f6445b1219d4323b8dbaf1e091ff0d4",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 27,
+            "seconds": 405.67,
+            "model_requests": 27,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 2,
+            "read_actions": 8,
+            "repeated_reads": 1,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 591.95,
+          "calls": 54,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 636136,
+              "measured_calls": 54,
+              "expected_calls": 54,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 7669,
+              "measured_calls": 54,
+              "expected_calls": 54,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 534.117,
+              "measured_calls": 54,
+              "expected_calls": 54,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 534.017,
+              "measured_calls": 54,
+              "expected_calls": 54,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "01_csv_preview",
+          "phase": "first",
+          "package_accepted": true,
+          "verified_extension": null,
+          "first_use": true,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "csv_preview",
+            "session": "a82382700b4e43cf87a681655f9ec928",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 92,
+            "seconds": 1434.62,
+            "model_requests": 93,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 8,
+            "read_actions": 39,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 1541.484,
+          "calls": 104,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 2600723,
+              "measured_calls": 104,
+              "expected_calls": 104,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 20526,
+              "measured_calls": 104,
+              "expected_calls": 104,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 1474.062,
+              "measured_calls": 104,
+              "expected_calls": 104,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 1473.873,
+              "measured_calls": 104,
+              "expected_calls": 104,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "01_csv_preview",
+          "phase": "second",
+          "package_accepted": null,
+          "verified_extension": true,
+          "first_use": null,
+          "second_use": true,
+          "chain": {
+            "protocol": "activation-use-v2",
+            "first_use_passed": true,
+            "second_task_passed": true,
+            "diagnostic_only": false,
+            "complete_chain_passed": true,
+            "parent_source": "Frozen independently verified first package; first-use mutations are not promoted."
+          },
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "second-extension-audit",
+            "session": "c4b045c4119f4357a250c571289cb5af",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 30,
+            "seconds": 659.47,
+            "model_requests": 31,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 6,
+            "read_actions": 8,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 817.739,
+          "calls": 49,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 622720,
+              "measured_calls": 49,
+              "expected_calls": 49,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 9524,
+              "measured_calls": 49,
+              "expected_calls": 49,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 762.803,
+              "measured_calls": 49,
+              "expected_calls": 49,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 762.705,
+              "measured_calls": 49,
+              "expected_calls": 49,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "02_format_json",
+          "phase": "first",
+          "package_accepted": true,
+          "verified_extension": null,
+          "first_use": true,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "format_json",
+            "session": "5de2bc01eea341709fdee4f1fd5dc508",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 68,
+            "seconds": 1075.59,
+            "model_requests": 69,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 13,
+            "read_actions": 29,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 1120.128,
+          "calls": 74,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 1746457,
+              "measured_calls": 74,
+              "expected_calls": 74,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 15515,
+              "measured_calls": 74,
+              "expected_calls": 74,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 1069.555,
+              "measured_calls": 74,
+              "expected_calls": 74,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 1069.419,
+              "measured_calls": 74,
+              "expected_calls": 74,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "02_format_json",
+          "phase": "second",
+          "package_accepted": null,
+          "verified_extension": true,
+          "first_use": null,
+          "second_use": true,
+          "chain": {
+            "protocol": "activation-use-v2",
+            "first_use_passed": true,
+            "second_task_passed": true,
+            "diagnostic_only": false,
+            "complete_chain_passed": true,
+            "parent_source": "Frozen independently verified first package; first-use mutations are not promoted."
+          },
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "second-extension-audit",
+            "session": "25d87c153d2a4185be7009230598b5e3",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 20,
+            "seconds": 384.18,
+            "model_requests": 19,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 2,
+            "read_actions": 7,
+            "repeated_reads": 1,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 543.729,
+          "calls": 42,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 513460,
+              "measured_calls": 42,
+              "expected_calls": 42,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 6873,
+              "measured_calls": 42,
+              "expected_calls": 42,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 490.862,
+              "measured_calls": 42,
+              "expected_calls": 42,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 490.786,
+              "measured_calls": 42,
+              "expected_calls": 42,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "02_csv_preview",
+          "phase": "first",
+          "package_accepted": true,
+          "verified_extension": null,
+          "first_use": true,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 1,
+          "public_initial_passed": false,
+          "public_corrected_passed": true,
+          "mismatches": [
+            {
+              "path": "activation/csv-night-receipt.json",
+              "check": "rows",
+              "message": "Saved field differs from the public requirement.",
+              "expected_records": 5,
+              "actual_records": 5
+            }
+          ],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "csv_preview",
+            "session": "1930e947aac14205bed633d04d1b4892",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 43,
+            "seconds": 1331.0,
+            "model_requests": 44,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 10,
+            "read_actions": 7,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 1636.97,
+          "calls": 61,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 1401306,
+              "measured_calls": 61,
+              "expected_calls": 61,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 18886,
+              "measured_calls": 61,
+              "expected_calls": 61,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 1579.212,
+              "measured_calls": 61,
+              "expected_calls": 61,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 1579.084,
+              "measured_calls": 61,
+              "expected_calls": 61,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "02_csv_preview",
+          "phase": "second",
+          "package_accepted": null,
+          "verified_extension": true,
+          "first_use": null,
+          "second_use": true,
+          "chain": {
+            "protocol": "activation-use-v2",
+            "first_use_passed": true,
+            "second_task_passed": true,
+            "diagnostic_only": false,
+            "complete_chain_passed": true,
+            "parent_source": "Frozen independently verified first package; first-use mutations are not promoted."
+          },
+          "public_corrections": 1,
+          "public_initial_passed": false,
+          "public_corrected_passed": true,
+          "mismatches": [
+            {
+              "path": "audit.json",
+              "check": "rows",
+              "message": "Saved field differs from the public requirement.",
+              "expected_records": 3,
+              "actual_records": 3
+            }
+          ],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "second-extension-audit",
+            "session": "8ca7695d65374f3fb8f26760eaafff4e",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 19,
+            "seconds": 638.11,
+            "model_requests": 20,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 2,
+            "read_actions": 7,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 1436.669,
+          "calls": 44,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 638842,
+              "measured_calls": 44,
+              "expected_calls": 44,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 6926,
+              "measured_calls": 44,
+              "expected_calls": 44,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 1382.666,
+              "measured_calls": 44,
+              "expected_calls": 44,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 1382.587,
+              "measured_calls": 44,
+              "expected_calls": 44,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "02_sha256_file",
+          "phase": "first",
+          "package_accepted": true,
+          "verified_extension": null,
+          "first_use": true,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "sha256_file",
+            "session": "df083e19ec734eedaec6dfb537d01b02",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 17,
+            "seconds": 468.8,
+            "model_requests": 18,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 2,
+            "read_actions": 4,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 559.33,
+          "calls": 25,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 196304,
+              "measured_calls": 25,
+              "expected_calls": 25,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 4667,
+              "measured_calls": 25,
+              "expected_calls": 25,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 525.354,
+              "measured_calls": 25,
+              "expected_calls": 25,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 525.307,
+              "measured_calls": 25,
+              "expected_calls": 25,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "02_sha256_file",
+          "phase": "second",
+          "package_accepted": null,
+          "verified_extension": true,
+          "first_use": null,
+          "second_use": true,
+          "chain": {
+            "protocol": "activation-use-v2",
+            "first_use_passed": true,
+            "second_task_passed": true,
+            "diagnostic_only": false,
+            "complete_chain_passed": true,
+            "parent_source": "Frozen independently verified first package; first-use mutations are not promoted."
+          },
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "second-extension-audit",
+            "session": "bde29081dfde4c74990617d9e9e5bbbd",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 34,
+            "seconds": 855.2,
+            "model_requests": 35,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 8,
+            "read_actions": 8,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 1142.095,
+          "calls": 63,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 846282,
+              "measured_calls": 63,
+              "expected_calls": 63,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 8750,
+              "measured_calls": 63,
+              "expected_calls": 63,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 1076.521,
+              "measured_calls": 63,
+              "expected_calls": 63,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 1076.405,
+              "measured_calls": 63,
+              "expected_calls": 63,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "03_csv_preview",
+          "phase": "first",
+          "package_accepted": true,
+          "verified_extension": null,
+          "first_use": true,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "csv_preview",
+            "session": "b9b6e9d446d44d1789d925eec4317f20",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 22,
+            "seconds": 621.72,
+            "model_requests": 23,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 2,
+            "read_actions": 6,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 692.97,
+          "calls": 31,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 309252,
+              "measured_calls": 31,
+              "expected_calls": 31,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 7680,
+              "measured_calls": 31,
+              "expected_calls": 31,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 660.636,
+              "measured_calls": 31,
+              "expected_calls": 31,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 660.583,
+              "measured_calls": 31,
+              "expected_calls": 31,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "03_csv_preview",
+          "phase": "second",
+          "package_accepted": null,
+          "verified_extension": true,
+          "first_use": null,
+          "second_use": true,
+          "chain": {
+            "protocol": "activation-use-v2",
+            "first_use_passed": true,
+            "second_task_passed": true,
+            "diagnostic_only": false,
+            "complete_chain_passed": true,
+            "parent_source": "Frozen independently verified first package; first-use mutations are not promoted."
+          },
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "second-extension-audit",
+            "session": "7fb75ff5917c4370996ebf9147b15ede",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 44,
+            "seconds": 465.68,
+            "model_requests": 45,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 3,
+            "read_actions": 28,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 549.613,
+          "calls": 53,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 777426,
+              "measured_calls": 53,
+              "expected_calls": 53,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 7830,
+              "measured_calls": 53,
+              "expected_calls": 53,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 498.26,
+              "measured_calls": 53,
+              "expected_calls": 53,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 498.176,
+              "measured_calls": 53,
+              "expected_calls": 53,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "03_sha256_file",
+          "phase": "first",
+          "package_accepted": false,
+          "verified_extension": null,
+          "first_use": false,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": null,
+          "public_corrected_passed": null,
+          "mismatches": null,
+          "unexpected_files": [
+            "development/args.json",
+            "test.bin"
+          ],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "sha256_file",
+            "session": "a2ec97d499e14260889b84dbf50398e7",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 36,
+            "seconds": 387.71,
+            "model_requests": 37,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 8,
+            "read_actions": 7,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 403.442,
+          "calls": 37,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 598658,
+              "measured_calls": 37,
+              "expected_calls": 37,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 5801,
+              "measured_calls": 37,
+              "expected_calls": 37,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 371.874,
+              "measured_calls": 37,
+              "expected_calls": 37,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 371.813,
+              "measured_calls": 37,
+              "expected_calls": 37,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true
+        },
+        {
+          "case": "03_format_json",
+          "phase": "first",
+          "package_accepted": false,
+          "verified_extension": null,
+          "first_use": false,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": null,
+          "public_corrected_passed": null,
+          "mismatches": null,
+          "unexpected_files": [
+            "development/badutf8.json",
+            "development/format-test.json",
+            "development/invalid.json",
+            "development/test.json"
+          ],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "format_json",
+            "session": "c3819e917a794fc38035f178a717895e",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 25,
+            "seconds": 345.73,
+            "model_requests": 26,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 4,
+            "read_actions": 4,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 361.502,
+          "calls": 26,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 299812,
+              "measured_calls": 26,
+              "expected_calls": 26,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 5574,
+              "measured_calls": 26,
+              "expected_calls": 26,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 332.36,
+              "measured_calls": 26,
+              "expected_calls": 26,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 332.318,
+              "measured_calls": 26,
+              "expected_calls": 26,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true
+        }
+      ],
+      "completed_chains": [
+        {
+          "case": "01_sha256_file",
+          "complete": true,
+          "unassisted": true
+        },
+        {
+          "case": "01_format_json",
+          "complete": true,
+          "unassisted": true
+        },
+        {
+          "case": "01_csv_preview",
+          "complete": true,
+          "unassisted": true
+        },
+        {
+          "case": "02_format_json",
+          "complete": true,
+          "unassisted": true
+        },
+        {
+          "case": "02_csv_preview",
+          "complete": true,
+          "unassisted": false
+        },
+        {
+          "case": "02_sha256_file",
+          "complete": true,
+          "unassisted": true
+        },
+        {
+          "case": "03_csv_preview",
+          "complete": true,
+          "unassisted": true
+        }
+      ],
+      "unassisted_chains": 6,
+      "cleanup_receipts": [
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_benchmark_01",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_basic_exact-file",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_basic_precise-edit",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_basic_recovery",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_basic_unicode",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_basic_bug-fix",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_01_sha256_file",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_01_sha256_file",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_01_format_json",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_01_format_json",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_01_csv_preview",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_01_csv_preview",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_02_format_json",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_02_format_json",
+          "attempt": 1,
+          "state": "interrupted",
+          "observed_recovery": true,
+          "category": "infrastructure"
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_02_format_json",
+          "attempt": 2,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_02_csv_preview",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_02_csv_preview",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_02_sha256_file",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_02_sha256_file",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_03_csv_preview",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_03_csv_preview",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_03_sha256_file",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_03_format_json",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        }
+      ],
+      "closed_archives_and_source_identities_verified": true,
+      "completed_feature_costs": {
+        "trial_seconds": 13222.129,
+        "calls": 833,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 13774426,
+            "complete_for_completed_feature_stages": true,
+            "stages": 16
+          },
+          "output_tokens": {
+            "known_sum": 150345,
+            "complete_for_completed_feature_stages": true,
+            "stages": 16
+          },
+          "call_seconds": {
+            "known_sum": 12435.583,
+            "complete_for_completed_feature_stages": true,
+            "stages": 16
+          }
+        },
+        "scope": "Completed feature stages only; excludes loading/calibration and any interrupted attempt. All-attempt observations remain in closed reports."
+      },
+      "per_first_feature": {
+        "sha256_file": {
+          "attempts": 3,
+          "accepted": 2,
+          "first_use_passed": 2
+        },
+        "format_json": {
+          "attempts": 3,
+          "accepted": 2,
+          "first_use_passed": 2
+        },
+        "csv_preview": {
+          "attempts": 3,
+          "accepted": 3,
+          "first_use_passed": 3
+        }
+      }
+    },
+    "revision": {
+      "source_sha256": "645d2222c5f7f6e92ad5f2ca964f7584e07b47ea4d410872e98a61009eb7bb0d",
+      "environment": {
+        "platform": "Windows-11-10.0.26200-SP0",
+        "machine": "AMD64",
+        "python": "3.13.12",
+        "root": "D:\\AI_New\\AP",
+        "appliance_inventory_sha256": "8a433cc0a01761b705a4b3391d5ee4bedfac014a23f29af611600d5efc5b5c5a"
+      },
+      "groups": {
+        "launched": 21,
+        "finished": 21,
+        "first_attempts": 9,
+        "first_packages": 6,
+        "first_use_attempts": 6,
+        "first_use_passed": 5,
+        "ordinary_evaluated": 5,
+        "first_evaluated": 9,
+        "second_evaluated": 6,
+        "resource_stops": 0,
+        "infrastructure_errors": 0,
+        "interruptions": 0,
+        "public_verifier_stages": 12,
+        "public_passed_without_feedback": 11,
+        "public_corrections": 1,
+        "public_passed_after_feedback": 1,
+        "second_attempts": 6,
+        "second_verified": 6,
+        "second_use_passed": 6,
+        "complete_chains": 5,
+        "diagnostic_second": 1,
+        "ordinary_attempts": 5,
+        "ordinary_checks": 5,
+        "ordinary_artifacts_correct": 5,
+        "ordinary_completion_observations": 5,
+        "ordinary_explicit_completion": 5,
+        "ordinary_passed": 5,
+        "not_run": {
+          "ordinary": 0,
+          "first": 0,
+          "second": 3,
+          "inference": 0,
+          "unmeasured": 0
+        }
+      },
+      "rows": [
+        {
+          "case": "01_sha256_file",
+          "phase": "first",
+          "package_accepted": true,
+          "verified_extension": null,
+          "first_use": true,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "sha256_file",
+            "session": "c67c61dcedc14bb89fee56806efaeb2b",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 14,
+            "seconds": 226.37,
+            "model_requests": 14,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 6,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 298.117,
+          "calls": 22,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 159083,
+              "measured_calls": 22,
+              "expected_calls": 22,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 4415,
+              "measured_calls": 22,
+              "expected_calls": 22,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 268.522,
+              "measured_calls": 22,
+              "expected_calls": 22,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 268.487,
+              "measured_calls": 22,
+              "expected_calls": 22,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "01_sha256_file",
+          "phase": "second",
+          "package_accepted": null,
+          "verified_extension": true,
+          "first_use": null,
+          "second_use": true,
+          "chain": {
+            "protocol": "activation-use-v2",
+            "first_use_passed": true,
+            "second_task_passed": true,
+            "diagnostic_only": false,
+            "complete_chain_passed": true,
+            "parent_source": "Frozen independently verified first package; first-use mutations are not promoted."
+          },
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "second-extension-audit",
+            "session": "319e350fd88d4be8ade7fd6545493957",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 39,
+            "seconds": 561.22,
+            "model_requests": 40,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 8,
+            "read_actions": 6,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 645.337,
+          "calls": 50,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 776644,
+              "measured_calls": 50,
+              "expected_calls": 50,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 9743,
+              "measured_calls": 50,
+              "expected_calls": 50,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 596.388,
+              "measured_calls": 50,
+              "expected_calls": 50,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 596.308,
+              "measured_calls": 50,
+              "expected_calls": 50,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "01_format_json",
+          "phase": "first",
+          "package_accepted": true,
+          "verified_extension": null,
+          "first_use": true,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "format_json",
+            "session": "94c92eb654ae4c7c98550d3dfa2c1a17",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 54,
+            "seconds": 550.71,
+            "model_requests": 54,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 12,
+            "read_actions": 11,
+            "repeated_reads": 1,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 632.162,
+          "calls": 65,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 983040,
+              "measured_calls": 65,
+              "expected_calls": 65,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 8844,
+              "measured_calls": 65,
+              "expected_calls": 65,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 578.799,
+              "measured_calls": 65,
+              "expected_calls": 65,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 578.69,
+              "measured_calls": 65,
+              "expected_calls": 65,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "01_format_json",
+          "phase": "second",
+          "package_accepted": null,
+          "verified_extension": true,
+          "first_use": null,
+          "second_use": true,
+          "chain": {
+            "protocol": "activation-use-v2",
+            "first_use_passed": true,
+            "second_task_passed": true,
+            "diagnostic_only": false,
+            "complete_chain_passed": true,
+            "parent_source": "Frozen independently verified first package; first-use mutations are not promoted."
+          },
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "second-extension-audit",
+            "session": "ad2d2bb7307f408ca2b3010d8b87651e",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 16,
+            "seconds": 250.13,
+            "model_requests": 17,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 1,
+            "read_actions": 5,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 407.285,
+          "calls": 38,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 401414,
+              "measured_calls": 38,
+              "expected_calls": 38,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 5281,
+              "measured_calls": 38,
+              "expected_calls": 38,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 361.3,
+              "measured_calls": 38,
+              "expected_calls": 38,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 361.241,
+              "measured_calls": 38,
+              "expected_calls": 38,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "01_csv_preview",
+          "phase": "first",
+          "package_accepted": true,
+          "verified_extension": null,
+          "first_use": true,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "csv_preview",
+            "session": "564784763c6f42408daea692d709b0ab",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 52,
+            "seconds": 505.13,
+            "model_requests": 53,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 16,
+            "read_actions": 5,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 597.498,
+          "calls": 66,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 839977,
+              "measured_calls": 66,
+              "expected_calls": 66,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 8740,
+              "measured_calls": 66,
+              "expected_calls": 66,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 550.048,
+              "measured_calls": 66,
+              "expected_calls": 66,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 549.941,
+              "measured_calls": 66,
+              "expected_calls": 66,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "01_csv_preview",
+          "phase": "second",
+          "package_accepted": null,
+          "verified_extension": true,
+          "first_use": null,
+          "second_use": true,
+          "chain": {
+            "protocol": "activation-use-v2",
+            "first_use_passed": true,
+            "second_task_passed": true,
+            "diagnostic_only": false,
+            "complete_chain_passed": true,
+            "parent_source": "Frozen independently verified first package; first-use mutations are not promoted."
+          },
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "second-extension-audit",
+            "session": "560d8881a5fb48bf8252a1b8810c0fdc",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 44,
+            "seconds": 687.9,
+            "model_requests": 43,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 8,
+            "read_actions": 9,
+            "repeated_reads": 1,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 809.233,
+          "calls": 59,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 986904,
+              "measured_calls": 59,
+              "expected_calls": 59,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 12103,
+              "measured_calls": 59,
+              "expected_calls": 59,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 754.629,
+              "measured_calls": 59,
+              "expected_calls": 59,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 754.528,
+              "measured_calls": 59,
+              "expected_calls": 59,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "02_format_json",
+          "phase": "first",
+          "package_accepted": true,
+          "verified_extension": null,
+          "first_use": false,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 1,
+          "public_initial_passed": false,
+          "public_corrected_passed": true,
+          "mismatches": [
+            {
+              "path": "activation/format-night.json",
+              "check": "canonical_json",
+              "message": "Saved input does not match the published preservation/formatting requirement."
+            },
+            {
+              "path": "activation/format-night-receipt.json",
+              "check": "bytes",
+              "message": "Saved field differs from the public requirement.",
+              "expected": 79,
+              "actual": 58,
+              "difference": {
+                "location": "/bytes",
+                "kind": "value",
+                "expected_type": "int"
+              }
+            }
+          ],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "format_json",
+            "session": "d04e8c82b1d84f67a5ae85f729c9eef8",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 20,
+            "seconds": 247.17,
+            "model_requests": 21,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 2,
+            "read_actions": 5,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 397.607,
+          "calls": 38,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 412022,
+              "measured_calls": 38,
+              "expected_calls": 38,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 5426,
+              "measured_calls": 38,
+              "expected_calls": 38,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 358.175,
+              "measured_calls": 38,
+              "expected_calls": 38,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 358.115,
+              "measured_calls": 38,
+              "expected_calls": 38,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "02_format_json",
+          "phase": "second",
+          "package_accepted": null,
+          "verified_extension": true,
+          "first_use": null,
+          "second_use": true,
+          "chain": {
+            "protocol": "activation-use-v2",
+            "first_use_passed": false,
+            "second_task_passed": true,
+            "diagnostic_only": true,
+            "complete_chain_passed": false,
+            "parent_source": "Frozen independently verified first package; first-use mutations are not promoted."
+          },
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "second-extension-audit",
+            "session": "4c982596c5a74350a889b0a36859d268",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 38,
+            "seconds": 412.48,
+            "model_requests": 39,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 1,
+            "read_actions": 26,
+            "repeated_reads": 3,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 494.805,
+          "calls": 49,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 617637,
+              "measured_calls": 49,
+              "expected_calls": 49,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 7283,
+              "measured_calls": 49,
+              "expected_calls": 49,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 446.724,
+              "measured_calls": 49,
+              "expected_calls": 49,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 446.646,
+              "measured_calls": 49,
+              "expected_calls": 49,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "02_csv_preview",
+          "phase": "first",
+          "package_accepted": false,
+          "verified_extension": null,
+          "first_use": false,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": null,
+          "public_corrected_passed": null,
+          "mismatches": null,
+          "unexpected_files": [
+            "crlf.csv",
+            "empty.csv",
+            "quoted.csv",
+            "test.csv",
+            "test1.csv",
+            "unicode.csv"
+          ],
+          "protected_changes": [],
+          "failed_feature_checks": [
+            "quoted_5",
+            "quoted_20"
+          ],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "csv_preview",
+            "session": "eea770f0d26140de82bc295307eefd79",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 36,
+            "seconds": 1256.03,
+            "model_requests": 38,
+            "timed_out": false,
+            "format_repairs": 1,
+            "action_errors": 10,
+            "read_actions": 4,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 1272.056,
+          "calls": 38,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 745741,
+              "measured_calls": 38,
+              "expected_calls": 38,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 22675,
+              "measured_calls": 38,
+              "expected_calls": 38,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 1238.21,
+              "measured_calls": 38,
+              "expected_calls": 38,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 1238.149,
+              "measured_calls": 38,
+              "expected_calls": 38,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true
+        },
+        {
+          "case": "02_sha256_file",
+          "phase": "first",
+          "package_accepted": true,
+          "verified_extension": null,
+          "first_use": true,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "sha256_file",
+            "session": "5cfb6ac6b02b4b55b1263e7b0e182720",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 12,
+            "seconds": 272.06,
+            "model_requests": 13,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 4,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 328.908,
+          "calls": 19,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 138532,
+              "measured_calls": 19,
+              "expected_calls": 19,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 5204,
+              "measured_calls": 19,
+              "expected_calls": 19,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 300.053,
+              "measured_calls": 19,
+              "expected_calls": 19,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 300.024,
+              "measured_calls": 19,
+              "expected_calls": 19,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "02_sha256_file",
+          "phase": "second",
+          "package_accepted": null,
+          "verified_extension": true,
+          "first_use": null,
+          "second_use": true,
+          "chain": {
+            "protocol": "activation-use-v2",
+            "first_use_passed": true,
+            "second_task_passed": true,
+            "diagnostic_only": false,
+            "complete_chain_passed": true,
+            "parent_source": "Frozen independently verified first package; first-use mutations are not promoted."
+          },
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "second-extension-audit",
+            "session": "9f19d43ec3e44ea7adee54b7c0e5d1da",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 19,
+            "seconds": 314.14,
+            "model_requests": 20,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 1,
+            "read_actions": 6,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 522.17,
+          "calls": 49,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 596125,
+              "measured_calls": 49,
+              "expected_calls": 49,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 7092,
+              "measured_calls": 49,
+              "expected_calls": 49,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 470.159,
+              "measured_calls": 49,
+              "expected_calls": 49,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 470.079,
+              "measured_calls": 49,
+              "expected_calls": 49,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "03_csv_preview",
+          "phase": "first",
+          "package_accepted": false,
+          "verified_extension": null,
+          "first_use": false,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": null,
+          "public_corrected_passed": null,
+          "mismatches": null,
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [
+            "exact_1",
+            "unicode_exact_1"
+          ],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "csv_preview",
+            "session": "1523fbbace5e4a92bc9e69e9fa57351a",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 105,
+            "seconds": 1092.13,
+            "model_requests": 106,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 7,
+            "read_actions": 81,
+            "repeated_reads": 30,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 1108.033,
+          "calls": 106,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 2786510,
+              "measured_calls": 106,
+              "expected_calls": 106,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 16343,
+              "measured_calls": 106,
+              "expected_calls": 106,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 1053.056,
+              "measured_calls": 106,
+              "expected_calls": 106,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 1052.886,
+              "measured_calls": 106,
+              "expected_calls": 106,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true
+        },
+        {
+          "case": "03_sha256_file",
+          "phase": "first",
+          "package_accepted": true,
+          "verified_extension": null,
+          "first_use": true,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "sha256_file",
+            "session": "5c84b540831941ac81607f4169650de1",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 14,
+            "seconds": 222.13,
+            "model_requests": 15,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 0,
+            "read_actions": 4,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 330.976,
+          "calls": 31,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 233776,
+              "measured_calls": 31,
+              "expected_calls": 31,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 4865,
+              "measured_calls": 31,
+              "expected_calls": 31,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 297.39,
+              "measured_calls": 31,
+              "expected_calls": 31,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 297.34,
+              "measured_calls": 31,
+              "expected_calls": 31,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "03_sha256_file",
+          "phase": "second",
+          "package_accepted": null,
+          "verified_extension": true,
+          "first_use": null,
+          "second_use": true,
+          "chain": {
+            "protocol": "activation-use-v2",
+            "first_use_passed": true,
+            "second_task_passed": true,
+            "diagnostic_only": false,
+            "complete_chain_passed": true,
+            "parent_source": "Frozen independently verified first package; first-use mutations are not promoted."
+          },
+          "public_corrections": 0,
+          "public_initial_passed": true,
+          "public_corrected_passed": false,
+          "mismatches": [],
+          "unexpected_files": [],
+          "protected_changes": [],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": null,
+          "run": {
+            "task": "second-extension-audit",
+            "session": "690db571229d436fa77aeb22fd434ec3",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 32,
+            "seconds": 440.33,
+            "model_requests": 33,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 6,
+            "read_actions": 6,
+            "repeated_reads": 0,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 581.47,
+          "calls": 55,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 683826,
+              "measured_calls": 55,
+              "expected_calls": 55,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 8274,
+              "measured_calls": 55,
+              "expected_calls": 55,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 523.031,
+              "measured_calls": 55,
+              "expected_calls": 55,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 522.941,
+              "measured_calls": 55,
+              "expected_calls": 55,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true,
+          "submitted_and_final_source_verified": true
+        },
+        {
+          "case": "03_format_json",
+          "phase": "first",
+          "package_accepted": false,
+          "verified_extension": null,
+          "first_use": false,
+          "second_use": null,
+          "chain": null,
+          "public_corrections": 0,
+          "public_initial_passed": null,
+          "public_corrected_passed": null,
+          "mismatches": null,
+          "unexpected_files": [
+            "autoproteus/file_ops.py"
+          ],
+          "protected_changes": [
+            "autoproteus/file_ops.py"
+          ],
+          "failed_feature_checks": [],
+          "feature_not_run_reason": "Requested unchanged execution loop or existing tests were modified",
+          "run": {
+            "task": "format_json",
+            "session": "b33bc48e15e94f6e874837cc22ce1567",
+            "status": "waiting",
+            "execution_mode": "vm",
+            "isolated": true,
+            "passed": false,
+            "checks": [],
+            "steps": 33,
+            "seconds": 639.04,
+            "model_requests": 33,
+            "timed_out": false,
+            "format_repairs": 0,
+            "action_errors": 8,
+            "read_actions": 7,
+            "repeated_reads": 1,
+            "interrupted": false,
+            "failure_kind": null,
+            "detail": "Waiting for your reply"
+          },
+          "seconds": 644.907,
+          "calls": 33,
+          "measurements": {
+            "input_tokens": {
+              "known_sum": 662738,
+              "measured_calls": 33,
+              "expected_calls": 33,
+              "complete": true,
+              "status": "complete"
+            },
+            "output_tokens": {
+              "known_sum": 10264,
+              "measured_calls": 33,
+              "expected_calls": 33,
+              "complete": true,
+              "status": "complete"
+            },
+            "call_seconds": {
+              "known_sum": 623.065,
+              "measured_calls": 33,
+              "expected_calls": 33,
+              "complete": true,
+              "status": "complete"
+            },
+            "transport_seconds": {
+              "known_sum": 623.013,
+              "measured_calls": 33,
+              "expected_calls": 33,
+              "complete": true,
+              "status": "complete"
+            }
+          },
+          "capture_complete": true
+        }
+      ],
+      "completed_chains": [
+        {
+          "case": "01_sha256_file",
+          "complete": true,
+          "unassisted": true
+        },
+        {
+          "case": "01_format_json",
+          "complete": true,
+          "unassisted": true
+        },
+        {
+          "case": "01_csv_preview",
+          "complete": true,
+          "unassisted": true
+        },
+        {
+          "case": "02_sha256_file",
+          "complete": true,
+          "unassisted": true
+        },
+        {
+          "case": "03_sha256_file",
+          "complete": true,
+          "unassisted": true
+        }
+      ],
+      "unassisted_chains": 5,
+      "cleanup_receipts": [
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_benchmark_01",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_basic_exact-file",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_basic_precise-edit",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_basic_recovery",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_basic_unicode",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_basic_bug-fix",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_01_sha256_file",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_01_sha256_file",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_01_format_json",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_01_format_json",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_01_csv_preview",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_01_csv_preview",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_02_format_json",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_02_format_json",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_02_csv_preview",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_02_sha256_file",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_02_sha256_file",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_03_csv_preview",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_03_sha256_file",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_growth_03_sha256_file",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        },
+        {
+          "cell": "qwen35-9b-q6-csv-feedback_first_03_format_json",
+          "attempt": 1,
+          "state": "completed",
+          "observed_recovery": false,
+          "category": null
+        }
+      ],
+      "closed_archives_and_source_identities_verified": true,
+      "completed_feature_costs": {
+        "trial_seconds": 9070.564,
+        "calls": 718,
+        "measurements": {
+          "input_tokens": {
+            "known_sum": 11023969,
+            "complete_for_completed_feature_stages": true,
+            "stages": 15
+          },
+          "output_tokens": {
+            "known_sum": 136552,
+            "complete_for_completed_feature_stages": true,
+            "stages": 15
+          },
+          "call_seconds": {
+            "known_sum": 8419.549,
+            "complete_for_completed_feature_stages": true,
+            "stages": 15
+          }
+        },
+        "scope": "Completed feature stages only; excludes loading/calibration and any interrupted attempt. All-attempt observations remain in closed reports."
+      },
+      "per_first_feature": {
+        "sha256_file": {
+          "attempts": 3,
+          "accepted": 3,
+          "first_use_passed": 3
+        },
+        "format_json": {
+          "attempts": 3,
+          "accepted": 2,
+          "first_use_passed": 1
+        },
+        "csv_preview": {
+          "attempts": 3,
+          "accepted": 1,
+          "first_use_passed": 1
+        }
+      }
+    }
+  },
+  "matched_successful_chains": {
+    "cases": [
+      "01_csv_preview",
+      "01_format_json",
+      "01_sha256_file",
+      "02_sha256_file"
+    ],
+    "measurements": {
+      "baseline": {
+        "calls": 465,
+        "trial_seconds": 6477.106,
+        "stages": 8,
+        "output_tokens_known_sum": 75260,
+        "output_tokens_complete": true
+      },
+      "revision": {
+        "calls": 368,
+        "trial_seconds": 4240.71,
+        "stages": 8,
+        "output_tokens_known_sum": 61422,
+        "output_tokens_complete": true
+      }
+    },
+    "scope": "Small descriptive comparison across chains independently complete in both batches. Fresh model generations, source/runtime revisions and timing variation prevent causal attribution."
+  }
+}

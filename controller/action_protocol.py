@@ -6,6 +6,7 @@ NATIVE = '''RESPONSE FORMAT
 Use the supplied native tools. Prefer one tool call at a time.
 After verification, end the task with a native finish tool call: message is your final answer, status="completed". Saying "done" in prose does not complete the task.
 For required user input, call finish with your question and status="needs_input".
+For activation, also supply reason="activation"; omit reason for questions.
 A plain text reply is shown to the user and pauses for their reply; it does not complete the task.
 '''
 
@@ -14,6 +15,7 @@ Return exactly one JSON object per response, without Markdown fences:
 {"message":"What you are doing","action":{"tool":"tool_name","arguments":{}}}
 or {"message":"Your final answer","status":"completed"}
 or {"message":"Your question","status":"needs_input"}.
+For activation use status="needs_input" with reason="activation"; omit reason for questions.
 Use exactly one action or one status. Strings must use valid JSON escaping.
 Tools:
 '''
