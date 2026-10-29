@@ -2,12 +2,17 @@
 
 Given a version that exists as a section in CHANGELOG.md, this script:
 
-  * creates the annotated git tag ``v<version>`` at the current HEAD
+  * resolves the requested ref to ONE immutable commit, and derives
+    everything from that commit alone — the tag, the ZIP tree, and the
+    release notes all come from the same source, never from HEAD by
+    accident and never from working-tree files,
+  * creates the annotated git tag ``v<version>`` at that commit
     (only with --tag; refuses if the tag already exists),
   * builds ``autoproteus-v<version>.zip`` from the tracked tree at that
-    ref — byte-for-byte reproducible: sorted paths, fixed timestamps,
+    commit — byte-for-byte reproducible: sorted paths, fixed timestamps,
     fixed permissions, so two runs on two machines produce one hash,
-  * drafts the GitHub release notes from that version's CHANGELOG section.
+  * drafts the GitHub release notes from that version's CHANGELOG
+    section as it exists at that commit.
 
 It never pushes, uploads or publishes anything. Tags and artifacts stay
 local until a human pushes the tag and creates the release. Standard
@@ -55,6 +60,26 @@ def _git(root, *args):
                           check=True).stdout
 
 
+def resolve_commit(root, ref):
+    """Resolve a ref to the one immutable commit this release is.
+
+    Every artifact (tag, ZIP, notes) is derived from this commit, so a
+    release can never mix sources — e.g. a tag at HEAD, a ZIP of an
+    older ref, and notes from a modified working-tree CHANGELOG.
+    """
+    return _git(root, 'rev-parse', f'{ref}^{{commit}}').decode('utf-8').strip()
+
+
+def read_at_ref(root, ref, path):
+    """Read a tracked file as it exists at a ref, never from the worktree."""
+    return _git(root, 'show', f'{ref}:{path}').decode('utf-8')
+
+
+def changelog_section_at_ref(root, ref, version):
+    """The version's CHANGELOG section as of the given ref."""
+    return changelog_section(read_at_ref(root, ref, 'CHANGELOG.md'), version)
+
+
 def tracked_paths(root, ref):
     out = _git(root, 'ls-tree', '-r', '--name-only', ref).decode('utf-8')
     return sorted(path for path in out.splitlines() if path)
@@ -93,18 +118,20 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('version', help='Version with a CHANGELOG section, e.g. 0.14.1')
     parser.add_argument('--tag', action='store_true',
-                        help='Create the annotated git tag at HEAD (default: no tag)')
+                        help='Create the annotated git tag at the resolved commit (default: no tag)')
     parser.add_argument('--ref', default='HEAD',
                         help='Git ref to package (default: HEAD; the new tag when --tag)')
     parser.add_argument('--out', help='Output directory (default: .data/releases/v<version>)')
     args = parser.parse_args(argv)
 
-    changelog = (ROOT / 'CHANGELOG.md').read_text(encoding='utf-8')
-    section = changelog_section(changelog, args.version)  # raises if absent
-    ref = args.ref
+    # One immutable commit is the release identity: tag, ZIP and notes
+    # are all derived from it, and working-tree files are never read.
+    commit = resolve_commit(ROOT, args.ref)
+    section = changelog_section_at_ref(ROOT, commit, args.version)  # raises if absent
+    ref = commit
     if args.tag:
-        ref = create_tag(ROOT, args.version)
-        print(f'Tagged {ref} at HEAD (local only; nothing pushed).')
+        ref = create_tag(ROOT, args.version, ref=commit)
+        print(f'Tagged {ref} at {commit} (local only; nothing pushed).')
     out_dir = Path(args.out) if args.out else ROOT / '.data' / 'releases' / ('v' + args.version)
     out_dir.mkdir(parents=True, exist_ok=True)
     zip_bytes = build_release_zip(ROOT, ref)
