@@ -6,6 +6,11 @@ a finite-loss forward pass, then reached its ten-minute update deadline during
 backward. No optimizer updates completed, no adapter was saved and no full
 training run started. The conditional 8K stage was not attempted.
 
+**Later follow-up:** the [backward diagnosis](local-lora-backward-diagnosis-2026-10-29.md)
+subsequently completed two real 6K readiness updates using chunked projection/loss,
+with a matched ordinary-loss control. The observations below preserve the earlier
+guard-limited probes; they are not the latest readiness verdict.
+
 ## Data preparation
 
 The [local data audit](local-lora-data-audit-2026-10-29.md) supplied independently

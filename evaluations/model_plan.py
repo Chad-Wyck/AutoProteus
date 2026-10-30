@@ -40,6 +40,7 @@ def trusted_files():
         'evaluations/observations.py', 'evaluations/run_budget.py', 'evaluations/research_limits.py',
         'evaluations/hosted_study.py',
         'evaluations/submission_preflight.py', 'evaluations/completion_study.py', 'evaluations/activation_use.py',
+        'evaluations/novel_features.py', 'evaluations/novel-probe.py', 'evaluations/novel_calibration.py',
         'evaluations/source_navigation.py', 'evaluations/navigation_variant.py',
         'evaluations/repeatability.py', 'evaluations/repeatability-cases.json', 'evaluations/sampling-csv-cases.json',
         'evaluations/owned_runtime.py', 'evaluations/runtime_pressure.py', 'evaluations/activation_replay.py',
@@ -59,6 +60,12 @@ def environment():
 
 
 def prepare(args):
+    extension_pack = getattr(args, 'extension_pack', None)
+    if extension_pack:
+        from novel_features import PACK
+        if (extension_pack != PACK or args.mode != 'full' or any(getattr(args, key, None) for key in
+                ('experiment', 'case_pack', 'parent_source', 'reuse_task', 'public_verifier_feedback', 'first_only'))):
+            raise ValueError('The pilot extension pack requires an unassisted full starter study without other treatments')
     seed_mode = getattr(args, 'sampling_seed_mode', 'per-request')
     if seed_mode not in SEED_MODES:
         raise ValueError('Unknown sampling seed mode')
@@ -190,6 +197,14 @@ def prepare(args):
         raise ValueError('Repeat and budget values must be positive')
     if not plan['growth_enabled'] and plan.get('parent'):
         raise ValueError('First-only studies test starter extensions, not a supplied parent')
+    if extension_pack:
+        from novel_features import CONTRACTS as extra_contracts
+        plan['extension_pack'] = extension_pack
+        plan['contracts'] = {**plan['contracts'], **extra_contracts}
+        plan['upgrade_tasks'] = list(plan['contracts'])
+        plan['scope'] += (' Opt-in novel INI/newline chains; fresh inputs withheld until each activation, '
+            'first saved artifacts preserved during second development and use. Second stage requires first use to pass. '
+            'Actual default omission is required; native and statically evidenced development routes are scored separately.')
     case_pack=getattr(args,'case_pack',None)
     if case_pack:
         if args.mode!='full' or plan.get('parent') or plan.get('reuse_task'):
@@ -199,6 +214,9 @@ def prepare(args):
     else:
         plan['first_use_contracts'] = {f'{repeat}-{feature}':contract(feature, secrets.token_hex(8))
             for repeat in range(1,plan['repeats']+1) for feature in plan['upgrade_tasks']}
+    if extension_pack:
+        from novel_features import strict_contract
+        plan['first_use_contracts'] = {key: strict_contract(spec) for key, spec in plan['first_use_contracts'].items()}
     if not plan['growth_enabled']:
         plan['scope'] += ' First-only comparison: no second extension requested; complete growth is unmeasured.'
     if args.mode=='outcomes':
@@ -298,6 +316,24 @@ def calibrate(plan, output, cache, study, run_regressions):
                                     'environment': plan['environment'], 'kind': 'generalization-calibration'},
                                    calibration, valid_calibration)
         atomic_json(output / 'calibration-receipt.json', {'cache': receipt, 'result': value})
+    if plan.get('extension_pack'):
+        from novel_calibration import calibrate as calibrate_novel
+        key = {'kind': 'novel-ini-newlines-v1', 'source': plan['source_sha256'],
+               'trusted': plan['trusted_sha256'], 'environment': plan['environment'],
+               'requirements': {'pack': plan['extension_pack'], 'absent': list(__import__('novel_features').FEATURES),
+                                'contracts': plan['contracts']}}
+        def execute_novel():
+            folder = output / ('novel-calibration-' + secrets.token_hex(4))
+            result = calibrate_novel(folder, plan['source'])
+            return {**result, 'evidence': str(folder / 'calibration.json'),
+                    'report_sha256': file_identity(folder / 'calibration.json')}
+        def valid_novel(row):
+            try:
+                return row.get('passed') is True and file_identity(row['evidence']) == row['report_sha256']
+            except (OSError, KeyError, TypeError): return False
+        value, receipt = cache.run(key, execute_novel, valid_novel)
+        atomic_json(output / 'novel-calibration-receipt.json', {'cache': receipt, 'result': value})
+        if not value.get('passed'): raise ValueError('Novel grader calibration failed')
     if plan.get('experiment'):
         # This calibration is tied to the exact copied input, never to a model's
         # claim of readiness. A supplied parent earns no first-upgrade credit.

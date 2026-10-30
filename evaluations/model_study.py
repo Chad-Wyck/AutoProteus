@@ -222,6 +222,18 @@ def _trial(folder, task, source, config, plan, feature=None, earlier=None):
     atomic_json(folder / 'original-task.json', original_task)
     atomic_json(folder / 'task.json', task)
     try:
+        from novel_features import FEATURES
+        if feature and (feature in FEATURES or plan.get('extension_pack')):
+            frozen_input = freeze_source(store, source, 'Novel task input qualification')
+            absent = checks.feature(store, frozen_input, feature)
+            row['input_qualification'] = {'new_feature_absent': bool(not absent['passed'] and
+                absent.get('probe', {}).get('checks', {}).get('registered') is False), 'evidence': absent}
+            if not row['input_qualification']['new_feature_absent']:
+                raise ValueError('Novel task must start without the requested feature; input did not qualify')
+            for required in task.get('required_existing_tools', []):
+                retained_input = checks.feature(store, frozen_input, required)
+                if not retained_input['passed']:
+                    raise ValueError('Novel growth input lost its required parent capability')
         with timings.measure('development_or_basic'):
             row['run'] = run_task(agent, store, config, task, freeze_source(store, source, 'Frozen input'),
                                   max(0, deadline - time.monotonic()), deadline=deadline)
@@ -283,9 +295,17 @@ def _trial(folder, task, source, config, plan, feature=None, earlier=None):
         if feature:
             with timings.measure('independent_grading'):
                 row['review'] = checks.assess(store, source, row['run'], feature, folder / 'review')
-            if task.get('first_use') and not earlier:
+            if task.get('first_use'):
+                if earlier:
+                    frozen = freeze_source(store, candidate_source(store, session), 'Exact cumulative novel candidate')
+                    row['retained'] = checks.feature(store, frozen, earlier)
+                    row['retained_public'] = checks.public(store, frozen, earlier)
+                    files = Artifacts(store, session)
+                    from novel_features import preserved_outputs
+                    row['stage_order_preserved'] = preserved_outputs(files, task.get('preserve', {}))
                 row['first_package_accepted'] = bool(study.verified(row['review']) and row['stages']['submitted']
-                    and time.monotonic()<deadline)
+                    and time.monotonic()<deadline and (not earlier or (row['retained']['passed']
+                        and row['retained_public']['passed'] and row['stage_order_preserved'])))
                 if row['first_package_accepted']:
                     with timings.measure('first_activation_and_use'):
                         row['first_use'] = activation_use.activate(agent, store, session, settings, config,
@@ -297,12 +317,15 @@ def _trial(folder, task, source, config, plan, feature=None, earlier=None):
                     row['first_use'] = {'attempted':False,'passed':False,'reason':'first_package_not_accepted'}
                 row['stages'].update(activated=row['first_use'].get('activated',False),
                     independently_verified=study.verified(row['review']), first_use_passed=row['first_use']['passed'])
+                if earlier:
+                    from novel_features import growth_result
+                    growth_result(row, earlier, feature)
             if row.get('submission_feedback') is not None:
                 repaired = sum(entry['continued'] for entry in row['submission_feedback'])
                 row['public_submission_repairs'] = repaired
                 row['accepted_without_public_repair'] = bool(row['review'].get('accepted') and not repaired)
                 row['accepted_after_public_repair'] = bool(row['review'].get('accepted') and repaired)
-            if earlier:
+            if earlier and not task.get('first_use'):
                 edited = candidate_source(store, session)
                 frozen = freeze_source(store, edited, 'Exact combined candidate')
                 with timings.measure('retention_grading'):
@@ -715,10 +738,20 @@ def _run(args):
                         first = cell(first_id, lambda folder: trial(folder, task, input_source, seeded_config, inputs, feature), seeded_config)
                         if not plan.get('growth_enabled',True):
                             queue.skip(profile['id']+'_'+growth_id, 'Second extension not requested in this first-only comparison')
-                        elif activation_use.eligible_parent(first, plan.get('protocol')):
+                        elif (activation_use.eligible_parent(first, plan.get('protocol')) and
+                              (not plan.get('extension_pack') or first.get('first_use', {}).get('passed'))):
                             saved = queue.latest(profile['id'] + '_' + first_id)
                             source = json.loads((Path(saved['folder']) / 'review/candidate-source.json').read_text())
-                            added, task = growth_task(feature, plan)
+                            from novel_features import FEATURES
+                            if feature in FEATURES or plan.get('extension_pack'):
+                                from novel_features import growth_task as novel_growth_task, saved_outputs
+                                parent_store = Store(Path(saved['folder']) / 'sessions')
+                                parent_session = parent_store.get(first['run']['session'])
+                                spec = plan['first_use_contracts'][f'{repeat}-{feature}']
+                                preserved = saved_outputs(Artifacts(parent_store, parent_session), spec)
+                                added, task = novel_growth_task(feature, plan, spec, preserved)
+                            else:
+                                added, task = growth_task(feature, plan)
                             def second_trial(folder):
                                 row = trial(folder, task, source, seeded_config, inputs, added, feature)
                                 row['chain'] = activation_use.chain_result(first, row, plan.get('protocol'))
@@ -754,6 +787,7 @@ if __name__ == '__main__':
     p.add_argument('--parent-tool', choices=tuple(study.CONTRACTS))
     p.add_argument('--reuse-task', help='JSON task with required_tools and exact artifact checks; reuse only, no upgrade credit')
     p.add_argument('--task-pack', help='Optional independently checked offline tasks replacing the basic-task pack')
+    p.add_argument('--extension-pack', choices=('pilot-6k',), help='Opt-in familiar plus calibrated INI/newline growth chains')
     p.add_argument('--source-pack', help='Inert comparison source JSON; must preserve the common starter tests')
     p.add_argument('--native-instructions-file', help='Host-owned frozen native-format text for controlled comparisons')
     p.add_argument('--case-pack', help='Portable fixed upgrade cases and predeclared seed schedule')

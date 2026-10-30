@@ -98,22 +98,38 @@ def sample_case(name):
 
 
 def verify_feature(store, source, name, deadline=None):
+    from novel_features import FEATURES
+    if name not in (*CONTRACTS, *FEATURES):
+        raise ValueError('Unknown independently graded feature')
+    probe_text = ((ROOT / 'evaluations/novel-probe.py').read_text(encoding='utf-8')
+                  if name in FEATURES else PROBE)
+    result_path = 'novel-result.json' if name in FEATURES else 'heldout-result.json'
     settings = SimpleNamespace(values={**DEFAULTS, 'configured': True, 'provider': 'demo', 'terminal': True}, key=lambda: '')
     agent = IsolatedAgent(ROOT, store, settings, lambda _: benchmark.ScriptedClient([
         {'action': {'tool': 'run_command', 'arguments': {'command': 'python3 heldout_probe.py ' + name}}},
         {'status': 'completed'}]))
     try:
         result = run_task(agent, store, settings.values, {'name': 'independent-' + name, 'task': 'Run the independent checks.',
-            'fixtures': {'heldout_probe.py': PROBE}, 'checks': [{'path': 'heldout-result.json'}]}, source, 120,
+            'fixtures': {'heldout_probe.py': probe_text}, 'checks': [{'path': result_path}]}, source, 120,
             **({'deadline': deadline} if deadline is not None else {}))
-        probe = benchmark.read_artifact(store, store.get(result['session']), 'heldout-result.json')
+        probe = benchmark.read_artifact(store, store.get(result['session']), result_path)
         return {'passed': bool(result['passed'] and probe.get('passed')), 'probe': probe, 'run': result}
     finally:
         agent.close()
 
 
 def verify_public(store, source, name, deadline=None):
-    text, arguments, expected, final = sample_case(name)
+    from novel_features import FEATURES, oracle
+    from activation_use import same_json
+    if name in FEATURES:
+        text = '[DEFAULT]\nx=1\n[猫]\na=café\n[API]\nb=2\n' if name == 'ini_sections' else 'café\r\n猫\rend\n'
+        arguments = {'path': 'sample.txt'}
+        final, expected = oracle(name, 'sample.txt', text.encode('utf-8'))
+        final = final.decode('utf-8')
+    elif name in CONTRACTS:
+        text, arguments, expected, final = sample_case(name)
+    else:
+        raise ValueError('Unknown independently graded feature')
     settings = SimpleNamespace(values={**DEFAULTS, 'configured': True, 'provider': 'demo'}, key=lambda: '')
     agent = IsolatedAgent(ROOT, store, settings, lambda _: benchmark.ScriptedClient([
         {'action': {'tool': name, 'arguments': arguments}}, {'status': 'completed'}]))
@@ -124,7 +140,9 @@ def verify_public(store, source, name, deadline=None):
         events = journal(store, store.get(result['session']))
         value = next((e['data']['result'] for e in events if e['type'] == 'action_result' and
                       e['data']['action']['tool'] == name and e['data']['ok']), {})
-        return {'passed': result['passed'] and all(value.get(key) == item for key, item in expected.items()), 'run': result}
+        correct = (same_json(value, expected) if name in FEATURES else
+                   isinstance(value, dict) and all(value.get(key) == item for key, item in expected.items()))
+        return {'passed': result['passed'] and correct, 'run': result}
     finally:
         agent.close()
 

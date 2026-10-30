@@ -47,7 +47,8 @@ def contract(feature, nonce):
         instruction = ('Use format_json to format ' + path + ' in place. Save exactly its path and bytes '
                        'fields as a JSON object in ' + output + '.')
     else:
-        raise ValueError('Unknown first-use feature')
+        from novel_features import contract as novel_contract
+        return novel_contract(feature, nonce)
     return {'feature':feature, 'input':path, 'output':output, 'fixtures':{path:text},
             'instruction':instruction + ' Check the saved result and finish completed. Do not edit the seed after activation.'}
 
@@ -65,7 +66,8 @@ def expected(spec):
         final = (json.dumps(json.loads(text), ensure_ascii=False, sort_keys=True, indent=2)+'\n').encode('utf-8')
         receipt = {'path':path, 'bytes':len(final)}
     else:
-        raise ValueError('Unknown first-use feature')
+        from novel_features import expected as novel_expected
+        return novel_expected(spec)
     return final, receipt
 
 
@@ -81,6 +83,10 @@ def check_outputs(files, spec):
 
 def grade(files, spec, events, *, source_unchanged, completed, on_time=True, within_budget=True):
     """Score only the post-activation boundary, including the actual fresh call."""
+    if spec.get('strict_use'):
+        from novel_features import grade as novel_grade
+        return novel_grade(files, spec, events, source_unchanged=source_unchanged,
+                           completed=completed, on_time=on_time, within_budget=within_budget)
     output = check_outputs(files, spec)
     _, receipt = expected(spec)
     usage = tool_use(events)
@@ -141,7 +147,7 @@ def oracle_controls(specs):
             'source_changed':grade(files,spec,events,source_unchanged=False,completed=True)['passed'],
             'unfinished':grade(files,spec,events,source_unchanged=True,completed=False)['passed']}
         wrong_type = dict(receipt)
-        key_name = 'truncated' if spec['feature']=='csv_preview' else 'bytes'
+        key_name = 'sections' if spec['feature']=='ini_sections' else 'truncated' if spec['feature']=='csv_preview' else 'bytes'
         wrong_type[key_name] = 1 if key_name=='truncated' else str(wrong_type[key_name])
         typed_files = Files({spec['input']:final, spec['output']:json.dumps(wrong_type).encode()})
         negatives['wrong_json_type'] = grade(typed_files,spec,events,**options)['passed']
@@ -177,7 +183,9 @@ def activate(agent, store, session, settings, config, spec, budget, deadline, wa
     remaining = config['max_steps'] - session['steps']
     if time.monotonic() >= deadline or remaining <= 0 or budget.summary()['exhausted']:
         return {**result, 'reason':'shared_allowance_exhausted'}
-    if any(path in session.get('artifacts', {}) for path in (*spec['fixtures'], spec['output'])):
+    from novel_features import items
+    reserved = [*spec['fixtures'], *(item['output'] for item in items(spec))]
+    if any(path in session.get('artifacts', {}) for path in reserved):
         return {**result, 'reason':'reserved_first_use_files_created_before_activation'}
     source = source_identity(candidate_source(store, session))
     events_path = store.directory(session['id'])/'events.jsonl'
