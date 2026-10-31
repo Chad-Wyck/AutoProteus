@@ -24,6 +24,7 @@ from controller.native import NativeWorker
 from controller.server import Application, make_server
 from controller.storage import Store
 from test_seed import temporary_directory
+from test_linux import process_exited
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -242,11 +243,7 @@ class NativeIntegrationTests(unittest.TestCase):
         self.assertFalse(worker.workspace.exists())
         deadline = time.monotonic() + 3
         while time.monotonic() < deadline:
-            try:
-                state = Path(f'/proc/{pid}/stat').read_text().rsplit(')',1)[1].split()[0]
-            except FileNotFoundError:
-                return
-            if state == 'Z':
+            if process_exited(pid):
                 return
             time.sleep(.05)
         self.fail('Ordinary command child survived Stop')
@@ -269,11 +266,7 @@ class NativeIntegrationTests(unittest.TestCase):
         self.addCleanup(lambda: workspace.rmdir() if workspace.exists() else None)
         deadline = time.monotonic() + 3
         while time.monotonic() < deadline:
-            try:
-                state = Path(f'/proc/{pid}/stat').read_text().rsplit(')',1)[1].split()[0]
-            except FileNotFoundError:
-                return
-            if state == 'Z':
+            if process_exited(pid):
                 return
             time.sleep(.05)
         os.kill(pid, signal.SIGKILL)
