@@ -20,12 +20,60 @@ from controller.errors import IsolationError
 from controller.isolation import vm_command
 from controller.runtime import LocalRuntime
 from controller.storage import atomic_json
+from controller import linux_process
 from test_seed import temporary_directory
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 class LinuxBoundaryTests(unittest.TestCase):
+    def test_group_observation_distinguishes_live_descendants_zombies_and_unrelated_processes(self):
+        with temporary_directory() as directory:
+            root = Path(directory)
+            for pid, state, group in ((1, 'S', 999), (2, 'Z', 1234), (3, 'X', 1234), (4, 'S', 1234)):
+                folder = root / str(pid); folder.mkdir()
+                (folder / 'stat').write_text(f'{pid} (name with ) parentheses) {state} 0 {group} 0')
+            with patch.object(linux_process, 'Path', return_value=root):
+                self.assertTrue(linux_process.group_running(1234))
+                (root / '4/stat').write_text('4 (finished) Z 0 1234 0')
+                self.assertFalse(linux_process.group_running(1234))
+                self.assertTrue(linux_process.group_running(999))
+
+    def test_job_close_waits_for_descendants_after_supervisor_exit(self):
+        job = linux_process.Job()
+        job.descriptor, job.group = 41, 1234
+        remaining = iter((True, True, False))
+        with patch.object(linux_process.signal, 'pidfd_send_signal', create=True) as send, \
+                patch.object(linux_process.select, 'poll', create=True) as poll, \
+                patch.object(linux_process.select, 'POLLIN', 1, create=True), \
+                patch.object(linux_process, 'group_running', create=True,
+                             side_effect=lambda _: next(remaining)) as running, \
+                patch.object(linux_process.time, 'sleep') as pause, \
+                patch.object(linux_process.os, 'close') as close:
+            poll.return_value.poll.return_value = [(41, 1)]
+            job.close()
+        self.assertEqual(running.call_count, 3, 'Supervisor exit alone must not finish cleanup')
+        self.assertEqual(pause.call_count, 2)
+        send.assert_called_once_with(41, signal.SIGTERM)
+        close.assert_called_once_with(41)
+        self.assertIsNone(job.descriptor)
+
+    def test_job_close_reports_a_surviving_group_even_if_supervisor_already_exited(self):
+        job = linux_process.Job()
+        job.descriptor, job.group = 41, 1234
+        with patch.object(linux_process.signal, 'pidfd_send_signal', create=True,
+                          side_effect=ProcessLookupError), \
+                patch.object(linux_process.select, 'poll', create=True) as poll, \
+                patch.object(linux_process.select, 'POLLIN', 1, create=True), \
+                patch.object(linux_process, 'group_running', create=True, return_value=True), \
+                patch.object(linux_process.time, 'monotonic', side_effect=(0, 6)), \
+                patch.object(linux_process.os, 'close') as close:
+            poll.return_value.poll.return_value = [(41, 1)]
+            with self.assertRaisesRegex(TimeoutError, 'process group did not stop'):
+                job.close()
+        close.assert_called_once_with(41)
+        self.assertIsNone(job.descriptor)
+
     def test_kvm_command_preserves_no_sharing_policy_and_seccomp(self):
         appliance = Appliance(ROOT)
         with patch.object(Appliance, 'linux', new_callable=PropertyMock, return_value=True), \

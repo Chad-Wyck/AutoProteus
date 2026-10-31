@@ -263,15 +263,20 @@ class OwnedRuntime:
             self.closed = True
             return
         self.done.set()
+        stopped = False
         try:
             self._stop()
+            stopped = True
+        except Exception as error:
+            self.reason = self.reason or str(error)
+            raise
         finally:
             if self.monitor and self.monitor is not threading.current_thread(): self.monitor.join(timeout=3)
             for log in self.logs: log.close()
             self.closed = True
             atomic_json(self.folder/'cleanup.json', {'finished': now(), 'reason': self.reason,
                 'failure_category': self.failure_category or ('infrastructure' if self.reason else None),
-                'owned_process_stopped': self.process is None or self.process.poll() is not None})
+                'owned_process_stopped': stopped and (self.process is None or self.process.poll() is not None)})
 
 
 class RuntimeOwner:

@@ -54,6 +54,18 @@ def listening(number):
 
 
 class OwnedRuntimeTests(unittest.TestCase):
+    def test_cleanup_failure_does_not_claim_the_owned_process_group_stopped(self):
+        with temporary_directory() as directory:
+            runtime = self.fixture(Path(directory) / 'runtime')
+            runtime.folder.mkdir(); runtime.created = True
+            with patch.object(runtime, '_stop', side_effect=TimeoutError('process group did not stop')):
+                with self.assertRaisesRegex(TimeoutError, 'process group did not stop'):
+                    runtime.close()
+            receipt = json.loads((runtime.folder / 'cleanup.json').read_text())
+            self.assertFalse(receipt['owned_process_stopped'])
+            self.assertEqual(receipt['reason'], 'process group did not stop')
+            self.assertEqual(receipt['failure_category'], 'infrastructure')
+
     def fixture(self, folder, extra=()):
         number = port()
         config = {**DEFAULTS, 'provider':'hosted', 'base_url':f'http://127.0.0.1:{number}/v1',
