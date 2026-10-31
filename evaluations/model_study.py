@@ -208,7 +208,8 @@ def _trial(folder, task, source, config, plan, feature=None, earlier=None):
     if agent.execution.mode != 'vm':
         raise ValueError('Disposable VMs are required')
     started = time.monotonic()
-    deadline = started + (plan['deadline'] if feature or reuse_only else plan['ordinary_deadline'])
+    allowance = plan['deadline'] if feature or reuse_only else plan['ordinary_deadline']
+    deadline = started + allowance
     checks = Checks(folder, plan, deadline=deadline)
     timings = Timings()
     row = {'task': task['name'], 'earlier': earlier, 'added': feature, 'operator_candidate_repairs': [],
@@ -405,7 +406,7 @@ def _trial(folder, task, source, config, plan, feature=None, earlier=None):
         work_finished = time.monotonic()
         with timings.measure('cleanup'):
             agent.close()
-        row['wall_budget'] = {'allowance_seconds': deadline - started,
+        row['wall_budget'] = {'allowance_seconds': allowance,
             'work_seconds': round(work_finished - started, 6), 'deadline_reached': work_finished >= deadline,
             'deadline_overrun_seconds': round(max(0, work_finished - deadline), 6),
             'cleanup_seconds': timings.seconds['cleanup'],

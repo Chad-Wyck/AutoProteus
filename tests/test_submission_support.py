@@ -341,10 +341,11 @@ class SubmissionTrialTests(unittest.TestCase):
                 files.put('harness/arguments.json', base64.b64encode(b'{}').decode())
                 files.checkpoint([*session['artifacts'], 'harness/arguments.json'])
                 session.update(status='completed', steps=2)
-                context.update(store=store, session=session)
+                context.update(store=store, session=session, deadline=kwargs['deadline'])
                 return {'session': session['id'], 'status': 'completed', 'timed_out': False}
             def repair(session, message, **kwargs):
                 self.assertEqual(kwargs.keys(), {'deadline'})  # No activation of unverified edits.
+                self.assertEqual(kwargs['deadline'], context['deadline'])
                 self.assertIn('arguments.json', message)
                 self.assertNotIn('hidden', message.lower())
                 self.assertEqual(agent.settings.values['max_steps'], 1)
@@ -366,6 +367,7 @@ class SubmissionTrialTests(unittest.TestCase):
                  patch.object(runner, 'run_task', side_effect=develop), \
                  patch.object(runner.study, 'wait', side_effect=lambda *args: {'session': context['session']['id'], 'status': 'waiting', 'timed_out': False}), \
                  patch.object(runner.Checks, 'assess', side_effect=assess), \
+                 patch.object(runner.time, 'monotonic', return_value=60.1), \
                  patch.object(runner.study, 'journal', return_value=[]):
                 row = runner.trial(folder, {'name': 'test', 'task': 'Original requirements', 'fixtures': {}},
                                    source, {**DEFAULTS, 'max_steps': 3}, plan, 'sha256_file')
