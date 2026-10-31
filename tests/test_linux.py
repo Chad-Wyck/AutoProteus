@@ -26,7 +26,30 @@ from test_seed import temporary_directory
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def process_exited(pid):
+    try:
+        state = Path(f'/proc/{pid}/stat').read_text().rsplit(')', 1)[1].split()[0]
+    except (FileNotFoundError, ProcessLookupError):
+        return True
+    return state in ('Z', 'X')
+
+
 class LinuxBoundaryTests(unittest.TestCase):
+    def test_exit_observation_handles_disappearance_without_hiding_live_processes_or_read_errors(self):
+        with patch.object(Path, 'read_text') as read:
+            for state in ('S', 'R', 'D'):
+                read.return_value = f'123 (fixture) {state} 0 123 0'
+                self.assertFalse(process_exited(123))
+            for state in ('Z', 'X'):
+                read.return_value = f'123 (fixture) {state} 0 123 0'
+                self.assertTrue(process_exited(123))
+            for error in (FileNotFoundError, ProcessLookupError):
+                read.side_effect = error
+                self.assertTrue(process_exited(123))
+            read.side_effect = PermissionError
+            with self.assertRaises(PermissionError):
+                process_exited(123)
+
     def test_group_observation_distinguishes_live_descendants_zombies_and_unrelated_processes(self):
         with temporary_directory() as directory:
             root = Path(directory)
@@ -212,8 +235,7 @@ class LinuxLifecycleTests(unittest.TestCase):
             # A zombie has exited; init is responsible for reaping adopted children.
             deadline = time.monotonic() + 5
             while time.monotonic() < deadline:
-                path = Path(f'/proc/{int(marker.read_text())}/stat')
-                if not path.exists() or path.read_text().rsplit(')', 1)[1].split()[0] == 'Z':
+                if process_exited(int(marker.read_text())):
                     break
                 time.sleep(.02)
             else:
