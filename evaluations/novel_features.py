@@ -94,10 +94,10 @@ def growth_result(row, earlier, feature):
     row['stages'].update(correct_final_use=use['passed'], explicit_finish=use.get('completed', False))
 
 
-def development_arguments(data, feature, path):
+def development_arguments(data, feature, path, *, wrappers_only=False):
     """Literal argument evidence only; dynamic programs remain unqualified."""
     command = data.get('action', {}).get('arguments', {}).get('command', '')
-    arguments = [row['arguments'] for row in python_invocations(command)
+    arguments = [] if wrappers_only else [row['arguments'] for row in python_invocations(command)
         if row['tool'] == feature and isinstance(row['arguments'], dict) and row['arguments'].get('path') == path
         and row['print_prefixes']]
     try:
@@ -136,15 +136,17 @@ def grade(files, spec, events, *, source_unchanged, completed, on_time=True, wit
             if action.get('tool') == item['feature'] and args.get('path') == item['input']:
                 native |= not any(k in args for k in omitted) and matches(data.get('result'))
             elif action.get('tool') == 'run_command' and data.get('result', {}).get('exit_code') == 0:
-                args_ok = any(not any(k in a for k in omitted) for a in development_arguments(data, item['feature'], item['input']))
-                observed = python_results(data, item['feature'], item['input'])
-                for line in data['result'].get('output', '').splitlines():
-                    try: value = json.loads(line)
-                    except ValueError: continue
-                    if (isinstance(value, dict) and value.get('tool') == item['feature'] and value.get('passed') is True
-                            and value.get('check') in ('candidate tool invocation', 'development tool invocation')):
-                        observed.append(value.get('result'))
-                development |= args_ok and any(matches(value) for value in observed)
+                observed = python_results(data, item['feature'], item['input'], omitted_arguments=omitted)
+                wrapper_ok = any(not any(k in a for k in omitted) for a in
+                    development_arguments(data, item['feature'], item['input'], wrappers_only=True))
+                if wrapper_ok:
+                    for line in data['result'].get('output', '').splitlines():
+                        try: value = json.loads(line)
+                        except ValueError: continue
+                        if (isinstance(value, dict) and value.get('tool') == item['feature'] and value.get('passed') is True
+                                and value.get('check') in ('candidate tool invocation', 'development tool invocation')):
+                            observed.append(value.get('result'))
+                development |= any(matches(value) for value in observed)
         checks.append({'feature': item['feature'], 'artifacts_correct': artifacts,
             'native_default_use': native, 'verified_development_default_use': development,
             'passed': artifacts and (native or development)})

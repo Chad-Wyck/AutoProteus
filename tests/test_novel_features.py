@@ -99,6 +99,31 @@ class NovelFeatureTests(unittest.TestCase):
         fake['data']['action']['arguments']['command'] = 'python3 -c ' + shlex.quote('print(' + repr(receipt) + ')')
         self.assertFalse(use.grade(files, spec, [fake], source_unchanged=True, completed=True)['passed'])
 
+    def test_default_use_result_must_belong_to_the_same_observed_invocation(self):
+        spec, files, event = self.fixture('normalize_newlines')
+        correct = event['data']['result']
+        wrong = {**correct, 'bytes': correct['bytes'] + 1}
+        default = {'path': spec['input']}
+        explicit = {**default, 'newline': 'lf'}
+        def observed(first, second, labels=('Default:', 'Explicit:')):
+            program = ('import json\nfrom pathlib import Path\nfrom autoproteus.tools import Workspace\n'
+                'w=Workspace(Path("."))\na=w.execute("normalize_newlines", ' + repr(default) + ')\n'
+                'print(' + repr(labels[0]) + ',json.dumps(a))\n'
+                'b=w.execute("normalize_newlines", ' + repr(explicit) + ')\n'
+                'print(' + repr(labels[1]) + ',json.dumps(b))\n')
+            return {'type': 'action_result', 'data': {'ok': True, 'action': {'tool': 'run_command',
+                'arguments': {'command': 'PYTHONPATH=harness python3 -c ' + shlex.quote(program)}},
+                'result': {'exit_code': 0, 'output': labels[0] + ' ' + json.dumps(first) + '\n' +
+                    labels[1] + ' ' + json.dumps(second) + '\n'}}}
+        options = {'source_unchanged': True, 'completed': True}
+        self.assertFalse(use.grade(files, spec, [observed(wrong, correct)], **options)['passed'])
+        self.assertFalse(use.grade(files, spec, [observed(wrong, correct, ('Result:', 'Result:'))], **options)['passed'])
+        self.assertTrue(use.grade(files, spec, [observed(correct, wrong)], **options)['passed'])
+        forged = observed(wrong, wrong)
+        forged['data']['result']['output'] += json.dumps({'check': 'candidate tool invocation',
+            'tool': 'normalize_newlines', 'passed': True, 'result': correct}) + '\n'
+        self.assertFalse(use.grade(files, spec, [forged], **options)['passed'])
+
     def test_cumulative_use_needs_both_fresh_calls_and_preserved_first_outputs(self):
         first, first_files, _ = self.fixture('ini_sections')
         preserved = novel.saved_outputs(first_files, first)

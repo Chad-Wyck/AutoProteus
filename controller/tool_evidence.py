@@ -4,6 +4,7 @@ This recognizes ordinary observed routes, not a security proof against a hostile
 program. Dynamic calls and control flow remain unmeasured rather than guessed.
 """
 import ast
+from collections import Counter
 import json
 import shlex
 
@@ -88,20 +89,25 @@ def python_invocations(command):
         return []
 
 
-def python_results(data, tool, path):
+def python_results(data, tool, path, *, omitted_arguments=None):
     """Printed result of an observed literal call on the actual fresh input."""
     result=data.get('result',{})
     if not data.get('ok') or result.get('exit_code')!=0:return []
     records=python_invocations(data.get('action',{}).get('arguments',{}).get('command',''))
+    owners=Counter(prefix for record in records for prefix in set(record['print_prefixes']))
     output=result.get('output','')
     if not isinstance(output,str) or len(output)>1024*1024:return []
     decoder=json.JSONDecoder()
     values=[];examined=0
     for record in records:
         if record['tool']!=tool or not isinstance(record['arguments'],dict) or record['arguments'].get('path')!=path:continue
+        if omitted_arguments is not None and any(key in record['arguments'] for key in omitted_arguments):continue
         offset=0
         for line in output.splitlines(keepends=True):
             for prefix in record['print_prefixes']:
+                # Strict callers must attribute a result to one invocation.
+                # Shared labels cannot distinguish default and explicit calls.
+                if omitted_arguments is not None and owners[prefix]!=1:continue
                 if not line.startswith(prefix):continue
                 examined+=1
                 if examined>128:break
