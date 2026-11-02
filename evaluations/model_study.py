@@ -46,9 +46,15 @@ from owned_runtime import RuntimeOwner
 from model_plan import private, trusted_files, environment, prepare, check, workflow_requirements, growth_feature, calibrate
 
 
-def budget_client(config, **kwargs):
+def budget_client(config, retention=False, **kwargs):
     # Keep the existing local-client seam for experiments and scripted tests.
     from hosted_study import permitted
+    if retention:
+        if (config.get('protocol') != 'native' or config.get('api_format') == 'responses' or
+                urlparse(config['base_url']).hostname not in ('localhost', '127.0.0.1', '::1')):
+            raise ValueError('Retention comparison requires local native chat transport')
+        from retention_client import RetentionModelClient
+        return RetentionModelClient(config, **kwargs)
     return study_client(config, **kwargs) if permitted(config) else BudgetModelClient(config, **kwargs)
 
 
@@ -200,7 +206,8 @@ def _trial(folder, task, source, config, plan, feature=None, earlier=None):
     clients = []
     def factory(values):
         client = budget_client(values, token_budget=budget, observer=recorder,
-                                   native_instructions=plan.get('native_instructions'))
+                                   native_instructions=plan.get('native_instructions'),
+                                   **({'retention': True} if plan.get('treatment') == 'context-retention' else {}))
         clients.append(client)
         return client
     settings = SimpleNamespace(values=config, key=lambda: '')
@@ -716,7 +723,12 @@ def _run(args):
                 features = features[(repeat - 1) % len(features):] + features[:(repeat - 1) % len(features)]
                 for index, feature in enumerate(features):
                     order = list(plan.get('variants', {'baseline': plan['source']}))
-                    if plan.get('experiment') and (repeat + index) % 2 == 0:
+                    declared = plan.get('variant_orders', {}).get(f'{repeat}-{feature}')
+                    if declared is not None:
+                        if sorted(declared) != sorted(order):
+                            raise ValueError('Frozen variant order must include every arm exactly once')
+                        order = list(declared)
+                    elif plan.get('experiment') and (repeat + index) % 2 == 0:
                         order.reverse()
                     for treatment in order:
                         suffix = '_' + treatment if plan.get('experiment') else ''
@@ -740,7 +752,7 @@ def _run(args):
                         if not plan.get('growth_enabled',True):
                             queue.skip(profile['id']+'_'+growth_id, 'Second extension not requested in this first-only comparison')
                         elif (activation_use.eligible_parent(first, plan.get('protocol')) and
-                              (not plan.get('extension_pack') or first.get('first_use', {}).get('passed'))):
+                              (not (plan.get('extension_pack') or plan.get('require_first_use')) or first.get('first_use', {}).get('passed'))):
                             saved = queue.latest(profile['id'] + '_' + first_id)
                             source = json.loads((Path(saved['folder']) / 'review/candidate-source.json').read_text())
                             from novel_features import FEATURES
@@ -790,6 +802,7 @@ if __name__ == '__main__':
     p.add_argument('--task-pack', help='Optional independently checked offline tasks replacing the basic-task pack')
     p.add_argument('--extension-pack', choices=('pilot-6k',), help='Opt-in familiar plus calibrated INI/newline growth chains')
     p.add_argument('--source-pack', help='Inert comparison source JSON; must preserve the common starter tests')
+    p.add_argument('--invoke-tool-file', help='Freeze alternate guest-only development-invoker bytes for a controlled comparison; never executed on the host')
     p.add_argument('--native-instructions-file', help='Host-owned frozen native-format text for controlled comparisons')
     p.add_argument('--case-pack', help='Portable fixed upgrade cases and predeclared seed schedule')
     p.add_argument('--activation-reminder', action='store_true',

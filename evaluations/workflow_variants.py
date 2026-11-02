@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TREATMENTS = ('edit-feedback', 'syntax-feedback', 'masked-history', 'phases', 'staged-inputs',
-              'submission-feedback', 'edit-context', 'verified-lesson', 'final-contract', 'short-guidance', 'source-outline', 'optional-planning')
+              'submission-feedback', 'edit-context', 'verified-lesson', 'final-contract', 'short-guidance', 'source-outline', 'optional-planning', 'context-retention')
 
 SHORT_GUIDANCE = '''Find relevant source, make a small change, then check it.
 For upgrades, follow harness/README.md. Preserve existing tests and add focused tests.
@@ -46,6 +46,9 @@ def variant(source, treatment, keep=8, threshold=512):
     if treatment not in ('baseline', *TREATMENTS):
         raise ValueError('Unknown workflow treatment')
     result = copy.deepcopy(source)
+    if treatment == 'context-retention':
+        from retention_client import variant as retention_variant
+        return retention_variant(source)
     if treatment == 'source-outline':
         from navigation_variant import navigation_variant
         return navigation_variant(source)

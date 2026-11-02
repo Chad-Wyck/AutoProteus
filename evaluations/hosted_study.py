@@ -42,38 +42,45 @@ class Spend:
             self.reserved += value
         return value
 
-    def close(self, reservation, sent, usage):
+    def close(self, reservation, sent, usage, *, pending=False):
         complete = (isinstance(usage, dict) and all(type(usage.get(key)) is int and usage[key] >= 0
                     for key in ('input_tokens', 'output_tokens')))
         sent = bool(sent or complete)
         cost = ((usage['input_tokens'] * 2.5 + usage['output_tokens'] * 10) / 1000000
-                if sent and complete else reservation if sent else 0)
+                if sent and complete else reservation if sent or pending else 0)
         with self.lock:
             self.reserved -= reservation
             self.charged += cost
             self.calls.append({'sent': sent, 'usage': usage if complete else None,
+                'dispatch_uncertain': bool(pending and not sent),
                 'usage_complete': complete, 'conservative_usd': cost})
             atomic_json(self.path, {'limit_usd': self.limit, 'conservative_usd': self.charged,
                 'scope': 'Upper cost estimate, not a billing receipt; cache discounts not subtracted. '
-                         'Unknown sent calls charged the full reserved amount. Input $2.50/M, output $10/M.',
+                         'Unknown sent calls and unsettled dispatches retain the full reservation. Input $2.50/M, output $10/M.',
                 'calls': self.calls})
 
 
 class PaidClient(BudgetModelClient):
     def complete(self, *args, **kwargs):
         reservation = _spend.reserve(self.config)
-        observed = {'sent': False, 'usage': {}}
+        observed = {'sent': False, 'usage': {}, 'started': False, 'transport_finished': False}
+        lock = threading.Lock()
         downstream = self._budget_observer
         def record(event):
-            if event['type'] in ('provider_request', 'provider_response'): observed['sent'] = True
-            if event['type'] == 'call_end': observed['usage'] = event['data'].get('usage', {})
+            with lock:
+                if event['type'] == 'call_start': observed['started'] = True
+                if event['type'] == 'transport_end': observed['transport_finished'] = True
+                if event['type'] in ('provider_request', 'provider_response'): observed['sent'] = True
+                if event['type'] == 'call_end': observed['usage'] = event['data'].get('usage', {})
             if downstream: downstream(event)
         self._budget_observer = record
         try:
             return super().complete(*args, **kwargs)
         finally:
             self._budget_observer = downstream
-            _spend.close(reservation, observed['sent'], observed['usage'])
+            with lock:
+                _spend.close(reservation, observed['sent'], observed['usage'],
+                    pending=observed['started'] and not observed['transport_finished'])
 
 
 def client(config, **kwargs):

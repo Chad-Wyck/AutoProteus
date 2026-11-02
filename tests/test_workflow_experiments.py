@@ -143,6 +143,9 @@ class WorkflowTests(unittest.TestCase):
                     self.assertIn('when useful',revised['GUIDANCE'])
                     self.assertNotIn('Before seed edits, record',revised['GUIDANCE'])
             elif name=='source-outline': self.assertIn('autoproteus/source_navigation.py', after)
+            elif name=='context-retention':
+                self.assertIn('autoproteus/context_retention.py', after)
+                self.assertEqual({key for key in before if before[key] != after[key]}, {'autoproteus/agent.py'})
             else: self.assertIn('autoproteus/workflow_support.py', after)
         self.assertEqual(source_identity(seed_files(ROOT)), fingerprint)
         self.assertEqual(source_identity(source), fingerprint)

@@ -1,6 +1,7 @@
 """Frozen study inputs and independently checked calibration; never starts inference."""
 import json
 import base64
+import hashlib
 import platform
 import secrets
 from pathlib import Path
@@ -19,6 +20,17 @@ from repeatability import SEED_MODES, repeat_config, sampling_record
 import generalization as study
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def development_invoker(path):
+    """Freeze bounded guest-only source as data; never import or execute it."""
+    path = Path(path).resolve()
+    with path.open('rb') as stream:
+        raw = stream.read(65537)
+    if not 1 <= len(raw) <= 65536:
+        raise ValueError('Development invoker must contain 1-65536 UTF-8 bytes')
+    return {'source': raw.decode('utf-8'), 'path': str(path),
+            'sha256': hashlib.sha256(raw).hexdigest()}
 
 
 def private(path):
@@ -47,6 +59,8 @@ def trusted_files():
         'evaluations/study_report.py', 'evaluations/public_verifier.py', 'evaluations/seed_comparison.py',
         'evaluations/outcome_tasks.py', 'evaluations/outcome_study.py',
         'evaluations/invoke_tool.py', 'evaluations/tasks.json')]
+    paths += [ROOT / name for name in ('evaluations/context_retention.py', 'evaluations/retention_client.py',
+                                     'evaluations/development_receipts.py')]
     return {p.relative_to(ROOT).as_posix(): file_identity(p) for p in paths}
 
 
@@ -140,6 +154,11 @@ def prepare(args):
                      'Retries, untested cells, cached checks and infrastructure failures are recorded separately.'}
     if source_path:
         plan['source_pack'] = {'path': str(Path(source_path).resolve()), 'sha256': file_identity(source_path)}
+    invoker_path = getattr(args, 'invoke_tool_file', None)
+    if invoker_path:
+        invoker = development_invoker(invoker_path)
+        plan['invoke_tool'] = invoker.pop('source')
+        plan['development_invoker'] = invoker
     instructions_path = getattr(args, 'native_instructions_file', None)
     if instructions_path:
         instructions = Path(instructions_path).read_text(encoding='utf-8-sig')
@@ -148,6 +167,9 @@ def prepare(args):
         plan['native_instructions'] = instructions
     experiment = getattr(args, 'experiment', None)
     if experiment:
+        if experiment == 'context-retention' and any(p['config']['protocol'] != 'native' or
+                p['config'].get('api_format') == 'responses' for p in profiles):
+            raise ValueError('Context-retention study requires native chat transport in both arms')
         if args.mode != 'full':
             raise ValueError('Paired workflow experiments require full mode')
         plan['experiment'] = experiment
@@ -219,6 +241,19 @@ def prepare(args):
         plan['first_use_contracts'] = {key: strict_contract(spec) for key, spec in plan['first_use_contracts'].items()}
     if not plan['growth_enabled']:
         plan['scope'] += ' First-only comparison: no second extension requested; complete growth is unmeasured.'
+    if experiment == 'context-retention':
+        plan['require_first_use'] = True
+        plan['scope'] = plan['scope'].replace(
+            'First-use failures permit labelled diagnostics from the frozen verified parent, never complete-chain credit.',
+            'Second extensions require an accepted first package and successful fresh use; no failed-first-use diagnostics.')
+        plan['variant_orders'] = {f'{repeat}-{feature}':
+            (['baseline', experiment] if (repeat + index) % 2 else [experiment, 'baseline'])
+            for repeat in range(1, plan['repeats'] + 1) for index, feature in enumerate(plan['upgrade_tasks'])}
+        plan['context_retention'] = {'policy': 'provider-usage anchor at seed and native wire boundaries',
+            'requires_exact_neutral_receipt': True, 'fallback': 'existing two-byte estimate',
+            'concise_handoff': 'unchanged; changed handoffs cannot anchor the larger seed view',
+            'defaults_changed': False, 'paired_order': 'counterbalanced per feature and repeat',
+            'ordinary_prerequisites': 'common baseline screen; not a separate candidate ordinary-task qualification'}
     if args.mode=='outcomes':
         plan['protocol']='outcome-choice-v1'
         if plan['repeats']>20:raise ValueError('Outcome studies support at most twenty repeats per plan')

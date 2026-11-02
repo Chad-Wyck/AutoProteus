@@ -4,6 +4,17 @@ Versions use `major.minor.patch`. Before launch, `0.x.0` introduces features and
 `0.x.y` contains bug fixes. Components can exceed 9 or 99. Historical `0.0.x`
 release and experiment labels remain unchanged.
 
+## 0.16.1
+
+- Preserve conservative token and spending reservations when a cancelled or timed
+  out request can still dispatch; keep late events attached to the original call.
+- Add opt-in provider-usage context retention and read-only context auditing for
+  frozen local studies. Keep the default context policy unchanged: the closed
+  Qwen comparison completed 3/4 baseline chains versus 2/4 retention chains.
+- Preserve the experimental development receipt cue as an inert source builder,
+  with explicitly frozen per-arm helpers, rather than changing normal receipts.
+- Publish preparation, validation and closed findings for these experiments.
+
 ## 0.16.0
 
 - Add host-side OpenAI Responses API transport, including low reasoning effort,
