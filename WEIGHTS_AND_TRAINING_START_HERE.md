@@ -72,5 +72,6 @@ The [source manifest](docs/weights-and-training/SOURCE-MANIFEST.json) records th
 copied files and the private reports used for the public summary.
 See [AUDIT.md](docs/weights-and-training/AUDIT.md) before publication.
 
-Prepared locally on November 4, 2026. A local Git branch is not a GitHub
-publication; publication is pending owner approval.
+Prepared on November 4, 2026. The owner approved publication to the existing
+public AutoProteus repository. This file does not grant permission for live
+experiments or redistribution of model assets.

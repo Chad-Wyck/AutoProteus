@@ -3,8 +3,9 @@
 **No demonstrated downstream improvement:** the most recent completed
 frontier/Builder-authored teacher intervention tied its untouched control on
 four synthetic tasks and used more tokens. Its real-student comparison was
-not run. A newer focused continuation was running at the source snapshot;
-no outcome is inferred from its preparation or partial progress.
+not run. The newer focused continuation subsequently stopped because its
+conditional probes found no consistent surrogate effect. No downstream student
+inference ran in that continuation.
 
 The local teacher is Qwen3.5-4B Q8_0; the real student is Qwen3.5-0.8B.
 4B and 0.4B are illustrative sizes for future tests. No 0.4B model was tested
@@ -26,7 +27,7 @@ self-improvement.
 | Sole layer-26 teacher patch, completed bounded screen | Completed: untouched 4/4, edited 4/4; 2,019 vs 7,751 sampled tokens | No completion gain; untouched at ceiling. Spending gate stopped subsequent stages |
 | Behavioral confirmation, ordinary preservation and real 0.8B comparison for that layer-26 patch | UNRUN | Missing outcomes, not zero scores and not successful gates |
 | Focused one-channel study, initial attempt and strict-policy continuation | Interrupted: 2 attempted responses, 0 completed; 128 charged/uncertain tokens; no patch or student inference | Infrastructure/ownership incomplete, not scored model failures; one rejection captured background Compute activity |
-| Memory-availability continuation, publication 005 | IN PROGRESS at source inspection on November 4, 2026; new runner/start records present | Active work deliberately untouched. No completed result is claimed here |
+| Memory-availability continuation, publication 005 | Final receipt observed at 23:08 UTC: `conditional_support_stop`; no consistent conditional surrogate effect; no replacement channels/doses; no student inference | Local receipt reports owned workers/VMs closed and originals unchanged. This is a probe-selection stop, not a student-improvement result; final independent review is not established here |
 | Proposed 5% background-load tolerance | Assessment only; superseded before use | Not an applied policy or inference result |
 
 The completed layer-26 patch halved 16 canonical BF16 FFN down-projection
@@ -60,6 +61,14 @@ the real artifacts or regrade private responses. Reported historical scores and
 independent-review findings are attributed to those local records. Private raw
 evidence and hidden cases are excluded, so another user must run a new independent
 comparison rather than claim byte-for-byte historical result verification.
+
+Prepublication update: publication 005's RESULT.json and host-closure receipt
+became available after the original report snapshot. Their hashes are recorded
+separately in SOURCE-MANIFEST.json; their raw contents are not distributed.
+The result records 16,384 sampled untouched-development tokens plus 128 inherited
+charged/uncertain tokens, for 16,512 charged tokens. No completed downstream
+student comparison follows from that expenditure. This update reads the receipts
+without rerunning the study or claiming an independent scientific result audit.
 
 Upstream provenance: [Sparks of Weight-Space Programming](https://rikiyat.github.io/blog/weight-space-programming/)
 and [Experiment 8 pinned at 4d09ba6d6a7e891dd8063974dfe81b3d78e3494f](https://github.com/RikiyaT/lm_understand-logs/tree/4d09ba6d6a7e891dd8063974dfe81b3d78e3494f/exp8_math).

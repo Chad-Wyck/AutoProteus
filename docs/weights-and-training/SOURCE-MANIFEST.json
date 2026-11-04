@@ -839,5 +839,18 @@
       "included": false
     }
   ],
-  "packaged_hash_semantics": "SHA-256 of delivered files with LF line endings, matching repository .gitattributes. sha256/bytes retain original source bytes."
+  "packaged_hash_semantics": "SHA-256 of delivered files with LF line endings, matching repository .gitattributes. sha256/bytes retain original source bytes.",
+  "prepublication_receipt_observation_utc": "2026-11-04T23:08:00Z",
+  "private_result_receipts_not_distributed": [
+    {
+      "path": ".data/apwt-neuron-focus-20261104-005/RESULT.json",
+      "sha256": "3f358be0dde743dfff95d6bc099e51c93786dab75afc64cfe01d4492b21c4a6b",
+      "included": false
+    },
+    {
+      "path": ".data/apwt-neuron-focus-20261104-005/HOST-CLOSURE-AUDIT.json",
+      "sha256": "21e9e33113934b3ee00e4ddbb5bd1642a7ca297f7ef304a10b4fd51dafc09054",
+      "included": false
+    }
+  ]
 }
