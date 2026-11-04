@@ -1,0 +1,24 @@
+{
+  "date_utc": "2026-11-04",
+  "command": "python -B tools/wt_cpu_checks.py",
+  "python": "3.11.15",
+  "dependencies": {"numpy": "2.4.6", "safetensors": "0.8.0", "PyYAML": "6.0.3"},
+  "environment": "new isolated venv, offline installation from existing local wheels",
+  "discovered": 255,
+  "passed": 251,
+  "skipped": 4,
+  "failures": 0,
+  "errors": 0,
+  "dependency_check": "No broken requirements found",
+  "skip_reasons": [
+    "Private pinned codec manifest not distributed",
+    "Private frozen ownership source not distributed",
+    "Private frozen schema brief not distributed",
+    "Private frozen fresh-gate brief not distributed"
+  ],
+  "model_downloads": 0,
+  "model_loads": 0,
+  "gpu_inference": 0,
+  "vm_boots": 0,
+  "new_scientific_results": false
+}

@@ -30,7 +30,17 @@ def atomic(path, value):
         with temporary.open('w', encoding='utf-8', newline='\n') as stream:
             json.dump(value, stream, ensure_ascii=False, indent=2, allow_nan=False)
             stream.flush(); os.fsync(stream.fileno())
-        os.replace(temporary, path)
+        # Windows readers/antivirus may briefly hold the destination without
+        # delete sharing. Retain the complete old file and retry only this
+        # publication, never the operation that produced its contents.
+        for attempt in range(20):
+            try:
+                os.replace(temporary, path)
+                break
+            except PermissionError as error:
+                if getattr(error, 'winerror', None) not in (5, 32, 33) or attempt == 19:
+                    raise
+                time.sleep(.05)
     finally:
         temporary.unlink(missing_ok=True)
 

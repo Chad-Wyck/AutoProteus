@@ -1,0 +1,843 @@
+{
+  "snapshot_utc": "2026-11-04T22:57:49.537609+00:00",
+  "base_commit": "541b93326a9f8d65a9d5cccbfe7ad8dd0893785c",
+  "method": "Read-only source copy to independent clone; hashes verified before/after each copy. No runtime directories or model files copied.",
+  "files": [
+    {
+      "path": "controller/appliance.py",
+      "bytes": 13274,
+      "sha256": "3b01a8fe27dd450d7a316a9b6b188eac0d111259c076784352bb35afd849e691",
+      "packaged_sha256": "3b01a8fe27dd450d7a316a9b6b188eac0d111259c076784352bb35afd849e691",
+      "packaged_bytes": 13274
+    },
+    {
+      "path": "controller/isolation.py",
+      "bytes": 38651,
+      "sha256": "7e49c2c7c0cbc1f2225017ce7fca44d2a56f62af813e53ad0aeb98fa8cc108cf",
+      "packaged_sha256": "7e49c2c7c0cbc1f2225017ce7fca44d2a56f62af813e53ad0aeb98fa8cc108cf",
+      "packaged_bytes": 38651
+    },
+    {
+      "path": "controller/transport.py",
+      "bytes": 3842,
+      "sha256": "e2c48e20be10acc49424632c0aea38dace790b1774530e97f38b2b2879bc8483",
+      "packaged_sha256": "e2c48e20be10acc49424632c0aea38dace790b1774530e97f38b2b2879bc8483",
+      "packaged_bytes": 3842
+    },
+    {
+      "path": "controller/vm_lease.py",
+      "bytes": 2514,
+      "sha256": "1ffaf608c9f1cf823cd23579fca80c4f5be739b34e9fa482c9f6685a7c47b5c2",
+      "packaged_sha256": "1ffaf608c9f1cf823cd23579fca80c4f5be739b34e9fa482c9f6685a7c47b5c2",
+      "packaged_bytes": 2514
+    },
+    {
+      "path": "controller/windows_job.py",
+      "bytes": 2815,
+      "sha256": "68d67a3ad0c613f383cddfc3d217e33d104901eeda7e872bb22d1ea7138bbc2b",
+      "packaged_sha256": "68d67a3ad0c613f383cddfc3d217e33d104901eeda7e872bb22d1ea7138bbc2b",
+      "packaged_bytes": 2815
+    },
+    {
+      "path": "evaluations/lora6k.py",
+      "bytes": 8565,
+      "sha256": "9495bed11f8e65e09dd7d888a042d5d4dc0c5d5bc8fab5218e21ee429bf4bf06",
+      "packaged_sha256": "9495bed11f8e65e09dd7d888a042d5d4dc0c5d5bc8fab5218e21ee429bf4bf06",
+      "packaged_bytes": 8565
+    },
+    {
+      "path": "evaluations/lora6k_state.py",
+      "bytes": 15165,
+      "sha256": "fdeb97f1f13011c401527cc18a60d3ca1a5bf44dce38145a57e88a457463970d",
+      "packaged_sha256": "fdeb97f1f13011c401527cc18a60d3ca1a5bf44dce38145a57e88a457463970d",
+      "packaged_bytes": 15165
+    },
+    {
+      "path": "evaluations/lora6k_supervisor.py",
+      "bytes": 14169,
+      "sha256": "1eaf8e9f4951b8b07f1776f05048c00fb070d3b6a2ea7b665636a223a03505b6",
+      "packaged_sha256": "1eaf8e9f4951b8b07f1776f05048c00fb070d3b6a2ea7b665636a223a03505b6",
+      "packaged_bytes": 14169
+    },
+    {
+      "path": "evaluations/memory_availability_policy.py",
+      "bytes": 6400,
+      "sha256": "959ba1f10afe3885b68778f01d467350b140f2e2428b8893ec5a33a034b4abbc",
+      "packaged_sha256": "959ba1f10afe3885b68778f01d467350b140f2e2428b8893ec5a33a034b4abbc",
+      "packaged_bytes": 6400
+    },
+    {
+      "path": "evaluations/neuron_focus.py",
+      "bytes": 32414,
+      "sha256": "b00d7099e667523db5a3057896d6cdc8fe5d6cbdc5eb4a81c9ce4d12ebee970c",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "5d422ff2927b2ef08f24359a6286adf7a2722aefd8249a29e7bd273a426f9caf",
+      "packaged_bytes": 32401
+    },
+    {
+      "path": "evaluations/neuron_focus_continue.py",
+      "bytes": 8938,
+      "sha256": "e2f6ef75463ff8b415c0d5f634587bdf078e1cb6974fb4eabd5085f26752cbe6",
+      "packaged_sha256": "e2f6ef75463ff8b415c0d5f634587bdf078e1cb6974fb4eabd5085f26752cbe6",
+      "packaged_bytes": 8938
+    },
+    {
+      "path": "evaluations/neuron_focus_contract.py",
+      "bytes": 11960,
+      "sha256": "4596c3ea4d7beee77045b682089a5c2cafc167ae4776d569005dce344097ac78",
+      "packaged_sha256": "4596c3ea4d7beee77045b682089a5c2cafc167ae4776d569005dce344097ac78",
+      "packaged_bytes": 11960
+    },
+    {
+      "path": "evaluations/neuron_focus_generate_worker.py",
+      "bytes": 296,
+      "sha256": "bb17a6fb4bd508801ef33ba4d3bcff898696f76c742edbac219648158f11f4d2",
+      "packaged_sha256": "bb17a6fb4bd508801ef33ba4d3bcff898696f76c742edbac219648158f11f4d2",
+      "packaged_bytes": 296
+    },
+    {
+      "path": "evaluations/neuron_focus_memory_continue.py",
+      "bytes": 9737,
+      "sha256": "f611e5ad04a86f8900cda6e453392f4d7ed829ee23a141596dfca6a599293929",
+      "packaged_sha256": "f611e5ad04a86f8900cda6e453392f4d7ed829ee23a141596dfca6a599293929",
+      "packaged_bytes": 9737
+    },
+    {
+      "path": "evaluations/neuron_focus_worker.py",
+      "bytes": 4734,
+      "sha256": "dc0834e3fdc425e9671a9456f8ef9c45ec48aab74af31fb095bed66f34720be0",
+      "packaged_sha256": "dc0834e3fdc425e9671a9456f8ef9c45ec48aab74af31fb095bed66f34720be0",
+      "packaged_bytes": 4734
+    },
+    {
+      "path": "evaluations/tensor_workspace_code_diagnostic.py",
+      "bytes": 16317,
+      "sha256": "e322cbe07ffc8641c427673e2cdcfd48a087e573f3ee174c013b79ea0becad48",
+      "packaged_sha256": "e322cbe07ffc8641c427673e2cdcfd48a087e573f3ee174c013b79ea0becad48",
+      "packaged_bytes": 16317
+    },
+    {
+      "path": "evaluations/tensor_workspace_contract.py",
+      "bytes": 7283,
+      "sha256": "23ba6fceeb2c75a1c1f86591a8c620f4af8136d7884bd698eaa48ff5749a0a32",
+      "packaged_sha256": "23ba6fceeb2c75a1c1f86591a8c620f4af8136d7884bd698eaa48ff5749a0a32",
+      "packaged_bytes": 7283
+    },
+    {
+      "path": "evaluations/tensor_workspace_development.py",
+      "bytes": 7422,
+      "sha256": "4fb0224a3770a0b5cb7095071219e838eb9770efba0be6cf49997ac098786b38",
+      "packaged_sha256": "4fb0224a3770a0b5cb7095071219e838eb9770efba0be6cf49997ac098786b38",
+      "packaged_bytes": 7422
+    },
+    {
+      "path": "evaluations/tensor_workspace_diagnostic_report.py",
+      "bytes": 11465,
+      "sha256": "a877cc5f5d824e02045ce7fc63b60b0776c7cb2827cd0d82b7f13308741422b5",
+      "packaged_sha256": "a877cc5f5d824e02045ce7fc63b60b0776c7cb2827cd0d82b7f13308741422b5",
+      "packaged_bytes": 11465
+    },
+    {
+      "path": "evaluations/tensor_workspace_errors.py",
+      "bytes": 236,
+      "sha256": "7b46f9300a2109ac9045b63677c43751aa9596c72e3afecc15491c8775952ffe",
+      "packaged_sha256": "7b46f9300a2109ac9045b63677c43751aa9596c72e3afecc15491c8775952ffe",
+      "packaged_bytes": 236
+    },
+    {
+      "path": "evaluations/tensor_workspace_feedback.py",
+      "bytes": 1741,
+      "sha256": "9053f0765e75b507e6dfe8fa6fd86793e5519c68ea3934520570353627b87fa6",
+      "packaged_sha256": "9053f0765e75b507e6dfe8fa6fd86793e5519c68ea3934520570353627b87fa6",
+      "packaged_bytes": 1741
+    },
+    {
+      "path": "evaluations/tensor_workspace_fresh_gate.py",
+      "bytes": 23237,
+      "sha256": "468a77a3d15e1428cf180a823b49c3c160d2692f0c7d3bc696ac4c062f5a03e1",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "2d39279f7b6096eb92993f0cbd6dc5918bfbd4e080741b1562b111b0de509997",
+      "packaged_bytes": 23225
+    },
+    {
+      "path": "evaluations/tensor_workspace_guest.py",
+      "bytes": 7195,
+      "sha256": "4006b30b0a2ef1cf8c274ec2302ef851720015498f680ab302557f91547f0a16",
+      "packaged_sha256": "4006b30b0a2ef1cf8c274ec2302ef851720015498f680ab302557f91547f0a16",
+      "packaged_bytes": 7195
+    },
+    {
+      "path": "evaluations/tensor_workspace_image.py",
+      "bytes": 4597,
+      "sha256": "438a4f91d25740279994d81579fc8c0957b235f21bee943bb6d1079ca3f7396d",
+      "packaged_sha256": "438a4f91d25740279994d81579fc8c0957b235f21bee943bb6d1079ca3f7396d",
+      "packaged_bytes": 4597
+    },
+    {
+      "path": "evaluations/tensor_workspace_intermediates.py",
+      "bytes": 11061,
+      "sha256": "92e7fa446505ade3aa5b954d39e05eabb48a356a941e441d6bb5c4c52c00349e",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "92f16fa3b0e27f6c7b9c0f1e67568c8e0692495099c470aee162947ecae75b26",
+      "packaged_bytes": 11062
+    },
+    {
+      "path": "evaluations/tensor_workspace_neutral_selection.py",
+      "bytes": 22437,
+      "sha256": "cfc45f90e76f3cedcbc9f845d9791d28718b4bd197f3af73399c27d11e35eac7",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "60af3f3ef29a61c00d0b6bcd88df8eac0b3a4f409b75d9b8e1700e5e17e4a704",
+      "packaged_bytes": 22425
+    },
+    {
+      "path": "evaluations/tensor_workspace_overnight.py",
+      "bytes": 40294,
+      "sha256": "96a1af2d57a4fc46cbf0e7d4c47a1bedc3e613d60aa3f5f2e20074f37d7b5187",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "fb26050aac2fbc89a5ffd5b5b52bc372b6653d935468c7dab61791d443bfc2df",
+      "packaged_bytes": 40221
+    },
+    {
+      "path": "evaluations/tensor_workspace_policy.py",
+      "bytes": 13536,
+      "sha256": "5453ff732b1e5ca47d00d0725bcb3dac87f3426d3239ec489ca41178fd345cd1",
+      "packaged_sha256": "5453ff732b1e5ca47d00d0725bcb3dac87f3426d3239ec489ca41178fd345cd1",
+      "packaged_bytes": 13536
+    },
+    {
+      "path": "evaluations/tensor_workspace_precision.py",
+      "bytes": 7880,
+      "sha256": "6bf3fa4fba18bf36b3415b11e10357d4c398f4d3eed2e7e19badd29d3e28c401",
+      "packaged_sha256": "6bf3fa4fba18bf36b3415b11e10357d4c398f4d3eed2e7e19badd29d3e28c401",
+      "packaged_bytes": 7880
+    },
+    {
+      "path": "evaluations/tensor_workspace_preflight.py",
+      "bytes": 3880,
+      "sha256": "eff315d5b9f1d3d3defd1dd6fdfddeffeb73dfa62a150cbcf2aa5ecf1b203705",
+      "packaged_sha256": "eff315d5b9f1d3d3defd1dd6fdfddeffeb73dfa62a150cbcf2aa5ecf1b203705",
+      "packaged_bytes": 3880
+    },
+    {
+      "path": "evaluations/tensor_workspace_prepare.py",
+      "bytes": 13293,
+      "sha256": "4e7eddccc5ee55b7dbc5b3a2cd20fda13cd493aa2a4d88c3ee5638815ef67a18",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "8cd35094d0a6ecc08dfc1f478e5e74268d26889c44f74db8583b1ff77880d6cc",
+      "packaged_bytes": 13295
+    },
+    {
+      "path": "evaluations/tensor_workspace_qualification.py",
+      "bytes": 6490,
+      "sha256": "f333de2058336d17a96fc6b80b406b460037d65124014b23a4d90f8954555d2a",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "002ab6063e560fd1488231cd6e277762a16b827c99ec9c11eff40d052be89695",
+      "packaged_bytes": 6491
+    },
+    {
+      "path": "evaluations/tensor_workspace_recovery_standalone.py",
+      "bytes": 16752,
+      "sha256": "1eeee3352457cad251bc1ea7be7ac1a148365bb43146e957d78bc776afb9190b",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "a2a51c7f8b78f304e4fc575502a7c409f658b7a2267b8ca2ac560a579644ea13",
+      "packaged_bytes": 16740
+    },
+    {
+      "path": "evaluations/tensor_workspace_report.py",
+      "bytes": 4967,
+      "sha256": "522d9621b382cdc838af7647443e5cc4fb1f573ca7a03f66cd90a1a56da6935a",
+      "packaged_sha256": "522d9621b382cdc838af7647443e5cc4fb1f573ca7a03f66cd90a1a56da6935a",
+      "packaged_bytes": 4967
+    },
+    {
+      "path": "evaluations/tensor_workspace_resume.py",
+      "bytes": 21627,
+      "sha256": "d01836e8b3e18c56de6daf09d8e406ca9c7f52c757d86f22b5bc99a3d191d385",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "68e585b4ebae1ba6b410831393497af03a323c04be7ff981431d72d7a7c81740",
+      "packaged_bytes": 21628
+    },
+    {
+      "path": "evaluations/tensor_workspace_schema_comparison.py",
+      "bytes": 14886,
+      "sha256": "fe27615deac1cdd8e6ea8f25189fb1eb8403f5df66cbdefec7e6ee5151211e2f",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "4d4df52efea5310fccf7dd2d2a36bbbd769fd654c506effefd482c8333022ca1",
+      "packaged_bytes": 14874
+    },
+    {
+      "path": "evaluations/tensor_workspace_study.py",
+      "bytes": 24751,
+      "sha256": "5ec1c735230c74ee8b1eab65b494003377d8595fabb7eae2f66ba79f6ce73ce9",
+      "packaged_sha256": "5ec1c735230c74ee8b1eab65b494003377d8595fabb7eae2f66ba79f6ce73ce9",
+      "packaged_bytes": 24751
+    },
+    {
+      "path": "evaluations/tensor_workspace_teacher_localize.py",
+      "bytes": 3731,
+      "sha256": "637026abef4f5a85f6ed8c03b0e3029ecf00fa987d7e7410157ef77e73f7b1fc",
+      "packaged_sha256": "637026abef4f5a85f6ed8c03b0e3029ecf00fa987d7e7410157ef77e73f7b1fc",
+      "packaged_bytes": 3731
+    },
+    {
+      "path": "evaluations/tensor_workspace_teacher_stage.py",
+      "bytes": 46823,
+      "sha256": "c82aea43571dd30cd0e151d0314b435bddae3085fcc6afbf1c95b6b43bd3d04c",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "ba4ce05c625d48c6576a2193421f80976edd11f188f9e41d35f1f482d5120c45",
+      "packaged_bytes": 46799
+    },
+    {
+      "path": "evaluations/tensor_workspace_thinking_comparison.py",
+      "bytes": 12739,
+      "sha256": "8f3a717affe26e76beee76e82bb637bcea813122f38dfdb8d7752a1b12131a79",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "0ebafafbc788f8c047d97bc9c2ec96ffa89ebaf384a02181ef9a843e75c2c08a",
+      "packaged_bytes": 12727
+    },
+    {
+      "path": "evaluations/tensor_workspace_vm.py",
+      "bytes": 8888,
+      "sha256": "156fe01fa9472001196bcabdf25ec122e7aba56ae0a3d53456baee4a73278271",
+      "packaged_sha256": "156fe01fa9472001196bcabdf25ec122e7aba56ae0a3d53456baee4a73278271",
+      "packaged_bytes": 8888
+    },
+    {
+      "path": "evaluations/tensor_workspace_vm_startup.py",
+      "bytes": 4168,
+      "sha256": "8d84ff8ada4f55dc0fe53ec168f7a6bbcb2d1ef0619814a3054c3676667530d4",
+      "packaged_sha256": "8d84ff8ada4f55dc0fe53ec168f7a6bbcb2d1ef0619814a3054c3676667530d4",
+      "packaged_bytes": 4168
+    },
+    {
+      "path": "evaluations/tensor_workspace_worker.py",
+      "bytes": 5550,
+      "sha256": "65ef6c31259e82e6c527b325434479d98f49043498884e105531a9fba827a38b",
+      "packaged_sha256": "65ef6c31259e82e6c527b325434479d98f49043498884e105531a9fba827a38b",
+      "packaged_bytes": 5550
+    },
+    {
+      "path": "evaluations/weight_editor_4b_patch.py",
+      "bytes": 5452,
+      "sha256": "80e5f3af354e27808976df486636071986cffc3bed6e302c30189eede34f6269",
+      "packaged_sha256": "80e5f3af354e27808976df486636071986cffc3bed6e302c30189eede34f6269",
+      "packaged_bytes": 5452
+    },
+    {
+      "path": "evaluations/weight_editor_artifacts.py",
+      "bytes": 4665,
+      "sha256": "8b7ed795d049f6db35734caad4af0c2b7a82ac04eaf16e148f55c529730ae1f7",
+      "packaged_sha256": "8b7ed795d049f6db35734caad4af0c2b7a82ac04eaf16e148f55c529730ae1f7",
+      "packaged_bytes": 4665
+    },
+    {
+      "path": "evaluations/weight_editor_drift.py",
+      "bytes": 1995,
+      "sha256": "e1826f69b70d2cf28c59840f4d60cf8e8ae0e567448261186500adb6f3112347",
+      "packaged_sha256": "e1826f69b70d2cf28c59840f4d60cf8e8ae0e567448261186500adb6f3112347",
+      "packaged_bytes": 1995
+    },
+    {
+      "path": "evaluations/weight_editor_feedback.py",
+      "bytes": 6567,
+      "sha256": "f21dca0b8df01da85f8fef0aaa7ac2628394aace68c97b37297544b970f247f7",
+      "packaged_sha256": "f21dca0b8df01da85f8fef0aaa7ac2628394aace68c97b37297544b970f247f7",
+      "packaged_bytes": 6567
+    },
+    {
+      "path": "evaluations/weight_editor_feedback_worker.py",
+      "bytes": 4909,
+      "sha256": "f67794d1cc944e13a4979fd637088dc3e40ca2178da891c18d8168a5210c1cf8",
+      "packaged_sha256": "f67794d1cc944e13a4979fd637088dc3e40ca2178da891c18d8168a5210c1cf8",
+      "packaged_bytes": 4909
+    },
+    {
+      "path": "evaluations/weight_editor_format.py",
+      "bytes": 1365,
+      "sha256": "0da78c1ce1f6fde5ba48d571fa059607f2edfd7997c58ed25ffad6469589c28a",
+      "packaged_sha256": "0da78c1ce1f6fde5ba48d571fa059607f2edfd7997c58ed25ffad6469589c28a",
+      "packaged_bytes": 1365
+    },
+    {
+      "path": "evaluations/weight_editor_loop_gate.py",
+      "bytes": 2313,
+      "sha256": "cc5453222d6508209bfbb4943f71f68bf0359ca391481d6fb888652d4f31e4e8",
+      "packaged_sha256": "cc5453222d6508209bfbb4943f71f68bf0359ca391481d6fb888652d4f31e4e8",
+      "packaged_bytes": 2313
+    },
+    {
+      "path": "evaluations/weight_editor_manual.py",
+      "bytes": 5323,
+      "sha256": "f70346ced82142d45a638a9c57b364aa322f808329ce3ef957363abd24953019",
+      "packaged_sha256": "f70346ced82142d45a638a9c57b364aa322f808329ce3ef957363abd24953019",
+      "packaged_bytes": 5323
+    },
+    {
+      "path": "evaluations/weight_editor_native.py",
+      "bytes": 12208,
+      "sha256": "33f04766660fd6f517f96a90e690bd294499babd777bb2af570a4880ec4dbac0",
+      "packaged_sha256": "d3df528188690c90edd3cb28201f125621a2b6e273a0e644734766e598f16f24",
+      "packaged_bytes": 11994
+    },
+    {
+      "path": "evaluations/weight_editor_owned.py",
+      "bytes": 12069,
+      "sha256": "8de80d0f39fc2c312a7f1573fe6b799cb17207861be33e49886933a4bc524d64",
+      "packaged_sha256": "8de80d0f39fc2c312a7f1573fe6b799cb17207861be33e49886933a4bc524d64",
+      "packaged_bytes": 12069
+    },
+    {
+      "path": "evaluations/weight_editor_pair.py",
+      "bytes": 4178,
+      "sha256": "5f9b2f41f244527abd12de1e499bea6d63ff5a442ac5553b1178a9e5f09082cf",
+      "packaged_sha256": "5f9b2f41f244527abd12de1e499bea6d63ff5a442ac5553b1178a9e5f09082cf",
+      "packaged_bytes": 4178
+    },
+    {
+      "path": "evaluations/weight_editor_prepare.py",
+      "bytes": 14018,
+      "sha256": "cca2128d20f7f8ee57daeeefe3b78a2da04afd84497f16ef92c1ff229d9a0fc2",
+      "packaged_sha256": "cca2128d20f7f8ee57daeeefe3b78a2da04afd84497f16ef92c1ff229d9a0fc2",
+      "packaged_bytes": 14018
+    },
+    {
+      "path": "evaluations/weight_editor_projection.py",
+      "bytes": 5635,
+      "sha256": "9908d193966e4e575269c00ac0e025aca8e729500b3d90faa7295fa8abceb0ca",
+      "packaged_sha256": "9908d193966e4e575269c00ac0e025aca8e729500b3d90faa7295fa8abceb0ca",
+      "packaged_bytes": 5635
+    },
+    {
+      "path": "evaluations/weight_editor_q8_boost.py",
+      "bytes": 3724,
+      "sha256": "afdb36046109e9ea90a771c54fbe7c4897e4b8ec9ebc2ac4c1ca7e808eb6150e",
+      "packaged_sha256": "afdb36046109e9ea90a771c54fbe7c4897e4b8ec9ebc2ac4c1ca7e808eb6150e",
+      "packaged_bytes": 3724
+    },
+    {
+      "path": "evaluations/weight_editor_reuse.py",
+      "bytes": 4668,
+      "sha256": "02cfcd7d80ff45ab69b377571045e310b93f4556209d462a99328d5cf9b3cbac",
+      "packaged_sha256": "02cfcd7d80ff45ab69b377571045e310b93f4556209d462a99328d5cf9b3cbac",
+      "packaged_bytes": 4668
+    },
+    {
+      "path": "evaluations/weight_editor_runtime.py",
+      "bytes": 12340,
+      "sha256": "60c79f7665e9eb5c2e3fbc0a3c26be08902183d11651095aa917a8b750fc8e25",
+      "packaged_sha256": "60c79f7665e9eb5c2e3fbc0a3c26be08902183d11651095aa917a8b750fc8e25",
+      "packaged_bytes": 12340
+    },
+    {
+      "path": "evaluations/weight_editor_shared_gpu.py",
+      "bytes": 3288,
+      "sha256": "ee7dfca3fb783dc57f4a288f77bdb951c6955959e39fa837fcb07e004645ec53",
+      "packaged_sha256": "ee7dfca3fb783dc57f4a288f77bdb951c6955959e39fa837fcb07e004645ec53",
+      "packaged_bytes": 3288
+    },
+    {
+      "path": "evaluations/weight_editor_sparse.py",
+      "bytes": 5588,
+      "sha256": "1cc433b3d575fd82d3dcaecb7b588594260633a170e140dc7cda12e24a433f5b",
+      "packaged_sha256": "1cc433b3d575fd82d3dcaecb7b588594260633a170e140dc7cda12e24a433f5b",
+      "packaged_bytes": 5588
+    },
+    {
+      "path": "evaluations/weight_editor_study.py",
+      "bytes": 12006,
+      "sha256": "be38655e8c94de850e29ed154d1ec6905ff624acfa2bf15d03b298ed98c9e523",
+      "packaged_sha256": "be38655e8c94de850e29ed154d1ec6905ff624acfa2bf15d03b298ed98c9e523",
+      "packaged_bytes": 12006
+    },
+    {
+      "path": "evaluations/weight_editor_targeted.py",
+      "bytes": 42109,
+      "sha256": "a5b6082f8edaf6502609719ece04bf247ffd6da528b7297c5aee09425603a088",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "2d5be73bc966c3ba814425f12bd01bfcd3bd62fbd6703a7762d4b71910689b89",
+      "packaged_bytes": 42111
+    },
+    {
+      "path": "evaluations/weight_editor_trace.py",
+      "bytes": 5981,
+      "sha256": "c8d446462b898e76f12a28e5e9c1a2432c9c85019e1d967925578d84b0afc61b",
+      "packaged_sha256": "c8d446462b898e76f12a28e5e9c1a2432c9c85019e1d967925578d84b0afc61b",
+      "packaged_bytes": 5981
+    },
+    {
+      "path": "evaluations/weight_editor_worker.py",
+      "bytes": 8965,
+      "sha256": "082f9d7bddfbad33c4d60eb3cf3b59bba37e783fe6c9a93bb1aa3fd9bd844f71",
+      "packaged_sha256": "082f9d7bddfbad33c4d60eb3cf3b59bba37e783fe6c9a93bb1aa3fd9bd844f71",
+      "packaged_bytes": 8965
+    },
+    {
+      "path": "evaluations/weight_parallel_diagnostic.py",
+      "bytes": 10152,
+      "sha256": "98b00b44cca2bf0443d64c6e2eb7179bfab22ea72c1e8806bf2c7a8456a33b14",
+      "public_adaptations": [
+        "Remove private conversation identifiers/quote where present; generated execution authorization defaults false. Numerical/sampling/scoring logic unchanged."
+      ],
+      "packaged_sha256": "568dda34a7a17dd225920578b1a198c2c4ff5792d9bbf2b89a05ea8cde7e52d8",
+      "packaged_bytes": 10153
+    },
+    {
+      "path": "evaluations/weight_repair.py",
+      "bytes": 17092,
+      "sha256": "2246d33b2cce35c1ce6ecd9033738aa4117f48d42e282f0498d23d663a5c2778",
+      "packaged_sha256": "2246d33b2cce35c1ce6ecd9033738aa4117f48d42e282f0498d23d663a5c2778",
+      "packaged_bytes": 17092
+    },
+    {
+      "path": "evaluations/weight_repair_acquire.py",
+      "bytes": 6360,
+      "sha256": "2ce6c8b10b8efaf9a95f2395e787f1454be62acc961f48aca5c39840a3bed462",
+      "packaged_sha256": "2ce6c8b10b8efaf9a95f2395e787f1454be62acc961f48aca5c39840a3bed462",
+      "packaged_bytes": 6360
+    },
+    {
+      "path": "evaluations/weight_repair_artifacts.py",
+      "bytes": 12067,
+      "sha256": "d24c067ec154c5d0ee08c6a802fe1137084605810489bd6ffb1446783f0bb941",
+      "packaged_sha256": "d24c067ec154c5d0ee08c6a802fe1137084605810489bd6ffb1446783f0bb941",
+      "packaged_bytes": 12067
+    },
+    {
+      "path": "evaluations/weight_repair_gpu_worker.py",
+      "bytes": 16398,
+      "sha256": "3a7ab6d7dbfe7661164af46dc9d920406851e73538dd6f4bdeebf2f048453c6e",
+      "packaged_sha256": "3a7ab6d7dbfe7661164af46dc9d920406851e73538dd6f4bdeebf2f048453c6e",
+      "packaged_bytes": 16398
+    },
+    {
+      "path": "evaluations/weight_repair_protocol.py",
+      "bytes": 11053,
+      "sha256": "1fdd324a27bf92a61aae7473bea9b47890decc97e5004bfbe373e1066b869d58",
+      "packaged_sha256": "1fdd324a27bf92a61aae7473bea9b47890decc97e5004bfbe373e1066b869d58",
+      "packaged_bytes": 11053
+    },
+    {
+      "path": "evaluations/weight_repair_state.py",
+      "bytes": 9027,
+      "sha256": "595f8c4b1af66fb65585b52aa7e20d9098b77806e689d6cd69ae3e306b8fd6d5",
+      "packaged_sha256": "595f8c4b1af66fb65585b52aa7e20d9098b77806e689d6cd69ae3e306b8fd6d5",
+      "packaged_bytes": 9027
+    },
+    {
+      "path": "tests/test_memory_availability_policy.py",
+      "bytes": 5775,
+      "sha256": "d0259713e6b4acf43cf3de69efb77c91d7388e2c5d011608983bb36fe0978e40",
+      "packaged_sha256": "d0259713e6b4acf43cf3de69efb77c91d7388e2c5d011608983bb36fe0978e40",
+      "packaged_bytes": 5775
+    },
+    {
+      "path": "tests/test_neuron_focus.py",
+      "bytes": 17981,
+      "sha256": "cc88b57be60210592d6465b0ad40450f42d4feb0469ebb68a1b0f772d8015e1f",
+      "packaged_sha256": "328904e574564f20da78ebc4c8928e81db4a81d837d932e72aba82f9149210c7",
+      "public_adaptations": [
+        "Skip a historical comparison when its excluded private manifest/source is absent; do not substitute current code or manufacture an equivalent historical pass."
+      ],
+      "packaged_bytes": 18212
+    },
+    {
+      "path": "tests/test_neuron_focus_continue.py",
+      "bytes": 2431,
+      "sha256": "8faf11a998c96c3115752906381378fe1afc7e8a5aa62b874175a2700bc8845f",
+      "packaged_sha256": "8faf11a998c96c3115752906381378fe1afc7e8a5aa62b874175a2700bc8845f",
+      "packaged_bytes": 2431
+    },
+    {
+      "path": "tests/test_neuron_focus_memory_continue.py",
+      "bytes": 2118,
+      "sha256": "a52028e5861d8d17abaa71d2f4991a668488e241d8d0fd37bdb74bc8e2394ab2",
+      "packaged_sha256": "a52028e5861d8d17abaa71d2f4991a668488e241d8d0fd37bdb74bc8e2394ab2",
+      "packaged_bytes": 2118
+    },
+    {
+      "path": "tests/test_ownership_evidence.py",
+      "bytes": 4698,
+      "sha256": "871de15add480a16894693b39ed3519e7c76a4954e73d638bdc95b7c20bf55b4",
+      "packaged_sha256": "1e8144adbf5221401e4c5cad0357f089c1a13e4a354ea17420cdc64e41d4106d",
+      "public_adaptations": [
+        "Skip a historical comparison when its excluded private manifest/source is absent; do not substitute current code or manufacture an equivalent historical pass."
+      ],
+      "packaged_bytes": 4925
+    },
+    {
+      "path": "tests/test_tensor_code_diagnostic.py",
+      "bytes": 1720,
+      "sha256": "3348c4017ecbdad7d4d949112166f99b843d64ee763dcd2fa56bb6dae8c3c358",
+      "packaged_sha256": "3348c4017ecbdad7d4d949112166f99b843d64ee763dcd2fa56bb6dae8c3c358",
+      "packaged_bytes": 1720
+    },
+    {
+      "path": "tests/test_tensor_fresh_gate.py",
+      "bytes": 6834,
+      "sha256": "e41a613026487ee6f919a523a34fc52b77cd8060b7143dcb920d854cf0a1386a",
+      "packaged_sha256": "c97d0537041a8bac160715ab132f46c9471c43b94cb16cca9a1695e0b2924626",
+      "public_adaptations": [
+        "Skip a historical comparison when its excluded private manifest/source is absent; do not substitute current code or manufacture an equivalent historical pass."
+      ],
+      "packaged_bytes": 7033
+    },
+    {
+      "path": "tests/test_tensor_intermediates.py",
+      "bytes": 1901,
+      "sha256": "d7a997b2c752556fcf9e43189a3e062bf2201738254d37b367d2e9f386aadb92",
+      "packaged_sha256": "d7a997b2c752556fcf9e43189a3e062bf2201738254d37b367d2e9f386aadb92",
+      "packaged_bytes": 1901
+    },
+    {
+      "path": "tests/test_tensor_neutral_selection.py",
+      "bytes": 4491,
+      "sha256": "230c6b32d7e16f5d2aaf901869e8cd8b8e2dc0539b89652ba27c5e1a252b7841",
+      "packaged_sha256": "230c6b32d7e16f5d2aaf901869e8cd8b8e2dc0539b89652ba27c5e1a252b7841",
+      "packaged_bytes": 4491
+    },
+    {
+      "path": "tests/test_tensor_overnight.py",
+      "bytes": 11572,
+      "sha256": "7534ce8af4f204d5bd1cb7672f9935887784c316d9ed224219d9638d25a41573",
+      "packaged_sha256": "7534ce8af4f204d5bd1cb7672f9935887784c316d9ed224219d9638d25a41573",
+      "packaged_bytes": 11572
+    },
+    {
+      "path": "tests/test_tensor_precision.py",
+      "bytes": 3813,
+      "sha256": "4dc516fc704cf1d745ed01e67f93bb8205eb19d20f2859be714106a494b945c3",
+      "packaged_sha256": "4dc516fc704cf1d745ed01e67f93bb8205eb19d20f2859be714106a494b945c3",
+      "packaged_bytes": 3813
+    },
+    {
+      "path": "tests/test_tensor_recovery_standalone.py",
+      "bytes": 4117,
+      "sha256": "92765a4630266b2617a27d29b02e8fd8dbccd82b691098236e48ddbbf600165b",
+      "packaged_sha256": "92765a4630266b2617a27d29b02e8fd8dbccd82b691098236e48ddbbf600165b",
+      "packaged_bytes": 4117
+    },
+    {
+      "path": "tests/test_tensor_schema.py",
+      "bytes": 3744,
+      "sha256": "469b1c96c5163645528a0e51023af5ac9532aea436f55f5f19bd49cd84a521ea",
+      "packaged_sha256": "82fbb263dd0e6fad75ed5c2fd38791b462f8c23ffc00841bddb05b7bd2c46ad6",
+      "public_adaptations": [
+        "Skip a historical comparison when its excluded private manifest/source is absent; do not substitute current code or manufacture an equivalent historical pass."
+      ],
+      "packaged_bytes": 3943
+    },
+    {
+      "path": "tests/test_tensor_teacher_stage.py",
+      "bytes": 13867,
+      "sha256": "b4a763213ef3a5d2f4e5545fa503a1e84079f896f3fa099ab7a0e3f37bc87d58",
+      "packaged_sha256": "b4a763213ef3a5d2f4e5545fa503a1e84079f896f3fa099ab7a0e3f37bc87d58",
+      "packaged_bytes": 13867
+    },
+    {
+      "path": "tests/test_tensor_thinking_mode.py",
+      "bytes": 1385,
+      "sha256": "0b32fae471218416521cf81130c95749c465ffee4ab940b6d6c96b6eb196cd64",
+      "packaged_sha256": "0b32fae471218416521cf81130c95749c465ffee4ab940b6d6c96b6eb196cd64",
+      "packaged_bytes": 1385
+    },
+    {
+      "path": "tests/test_tensor_workspace.py",
+      "bytes": 9569,
+      "sha256": "210e723285c03ccde3188608655ebfb31e8e65bbde5dedd914529ec979e7781b",
+      "packaged_sha256": "210e723285c03ccde3188608655ebfb31e8e65bbde5dedd914529ec979e7781b",
+      "packaged_bytes": 9569
+    },
+    {
+      "path": "tests/test_tensor_workspace_resume.py",
+      "bytes": 1697,
+      "sha256": "b9453d86502f861baa2ef8ba3e5dcaefa04482e1f60e8585a4f529181325c6ea",
+      "packaged_sha256": "b9453d86502f861baa2ef8ba3e5dcaefa04482e1f60e8585a4f529181325c6ea",
+      "packaged_bytes": 1697
+    },
+    {
+      "path": "tests/test_weight_editor.py",
+      "bytes": 27330,
+      "sha256": "5706e77af5fb5a0751626347b8bedb001cc0ec9fc2d37b43b9256b4a2467f717",
+      "packaged_sha256": "5706e77af5fb5a0751626347b8bedb001cc0ec9fc2d37b43b9256b4a2467f717",
+      "packaged_bytes": 27330
+    },
+    {
+      "path": "tests/test_weight_editor_bytes.py",
+      "bytes": 2377,
+      "sha256": "123af95bcdd2284e36f303922b85914a0249f13509019cc24b97a2c7d5dd3d5b",
+      "packaged_sha256": "123af95bcdd2284e36f303922b85914a0249f13509019cc24b97a2c7d5dd3d5b",
+      "packaged_bytes": 2377
+    },
+    {
+      "path": "tests/test_weight_editor_feedback.py",
+      "bytes": 2964,
+      "sha256": "9c697a0c98e4489892e2efe1f986af55a3562de1bb29a15dfc06102c92b231da",
+      "packaged_sha256": "9c697a0c98e4489892e2efe1f986af55a3562de1bb29a15dfc06102c92b231da",
+      "packaged_bytes": 2964
+    },
+    {
+      "path": "tests/test_weight_editor_loop_gate.py",
+      "bytes": 1619,
+      "sha256": "be1ec3f75d3752f45867fc6488e9f6cc5107aa0419354d2c60c98426594dfa14",
+      "packaged_sha256": "be1ec3f75d3752f45867fc6488e9f6cc5107aa0419354d2c60c98426594dfa14",
+      "packaged_bytes": 1619
+    },
+    {
+      "path": "tests/test_weight_editor_pair.py",
+      "bytes": 1141,
+      "sha256": "2b7af94cda50aa325e4c5f3182b1cf04d79f59db0855a06a3cdfefa8022e2297",
+      "packaged_sha256": "2b7af94cda50aa325e4c5f3182b1cf04d79f59db0855a06a3cdfefa8022e2297",
+      "packaged_bytes": 1141
+    },
+    {
+      "path": "tests/test_weight_editor_projection.py",
+      "bytes": 1551,
+      "sha256": "73073c9138a4d72b47757bc659904495fd86030a7a5c2816a1e9ba2598756b96",
+      "packaged_sha256": "73073c9138a4d72b47757bc659904495fd86030a7a5c2816a1e9ba2598756b96",
+      "packaged_bytes": 1551
+    },
+    {
+      "path": "tests/test_weight_editor_q8_boost.py",
+      "bytes": 1100,
+      "sha256": "5bf82f41825220b807e129661730fb3ae8b5ae792173ae4784b28db623b1eaab",
+      "packaged_sha256": "5bf82f41825220b807e129661730fb3ae8b5ae792173ae4784b28db623b1eaab",
+      "packaged_bytes": 1100
+    },
+    {
+      "path": "tests/test_weight_editor_shared_gpu.py",
+      "bytes": 4047,
+      "sha256": "f3aa384110fbd5d2913f00265533940a263b1d2fc9faa1aa2fab902c717c93b5",
+      "packaged_sha256": "f3aa384110fbd5d2913f00265533940a263b1d2fc9faa1aa2fab902c717c93b5",
+      "packaged_bytes": 4047
+    },
+    {
+      "path": "tests/test_weight_editor_sparse.py",
+      "bytes": 1479,
+      "sha256": "fa85343885a2c3f995d8435a0018a9f8eea6fdd9f92924fc7450e328118f32fd",
+      "packaged_sha256": "fa85343885a2c3f995d8435a0018a9f8eea6fdd9f92924fc7450e328118f32fd",
+      "packaged_bytes": 1479
+    },
+    {
+      "path": "tests/test_weight_editor_targeted.py",
+      "bytes": 2487,
+      "sha256": "e902afcf913f8ed52fa1ef9d46b414187af2176e6f895a769770fbf691fe4437",
+      "packaged_sha256": "e902afcf913f8ed52fa1ef9d46b414187af2176e6f895a769770fbf691fe4437",
+      "packaged_bytes": 2487
+    },
+    {
+      "path": "tests/test_weight_editor_trace.py",
+      "bytes": 2926,
+      "sha256": "f7d3fe37c01e7f27a8b84f874bf7af75e2107d496f04351508f00d27b2785ead",
+      "packaged_sha256": "f7d3fe37c01e7f27a8b84f874bf7af75e2107d496f04351508f00d27b2785ead",
+      "packaged_bytes": 2926
+    },
+    {
+      "path": "tests/test_weight_parallel_diagnostic.py",
+      "bytes": 956,
+      "sha256": "8f524526f833938ebddd45feaa4c2dca216318556fd1c921802334212896d578",
+      "packaged_sha256": "8f524526f833938ebddd45feaa4c2dca216318556fd1c921802334212896d578",
+      "packaged_bytes": 956
+    },
+    {
+      "path": "tests/test_weight_repair.py",
+      "bytes": 26895,
+      "sha256": "3a6aba6a9ef3c4d7bd37fabf404c678cb86e5940c0a51095bf5c05f83d85a9ac",
+      "packaged_sha256": "3a6aba6a9ef3c4d7bd37fabf404c678cb86e5940c0a51095bf5c05f83d85a9ac",
+      "packaged_bytes": 26895
+    }
+  ],
+  "private_report_sources_not_distributed": [
+    {
+      "path": "evaluations/weight-space-research-handoff-2026-11-04.md",
+      "sha256": "ff5fcf3a7d422a936325db75900b546bde9972f48aea25604b6ff757b5606624",
+      "included": false
+    },
+    {
+      "path": "evaluations/weight-space-repair-cpu-results-2026-11-02.md",
+      "sha256": "a507651c372c54cfc4e7a1e048574926f08255892a59e3e2c2bfcf3ba6229f44",
+      "included": false
+    },
+    {
+      "path": "evaluations/weight-space-repair-gguf-findings-2026-11-02.md",
+      "sha256": "13998ded086a35749cbbdc9a286b10f5eddf17c30c487cb4a7a72cccdfef14f8",
+      "included": false
+    },
+    {
+      "path": "evaluations/weight-space-targeted-4b-findings-2026-11-03.md",
+      "sha256": "8a1cb69333c122d45fc11017f42beedced08c6c7d76ce622325f4b9b95ddca27",
+      "included": false
+    },
+    {
+      "path": "evaluations/weight-space-intermediate-and-code-findings-2026-11-04.md",
+      "sha256": "735c18ec1d8a46078873278abbdf882a85d78883a8b8dfcac009ae19a207ba38",
+      "included": false
+    },
+    {
+      "path": "evaluations/weight-space-overnight-synthesis-2026-11-04.md",
+      "sha256": "1aa8b86c8a13cb24beb50c2b013d169bdaa4ea1b59270bafbce08f9653e123fd",
+      "included": false
+    },
+    {
+      "path": "evaluations/weight-space-builder-teacher-stage-2026-11-04.md",
+      "sha256": "0069eae618f28e994ccab55bc3c943bf35ada06c30629c48c0def5b4ca352008",
+      "included": false
+    },
+    {
+      "path": "evaluations/weight-space-builder-teacher-continuation-2026-11-04.md",
+      "sha256": "6ba14badee3db8cd08fd1ebd99bb170cec43003856ebbeddb7d47a046d26bb1d",
+      "included": false
+    },
+    {
+      "path": "evaluations/weight-space-neuron-focus-preparation-2026-11-04.md",
+      "sha256": "15d0eea252aaa473befe7b1884357ffd13e6cd94474a66c443f9f3726dc3cb5e",
+      "included": false
+    },
+    {
+      "path": "evaluations/weight-space-neuron-focus-execution-2026-11-04.md",
+      "sha256": "cd554881c03232dfc866ba2d4e4847542e663cac4a59d34436fad8531db69cce",
+      "included": false
+    },
+    {
+      "path": "evaluations/weight-space-neuron-focus-continuation-2026-11-04.md",
+      "sha256": "fecd83d4acb9ef6ac2aeb142686a0509f905facec3636122b25a68fbd0ef6748",
+      "included": false
+    },
+    {
+      "path": "evaluations/weight-space-background-load-policy-proposal-2026-11-04.md",
+      "sha256": "4f7699d7fb36f8a0e855321249106962783ec45db8d1f1d9371ef3c25e496589",
+      "included": false
+    },
+    {
+      "path": "evaluations/weight-space-memory-availability-amendment-2026-11-04.md",
+      "sha256": "ee65fefa8990bbbd403a92033029b11ca3a1384bf7573adceead2d710d24eb4d",
+      "included": false
+    }
+  ],
+  "packaged_hash_semantics": "SHA-256 of delivered files with LF line endings, matching repository .gitattributes. sha256/bytes retain original source bytes."
+}

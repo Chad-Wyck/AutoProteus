@@ -18,7 +18,7 @@ from lora6k_state import atomic, exclusive, read, sha
 DESKTOP_GPU_PROCESSES = frozenset(name.lower() for name in (
     'dwm.exe', 'explorer.exe', 'ShellHost.exe', 'ShellExperienceHost.exe', 'SearchHost.exe',
     'StartMenuExperienceHost.exe', 'CrossDeviceResume.exe', 'TextInputHost.exe', 'TabTip.exe',
-    'Taskmgr.exe', 'LockApp.exe', 'ApplicationFrameHost.exe', 'RuntimeBroker.exe',
+    'Taskmgr.exe', 'LockApp.exe', 'LogonUI.exe', 'ApplicationFrameHost.exe', 'RuntimeBroker.exe',
     'msedgewebview2.exe', 'msedge.exe', 'chrome.exe', 'brave.exe', 'firefox.exe',
     'Discord.exe', 'steamwebhelper.exe', 'steam.exe', 'ms-teams.exe', 'FileWatcher.exe',
     'EdgeGameAssist.exe', 'notepad++.exe', 'ChatGPT.exe', 'codex-computer-use-swift.exe',
@@ -43,30 +43,56 @@ def check_owners(rows, names, active_compute):
     return desktop
 
 
-def ownership():
-    raw = subprocess.check_output(['nvidia-smi', '--id=0', '--query-compute-apps=pid,process_name,used_gpu_memory',
-        '--format=csv,noheader,nounits'], text=True, timeout=10).strip()
-    rows = list(csv.reader(raw.splitlines())) if raw and raw != 'No running processes found' else []
-    code = ("$ErrorActionPreference='Stop'; $p=@(Get-CimInstance Win32_Process | Select-Object ProcessId,Name); "
+def ownership(*, remaining=None, owned_pids=(), evidence=None, context=None):
+    """Optional synchronous evidence sink; recording failures also fail closed."""
+    timeout = lambda cap: min(cap, remaining()) if remaining else cap
+    record={'observation_id':uuid.uuid4().hex,'began_utc':datetime.now(timezone.utc).isoformat(),
+        'owned_pids':sorted(set(owned_pids)),'context':context or {}}
+    def publish(stage, error=None):
+        record.update(stage=stage,recorded_utc=datetime.now(timezone.utc).isoformat())
+        if error is not None:record['error']=type(error).__name__+': '+str(error)
+        if evidence is not None:evidence(record)
+    try:
+        record['nvidia_query_began_utc']=datetime.now(timezone.utc).isoformat()
+        raw = subprocess.check_output(['nvidia-smi', '--id=0', '--query-compute-apps=pid,process_name,used_gpu_memory',
+            '--format=csv,noheader,nounits'], text=True, timeout=timeout(10)).strip()
+        record.update(nvidia_query_ended_utc=datetime.now(timezone.utc).isoformat(),nvidia_raw=raw)
+        rows = list(csv.reader(raw.splitlines())) if raw and raw != 'No running processes found' else []
+        record['nvidia_rows_unfiltered']=rows
+        record['cim_query_began_utc']=datetime.now(timezone.utc).isoformat()
+        code = ("$ErrorActionPreference='Stop'; $p=@(Get-CimInstance Win32_Process | Select-Object ProcessId,Name,ParentProcessId,CreationDate); "
         "$c=@(Get-CimInstance Win32_PerfFormattedData_GPUPerformanceCounters_GPUEngine | "
         "Where-Object {$_.Name -match 'engtype_(Compute|CUDA)' -and $_.UtilizationPercentage -gt 0} | "
         "Select-Object Name,UtilizationPercentage); [pscustomobject]@{processes=$p;compute=$c} | ConvertTo-Json -Compress -Depth 4")
-    value = json.loads(subprocess.check_output(['powershell.exe', '-NoProfile', '-NonInteractive', '-Command', code],
-        text=True, timeout=20))
-    names = {int(p['ProcessId']): p['Name'] for p in value['processes']}
-    desktop = check_owners(rows, names, value['compute'])
-    return {'desktop_contexts': desktop, 'active_compute': value['compute'],
+        cim_raw=subprocess.check_output(['powershell.exe', '-NoProfile', '-NonInteractive', '-Command', code],
+            text=True, timeout=timeout(20))
+        record.update(cim_query_ended_utc=datetime.now(timezone.utc).isoformat(),cim_raw=cim_raw)
+        value = json.loads(cim_raw);record['processes']=value['processes'];record['compute_unfiltered']=value['compute']
+        publish('collected_before_filter')
+        names = {int(p['ProcessId']): p['Name'] for p in value['processes']}
+        owned=set(owned_pids)
+        rows=[r for r in rows if int(r[0].strip()) not in owned]
+        compute=[r for r in value['compute'] if not any(r['Name'].startswith('pid_'+str(p)+'_') for p in owned)]
+        record.update(nvidia_rows_filtered=rows,compute_filtered=compute)
+        publish('before_decision')
+        desktop = check_owners(rows, names, compute)
+    except BaseException as error:
+        publish('rejected_or_query_failed',error)
+        raise
+    record['desktop_contexts']=desktop;publish('accepted')
+    return {'desktop_contexts': desktop, 'active_compute': compute,
         'policy': 'Measured/unknown compute owners blocked; known WDDM desktop contexts separately classified.'}
 
 
-def snapshot(pids=()):
+def snapshot(pids=(), *, timeout=20):
+    if not 0 < timeout <= 20: raise ValueError('Invalid host snapshot timeout')
     pattern = '^pid_(' + '|'.join(str(int(pid)) for pid in pids) + ')_' if pids else '(?!)'
     code = ("$o=Get-CimInstance Win32_OperatingSystem; $m=Get-CimInstance Win32_PerfFormattedData_PerfOS_Memory; "
         "$g=@(Get-CimInstance Win32_PerfFormattedData_GPUPerformanceCounters_GPUProcessMemory | Where-Object {$_.Name -match '"
         + pattern + "'}); [pscustomobject]@{free_ram_kib=$o.FreePhysicalMemory; "
         "free_commit_bytes=([long]$m.CommitLimit-[long]$m.CommittedBytes); "
         "gpu=@($g | Select-Object Name,SharedUsage,DedicatedUsage)} | ConvertTo-Json -Compress -Depth 4")
-    value = json.loads(subprocess.check_output(['powershell.exe', '-NoProfile', '-NonInteractive', '-Command', code], text=True, timeout=20))
+    value = json.loads(subprocess.check_output(['powershell.exe', '-NoProfile', '-NonInteractive', '-Command', code], text=True, timeout=timeout))
     if not isinstance(value.get('free_ram_kib'), (int, float)) or not isinstance(value.get('free_commit_bytes'), (int, float)):
         raise ValueError('Host resource counters unavailable; refusing unmonitored training')
     return value
